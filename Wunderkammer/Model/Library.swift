@@ -26,7 +26,7 @@ final class Library {
     static let didChange = Notification.Name("LibraryDidChange")
     nonisolated static let thumbnailSize = Representer.thumbnailSize
     /// Canvas key for the whole cabinet, which isn't a real board.
-    static let allKey = "all"
+    nonisolated static let allKey = "all"
 
     let root: URL
     let originalsDir: URL
@@ -241,12 +241,11 @@ final class Library {
 
     static func canvasKey(_ collectionID: UUID?) -> String { collectionID?.uuidString ?? allKey }
 
-    /// The stored piles, reconciled with the board's current items: missing
-    /// items are dropped, new ones join the first pile (or a fresh one).
-    func canvasGroups(for collectionID: UUID?) -> [CanvasGroup] {
-        let ids = items(in: collectionID).map(\.id)
+    /// The stored piles for a view, reconciled with the items it shows now:
+    /// missing items are dropped, new ones join the first pile (or a fresh one).
+    func canvasGroups(key: String, ids: [UUID]) -> [CanvasGroup] {
         let valid = Set(ids)
-        var groups = canvases[Self.canvasKey(collectionID)] ?? []
+        var groups = canvases[key] ?? []
         for g in groups.indices { groups[g].itemIDs.removeAll { !valid.contains($0) } }
         groups.removeAll { $0.itemIDs.isEmpty }
         let placed = Set(groups.flatMap(\.itemIDs))
@@ -261,9 +260,13 @@ final class Library {
         return groups
     }
 
+    func canvasGroups(for collectionID: UUID?) -> [CanvasGroup] {
+        canvasGroups(key: Self.canvasKey(collectionID), ids: items(in: collectionID).map(\.id))
+    }
+
     /// Canvas edits don't post didChange: the canvas already shows them.
-    func setCanvasGroups(_ groups: [CanvasGroup], for collectionID: UUID?) {
-        canvases[Self.canvasKey(collectionID)] = groups
+    func setCanvasGroups(_ groups: [CanvasGroup], key: String) {
+        canvases[key] = groups
         save()
     }
 
@@ -342,7 +345,9 @@ final class Library {
     /// preview image, title and description. A link straight to an image
     /// becomes that image.
     func enrichWeb(_ id: UUID) {
-        guard let item = item(id), let url = item.url.flatMap(URL.init(string:)) else { return }
+        // Only ever fetch web addresses, whatever ended up in the item.
+        guard let item = item(id), let url = item.url.flatMap(URL.init(string:)),
+              ["http", "https"].contains(url.scheme?.lowercased() ?? "") else { return }
         let context = context
         Task {
             guard let meta = await WebMetadata.fetch(url) else { return }

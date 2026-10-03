@@ -75,6 +75,16 @@ struct CaptureURLTests {
         #expect(text == "Hello there" && origin?.host() == "example.com")
     }
 
+    @Test func onlyWebAddressesAreAccepted() {
+        #expect(CaptureController.sources(fromCaptureURL: URL(string: "wunderkammer://capture?url=file%3A%2F%2F%2Fetc%2Fpasswd")!).isEmpty)
+        #expect(CaptureController.sources(fromCaptureURL: URL(string: "wunderkammer://capture?image=file%3A%2F%2F%2FUsers%2Fx%2Fa.png")!).isEmpty)
+        #expect(CaptureController.sources(fromCaptureURL: URL(string: "wunderkammer://capture?url=javascript%3Aalert(1)")!).isEmpty)
+        let long = String(repeating: "x", count: 50_000)
+        guard case .text(let t, _) = CaptureController.sources(fromCaptureURL: URL(string: "wunderkammer://capture?text=\(long)")!).first
+        else { Issue.record("text dropped"); return }
+        #expect(t.count == 20_000)
+    }
+
     @Test func otherLinksAreIgnored() {
         #expect(CaptureController.sources(fromCaptureURL: URL(string: "wunderkammer://open?x=1")!).isEmpty)
         #expect(CaptureController.sources(fromCaptureURL: URL(string: "https://capture?url=x")!).isEmpty)

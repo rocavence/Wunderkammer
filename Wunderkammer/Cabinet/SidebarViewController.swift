@@ -1,17 +1,25 @@
 import AppKit
 
-/// Source list: All Images, then the boards. Images (ours or files) dropped
-/// on a board are added to it. Double-click a board to rename it.
+/// The cabinet, the views the system keeps by itself (by kind, rediscovery),
+/// and optional boards last. Nothing here has to be maintained: kind views
+/// only appear once something of that kind exists. Items (ours or files)
+/// dropped on a board join it; double-click a board to rename it.
 @MainActor
 final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTableViewDelegate, NSTextFieldDelegate {
     private let library: Library
     private let table = NSTableView()
-    var onSelect: ((UUID?) -> Void)?
+    var onSelect: ((Scope.Base) -> Void)?
+    var onRandom: (() -> Void)?
 
-    /// Row model: 0 = All Images, 1 = "Boards" header, then boards.
-    private enum Row { case all, header, board(Board) }
+    private enum Row {
+        case header(String)
+        case view(Scope.Base, title: String, icon: Reicon, count: Int?)
+        case random
+        case board(Board)
+    }
+
     private var rows: [Row] = []
-    private(set) var selectedBoard: UUID?
+    private(set) var selected: Scope.Base = .all
 
     init(library: Library) {
         self.library = library
@@ -29,6 +37,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         table.dataSource = self
         table.delegate = self
         table.target = self
+        table.action = #selector(clicked)
         table.doubleAction = #selector(doubleClicked)
         table.registerForDraggedTypes([.wunderkammerItem, .fileURL, .URL, .string, .png, .tiff])
         table.setDraggingSourceOperationMask(.copy, forLocal: false)
@@ -41,10 +50,10 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         scroll.hasVerticalScroller = true
         scroll.autohidesScrollers = true
 
-        let add = NSButton(image: Icon.image(.plus),
-                           target: self, action: #selector(newBoard(_:)))
+        let add = NSButton(image: Icon.image(.plus), target: self, action: #selector(newBoard(_:)))
         add.isBordered = false
         add.toolTip = "新增 board"
+        add.contentTintColor = .secondaryLabelColor
 
         let container = NSView()
         for v in [scroll, add] as [NSView] {
@@ -67,30 +76,58 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         reload()
     }
 
+    private static let kindIcons: [Scope.KindView: Reicon] = [
+        .images: .image, .web: .globe, .text: .text, .media: .clapperboard, .documents: .fileText,
+    ]
+
     private func reload() {
-        rows = [.all, .header] + library.collections.map { .board($0) }
+        var r: [Row] = [.view(.all, title: "珍奇室", icon: .cabinet, count: library.items.count)]
+        let byKind = Dictionary(grouping: library.items, by: \.kind).mapValues(\.count)
+        let kinds = Scope.KindView.allCases.compactMap { k -> Row? in
+            let n = k.kinds.reduce(0) { $0 + (byKind[$1] ?? 0) }
+            return n > 0 ? .view(.kind(k), title: k.title, icon: Self.kindIcons[k]!, count: n) : nil
+        }
+        // Only worth a section when the cabinet holds more than one kind of thing.
+        if kinds.count > 1 { r += [.header("系統整理")] + kinds }
+        r += [.header("重新發現"),
+              .view(.onThisDay, title: "過去的今天", icon: .calendarDay, count: nil),
+              .view(.forgotten, title: "被遺忘的", icon: .history, count: nil),
+              .random]
+        if !library.collections.isEmpty {
+            r += [.header("Boards")] + library.collections.map { .board($0) }
+        }
+        rows = r
         table.reloadData()
-        if let selectedBoard, library.collection(selectedBoard) == nil {
-            select(board: nil)
+        if case .board(let id) = selected, library.collection(id) == nil {
+            select(.all)
+        } else if case .kind(let k) = selected, !rows.contains(where: { if case .view(.kind(k), _, _, _) = $0 { return true }; return false }) {
+            select(.all)
         } else {
-            selectRow(for: selectedBoard)
+            selectRow(for: selected)
         }
     }
 
-    func select(board: UUID?) {
-        selectedBoard = board.flatMap { library.collection($0) == nil ? nil : $0 }
-        selectRow(for: selectedBoard)
-        onSelect?(selectedBoard)
+    func select(_ base: Scope.Base) {
+        if case .board(let id) = base, library.collection(id) == nil { return select(.all) }
+        selected = base
+        selectRow(for: base)
+        onSelect?(base)
     }
 
-    private func selectRow(for board: UUID?) {
-        let row = rows.firstIndex {
-            switch $0 {
-            case .all: return board == nil
-            case .board(let b): return b.id == board
-            case .header: return false
-            }
-        } ?? 0
+    /// Board-or-cabinet convenience (tests, restoring the last session).
+    func select(board: UUID?) { select(board.map { .board($0) } ?? .all) }
+
+    private func base(at row: Int) -> Scope.Base? {
+        guard rows.indices.contains(row) else { return nil }
+        switch rows[row] {
+        case .view(let base, _, _, _): return base
+        case .board(let b): return .board(b.id)
+        default: return nil
+        }
+    }
+
+    private func selectRow(for base: Scope.Base) {
+        let row = rows.indices.first { self.base(at: $0) == base } ?? 0
         if table.selectedRow != row { table.selectRowIndexes([row], byExtendingSelection: false) }
     }
 
@@ -109,64 +146,72 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     }
 
     func tableView(_ tableView: NSTableView, shouldSelectRow row: Int) -> Bool {
-        if case .header = rows[row] { return false }
-        return true
+        switch rows[row] {
+        case .header: return false
+        case .random:
+            onRandom?()
+            return false
+        default: return true
+        }
     }
 
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         switch rows[row] {
-        case .header:
-            let label = NSTextField(labelWithString: "Boards")
+        case .header(let title):
+            let label = NSTextField(labelWithString: title)
             label.font = .systemFont(ofSize: 11, weight: .semibold)
-            label.textColor = .secondaryLabelColor
+            label.textColor = .tertiaryLabelColor
             return label
-        case .all:
-            return cell(title: "全部圖片", symbol: .cabinet, count: library.items.count, editable: false)
+        case .view(_, let title, let icon, let count):
+            return cell(title: title, icon: icon, count: count)
+        case .random:
+            return cell(title: "隨機一件", icon: .shuffle, count: nil, hint: "R")
         case .board(let b):
-            let cell = cell(title: b.name, symbol: .layers, count: b.itemIDs.count, editable: true)
+            let cell = cell(title: b.name, icon: .layers, count: b.itemIDs.count)
             cell.textField?.delegate = self
             cell.textField?.tag = row
             return cell
         }
     }
 
-    private func cell(title: String, symbol: Reicon, count: Int, editable: Bool) -> NSTableCellView {
+    private func cell(title: String, icon: Reicon, count: Int?, hint: String? = nil) -> NSTableCellView {
         let cell = NSTableCellView()
-        let icon = NSImageView(image: Icon.image(symbol))
+        let image = NSImageView(image: Icon.image(icon))
+        image.contentTintColor = .secondaryLabelColor
         let text = NSTextField(labelWithString: title)
         text.lineBreakMode = .byTruncatingTail
         text.isEditable = false
-        let badge = NSTextField(labelWithString: "\(count)")
+        let badge = NSTextField(labelWithString: count.map(String.init) ?? hint ?? "")
         badge.textColor = .tertiaryLabelColor
         badge.font = .monospacedDigitSystemFont(ofSize: 11, weight: .regular)
-        for v in [icon, text, badge] as [NSView] {
+        for v in [image, text, badge] as [NSView] {
             v.translatesAutoresizingMaskIntoConstraints = false
             cell.addSubview(v)
         }
         text.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         NSLayoutConstraint.activate([
-            icon.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 2),
-            icon.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
-            icon.widthAnchor.constraint(equalToConstant: 18),
-            text.leadingAnchor.constraint(equalTo: icon.trailingAnchor, constant: 6),
+            image.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 2),
+            image.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
+            image.widthAnchor.constraint(equalToConstant: 16),
+            image.heightAnchor.constraint(equalToConstant: 16),
+            text.leadingAnchor.constraint(equalTo: image.trailingAnchor, constant: 8),
             text.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
             badge.leadingAnchor.constraint(greaterThanOrEqualTo: text.trailingAnchor, constant: 6),
             badge.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -6),
             badge.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
         ])
-        cell.imageView = icon
+        cell.imageView = image
         cell.textField = text
         return cell
     }
 
     func tableViewSelectionDidChange(_ notification: Notification) {
-        let row = table.selectedRow
-        guard rows.indices.contains(row) else { return }
-        let board: UUID? = self.board(at: row)?.id
-        guard board != selectedBoard else { return }
-        selectedBoard = board
-        onSelect?(board)
+        guard let base = base(at: table.selectedRow), base != selected else { return }
+        selected = base
+        onSelect?(base)
     }
+
+    @objc private func clicked() {}
 
     // MARK: Rename
 
@@ -197,7 +242,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     @objc func newBoard(_ sender: Any?) {
         let n = library.collections.count + 1
         let b = library.createCollection(named: "Board \(n)")
-        select(board: b.id)
+        select(.board(b.id))
         if let row = rows.firstIndex(where: { if case .board(let x) = $0 { return x.id == b.id }; return false }) {
             startRename(row: row)
         }
@@ -210,9 +255,9 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         guard op == .on, rows.indices.contains(row) else { return [] }
         switch rows[row] {
         case .board: return .copy
-        // Our own items are already in All Images; files get imported.
-        case .all: return ItemActions.ids(from: info.draggingPasteboard).isEmpty ? .copy : []
-        case .header: return []
+        // Our own items are already in the cabinet; anything else gets collected.
+        case .view(.all, _, _, _): return ItemActions.ids(from: info.draggingPasteboard).isEmpty ? .copy : []
+        default: return []
         }
     }
 

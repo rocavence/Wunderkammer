@@ -17,8 +17,9 @@ final class InfinityView: NSView, ItemSurface {
     let library: Library
     let pool: TilePool
     var onOpen: ((UUID) -> Void)?
+    var onRandom: (() -> Void)?
 
-    private(set) var board: UUID?
+    private(set) var scope = Scope()
     private var items: [Item] = []
     private var block: [CGRect] = []
     private var blockSize = CGSize.zero
@@ -68,8 +69,11 @@ final class InfinityView: NSView, ItemSurface {
 
     // MARK: Model
 
-    func show(board: UUID?) {
-        self.board = board
+    func show(scope: Scope) {
+        var base = scope
+        base.search = ""
+        guard base != self.scope || items.isEmpty else { return }
+        self.scope = base
         pool.removeAll()
         offset = .zero
         velocity = .zero
@@ -77,7 +81,7 @@ final class InfinityView: NSView, ItemSurface {
     }
 
     private func reload() {
-        items = library.items(in: board)
+        items = library.items(for: scope)
         let totalAspect = items.map(\.aspect).reduce(0, +)
         // Block about 3:2, but at least two screens wide so repeats sit far apart.
         let width = max((totalAspect * Self.rowHeight * Self.rowHeight * 1.5).squareRoot(),
@@ -314,6 +318,8 @@ final class InfinityView: NSView, ItemSurface {
 
     override func keyDown(with event: NSEvent) {
         switch event.keyCode {
+        case 15 where event.modifierFlags.intersection([.command, .control, .option]).isEmpty:
+            onRandom?()
         case 49: // space: pause / resume drift
             if Date().timeIntervalSince(lastInteraction) > Self.idleBeforeDrift {
                 lastInteraction = .distantFuture

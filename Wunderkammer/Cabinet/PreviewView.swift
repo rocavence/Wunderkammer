@@ -14,9 +14,14 @@ final class PreviewView: NSView {
     private var index = 0
     private let duration: CFTimeInterval = 0.32
     var onClose: (() -> Void)?
+    var onActivate: ((UUID) -> Void)?
+    var onRandom: (() -> Void)?
+    /// A line under the image (Random: how long ago it was collected).
+    private let caption = CATextLayer()
 
     var isOpen: Bool { !isHidden }
     var isClosing: Bool { closing }
+    var captionText: String? { caption.opacity > 0 ? (caption.string as? NSAttributedString)?.string : nil }
     var currentID: UUID? { isOpen && items.indices.contains(index) ? items[index].id : nil }
 
     init(library: Library, thumbnailer: Thumbnailer) {
@@ -30,6 +35,9 @@ final class PreviewView: NSView {
         imageLayer.minificationFilter = .trilinear
         layer?.addSublayer(dim)
         layer?.addSublayer(imageLayer)
+        caption.alignmentMode = .center
+        caption.opacity = 0
+        layer?.addSublayer(caption)
         isHidden = true
     }
 
@@ -38,7 +46,7 @@ final class PreviewView: NSView {
     override var isFlipped: Bool { true }
     override var acceptsFirstResponder: Bool { true }
 
-    func open(_ id: UUID, from surface: ItemSurface) {
+    func open(_ id: UUID, from surface: ItemSurface, caption text: String? = nil) {
         self.surface = surface
         items = surface.shownItems
         guard let i = items.firstIndex(where: { $0.id == id }) else { return }
@@ -57,6 +65,33 @@ final class PreviewView: NSView {
         fade(dim, to: 1, duration: 0.35)
         springFrame(imageLayer, to: fitRect(for: items[i]), bounce: 0.1, response: 0.45)
         loadFull(items[i])
+        setCaption(text)
+    }
+
+    private func setCaption(_ text: String?) {
+        withoutAnimation {
+            caption.contentsScale = window?.backingScaleFactor ?? 2
+            let size: CGFloat = 15
+            let serif = NSFont.systemFont(ofSize: size).fontDescriptor.withDesign(.serif).flatMap { NSFont(descriptor: $0, size: size) }
+            caption.string = NSAttributedString(string: text ?? "", attributes: [
+                .font: serif ?? NSFont.systemFont(ofSize: size), .foregroundColor: NSColor.secondaryLabelColor,
+            ])
+            caption.frame = CGRect(x: 0, y: bounds.maxY - 34, width: bounds.width, height: 24)
+        }
+        fade(caption, to: text == nil ? 0 : 1, duration: 0.5)
+    }
+
+    /// Gone without the fly-back (another preview is about to open).
+    func dismissImmediately() {
+        guard isOpen else { return }
+        closing = false
+        withoutAnimation {
+            dim.opacity = 0
+            caption.opacity = 0
+        }
+        isHidden = true
+        surface?.previewWillClose(landingOn: items[index].id)
+        surface?.previewDidClose()
     }
 
     private var closing = false
@@ -70,6 +105,7 @@ final class PreviewView: NSView {
         // The neighbours spring back from the edges as the image flies home.
         surface?.previewWillClose(landingOn: id)
         fade(dim, to: 0, duration: 0.2)
+        fade(caption, to: 0, duration: 0.15)
         springFrame(imageLayer, to: end, bounce: 0.16, response: 0.5)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
             MainActor.assumeIsolated {
@@ -93,6 +129,7 @@ final class PreviewView: NSView {
     private func show(_ next: Int) {
         guard items.indices.contains(next) else { return }
         index = next
+        setCaption(nil)
         let item = items[next]
         withoutAnimation {
             imageLayer.contents = surface?.currentImage(for: item.id)
@@ -137,12 +174,15 @@ final class PreviewView: NSView {
         withoutAnimation {
             dim.frame = bounds
             imageLayer.frame = fitRect(for: items[index])
+            caption.frame = CGRect(x: 0, y: bounds.maxY - 34, width: bounds.width, height: 24)
         }
     }
 
     override func keyDown(with event: NSEvent) {
         switch event.keyCode {
         case 49, 53: close() // space, esc
+        case 36, 76: onActivate?(items[index].id) // return: open it
+        case 15 where event.modifierFlags.intersection([.command, .control, .option]).isEmpty: onRandom?()
         case 123, 126: show(index - 1)
         case 124, 125: show(index + 1)
         default: super.keyDown(with: event)

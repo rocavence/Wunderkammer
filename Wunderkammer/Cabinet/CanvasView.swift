@@ -6,15 +6,19 @@ import QuartzCore
 /// under the cursor), the pile it left closes the gap, and piles that now
 /// overlap push each other apart.
 @MainActor
-final class CanvasView: NSView, ItemSurface {
+final class CanvasView: NSView, ItemSurface, CabinetSurface {
     static let minZoom: CGFloat = 0.05
     static let maxZoom: CGFloat = 4
 
     let library: Library
     let pool: TilePool
     var onOpen: ((UUID) -> Void)?
+    var onActivate: ((UUID) -> Void)?
+    var onRandom: (() -> Void)?
+    var onFocus: ((UUID?) -> Void)?
 
-    private(set) var board: UUID?
+    private(set) var scope = Scope()
+    var board: UUID? { scope.board }
     private var groups: [CanvasGroup] = []
     private var itemFrames: [UUID: CGRect] = [:]
     private var groupFrames: [UUID: CGRect] = [:]
@@ -89,11 +93,14 @@ final class CanvasView: NSView, ItemSurface {
 
     private var order: [UUID] { groups.flatMap(\.itemIDs) }
 
-    func show(board: UUID?) {
-        self.board = board
+    func show(scope: Scope) {
+        // The canvas shows the view itself; searching happens in the grid views.
+        var base = scope
+        base.search = ""
+        self.scope = base
         selection = Selection()
         pool.removeAll()
-        groups = library.canvasGroups(for: board)
+        groups = currentGroups()
         layoutGroups()
         needsFit = true
         fit()
@@ -101,8 +108,12 @@ final class CanvasView: NSView, ItemSurface {
         needsDisplay = true
     }
 
+    private func currentGroups() -> [CanvasGroup] {
+        library.canvasGroups(key: scope.canvasKey, ids: library.items(for: scope).map(\.id))
+    }
+
     private func reload() {
-        groups = library.canvasGroups(for: board)
+        groups = currentGroups()
         layoutGroups()
         resolveOverlaps(pinned: [])
         selection.restrict(to: Set(order))
@@ -111,7 +122,7 @@ final class CanvasView: NSView, ItemSurface {
     }
 
     private func save() {
-        library.setCanvasGroups(groups, for: board)
+        library.setCanvasGroups(groups, key: scope.canvasKey)
     }
 
     /// Packs every pile and records world frames for piles and their images.
@@ -238,6 +249,7 @@ final class CanvasView: NSView, ItemSurface {
 
     private func showSelection() {
         pool.setSelected(Set(selection.ids.map(\.uuidString)))
+        onFocus?(selection.anchor ?? selection.ordered(order).first)
     }
 
     private func hit(_ p: NSPoint) -> UUID? {
@@ -450,6 +462,10 @@ final class CanvasView: NSView, ItemSurface {
             if let id = selection.anchor ?? selection.ordered(order).first { onOpen?(id) }
         case 51, 117:
             deleteSelection()
+        case 36, 76:
+            if let id = selection.anchor ?? selection.ordered(order).first { onActivate?(id) }
+        case 15 where event.modifierFlags.intersection([.command, .control, .option]).isEmpty:
+            onRandom?()
         case 53:
             selection = Selection()
             showSelection()

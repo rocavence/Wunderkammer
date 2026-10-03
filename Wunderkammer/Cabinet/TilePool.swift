@@ -83,6 +83,7 @@ final class TilePool {
             if tile.zPosition != p.z { tile.zPosition = p.z }
             let border: CGFloat = p.selected ? 3 : 0
             if tile.borderWidth != border { withoutAnimation { tile.borderWidth = border } }
+            updateBadge(tile, item: p.item, size: p.frame.size, scale: scale)
             loadImage(key: p.key, item: p.item, into: tile, pixels: max(p.frame.width, p.frame.height) * scale)
         }
 
@@ -266,6 +267,52 @@ final class TilePool {
         }
     }
 
+    /// What a tile is, when the picture doesn't say: a site, a duration, pages.
+    static func badgeText(_ item: Item) -> String? {
+        switch item.kind {
+        case .web: return item.domain
+        case .video, .audio: return item.duration.map(InspectorViewController.duration)
+        case .pdf: return item.pageCount.map { "PDF · \($0) 頁" } ?? "PDF"
+        case .file: return (item.originalFilename as NSString).pathExtension.uppercased().nilIfEmpty
+        case .image: return item.fileType == "com.compuserve.gif" ? "GIF" : nil
+        case .text: return nil
+        }
+    }
+
+    private func updateBadge(_ tile: CALayer, item: Item, size: CGSize, scale: CGFloat) {
+        let text = Self.badgeText(item)
+        let badge = tile.sublayers?.first { $0.name == "badge" }
+        guard let text, size.width >= 90, size.height >= 50 else {
+            withoutAnimation { badge?.isHidden = true }
+            return
+        }
+        // A dark pill with the text centred in it.
+        let pill = badge ?? {
+            let b = CALayer()
+            b.name = "badge"
+            b.cornerRadius = 4
+            b.backgroundColor = NSColor(white: 0, alpha: 0.55).cgColor
+            let t = CATextLayer()
+            t.alignmentMode = .center
+            t.truncationMode = .end
+            b.addSublayer(t)
+            tile.addSublayer(b)
+            return b
+        }()
+        let label = pill.sublayers!.first as! CATextLayer
+        withoutAnimation {
+            pill.isHidden = false
+            label.contentsScale = scale
+            let font = NSFont.systemFont(ofSize: 10, weight: .medium)
+            if (label.string as? NSAttributedString)?.string != text {
+                label.string = NSAttributedString(string: text, attributes: [.font: font, .foregroundColor: NSColor.white])
+            }
+            let w = min((text as NSString).size(withAttributes: [.font: font]).width + 12, size.width - 16)
+            pill.frame = CGRect(x: 8, y: size.height - 26, width: w, height: 18)
+            label.frame = CGRect(x: 4, y: 2.5, width: w - 8, height: 14)
+        }
+    }
+
     private func makeTile() -> CALayer {
         let tile = CALayer()
         tile.contentsGravity = .resizeAspectFill
@@ -351,4 +398,8 @@ func withoutAnimation(_ body: () -> Void) {
     CATransaction.setDisableActions(true)
     body()
     CATransaction.commit()
+}
+
+extension String {
+    var nilIfEmpty: String? { isEmpty ? nil : self }
 }

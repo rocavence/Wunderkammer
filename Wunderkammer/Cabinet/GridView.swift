@@ -6,16 +6,26 @@ import QuartzCore
 /// changes the row height and every tile animates from where it was to where
 /// it now belongs.
 @MainActor
-final class GridView: NSView, ItemSurface, NSDraggingSource {
+final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
     static let minRowHeight: CGFloat = 48
     static let maxRowHeight: CGFloat = 1400
 
     let library: Library
     let pool: TilePool
     var onOpen: ((UUID) -> Void)?
+    var onActivate: ((UUID) -> Void)?
+    var onRandom: (() -> Void)?
+    var onFocus: ((UUID?) -> Void)?
 
-    /// nil = All Images.
-    private(set) var board: UUID?
+    private(set) var scope = Scope()
+    var board: UUID? { scope.board }
+    /// Grid, Masonry or Timeline. Changing it flies every tile to its new place.
+    var style: CabinetStyle = .grid {
+        didSet { if style != oldValue { relayout(animated: true, anchor: nil) } }
+    }
+    private(set) var headers: [CabinetLayout.Header] = []
+    private var headerLayers: [Int: CATextLayer] = [:]
+    private var spatial = SpatialIndex()
     private(set) var items: [Item] = []
     private(set) var frames: [CGRect] = []
     private(set) var rowHeight: CGFloat = 220
@@ -78,21 +88,32 @@ final class GridView: NSView, ItemSurface, NSDraggingSource {
 
     // MARK: Layout
 
-    func show(board: UUID?) {
-        self.board = board
+    func show(scope: Scope) {
+        // Only the search changed: filter in place, tiles fly to their new spots.
+        if scope.base == self.scope.base, superview != nil, !items.isEmpty || scope.isSearching {
+            self.scope = scope
+            reload(animated: true)
+            scrollToTop()
+            return
+        }
+        self.scope = scope
         selection = Selection()
         pool.removeAll()
-        items = library.items(in: board)
+        items = library.items(for: scope)
         relayout(animated: false, anchor: nil)
+        scrollToTop()
+        needsDisplay = true
+    }
+
+    private func scrollToTop() {
         if let clip = superview as? NSClipView {
             clip.scroll(to: NSPoint(x: 0, y: -clip.contentInsets.top))
             enclosingScrollView?.reflectScrolledClipView(clip)
         }
-        needsDisplay = true
     }
 
     func reload(animated: Bool) {
-        items = library.items(in: board)
+        items = library.items(for: scope)
         selection.restrict(to: Set(order))
         relayout(animated: animated, anchor: nil)
         needsDisplay = true
@@ -121,9 +142,12 @@ final class GridView: NSView, ItemSurface, NSDraggingSource {
             anchorOnScreenY = anchor.y - clip.bounds.minY
         }
 
-        let result = JustifiedLayout(width: layoutWidth, rowHeight: rowHeight)
-            .layout(aspects: items.map(\.aspect))
+        let size = style == .masonry ? rowHeight * 1.15 : rowHeight
+        let result = CabinetLayout(style: style, width: layoutWidth, size: size)
+            .layout(aspects: items.map(\.aspect), dates: items.map(\.dateAdded))
         frames = result.frames
+        headers = result.headers
+        spatial = SpatialIndex(frames)
         setFrameSize(NSSize(width: layoutWidth, height: max(result.height, clip.bounds.height - clip.contentInsets.top)))
 
         if let i = anchorIndex, frames.indices.contains(i) {
@@ -149,7 +173,7 @@ final class GridView: NSView, ItemSurface, NSDraggingSource {
         guard !frames.isEmpty else { return nil }
         if let hit = index(at: p) { return hit }
         let range = indices(in: NSRect(x: 0, y: p.y - rowHeight, width: bounds.width, height: rowHeight * 2))
-        let pool = range.isEmpty ? Array(frames.indices) : Array(range)
+        let pool = range.isEmpty ? Array(frames.indices) : range
         return pool.min { distance(frames[$0], p) < distance(frames[$1], p) }
     }
 
@@ -161,16 +185,8 @@ final class GridView: NSView, ItemSurface, NSDraggingSource {
         indices(in: NSRect(x: p.x, y: p.y, width: 1, height: 1)).first { frames[$0].contains(p) }
     }
 
-    /// Frames are in row order, so binary-search the first one that reaches `rect`.
-    private func indices(in rect: NSRect) -> Range<Int> {
-        var lo = 0, hi = frames.count
-        while lo < hi {
-            let mid = (lo + hi) / 2
-            if frames[mid].maxY < rect.minY { lo = mid + 1 } else { hi = mid }
-        }
-        var end = lo
-        while end < frames.count, frames[end].minY <= rect.maxY { end += 1 }
-        return lo..<end
+    private func indices(in rect: NSRect) -> [Int] {
+        spatial.indices(in: rect)
     }
 
     private func updateTiles(animated: Bool) {
@@ -181,10 +197,52 @@ final class GridView: NSView, ItemSurface, NSDraggingSource {
                                selected: selection.ids.contains(items[i].id))
         }
         pool.apply(placements, animated: animated, scale: window?.backingScaleFactor ?? 2, spring: animated)
+        updateHeaders(in: visible, animated: animated)
+    }
+
+    /// Timeline headings: serif dates above each day.
+    private func updateHeaders(in visible: CGRect, animated: Bool) {
+        guard let root = layer else { return }
+        var keep = Set<Int>()
+        CATransaction.begin()
+        CATransaction.setDisableActions(!animated)
+        CATransaction.setAnimationDuration(TilePool.animation)
+        for (i, h) in headers.enumerated() where h.frame.intersects(visible) {
+            keep.insert(i)
+            let layer = headerLayers[i] ?? {
+                let t = CATextLayer()
+                t.contentsScale = window?.backingScaleFactor ?? 2
+                t.alignmentMode = .left
+                t.truncationMode = .end
+                root.addSublayer(t)
+                headerLayers[i] = t
+                return t
+            }()
+            let serif = NSFont.systemFont(ofSize: 20).fontDescriptor.withDesign(.serif).flatMap { NSFont(descriptor: $0, size: 20) }
+            layer.string = NSAttributedString(string: h.title, attributes: [
+                .font: serif ?? NSFont.systemFont(ofSize: 20), .foregroundColor: NSColor.labelColor,
+            ])
+            layer.frame = h.frame
+            layer.opacity = 1
+        }
+        for (i, layer) in headerLayers where !keep.contains(i) {
+            layer.removeFromSuperlayer()
+            headerLayers[i] = nil
+        }
+        CATransaction.commit()
     }
 
     private func showSelection() {
         pool.setSelected(Set(selection.ids.map(\.uuidString)))
+        onFocus?(selection.anchor ?? selection.ordered(order).first)
+    }
+
+    /// From the search field into the results.
+    func focusFirst() {
+        guard let first = items.first else { return }
+        selection.set([first.id], anchor: first.id)
+        showSelection()
+        scrollToVisible(first.id)
     }
 
     // MARK: ItemSurface
@@ -289,6 +347,7 @@ final class GridView: NSView, ItemSurface, NSDraggingSource {
                 selected: selection.ids.contains(items[i].id))
         }
         pool.apply(placements, animated: false, scale: window?.backingScaleFactor ?? 2)
+        withoutAnimation { for h in headerLayers.values { h.opacity = 0 } }
     }
 
     override func magnify(with event: NSEvent) {
@@ -396,6 +455,10 @@ final class GridView: NSView, ItemSurface, NSDraggingSource {
             if let id = selection.anchor ?? selection.ordered(order).first { onOpen?(id) }
         case 51, 117: // delete, forward delete
             deleteSelection()
+        case 36, 76: // return, enter
+            if let id = selection.anchor ?? selection.ordered(order).first { onActivate?(id) }
+        case 15 where event.modifierFlags.intersection([.command, .control, .option]).isEmpty: // R
+            onRandom?()
         case 123: moveSelection(-1, event)
         case 124: moveSelection(1, event)
         case 125: moveSelectionVertically(down: true, event)
@@ -444,9 +507,7 @@ final class GridView: NSView, ItemSurface, NSDraggingSource {
 
     override func draw(_ dirtyRect: NSRect) {
         guard items.isEmpty else { return }
-        let text = (board == nil
-            ? "把圖片或資料夾拖進來\n或從選單「檔案 → 從 Atlas 匯入」"
-            : "這個 board 還是空的\n把圖拖到左邊的 board 名稱上，或直接拖檔案進來") as NSString
+        let text = EmptyState.message(for: scope) as NSString
         let style = NSMutableParagraphStyle()
         style.alignment = .center
         style.lineSpacing = 6

@@ -137,12 +137,19 @@ final class CaptureController: NSObject {
         func value(_ name: String) -> String? {
             items.first { $0.name == name }?.value.flatMap { $0.isEmpty ? nil : $0 }
         }
-        let page = value("url").flatMap(URL.init(string:))
-        if let image = value("image").flatMap(URL.init(string:)) {
+        // Any web page can open a wunderkammer:// link: accept only web
+        // addresses (never file:// or other schemes) and bounded text.
+        func web(_ s: String?) -> URL? {
+            guard let s, let url = URL(string: s), let scheme = url.scheme?.lowercased(),
+                  scheme == "http" || scheme == "https", url.host() != nil else { return nil }
+            return url
+        }
+        let page = web(value("url"))
+        if let image = web(value("image")) {
             // An image from a page: fetched like a link to an image.
             return [.web(image, title: value("title"))]
         }
-        if let text = value("text") { return [.text(text, origin: page)] }
+        if let text = value("text") { return [.text(String(text.prefix(20_000)), origin: page)] }
         if let page { return [.web(page, title: value("title"))] }
         return []
     }

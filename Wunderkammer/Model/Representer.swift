@@ -215,6 +215,7 @@ enum Representer {
     }
 
     private static func web(_ url: URL, title: String?, _ context: Context, _ known: Set<String>) -> Outcome? {
+        guard ["http", "https"].contains(url.scheme?.lowercased() ?? "") else { return nil }
         let hash = "url:" + normalized(url)
         if known.contains(hash) { return .duplicate(hash) }
         let domain = url.host().map { $0.hasPrefix("www.") ? String($0.dropFirst(4)) : $0 } ?? url.absoluteString

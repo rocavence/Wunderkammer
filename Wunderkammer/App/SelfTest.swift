@@ -104,6 +104,10 @@ final class SelfTest {
         case "capture":
             await captureCheck()
             return finish()
+        case "ui":
+            await captureCheck()
+            await cabinetUICheck()
+            return finish()
         default:
             break
         }
@@ -400,6 +404,64 @@ final class SelfTest {
         check(library.items.count == before + 4 && Set(again) == Set([ids[1], ids[3]]), "duplicates recognised")
     }
 
+    /// Masonry, Timeline, search, kind views, R, Inspector.
+    private func cabinetUICheck() async {
+        let grid: GridView = ui.grid
+        ui.sidebar.select(board: nil)
+        for (mode, name) in [(ViewMode.masonry, "masonry"), (.timeline, "timeline"), (.grid, "grid")] {
+            ui.setMode(mode)
+            await wait(0.9)
+            shot("ui-\(name)")
+        }
+        ui.setMode(.timeline)
+        await wait(0.5)
+        check(!grid.headers.isEmpty && grid.headers.first?.title == "今天", "timeline has date headings (\(grid.headers.map(\.title)))")
+        ui.setMode(.masonry)
+        await wait(0.5)
+        let xs = Set(grid.frames.map { Int($0.minX) })
+        check(xs.count >= 3 && xs.count < grid.frames.count, "masonry lays out in columns (\(xs.count))")
+
+        // Search: by title words, then a kind word.
+        ui.search("cabinet")
+        await wait(0.8)
+        check(grid.shownItems.count >= 1 && grid.shownItems.allSatisfy { Search.run("cabinet", in: [$0]).count == 1 }, "search filters in place (\(grid.shownItems.count))")
+        shot("ui-search")
+        ui.search("pdf")
+        await wait(0.6)
+        check(grid.shownItems.first?.kind == .pdf, "search by kind word")
+        ui.search("")
+        await wait(0.6)
+        check(grid.shownItems.count == library.items.count, "clearing search shows everything")
+
+        // Kind views are views, not folders.
+        ui.sidebar.select(.kind(.text))
+        await wait(0.6)
+        check(!grid.shownItems.isEmpty && grid.shownItems.allSatisfy { $0.kind == .text }, "text view shows only text (\(grid.shownItems.count))")
+        shot("ui-kind-text")
+        ui.sidebar.select(.all)
+        await wait(0.5)
+
+        // R: a preview with how long ago it was collected.
+        ui.setMode(.grid)
+        await wait(0.4)
+        ui.showRandom()
+        await wait(1.0)
+        check(ui.preview.isOpen && ui.preview.captionText?.contains("收藏") == true, "R opens a past curiosity (\(ui.preview.captionText ?? "–"))")
+        shot("ui-random")
+        key(53)
+        await wait(0.8)
+
+        // Inspector shows the focused item's metadata.
+        ui.toggleInspectorForTest()
+        if let pdfItem = library.items.first(where: { $0.kind == .pdf }) {
+            grid.reveal(pdfItem.id)
+        }
+        await wait(0.8)
+        shot("ui-inspector")
+        ui.toggleInspectorForTest()
+        await wait(0.4)
+    }
+
     /// Clicking the empty area around an open preview must close it, not
     /// reach the Infinity wall underneath and open another image.
     private func infinityCloseCheck() async {
@@ -447,4 +509,7 @@ protocol SelfTestUI: AnyObject {
     var preview: PreviewView! { get }
     var sidebar: SidebarViewController! { get }
     func setMode(_ mode: ViewMode)
+    func search(_ text: String)
+    func showRandom()
+    func toggleInspectorForTest()
 }
