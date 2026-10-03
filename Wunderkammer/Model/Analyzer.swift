@@ -246,9 +246,27 @@ final class Understanding {
                 }
             }
             purge()
+            await preloadEmbeddings()
         }
         library.save()
         NotificationCenter.default.post(name: Self.didProgress, object: self)
+    }
+
+    /// Reads every vector into memory off the main thread, so the first
+    /// search doesn't stall on thousands of small files (≈ 2 KB each).
+    private func preloadEmbeddings() async {
+        let missing = library.items.map(Self.embeddingKey).filter { embeddingFiles.contains($0) && embeddings[$0] == nil }
+        guard !missing.isEmpty else { return }
+        let dir = embeddingsDir
+        let loaded = await Task.detached(priority: .utility) { () -> [String: [Float]] in
+            var out: [String: [Float]] = [:]
+            for key in missing {
+                guard let data = try? Data(contentsOf: dir.appendingPathComponent(key)), data.count == 512 * 4 else { continue }
+                out[key] = data.withUnsafeBytes { Array($0.bindMemory(to: Float.self)) }
+            }
+            return out
+        }.value
+        embeddings.merge(loaded) { a, _ in a }
     }
 
     private func embedding(_ item: Item) -> [Float]? {
