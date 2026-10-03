@@ -538,9 +538,22 @@ final class SelfTest {
         check(web?.title?.localizedCaseInsensitiveContains("cabinet") == true, "web title from the page")
         await wait(1)
         shot("capture-02-enriched")
+        // A page with no preview image of its own gets a picture of the page.
+        let bare = await library.capture([.web(URL(string: "https://example.com/")!, title: nil)])
+        var snapped = false
+        for _ in 0..<60 {
+            if let b = bare.first.flatMap(library.item), b.representationVersion > 0 { snapped = true; break }
+            await wait(0.25)
+        }
+        let b = bare.first.flatMap(library.item)
+        check(snapped && (b.map { abs(CGFloat($0.pixelWidth) / CGFloat($0.pixelHeight) - 1.5) < 0.01 } ?? false),
+              "page without og:image gets a screenshot (\(b?.pixelWidth ?? 0)×\(b?.pixelHeight ?? 0), title: \(b?.title ?? "–"))")
+        await wait(0.8)
+        shot("capture-03-snapshot")
+
         // Capturing the same things again adds nothing.
         let again = await library.capture([.file(pdf), .web(page, title: nil)])
-        check(library.items.count == before + 4 && Set(again) == Set([ids[1], ids[3]]), "duplicates recognised")
+        check(library.items.count == before + 5 && Set(again) == Set([ids[1], ids[3]]), "duplicates recognised")
     }
 
     /// The One-Second Rule, and a cabinet of thousands that still scrolls.

@@ -459,6 +459,10 @@ final class Library {
                 picture = await WebMetadata.image(imageURL, maxPixel: Representer.cardSize)
             }
             if picture == nil {
+                // No preview image of its own: a picture of the page itself.
+                picture = await WebSnapshot.capture(url)
+            }
+            if picture == nil {
                 var icon: CGImage?
                 if let iconURL = meta.iconURL { icon = await WebMetadata.image(iconURL, maxPixel: 64) }
                 picture = CardRenderer.web(title: meta.title ?? item.displayTitle, domain: item.domain ?? "",
