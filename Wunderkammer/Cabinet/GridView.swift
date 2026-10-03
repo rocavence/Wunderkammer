@@ -544,6 +544,28 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
         scrollToVisible(id)
     }
 
+    // MARK: Accessibility
+
+    /// The tiles are layers, invisible to VoiceOver: describe the visible ones.
+    override func isAccessibilityElement() -> Bool { false }
+    override func accessibilityRole() -> NSAccessibility.Role? { .list }
+    override func accessibilityLabel() -> String? { "收藏" }
+
+    override func accessibilityChildren() -> [Any]? {
+        guard let clip = superview else { return [] }
+        return indices(in: clip.bounds).map { i in
+            let item = items[i]
+            let e = NSAccessibilityElement()
+            e.setAccessibilityRole(.image)
+            e.setAccessibilityParent(self)
+            let kind = InspectorViewController.facts(item, library: library).first?.1 ?? ""
+            e.setAccessibilityLabel([item.displayTitle, kind, TilePool.badgeText(item)].compactMap { $0 }.joined(separator: "，"))
+            e.setAccessibilityFrameInParentSpace(frames[i])
+            e.setAccessibilitySelected(selection.ids.contains(item.id))
+            return e
+        }
+    }
+
     // MARK: Empty state
 
     override func draw(_ dirtyRect: NSRect) {

@@ -15,12 +15,17 @@ enum Rediscovery {
         return earlier.filter { calendar.component(.day, from: $0.dateAdded) == today.day }
     }
 
-    /// Not looked at in a long time (or ever since collecting), oldest first.
+    /// Not looked at in a long time (or ever since collecting). Things you
+    /// once came back to again and again come first, then the longest unseen.
     static func forgotten(_ items: [Item], now: Date = Date(), after days: Double = 30) -> [Item] {
         let cutoff = now.addingTimeInterval(-days * 86400)
+        func score(_ item: Item) -> Double {
+            let unseen = now.timeIntervalSince(item.lastViewed ?? item.dateAdded) / 86400
+            return unseen * (1 + log1p(Double(item.viewCount)) * 3)
+        }
         return items
             .filter { $0.dateAdded < cutoff && ($0.lastViewed ?? $0.dateAdded) < cutoff }
-            .sorted { ($0.lastViewed ?? $0.dateAdded) < ($1.lastViewed ?? $1.dateAdded) }
+            .sorted { score($0) > score($1) }
     }
 
     /// R: not uniform. Older and less-seen things are likelier, recently shown

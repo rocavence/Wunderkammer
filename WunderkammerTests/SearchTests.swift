@@ -78,6 +78,13 @@ struct RediscoveryTests {
         #expect(Rediscovery.forgotten([seenRecently, neverSeen, older, fresh], now: now).map(\.id) == [older.id, neverSeen.id])
     }
 
+    @Test func onceFavouritesComeBackFirst() {
+        let now = at(2026, 10, 4)
+        let favourite = item(added: at(2025, 1, 1), viewed: at(2026, 6, 1), views: 12)
+        let untouched = item(added: at(2025, 1, 1))
+        #expect(Rediscovery.forgotten([untouched, favourite], now: now).first?.id == favourite.id)
+    }
+
     @Test func randomFavoursOldUnseenAndAvoidsRepeats() {
         let now = at(2026, 10, 4)
         let old = item(added: at(2021, 1, 1)), fresh = item(added: now, viewed: now, views: 20)

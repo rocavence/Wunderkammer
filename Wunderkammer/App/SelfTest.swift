@@ -639,6 +639,11 @@ final class SelfTest {
         let xs = Set(grid.frames.map { Int($0.minX) })
         check(xs.count >= 3 && xs.count < grid.frames.count, "masonry lays out in columns (\(xs.count))")
 
+        // VoiceOver can read the tiles.
+        let a11y = (grid.accessibilityChildren() as? [NSAccessibilityElement]) ?? []
+        check(!a11y.isEmpty && a11y.allSatisfy { ($0.accessibilityLabel() ?? "").count > 2 },
+              "VoiceOver sees \(a11y.count) tiles (\(a11y.first?.accessibilityLabel() ?? "–"))")
+
         // Search: by title words, then a kind word.
         ui.search("cabinet")
         await wait(0.8)
