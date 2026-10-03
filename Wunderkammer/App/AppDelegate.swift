@@ -3,10 +3,10 @@ import CoreSpotlight
 import Quartz
 
 enum ViewMode: Int, CaseIterable {
-    case grid, masonry, timeline, canvas, infinity
+    case grid, masonry, timeline, canvas, infinity, graph
 
-    var title: String { ["Grid", "Masonry", "Timeline", "Canvas", "Infinity"][rawValue] }
-    var icon: Reicon { [.grid, .layout, .calendar, .layers, .infinite][rawValue] }
+    var title: String { ["Grid", "Masonry", "Timeline", "Canvas", "Infinity", "Graph"][rawValue] }
+    var icon: Reicon { [.grid, .layout, .calendar, .layers, .infinite, .nodes][rawValue] }
 
     /// The three scrolling views share one cabinet view in different styles.
     var cabinetStyle: CabinetStyle? {
@@ -32,6 +32,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private(set) var grid: GridView!
     private(set) var canvas: CanvasView!
     private(set) var infinity: InfinityView!
+    private(set) var graphView: GraphView!
     private(set) var preview: PreviewView!
     private var modeControl: NSSegmentedControl!
     private var searchItem: NSSearchToolbarItem?
@@ -89,6 +90,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         canvas = CanvasView(library: library, thumbnailer: thumbnailer)
         infinity = InfinityView(library: library, thumbnailer: thumbnailer)
         preview = PreviewView(library: library, thumbnailer: thumbnailer)
+        graphView = GraphView(library: library, thumbnailer: thumbnailer)
+        graphView.isHidden = true
+        graphView.onOpenView = { [weak self] base in
+            self?.setMode(.grid)
+            self?.sidebar.select(base)
+        }
 
         for surface in [grid, canvas] as [CabinetSurface] {
             surface.onOpen = { [weak self] id in self?.openPreview(id) }
@@ -104,7 +111,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         preview.onRandom = { [weak self] in self?.showRandom() }
 
         let content = NSView()
-        for v in [scroll!, canvas!, infinity!, preview!] as [NSView] {
+        for v in [scroll!, canvas!, infinity!, graphView!, preview!] as [NSView] {
             v.frame = content.bounds
             v.autoresizingMask = [.width, .height]
             content.addSubview(v)
@@ -260,7 +267,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
               let s = userActivity.userInfo?[CSSearchableItemActivityIdentifier] as? String,
               let id = UUID(uuidString: s), library.item(id) != nil else { return false }
         window.makeKeyAndOrderFront(nil)
-        if mode == .infinity { setMode(.grid) }
+        if mode == .infinity || mode == .graph { setMode(.grid) }
         reveal(id)
         return true
     }
@@ -314,6 +321,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         }
         canvas.isHidden = new != .canvas
         infinity.isHidden = new != .infinity
+        graphView.isHidden = new != .graph
         focusCurrent()
     }
 
@@ -321,6 +329,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         switch mode {
         case .canvas: canvas
         case .infinity: infinity
+        case .graph: graphView
         default: grid
         }
     }
@@ -397,7 +406,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         else { NSSound.beep(); return }
         recentRandom = Array(([pick.id] + recentRandom).prefix(20))
         if !pool.contains(where: { $0.id == pick.id }) { sidebar.select(.all) }
-        if mode == .infinity { setMode(.grid) }
+        if mode == .infinity || mode == .graph { setMode(.grid) }
         if scope.isSearching { clearSearch() }
         currentSurface.reveal(pick.id)
         let caption = Rediscovery.ageLine(pick)
@@ -689,6 +698,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         switch mode {
         case .canvas: canvas.zoom(by: factor)
         case .infinity: infinity.zoom(by: factor)
+        case .graph: graphView.zoom(by: factor)
         default: grid.zoom(by: factor)
         }
     }
@@ -702,6 +712,10 @@ protocol CabinetSurface: AnyObject {
     var onRandom: (() -> Void)? { get set }
     var onFocus: ((UUID?) -> Void)? { get set }
     var onSimilar: ((UUID) -> Void)? { get set }
+}
+
+extension AppDelegate {
+    var graphForTest: GraphView { graphView }
 }
 
 /// System Quick Look for media and documents: plays video and audio, pages

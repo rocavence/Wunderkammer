@@ -1,0 +1,245 @@
+import AppKit
+import QuartzCore
+
+/// Your culture graph: the themes, names and sites in the cabinet, linked by
+/// the curiosities they share. Each node wears its most recent curiosity.
+/// Drag or scroll to move, pinch to zoom, click a node to see its curiosities.
+@MainActor
+final class GraphView: NSView {
+    let library: Library
+    let thumbnailer: Thumbnailer
+    var onOpenView: ((Scope.Base) -> Void)?
+
+    private(set) var graph = CultureGraph(nodes: [], edges: [])
+    private var offset = CGPoint.zero
+    private var zoom: CGFloat = 1
+    private let edgesLayer = CAShapeLayer()
+    private var nodeLayers: [String: (circle: CALayer, ring: CAShapeLayer, label: CATextLayer)] = [:]
+    private var dirty = true
+    private var dragStart: NSPoint?
+    private var dragLast: NSPoint?
+
+    init(library: Library, thumbnailer: Thumbnailer) {
+        self.library = library
+        self.thumbnailer = thumbnailer
+        super.init(frame: .zero)
+        wantsLayer = true
+        layer?.masksToBounds = true
+        edgesLayer.fillColor = nil
+        edgesLayer.lineCap = .round
+        layer?.addSublayer(edgesLayer)
+        let refresh: (Notification) -> Void = { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.dirty = true
+                if self?.isHiddenOrHasHiddenAncestor == false { self?.rebuild() }
+            }
+        }
+        NotificationCenter.default.addObserver(forName: Library.didChange, object: library, queue: .main, using: refresh)
+        NotificationCenter.default.addObserver(forName: Understanding.didProgress, object: nil, queue: .main, using: refresh)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override var isFlipped: Bool { true }
+    override var acceptsFirstResponder: Bool { true }
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    override func viewDidUnhide() {
+        super.viewDidUnhide()
+        if dirty { rebuild() } else { render() }
+    }
+
+    override func setFrameSize(_ newSize: NSSize) {
+        super.setFrameSize(newSize)
+        render()
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        layer?.backgroundColor = resolved(.windowBackgroundColor)
+        for (_, l) in nodeLayers { l.label.removeFromSuperlayer(); l.circle.removeFromSuperlayer(); l.ring.removeFromSuperlayer() }
+        nodeLayers = [:]
+        render()
+    }
+
+    // MARK: Model
+
+    func rebuild() {
+        dirty = false
+        var g = CultureGraph.build(from: library.items, subjects: Subjects.discover(in: library.items, limit: 12))
+        // Few nodes sit close together; many get room.
+        let side = max(520, CGFloat(g.nodes.count).squareRoot() * 360)
+        g.layout(size: CGSize(width: side * 1.4, height: side))
+        graph = g
+        for (_, l) in nodeLayers { l.label.removeFromSuperlayer(); l.circle.removeFromSuperlayer(); l.ring.removeFromSuperlayer() }
+        nodeLayers = [:]
+        fit()
+        needsDisplay = true
+    }
+
+    private func radius(_ node: CultureGraph.Node) -> CGFloat {
+        24 + CGFloat(node.items.count).squareRoot() * 12
+    }
+
+    private func fit() {
+        guard !graph.nodes.isEmpty, bounds.width > 0 else { return render() }
+        let xs = graph.nodes.map(\.position.x), ys = graph.nodes.map(\.position.y)
+        let content = CGRect(x: xs.min()! - 120, y: ys.min()! - 120, width: xs.max()! - xs.min()! + 240, height: ys.max()! - ys.min()! + 240)
+        let top = window.map { $0.frame.height - $0.contentLayoutRect.height } ?? 0
+        zoom = min(1.2, max(0.2, min(bounds.width / content.width, (bounds.height - top) / content.height)))
+        offset = CGPoint(x: content.midX - bounds.width / zoom / 2, y: content.midY - (bounds.height + top) / zoom / 2)
+        render()
+    }
+
+    private func toScreen(_ p: CGPoint) -> CGPoint {
+        CGPoint(x: (p.x - offset.x) * zoom, y: (p.y - offset.y) * zoom)
+    }
+
+    // MARK: Drawing
+
+    private func color(_ kind: CultureGraph.Kind) -> NSColor {
+        switch kind {
+        case .theme: .controlAccentColor
+        case .name: .systemOrange
+        case .site: .secondaryLabelColor
+        }
+    }
+
+    private func render() {
+        guard let root = layer, !isHiddenOrHasHiddenAncestor else { return }
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        layer?.backgroundColor = resolved(.windowBackgroundColor)
+        // Thicker lines for more shared curiosities: one sublayer per weight.
+        edgesLayer.frame = bounds
+        edgesLayer.sublayers?.forEach { $0.removeFromSuperlayer() }
+        for weight in Set(graph.edges.map(\.weight)) {
+            let path = CGMutablePath()
+            for e in graph.edges where e.weight == weight {
+                path.move(to: toScreen(graph.nodes[e.a].position))
+                path.addLine(to: toScreen(graph.nodes[e.b].position))
+            }
+            let line = CAShapeLayer()
+            line.path = path
+            line.fillColor = nil
+            line.strokeColor = resolved(NSColor.tertiaryLabelColor)
+            line.lineWidth = max(1, (1 + log2(CGFloat(weight))) * 1.2 * zoom)
+            edgesLayer.addSublayer(line)
+        }
+
+        for node in graph.nodes {
+            let r = radius(node) * zoom
+            let c = toScreen(node.position)
+            let layers = nodeLayers[node.id] ?? makeNode(node, in: root)
+            layers.circle.frame = CGRect(x: c.x - r, y: c.y - r, width: r * 2, height: r * 2)
+            layers.circle.cornerRadius = r
+            layers.ring.frame = layers.circle.frame
+            layers.ring.path = CGPath(ellipseIn: CGRect(x: 0, y: 0, width: r * 2, height: r * 2), transform: nil)
+            layers.ring.lineWidth = max(2, 3 * zoom)
+            let size = min(max(13 * zoom, 10), 18)
+            let serif = NSFont.systemFont(ofSize: size).fontDescriptor.withDesign(.serif).flatMap { NSFont(descriptor: $0, size: size) }
+            layers.label.string = NSAttributedString(string: "\(node.title)  \(node.items.count)", attributes: [
+                .font: serif ?? NSFont.systemFont(ofSize: size),
+                .foregroundColor: NSColor(cgColor: resolved(.labelColor)) ?? NSColor.labelColor,
+            ])
+            layers.label.frame = CGRect(x: c.x - 120, y: c.y + r + 4, width: 240, height: size * 1.5)
+            layers.label.isHidden = zoom < 0.3
+        }
+        CATransaction.commit()
+    }
+
+    private func makeNode(_ node: CultureGraph.Node, in root: CALayer) -> (circle: CALayer, ring: CAShapeLayer, label: CATextLayer) {
+        let circle = CALayer()
+        circle.masksToBounds = true
+        circle.contentsGravity = .resizeAspectFill
+        circle.backgroundColor = resolved(.quaternaryLabelColor)
+        circle.zPosition = 2
+        let ring = CAShapeLayer()
+        ring.fillColor = nil
+        ring.strokeColor = resolved(color(node.kind))
+        ring.zPosition = 3
+        let label = CATextLayer()
+        label.alignmentMode = .center
+        label.truncationMode = .end
+        label.contentsScale = window?.backingScaleFactor ?? 2
+        label.zPosition = 4
+        for l in [circle, ring, label] as [CALayer] { root.addSublayer(l) }
+        let layers = (circle, ring, label)
+        nodeLayers[node.id] = layers
+        // The most recent curiosity of this node is its face.
+        if let face = node.items.compactMap(library.item).max(by: { $0.dateAdded < $1.dateAdded }) {
+            thumbnailer.load(library.thumbnailURL(face), maxPixel: 320) { [weak circle] image in
+                circle?.contents = image
+            }
+        }
+        return layers
+    }
+
+    /// Where a node is on screen (tests).
+    func screenPoint(of id: String) -> NSPoint? {
+        graph.nodes.first { $0.id == id }.map { toScreen($0.position) }
+    }
+
+    // MARK: Input
+
+    private func node(at p: NSPoint) -> CultureGraph.Node? {
+        graph.nodes.first { hypot(toScreen($0.position).x - p.x, toScreen($0.position).y - p.y) <= radius($0) * zoom }
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        window?.makeFirstResponder(self)
+        let p = convert(event.locationInWindow, from: nil)
+        dragStart = p
+        dragLast = p
+    }
+
+    override func mouseDragged(with event: NSEvent) {
+        guard let last = dragLast else { return }
+        let p = convert(event.locationInWindow, from: nil)
+        offset.x -= (p.x - last.x) / zoom
+        offset.y -= (p.y - last.y) / zoom
+        dragLast = p
+        render()
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        defer { dragStart = nil; dragLast = nil }
+        let p = convert(event.locationInWindow, from: nil)
+        guard let start = dragStart, hypot(p.x - start.x, p.y - start.y) < 4, let n = node(at: p) else { return }
+        onOpenView?(n.base)
+    }
+
+    override func scrollWheel(with event: NSEvent) {
+        if event.modifierFlags.contains(.command) {
+            zoom(by: 1 + event.scrollingDeltaY / 200, around: convert(event.locationInWindow, from: nil))
+            return
+        }
+        let k: CGFloat = event.hasPreciseScrollingDeltas ? 1 : 10
+        offset.x -= event.scrollingDeltaX * k / zoom
+        offset.y -= event.scrollingDeltaY * k / zoom
+        render()
+    }
+
+    override func magnify(with event: NSEvent) {
+        zoom(by: 1 + event.magnification, around: convert(event.locationInWindow, from: nil))
+    }
+
+    func zoom(by factor: CGFloat, around p: NSPoint? = nil) {
+        let p = p ?? NSPoint(x: bounds.midX, y: bounds.midY)
+        let world = CGPoint(x: p.x / zoom + offset.x, y: p.y / zoom + offset.y)
+        zoom = min(max(zoom * factor, 0.15), 3)
+        offset = CGPoint(x: world.x - p.x / zoom, y: world.y - p.y / zoom)
+        render()
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        guard graph.nodes.isEmpty else { return }
+        let text = "收藏還不夠多，系統還看不出關聯\n收得越多，主題、名字與網站之間的線就會慢慢長出來" as NSString
+        let style = NSMutableParagraphStyle()
+        style.alignment = .center
+        style.lineSpacing = 6
+        text.draw(in: NSRect(x: bounds.midX - 240, y: bounds.midY - 24, width: 480, height: 60), withAttributes: [
+            .font: NSFont.systemFont(ofSize: 15), .foregroundColor: NSColor.secondaryLabelColor, .paragraphStyle: style,
+        ])
+    }
+}

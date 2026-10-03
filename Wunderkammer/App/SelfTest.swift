@@ -149,6 +149,22 @@ final class SelfTest {
             shot("semantic-search")
             ui.search("")
             return finish()
+        case "graph":
+            var waited = 0.0
+            while library.items.contains(where: { !$0.analyzed }), waited < 60 { await wait(0.5); waited += 0.5 }
+            ui.setMode(.graph)
+            await wait(1.2)
+            let graph = (ui as! AppDelegate).graphForTest.graph
+            check(graph.nodes.count >= 3 && !graph.edges.isEmpty, "culture graph: \(graph.nodes.count) nodes, \(graph.edges.count) links (\(graph.nodes.map(\.title)))")
+            shot("graph")
+            // Clicking a node shows its curiosities.
+            if let theme = graph.nodes.first(where: { $0.kind == .theme }), let view = (ui as! AppDelegate).graphForTest as GraphView?,
+               let r = view.screenPoint(of: theme.id) {
+                click(view, r)
+                await wait(0.8)
+                check(ui.grid.shownItems.count == theme.items.count, "clicking “\(theme.title)” shows its \(theme.items.count) curiosities")
+            }
+            return finish()
         case "settings":
             if let w = ui.showSettingsForTest(), let dir = Self.outputDir {
                 await wait(0.6)

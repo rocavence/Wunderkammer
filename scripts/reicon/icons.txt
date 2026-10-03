@@ -39,3 +39,6 @@ undo
 camera
 clipboard
 inbox-in
+
+# 文化圖譜
+nodes
