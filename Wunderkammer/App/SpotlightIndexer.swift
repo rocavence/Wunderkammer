@@ -1,8 +1,10 @@
 import CoreSpotlight
 import UniformTypeIdentifiers
 
-/// Puts the cabinet in Spotlight: title, text, words in pictures, site and
-/// thumbnail, so a curiosity can be found from anywhere on the Mac.
+/// Puts the cabinet in Spotlight so a curiosity can be found from anywhere on
+/// the Mac. Only what identifies it goes in (title, site, themes, thumbnail):
+/// never the collected text or the words read from pictures, which may be
+/// private. The index is rebuilt at launch, so nothing removed lingers.
 @MainActor
 final class SpotlightIndexer {
     private let library: Library
@@ -18,7 +20,10 @@ final class SpotlightIndexer {
         NotificationCenter.default.addObserver(forName: Understanding.didProgress, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.schedule() }
         }
-        schedule()
+        // Start clean: anything removed while the index was stale goes away.
+        index.deleteAllSearchableItems { _ in
+            Task { @MainActor [weak self] in self?.schedule() }
+        }
     }
 
     /// Batches changes: index a few seconds after things settle.
@@ -43,17 +48,16 @@ final class SpotlightIndexer {
     /// Changes when anything Spotlight shows changes.
     private static func signature(_ item: Item) -> Int {
         var h = Hasher()
-        h.combine(item.title); h.combine(item.text?.prefix(200)); h.combine(item.ocrText?.prefix(200))
-        h.combine(item.labels); h.combine(item.representationVersion); h.combine(item.url)
+        h.combine(item.title); h.combine(item.labels); h.combine(item.representationVersion); h.combine(item.url)
         return h.finalize()
     }
 
     private func searchable(_ item: Item) -> CSSearchableItem {
         let attributes = CSSearchableItemAttributeSet(contentType: .content)
-        attributes.title = item.displayTitle
-        attributes.contentDescription = [item.domain, item.text?.prefix(300).description, item.ocrText?.prefix(300).description]
-            .compactMap { $0 }.joined(separator: " · ")
-        attributes.keywords = (item.labels ?? []).map(Subjects.title) + (item.entities ?? []).map(\.name) + (item.colors ?? [])
+        // Text curiosities are their content: name them by kind and source instead.
+        attributes.title = item.kind == .text ? "文字收藏" + (item.domain.map { "（\($0)）" } ?? "") : item.displayTitle
+        attributes.contentDescription = item.domain
+        attributes.keywords = (item.labels ?? []).map(Subjects.title) + (item.colors ?? [])
         attributes.thumbnailURL = library.thumbnailURL(item)
         attributes.contentCreationDate = item.dateAdded
         attributes.url = item.url.flatMap(URL.init(string:))

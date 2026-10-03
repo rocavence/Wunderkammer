@@ -41,6 +41,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private let quickLook = QuickLookHost()
     private var understanding: Understanding!
     private var spotlight: SpotlightIndexer?
+    private var statusItem: NSStatusItem?
     /// Recently shown by R, so it doesn't repeat itself.
     private var recentRandom: [UUID] = []
 
@@ -111,6 +112,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
                           styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
                           backing: .buffered, defer: false)
         window.contentViewController = split
+        window.isReleasedWhenClosed = false
         window.setContentSize(NSSize(width: 1280, height: 820))
         window.titlebarAppearsTransparent = true
         window.toolbarStyle = .unified
@@ -140,7 +142,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         if !SelfTest.isEnabled { capture.start() }
 
         understanding.start()
-        if !SelfTest.isEnabled { spotlight = SpotlightIndexer(library: library) }
+        if !SelfTest.isEnabled {
+            spotlight = SpotlightIndexer(library: library)
+            buildStatusItem()
+        }
 
         if SelfTest.isEnabled {
             if ProcessInfo.processInfo.environment["WK_APPEARANCE"] == "light" { NSApp.appearance = NSAppearance(named: .aqua) }
@@ -153,7 +158,43 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         }
     }
 
-    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
+    /// Closing the window keeps collecting: ⌘⇧C, the menu bar and sharing
+    /// still work. The Dock icon or the menu bar brings the cabinet back.
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { SelfTest.isEnabled }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
+        if !hasVisibleWindows { showCabinet() }
+        return true
+    }
+
+    @objc func showCabinet() {
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate()
+    }
+
+    private func buildStatusItem() {
+        let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        item.button?.image = Icon.image(.cabinet, size: 16)
+        item.button?.toolTip = "Wunderkammer"
+        let menu = NSMenu()
+        let c = menu.addItem(withTitle: "收藏剪貼簿或目前頁面", action: #selector(captureNow), keyEquivalent: "c")
+        c.keyEquivalentModifierMask = [.command, .shift]
+        let s = menu.addItem(withTitle: "截圖收藏", action: #selector(captureScreenshot), keyEquivalent: "c")
+        s.keyEquivalentModifierMask = [.command, .shift, .control]
+        menu.addItem(.separator())
+        menu.addItem(withTitle: "隨機一件", action: #selector(randomFromStatus), keyEquivalent: "")
+        menu.addItem(withTitle: "打開珍奇室", action: #selector(showCabinet), keyEquivalent: "")
+        menu.addItem(.separator())
+        menu.addItem(withTitle: "結束 Wunderkammer", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
+        for i in menu.items where i.action != #selector(NSApplication.terminate(_:)) { i.target = self }
+        item.menu = menu
+        statusItem = item
+    }
+
+    @objc private func randomFromStatus() {
+        showCabinet()
+        showRandom()
+    }
 
     /// Files dropped on the Dock icon, or opened with Wunderkammer.
     func application(_ application: NSApplication, open urls: [URL]) {
@@ -490,6 +531,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         let windowItem = NSMenuItem()
         let windowMenu = NSMenu(title: "視窗")
         windowMenu.addItem(withTitle: "縮到最小", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
+        windowMenu.addItem(withTitle: "珍奇室", action: #selector(showCabinet), keyEquivalent: "0").target = self
         windowItem.submenu = windowMenu
         NSApp.windowsMenu = windowMenu
         main.addItem(windowItem)
