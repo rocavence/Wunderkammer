@@ -165,13 +165,25 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         let sizes = groups.map { groupFrames[$0.id]?.size ?? .zero }
         let widest = sizes.map(\.width).max() ?? 0
         let maxWidth = max(widest, bounds.width / zoom * 0.95, 1600)
-        for (i, origin) in CanvasLayout.arrange(sizes, maxWidth: maxWidth).enumerated() {
+        // Titled piles need room for their name above them.
+        let titleRoom: CGFloat = groups.contains { $0.title != nil } ? 44 : 0
+        let padded = sizes.map { CGSize(width: $0.width, height: $0.height + titleRoom) }
+        for (i, origin) in CanvasLayout.arrange(padded, maxWidth: maxWidth).enumerated() {
             groups[i].x = origin.x
-            groups[i].y = origin.y
+            groups[i].y = origin.y + titleRoom
         }
         layoutGroups()
         save()
         fit(animated: true)
+    }
+
+    /// The system sorts the canvas into piles by theme, each with its name.
+    @objc func clusterByTheme(_ sender: Any?) {
+        let items = order.compactMap(library.item)
+        let clusters = CanvasLayout.clusters(items, subjects: Subjects.discover(in: library.items, limit: 12))
+        groups = clusters.map { CanvasGroup(id: UUID(), x: 0, y: 0, itemIDs: $0.ids, title: $0.title) }
+        layoutGroups()
+        arrange(nil)
     }
 
     // MARK: Camera
@@ -268,6 +280,45 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         }
         pool.apply(placements, animated: animated, scale: (window?.backingScaleFactor ?? 2), duration: duration,
                    spring: animated && !isMoving)
+        renderTitles(visible: visible, animated: animated)
+    }
+
+    private var titleLayers: [UUID: CATextLayer] = [:]
+
+    /// Names above system-made piles, scaled with the canvas; hidden when tiny.
+    private func renderTitles(visible: CGRect, animated: Bool) {
+        guard let root = layer else { return }
+        var keep = Set<UUID>()
+        CATransaction.begin()
+        CATransaction.setDisableActions(!animated)
+        CATransaction.setAnimationDuration(TilePool.animation)
+        for g in groups {
+            guard let title = g.title, let frame = groupFrames[g.id], zoom > 0.15,
+                  frame.insetBy(dx: 0, dy: -60).intersects(visible) else { continue }
+            keep.insert(g.id)
+            let t = titleLayers[g.id] ?? {
+                let t = CATextLayer()
+                t.contentsScale = window?.backingScaleFactor ?? 2
+                t.truncationMode = .end
+                root.addSublayer(t)
+                titleLayers[g.id] = t
+                return t
+            }()
+            let size = min(max(18 * zoom, 11), 28)
+            let serif = NSFont.systemFont(ofSize: size).fontDescriptor.withDesign(.serif).flatMap { NSFont(descriptor: $0, size: size) }
+            t.string = NSAttributedString(string: "\(title)  \(g.itemIDs.count)", attributes: [
+                .font: serif ?? NSFont.systemFont(ofSize: size),
+                .foregroundColor: NSColor(cgColor: resolved(.secondaryLabelColor)) ?? NSColor.secondaryLabelColor,
+            ])
+            let screen = toScreen(frame)
+            t.frame = CGRect(x: screen.minX, y: screen.minY - size * 1.9, width: max(screen.width, 200), height: size * 1.5)
+            t.zPosition = 5
+        }
+        for (id, t) in titleLayers where !keep.contains(id) {
+            t.removeFromSuperlayer()
+            titleLayers[id] = nil
+        }
+        CATransaction.commit()
     }
 
     private func showSelection() {
@@ -466,6 +517,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         let p = convert(event.locationInWindow, from: nil)
         guard let id = hit(p) else {
             let menu = NSMenu()
+            menu.addItem(ClosureMenuItem("依主題分堆") { [weak self] in self?.clusterByTheme(nil) })
             menu.addItem(ClosureMenuItem("整理成整齊的排列") { [weak self] in self?.arrange(nil) })
             menu.addItem(ClosureMenuItem("顯示全部") { [weak self] in self?.fit(animated: true) })
             return menu

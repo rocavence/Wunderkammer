@@ -78,3 +78,20 @@ struct SelectionTests {
         #expect(s.ids == [order[0]])
     }
 }
+
+struct CanvasClusterTests {
+    @Test func itemsGoToTheirMostSpecificTheme() {
+        func item(_ labels: [String], kind: Item.Kind = .image) -> Item {
+            var i = Item(kind: kind, originalFilename: "", pixelWidth: 1, pixelHeight: 1, contentHash: UUID().uuidString)
+            i.labels = labels
+            return i
+        }
+        let cat = item(["people", "cat"]), person = item(["people"]), web = item([], kind: .web), text = item(["sign"], kind: .text)
+        let subjects = [Subjects.Subject(label: "people", title: "人物", count: 8), Subjects.Subject(label: "cat", title: "貓", count: 3)]
+        let piles = CanvasLayout.clusters([cat, person, web, text], subjects: subjects)
+        let byTitle = Dictionary(uniqueKeysWithValues: piles.map { ($0.title, $0.ids) })
+        #expect(byTitle["貓"] == [cat.id])          // cat is rarer than people
+        #expect(byTitle["人物"] == [person.id])
+        #expect(byTitle["網頁"] == [web.id] && byTitle["文字"] == [text.id])
+    }
+}

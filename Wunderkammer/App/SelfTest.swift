@@ -588,6 +588,16 @@ final class SelfTest {
             ui.sidebar.select(.all)
             await wait(0.4)
         }
+        // Canvas sorted by theme: titled piles, no overlaps.
+        ui.setMode(.canvas)
+        await wait(0.5)
+        ui.canvas.clusterByTheme(nil)
+        await wait(1.2)
+        let piles = library.canvasGroups(key: Library.allKey, ids: library.items.map(\.id))
+        check(piles.count >= 3 && piles.allSatisfy { $0.title != nil } && !overlapping(board: nil),
+              "canvas sorted into \(piles.count) titled piles: \(piles.compactMap(\.title))")
+        shot("understand-canvas-themes")
+        ui.setMode(.grid)
         for item in library.items.prefix(3) {
             log("labels \(item.displayTitle.prefix(24)): \((item.labels ?? []).prefix(5)) colors \(item.colors ?? [])")
         }

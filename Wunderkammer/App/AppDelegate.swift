@@ -475,6 +475,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         viewMenu.addItem(withTitle: "放大", action: #selector(zoomIn), keyEquivalent: "=").target = self
         viewMenu.addItem(withTitle: "縮小", action: #selector(zoomOut), keyEquivalent: "-").target = self
         viewMenu.addItem(withTitle: "整理 Canvas", action: #selector(CanvasView.arrange(_:)), keyEquivalent: "")
+        viewMenu.addItem(withTitle: "Canvas 依主題分堆", action: #selector(CanvasView.clusterByTheme(_:)), keyEquivalent: "")
         viewMenu.addItem(.separator())
         viewMenu.addItem(withTitle: "隨機一件", action: #selector(randomFromMenu), keyEquivalent: "r").keyEquivalentModifierMask = [.command, .option]
         viewMenu.items.last?.target = self

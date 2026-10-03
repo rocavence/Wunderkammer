@@ -15,6 +15,8 @@ struct CanvasGroup: Codable, Identifiable, Hashable {
     var x: CGFloat
     var y: CGFloat
     var itemIDs: [UUID]
+    /// Shown above the pile when the system made it (sorted by theme).
+    var title: String?
 }
 
 /// The cabinet: every curiosity, the optional boards, canvas layouts. Lives in

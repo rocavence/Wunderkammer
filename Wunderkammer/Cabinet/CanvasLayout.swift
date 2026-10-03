@@ -1,4 +1,5 @@
 import CoreGraphics
+import Foundation
 
 /// Canvas geometry in world units: how a pile packs its images, how piles
 /// push each other apart, and the tidy "arrange" layout.
@@ -73,5 +74,30 @@ enum CanvasLayout {
             rowHeight = max(rowHeight, size.height)
         }
         return origins
+    }
+
+    /// Sorting a canvas by theme: each item goes to its most specific theme
+    /// (the least common one it has); the rest by kind. Biggest piles first.
+    static func clusters(_ items: [Item], subjects: [Subjects.Subject]) -> [(title: String, ids: [UUID])] {
+        let rank = Dictionary(uniqueKeysWithValues: subjects.map { ($0.label, $0.count) })
+        var piles: [String: [UUID]] = [:]
+        var order: [String] = []
+        for item in items {
+            let theme = (item.labels ?? []).filter { rank[$0] != nil }.min { rank[$0]! < rank[$1]! }
+            let title = theme.map(Subjects.title) ?? Self.kindTitle(item.kind)
+            if piles[title] == nil { order.append(title) }
+            piles[title, default: []].append(item.id)
+        }
+        return order.map { ($0, piles[$0]!) }.sorted { $0.ids.count > $1.ids.count }
+    }
+
+    static func kindTitle(_ kind: Item.Kind) -> String {
+        switch kind {
+        case .image: "其他圖片"
+        case .video, .audio: "影片與聲音"
+        case .pdf, .file: "文件與檔案"
+        case .web: "網頁"
+        case .text: "文字"
+        }
     }
 }
