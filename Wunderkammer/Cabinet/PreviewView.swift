@@ -29,7 +29,6 @@ final class PreviewView: NSView {
         self.thumbnailer = thumbnailer
         super.init(frame: .zero)
         wantsLayer = true
-        dim.backgroundColor = NSColor.windowBackgroundColor.cgColor
         dim.opacity = 0
         imageLayer.contentsGravity = .resizeAspect
         imageLayer.minificationFilter = .trilinear
@@ -53,6 +52,7 @@ final class PreviewView: NSView {
         index = i
         closing = false
         isHidden = false
+        dim.backgroundColor = resolved(.windowBackgroundColor)
         window?.makeFirstResponder(self)
         withoutAnimation {
             dim.frame = bounds
@@ -74,7 +74,8 @@ final class PreviewView: NSView {
             let size: CGFloat = 15
             let serif = NSFont.systemFont(ofSize: size).fontDescriptor.withDesign(.serif).flatMap { NSFont(descriptor: $0, size: size) }
             caption.string = NSAttributedString(string: text ?? "", attributes: [
-                .font: serif ?? NSFont.systemFont(ofSize: size), .foregroundColor: NSColor.secondaryLabelColor,
+                .font: serif ?? NSFont.systemFont(ofSize: size),
+                .foregroundColor: NSColor(cgColor: resolved(.secondaryLabelColor)) ?? NSColor.secondaryLabelColor,
             ])
             caption.frame = CGRect(x: 0, y: bounds.maxY - 34, width: bounds.width, height: 24)
         }
@@ -166,6 +167,11 @@ final class PreviewView: NSView {
         let native = CGFloat(item.pixelWidth) / scale
         if size.width > native, native > 0 { size = NSSize(width: native, height: native / aspect) }
         return NSRect(x: area.midX - size.width / 2, y: area.midY - size.height / 2, width: size.width, height: size.height)
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        withoutAnimation { dim.backgroundColor = resolved(.windowBackgroundColor) }
     }
 
     override func layout() {

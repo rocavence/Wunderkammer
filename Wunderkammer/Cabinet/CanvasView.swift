@@ -60,6 +60,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         wantsLayer = true
         layer?.masksToBounds = true
         pool.host = layer
+        pool.colors = { [unowned self] in self.resolved($0) }
         registerForDraggedTypes([.fileURL, .URL, .string, .png, .tiff, .wunderkammerItem])
         NotificationCenter.default.addObserver(forName: Library.didChange, object: library, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.reload() }
@@ -69,13 +70,22 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
     required init?(coder: NSCoder) { fatalError() }
 
     override var isFlipped: Bool { true }
+
+    private func appearanceChanged() {}
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        layer?.backgroundColor = resolved(.windowBackgroundColor)
+        pool.refreshColors()
+        appearanceChanged()
+    }
     override var acceptsFirstResponder: Bool { true }
     /// Clicking into an inactive window selects/drags right away.
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
     override var isOpaque: Bool { true }
 
     override func updateLayer() {
-        layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
+        layer?.backgroundColor = resolved(.windowBackgroundColor)
     }
 
     override func setFrameSize(_ newSize: NSSize) {
@@ -390,8 +400,8 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         let rect = NSRect(x: min(a.x, b.x), y: min(a.y, b.y), width: abs(a.x - b.x), height: abs(a.y - b.y))
         if marqueeLayer == nil {
             let m = CAShapeLayer()
-            m.fillColor = NSColor.controlAccentColor.withAlphaComponent(0.15).cgColor
-            m.strokeColor = NSColor.controlAccentColor.cgColor
+            m.fillColor = resolved(NSColor.controlAccentColor.withAlphaComponent(0.15))
+            m.strokeColor = resolved(.controlAccentColor)
             m.lineWidth = 1
             m.zPosition = 100
             layer?.addSublayer(m)

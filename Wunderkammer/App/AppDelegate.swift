@@ -1,4 +1,5 @@
 import AppKit
+import CoreSpotlight
 import Quartz
 
 enum ViewMode: Int, CaseIterable {
@@ -39,6 +40,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private var capture: CaptureController!
     private let quickLook = QuickLookHost()
     private var understanding: Understanding!
+    private var spotlight: SpotlightIndexer?
     /// Recently shown by R, so it doesn't repeat itself.
     private var recentRandom: [UUID] = []
 
@@ -138,8 +140,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         if !SelfTest.isEnabled { capture.start() }
 
         understanding.start()
+        if !SelfTest.isEnabled { spotlight = SpotlightIndexer(library: library) }
 
         if SelfTest.isEnabled {
+            if ProcessInfo.processInfo.environment["WK_APPEARANCE"] == "light" { NSApp.appearance = NSAppearance(named: .aqua) }
             window.setFrameAutosaveName("")
             window.setFrame(NSRect(x: 80, y: 80, width: 1280, height: 820), display: true)
             setMode(.grid)
@@ -150,6 +154,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
+
+    /// Files dropped on the Dock icon, or opened with Wunderkammer.
+    func application(_ application: NSApplication, open urls: [URL]) {
+        let files = urls.filter(\.isFileURL)
+        guard !files.isEmpty else { return }
+        let board = scope.board
+        Task { await library.capture(files.map { .file($0) }, into: board, sourceApp: "Dock") }
+    }
+
+    /// A Spotlight result was opened: show that curiosity.
+    func application(_ application: NSApplication, continue userActivity: NSUserActivity,
+                     restorationHandler: @escaping ([any NSUserActivityRestoring]) -> Void) -> Bool {
+        guard userActivity.activityType == CSSearchableItemActionType,
+              let s = userActivity.userInfo?[CSSearchableItemActivityIdentifier] as? String,
+              let id = UUID(uuidString: s), library.item(id) != nil else { return false }
+        window.makeKeyAndOrderFront(nil)
+        if mode == .infinity { setMode(.grid) }
+        reveal(id)
+        return true
+    }
 
     func applicationWillTerminate(_ notification: Notification) { library.save() }
 

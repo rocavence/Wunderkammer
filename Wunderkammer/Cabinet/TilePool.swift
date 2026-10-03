@@ -12,6 +12,8 @@ final class TilePool {
     let library: Library
     let thumbnailer: Thumbnailer
     weak var host: CALayer?
+    /// Resolves dynamic colours in the owning view's current appearance.
+    var colors: (NSColor) -> CGColor = { $0.cgColor }
     var cornerRadius: CGFloat = 6
 
     /// Keyed by an arbitrary string so Infinity can show one item many times.
@@ -240,6 +242,16 @@ final class TilePool {
         hiddenKey = nil
     }
 
+    /// After a light/dark switch.
+    func refreshColors() {
+        withoutAnimation {
+            for tile in tiles.values {
+                tile.backgroundColor = colors(.quaternaryLabelColor)
+                tile.borderColor = colors(.controlAccentColor)
+            }
+        }
+    }
+
     func removeAll() {
         pruneWork?.cancel()
         prune(keeping: [])
@@ -319,8 +331,8 @@ final class TilePool {
         tile.masksToBounds = true
         tile.cornerRadius = cornerRadius
         tile.cornerCurve = .continuous
-        tile.backgroundColor = NSColor.quaternaryLabelColor.cgColor
-        tile.borderColor = NSColor.controlAccentColor.cgColor
+        tile.backgroundColor = colors(.quaternaryLabelColor)
+        tile.borderColor = colors(.controlAccentColor)
         tile.minificationFilter = .trilinear
         return tile
     }

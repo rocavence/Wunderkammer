@@ -49,6 +49,7 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
         wantsLayer = true
         layer?.masksToBounds = true
         pool.host = layer
+        pool.colors = { [unowned self] in self.resolved($0) }
         registerForDraggedTypes([.fileURL, .URL, .string, .png, .tiff, .init("public.jpeg"), .init("public.heic"), .init("com.compuserve.gif")])
         NotificationCenter.default.addObserver(forName: Library.didChange, object: library, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.reload(animated: true) }
@@ -59,10 +60,23 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
     required init?(coder: NSCoder) { fatalError() }
 
     override var isFlipped: Bool { true }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        layer?.backgroundColor = resolved(.windowBackgroundColor)
+        pool.refreshColors()
+        appearanceChanged()
+    }
     override var acceptsFirstResponder: Bool { true }
     /// Clicking into an inactive window selects/drags right away.
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
     override var isOpaque: Bool { true }
+
+    private func appearanceChanged() {
+        for layer in headerLayers.values { layer.removeFromSuperlayer() }
+        headerLayers = [:]
+        updateTiles(animated: false)
+    }
 
     override func viewDidMoveToSuperview() {
         super.viewDidMoveToSuperview()
@@ -84,7 +98,7 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
     }
 
     override func updateLayer() {
-        layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
+        layer?.backgroundColor = resolved(.windowBackgroundColor)
     }
 
     // MARK: Layout
@@ -225,7 +239,7 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
             }()
             let serif = NSFont.systemFont(ofSize: 20).fontDescriptor.withDesign(.serif).flatMap { NSFont(descriptor: $0, size: 20) }
             layer.string = NSAttributedString(string: h.title, attributes: [
-                .font: serif ?? NSFont.systemFont(ofSize: 20), .foregroundColor: NSColor.labelColor,
+                .font: serif ?? NSFont.systemFont(ofSize: 20), .foregroundColor: NSColor(cgColor: resolved(.labelColor)) ?? NSColor.labelColor,
             ])
             layer.frame = h.frame
             layer.opacity = 1
@@ -425,8 +439,8 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
         let rect = NSRect(x: min(a.x, b.x), y: min(a.y, b.y), width: abs(a.x - b.x), height: abs(a.y - b.y))
         if marquee == nil {
             let m = CAShapeLayer()
-            m.fillColor = NSColor.controlAccentColor.withAlphaComponent(0.15).cgColor
-            m.strokeColor = NSColor.controlAccentColor.cgColor
+            m.fillColor = resolved(NSColor.controlAccentColor.withAlphaComponent(0.15))
+            m.strokeColor = resolved(.controlAccentColor)
             m.lineWidth = 1
             m.zPosition = 100
             layer?.addSublayer(m)

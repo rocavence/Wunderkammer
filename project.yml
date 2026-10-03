@@ -57,6 +57,12 @@ targets:
         CFBundleURLTypes:
           - CFBundleURLName: com.rocavence.wunderkammer
             CFBundleURLSchemes: [wunderkammer]
+        # 檔案拖到 Dock 上的 icon、「打開方式 → Wunderkammer」
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: Anything
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Alternate
+            LSItemContentTypes: [public.item]
         # 任何 app 的「服務」選單：選取文字、網址、檔案或圖片 →「收進 Wunderkammer」
         NSServices:
           - NSMessage: collectService

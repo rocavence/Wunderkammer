@@ -47,6 +47,7 @@ final class InfinityView: NSView, ItemSurface {
         wantsLayer = true
         layer?.masksToBounds = true
         pool.host = layer
+        pool.colors = { [unowned self] in self.resolved($0) }
         NotificationCenter.default.addObserver(forName: Library.didChange, object: library, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.reload() }
         }
@@ -55,6 +56,15 @@ final class InfinityView: NSView, ItemSurface {
     required init?(coder: NSCoder) { fatalError() }
 
     override var isFlipped: Bool { true }
+
+    private func appearanceChanged() {}
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        layer?.backgroundColor = resolved(.windowBackgroundColor)
+        pool.refreshColors()
+        appearanceChanged()
+    }
     override var acceptsFirstResponder: Bool { true }
     /// Clicking into an inactive window selects/drags right away.
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }

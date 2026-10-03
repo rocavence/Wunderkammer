@@ -19,7 +19,7 @@ xcodebuild -project Wunderkammer.xcodeproj -scheme Wunderkammer -configuration D
   -derivedDataPath build build | grep -E "error:|BUILD FAILED" || true
 APP=build/Build/Products/Debug/Wunderkammer.app/Contents/MacOS/Wunderkammer
 
-WK_SELFTEST_ONLY="${1:-}" WK_SELFTEST="$OUT/shots" WK_LIBRARY_ROOT="$OUT/library" "$APP" > "$OUT/log" 2>&1 &
+WK_APPEARANCE="${WK_APPEARANCE:-}" WK_SELFTEST_ONLY="${1:-}" WK_SELFTEST="$OUT/shots" WK_LIBRARY_ROOT="$OUT/library" "$APP" > "$OUT/log" 2>&1 &
 PID=$!
 for _ in {1..${WK_SELFTEST_TIMEOUT:-120}}; do
   sleep 1
