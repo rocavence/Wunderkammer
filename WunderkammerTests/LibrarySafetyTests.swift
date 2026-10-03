@@ -78,4 +78,28 @@ struct LibrarySafetyTests {
         let (x, y) = await (a, b)
         #expect(library.items.count == 1 && x == y)
     }
+
+    @Test func undoAfterCollectingAgainDoesNotDuplicate() async {
+        let library = Library(root: tempRoot())
+        let data = png(6)
+        let x = await library.capture([.imageData(data, name: "x.png", origin: nil)])[0]
+        let board = library.createCollection(named: "B", with: [x])
+        guard let removal = library.delete([x]) else { Issue.record("not removed"); return }
+        let y = await library.capture([.imageData(data, name: "y.png", origin: nil)])[0]
+        library.restore(removal)
+        #expect(library.items.count == 1 && library.item(y) != nil)
+        #expect(library.collection(board.id)?.itemIDs == [y], "the board gets the one that's there")
+    }
+
+    @Test func newLinksKeepHiddenOnes() async {
+        let library = Library(root: tempRoot())
+        let ids = await library.capture((7...10).map { .imageData(png($0), name: "\($0).png", origin: nil) })
+        let key = Library.allKey
+        library.setLinks([CanvasLink(a: ids[0], b: ids[1])], key: key)
+        guard let removal = library.delete([ids[0]]) else { return }
+        // The canvas only sees visible links and saves a new one.
+        library.setLinks(library.links(key: key) + [CanvasLink(a: ids[2], b: ids[3])], key: key)
+        library.restore(removal)
+        #expect(Set(library.links(key: key)) == [CanvasLink(a: ids[0], b: ids[1]), CanvasLink(a: ids[2], b: ids[3])])
+    }
 }

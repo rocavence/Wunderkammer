@@ -17,9 +17,14 @@ final class SettingsWindowController: NSWindowController {
                               backing: .buffered, defer: false)
         window.title = "設定"
         self.init(window: window)
+        // Closing Settings mid-recording must give the keyboard back.
+        NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: window, queue: .main) { _ in
+            MainActor.assumeIsolated { ShortcutField.active?.cancel() }
+        }
     }
 
     override func showWindow(_ sender: Any?) {
+        ShortcutField.active?.cancel()
         build()
         window?.center()
         super.showWindow(sender)
@@ -106,14 +111,36 @@ final class ShortcutField: NSButton {
 
     required init?(coder: NSCoder) { fatalError() }
 
+    /// The field currently waiting for a combination (never more than one).
+    static weak var active: ShortcutField?
+
     @objc private func record() {
         guard monitor == nil else { return }
+        Self.active?.cancel()
+        Self.active = self
         title = "按下組合鍵…"
         onRecording?(true)
         monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            MainActor.assumeIsolated { self?.handle(event) }
+            // Only keystrokes aimed at Settings; everything else passes through.
+            guard let self, event.window === self.window else { return event }
+            MainActor.assumeIsolated { self.handle(event) }
             return nil
         }
+    }
+
+    /// Stop recording, keep the current shortcut.
+    func cancel() {
+        guard let monitor else { return }
+        NSEvent.removeMonitor(monitor)
+        self.monitor = nil
+        title = current.display
+        if Self.active === self { Self.active = nil }
+        onRecording?(false)
+    }
+
+    override func viewWillMove(toWindow newWindow: NSWindow?) {
+        super.viewWillMove(toWindow: newWindow)
+        if newWindow == nil { cancel() }
     }
 
     private func handle(_ event: NSEvent) {
@@ -131,6 +158,7 @@ final class ShortcutField: NSButton {
         }
         if let monitor { NSEvent.removeMonitor(monitor) }
         monitor = nil
+        if Self.active === self { Self.active = nil }
         title = current.display
         onRecording?(false)
         onChange?()

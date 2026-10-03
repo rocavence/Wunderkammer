@@ -145,7 +145,12 @@ final class Understanding {
     /// Meaning vectors (MobileCLIP), when the models are installed.
     let semantic: SemanticIndex?
     private let embeddingsDir: URL
-    private var embeddings: [UUID: [Float]] = [:]
+    /// Vectors in memory, keyed like their files: "<id>-v<representation version>",
+    /// so a new representation (a page's preview arriving) gets a new vector.
+    private var embeddings: [String: [Float]] = [:]
+    /// Embedding files on disk (listed once), and items with nothing to embed.
+    private var embeddingFiles: Set<String> = []
+    private var unembeddable: Set<String> = []
     static let modelsDir = URL(fileURLWithPath: ProcessInfo.processInfo.environment["WK_MODELS_DIR"]
         ?? Library.defaultRoot.appendingPathComponent("models").path)
     static let didProgress = Notification.Name("UnderstandingDidProgress")
@@ -157,6 +162,8 @@ final class Understanding {
         embeddingsDir = library.root.appendingPathComponent("embeddings")
         try? FileManager.default.createDirectory(at: embeddingsDir, withIntermediateDirectories: true)
         semantic = SemanticIndex(modelsDir: Self.modelsDir)
+        embeddingFiles = Set((try? FileManager.default.contentsOfDirectory(atPath: embeddingsDir.path)) ?? [])
+        purge()
         NotificationCenter.default.addObserver(forName: Library.didChange, object: library, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.start() }
         }
@@ -164,8 +171,27 @@ final class Understanding {
 
     var pending: Int { library.items.filter { !$0.analyzed }.count }
 
-    private func hasEmbedding(_ id: UUID) -> Bool {
-        embeddings[id] != nil || FileManager.default.fileExists(atPath: embeddingsDir.appendingPathComponent(id.uuidString).path)
+    private static func embeddingKey(_ item: Item) -> String { "\(item.id.uuidString)-v\(item.representationVersion)" }
+
+    private func hasEmbedding(_ item: Item) -> Bool {
+        let key = Self.embeddingKey(item)
+        return embeddingFiles.contains(key) || unembeddable.contains(key)
+    }
+
+    /// Fingerprints and vectors of items no longer in the cabinet (and stale
+    /// versions) go, unless the library couldn't be read.
+    private func purge() {
+        guard !library.loadFailed else { return }
+        let ids = Set(library.items.map(\.id.uuidString))
+        let current = Set(library.items.map(Self.embeddingKey))
+        let fm = FileManager.default
+        for f in (try? fm.contentsOfDirectory(atPath: printsDir.path)) ?? [] where !ids.contains(f) {
+            try? fm.removeItem(at: printsDir.appendingPathComponent(f))
+        }
+        for f in embeddingFiles where !current.contains(f) {
+            try? fm.removeItem(at: embeddingsDir.appendingPathComponent(f))
+            embeddingFiles.remove(f)
+        }
     }
 
     /// Picks up wherever it left off; safe to call often.
@@ -201,35 +227,44 @@ final class Understanding {
             done += 1
             if done % 10 == 0 { NotificationCenter.default.post(name: Self.didProgress, object: self) }
         }
-        // Meaning vectors for everything that has a picture to look at.
+        // Meaning vectors for everything that has a picture to look at (pages
+        // once their preview is in), redone when the picture changes.
         if let semantic {
-            for item in library.items where !hasEmbedding(item.id) {
-                let url = library.thumbnailURL(item), id = item.id, dir = embeddingsDir
+            for item in library.items where isReady(item) && !hasEmbedding(item) {
+                let url = library.thumbnailURL(item), key = Self.embeddingKey(item), dir = embeddingsDir
                 let vector = await Task.detached(priority: .utility) { () -> [Float]? in
                     guard let v = autoreleasepool(invoking: { semantic.embed(imageAt: url) }) else { return nil }
                     let data = v.withUnsafeBufferPointer { Data(buffer: $0) }
-                    try? data.write(to: dir.appendingPathComponent(id.uuidString))
+                    try? data.write(to: dir.appendingPathComponent(key))
                     return v
                 }.value
-                if let vector { embeddings[id] = vector }
+                if let vector {
+                    embeddings[key] = vector
+                    embeddingFiles.insert(key)
+                } else {
+                    unembeddable.insert(key)
+                }
             }
+            purge()
         }
         library.save()
         NotificationCenter.default.post(name: Self.didProgress, object: self)
     }
 
-    private func embedding(_ id: UUID) -> [Float]? {
-        if let e = embeddings[id] { return e }
-        guard let data = try? Data(contentsOf: embeddingsDir.appendingPathComponent(id.uuidString)), data.count == 512 * 4 else { return nil }
+    private func embedding(_ item: Item) -> [Float]? {
+        let key = Self.embeddingKey(item)
+        if let e = embeddings[key] { return e }
+        guard embeddingFiles.contains(key),
+              let data = try? Data(contentsOf: embeddingsDir.appendingPathComponent(key)), data.count == 512 * 4 else { return nil }
         let v = data.withUnsafeBytes { Array($0.bindMemory(to: Float.self)) }
-        embeddings[id] = v
+        embeddings[key] = v
         return v
     }
 
     /// Items whose picture matches an English description, best first. Only
     /// the clear matches: close to the best score and above a floor.
     func semanticMatches(_ query: [Float], in items: [Item], limit: Int = 24) -> [UUID] {
-        let scored = items.compactMap { item in embedding(item.id).map { (item.id, SemanticIndex.cosine(query, $0)) } }
+        let scored = items.compactMap { item in embedding(item).map { (item.id, SemanticIndex.cosine(query, $0)) } }
             .sorted { $0.1 > $1.1 }
         guard let best = scored.first?.1, best >= 0.19 else { return [] }
         return scored.prefix { $0.1 >= max(0.19, best - 0.05) }.prefix(limit).map(\.0)

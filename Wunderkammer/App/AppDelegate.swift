@@ -80,6 +80,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Copies and representations of items removed in an earlier session.
         library.purgeOrphans()
+        try? FileManager.default.removeItem(at: Self.textPreviewDir)
         grid = GridView(library: library, thumbnailer: thumbnailer)
         scroll = NSScrollView()
         scroll.documentView = grid
@@ -209,6 +210,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
 
     /// Closing the window keeps collecting: ⌘⇧C, the menu bar and sharing
     /// still work. The Dock icon or the menu bar brings the cabinet back.
+    static let textPreviewDir = FileManager.default.temporaryDirectory.appendingPathComponent("wunderkammer-text", isDirectory: true)
+
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { SelfTest.isEnabled }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
@@ -224,7 +227,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     /// Shows the user's shortcut next to a menu item (the global hotkey does the work).
     static func show(_ shortcut: GlobalHotkeys.Shortcut, on item: NSMenuItem) {
         let key = GlobalHotkeys.Shortcut.keyName(shortcut.keyCode).lowercased()
-        guard key.count == 1 else { return }
+        // Only a printable letter, digit or symbol can be a menu key equivalent.
+        guard key.count == 1, key != "?", key.unicodeScalars.allSatisfy({ CharacterSet.alphanumerics.union(.punctuationCharacters).union(.symbols).contains($0) })
+        else { return }
         item.keyEquivalent = key
         item.keyEquivalentModifierMask = shortcut.modifiers
     }
@@ -273,6 +278,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        try? FileManager.default.removeItem(at: Self.textPreviewDir)
         library.save()
         trail.save()
     }
@@ -351,10 +357,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     /// Space: pictures, pages and text fly out in our own preview; media and
     /// documents open in Quick Look, which can play and page through them.
     private func openPreview(_ id: UUID, caption: String? = nil) {
+        // However this ends, the "how you got here" hint is for this visit only.
+        defer { pendingVia = nil }
         guard let item = library.item(id) else { return }
         library.markViewed(id)
         trail.record(id, via: pendingVia ?? currentVia)
-        pendingVia = nil
         inspector.show(id)
         if [.video, .audio, .pdf, .file].contains(item.kind), let url = library.originalURL(item) {
             quickLook.show(url, for: id)
@@ -363,7 +370,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         // Long text doesn't fit a card: read all of it in Quick Look.
         if item.kind == .text, let text = item.text, text.count > 280 {
             // Named by ID: the text is untrusted and may contain "/" or "..".
-            let dir = FileManager.default.temporaryDirectory.appendingPathComponent("wunderkammer-text", isDirectory: true)
+            let dir = Self.textPreviewDir
+            // Only the text being read now; earlier ones go.
+            try? FileManager.default.removeItem(at: dir)
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
             let file = dir.appendingPathComponent("\(item.id.uuidString).txt")
             if (try? text.write(to: file, atomically: true, encoding: .utf8)) != nil {

@@ -260,12 +260,21 @@ final class Library {
     /// Puts the removed items back, into the boards that still exist, without
     /// undoing anything else done since.
     func restore(_ removal: Removal) {
+        // Something collected again since the removal stands in for the old one.
+        var stand: [UUID: UUID] = [:]
+        let hashes = Dictionary(items.map { ($0.contentHash, $0.id) }, uniquingKeysWith: { a, _ in a })
         for (index, item) in removal.items.sorted(by: { $0.index < $1.index }) where byID[item.id] == nil {
+            if let again = hashes[item.contentHash] {
+                stand[item.id] = again
+                continue
+            }
             items.insert(item, at: min(index, items.count))
         }
         for (boardID, entries) in removal.memberships {
             guard let b = collections.firstIndex(where: { $0.id == boardID }) else { continue }
-            for (index, id) in entries.sorted(by: { $0.index < $1.index }) where !collections[b].itemIDs.contains(id) {
+            for (index, original) in entries.sorted(by: { $0.index < $1.index }) {
+                let id = stand[original] ?? original
+                guard !collections[b].itemIDs.contains(id) else { continue }
                 collections[b].itemIDs.insert(id, at: min(index, collections[b].itemIDs.count))
             }
         }
@@ -326,8 +335,11 @@ final class Library {
         (canvasLinks[key] ?? []).filter { byID[$0.a] != nil && byID[$0.b] != nil }
     }
 
+    /// Saves the visible links, keeping those hidden because one end was
+    /// removed (an undo brings them back).
     func setLinks(_ links: [CanvasLink], key: String) {
-        canvasLinks[key] = links
+        let hidden = (canvasLinks[key] ?? []).filter { byID[$0.a] == nil || byID[$0.b] == nil }
+        canvasLinks[key] = hidden + links.filter { !hidden.contains($0) }
         save()
     }
 
@@ -451,6 +463,7 @@ final class Library {
                     $0.pixelWidth = finalPicture.width
                     $0.pixelHeight = finalPicture.height
                     $0.representationVersion = version
+                    $0.analysisVersion = 0 // look again at the real picture
                 }
             }
         }
@@ -476,6 +489,7 @@ final class Library {
             $0.pixelHeight = h
             $0.representationVersion = version
             $0.contentHash = Representer.sha256(data)
+            $0.analysisVersion = 0
         }
     }
 

@@ -84,7 +84,11 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
 
     override var isFlipped: Bool { true }
 
-    private func appearanceChanged() {}
+    private func appearanceChanged() {
+        for t in titleLayers.values { t.removeFromSuperlayer() }
+        titleLayers = [:]
+        render(animated: false)
+    }
 
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()

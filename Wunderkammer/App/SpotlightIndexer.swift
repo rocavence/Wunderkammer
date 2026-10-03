@@ -39,10 +39,10 @@ final class SpotlightIndexer {
         let removed = indexed.keys.filter { current[$0] == nil }.map(\.uuidString)
         let changed = library.items.filter { indexed[$0.id] != current[$0.id] }
         if !removed.isEmpty { index.deleteSearchableItems(withIdentifiers: removed) }
-        guard !changed.isEmpty else { return }
-        let items = changed.map(searchable)
-        index.indexSearchableItems(items)
+        // Remember removals too, so an undo is seen as new and indexed again.
         indexed = current
+        guard !changed.isEmpty else { return }
+        index.indexSearchableItems(changed.map(searchable))
     }
 
     /// Changes when anything Spotlight shows changes.
@@ -63,7 +63,8 @@ final class SpotlightIndexer {
         attributes.title = item.kind == .text ? "文字收藏" + (item.domain.map { "（\($0)）" } ?? "") : item.displayTitle
         attributes.contentDescription = item.domain
         attributes.keywords = (item.labels ?? []).map(Subjects.title) + (item.colors ?? [])
-        attributes.thumbnailURL = library.thumbnailURL(item)
+        // A text card is a picture of the text itself: no thumbnail for those.
+        if item.kind != .text { attributes.thumbnailURL = library.thumbnailURL(item) }
         attributes.contentCreationDate = item.dateAdded
         attributes.url = item.url.flatMap(URL.init(string:))
         return CSSearchableItem(uniqueIdentifier: item.id.uuidString, domainIdentifier: item.kind.rawValue, attributeSet: attributes)

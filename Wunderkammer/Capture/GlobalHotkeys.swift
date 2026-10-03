@@ -20,8 +20,12 @@ final class GlobalHotkeys {
         }
 
         static func keyName(_ code: Int) -> String {
-            let names: [Int: String] = [kVK_Space: "Space", kVK_Return: "↩", kVK_Tab: "⇥", kVK_LeftArrow: "←",
-                                        kVK_RightArrow: "→", kVK_UpArrow: "↑", kVK_DownArrow: "↓"]
+            var names: [Int: String] = [kVK_Space: "Space", kVK_Return: "↩", kVK_Tab: "⇥", kVK_LeftArrow: "←",
+                                        kVK_RightArrow: "→", kVK_UpArrow: "↑", kVK_DownArrow: "↓", kVK_Escape: "⎋",
+                                        kVK_Delete: "⌫", kVK_ForwardDelete: "⌦", kVK_Home: "↖", kVK_End: "↘",
+                                        kVK_PageUp: "⇞", kVK_PageDown: "⇟"]
+            let fkeys = [kVK_F1, kVK_F2, kVK_F3, kVK_F4, kVK_F5, kVK_F6, kVK_F7, kVK_F8, kVK_F9, kVK_F10, kVK_F11, kVK_F12]
+            for (i, k) in fkeys.enumerated() { names[k] = "F\(i + 1)" }
             if let n = names[code] { return n }
             // Ask the keyboard layout what the key types.
             guard let source = TISCopyCurrentASCIICapableKeyboardLayoutInputSource()?.takeRetainedValue(),
@@ -34,7 +38,10 @@ final class GlobalHotkeys {
                 _ = UCKeyTranslate(ptr.bindMemory(to: UCKeyboardLayout.self).baseAddress, UInt16(code), UInt16(kUCKeyActionDisplay),
                                    0, UInt32(LMGetKbdType()), OptionBits(kUCKeyTranslateNoDeadKeysBit), &dead, 4, &length, &chars)
             }
-            return String(utf16CodeUnits: chars, count: length).uppercased()
+            let typed = String(utf16CodeUnits: chars, count: length)
+            // Control characters aren't something to show.
+            guard typed.unicodeScalars.allSatisfy({ !CharacterSet.controlCharacters.contains($0) }), !typed.isEmpty else { return "?" }
+            return typed.uppercased()
         }
 
         /// Stored as "keyCode:modifierRawValue".
