@@ -89,6 +89,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         sidebar.onRandom = { [weak self] in self?.showRandom() }
         inspector = InspectorViewController(library: library)
         inspector.onSelectRelated = { [weak self] id in self?.reveal(id) }
+        inspector.onOpenView = { [weak self] base in self?.sidebar.select(base) }
         understanding = Understanding(library: library)
         library.similarity = { [weak self] id in self?.understanding.similar(to: id) ?? [] }
         inspector.related = { [weak self] item in self?.understanding.related(to: item) ?? [] }
@@ -241,6 +242,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         case .forgotten: window.title = "被遺忘的"
         case .similar(let id): window.title = "與「\(library.item(id)?.displayTitle.prefix(20) ?? "")」相似"
         case .subject(let label): window.title = Subjects.title(label)
+        case .mentions(let name): window.title = "提到「\(name)」"
+        case .site(let domain): window.title = domain
         }
         let count = library.items(for: scope).count
         let learning = understanding?.pending ?? 0

@@ -8,6 +8,8 @@ final class InspectorViewController: NSViewController {
     private let stack = NSStackView()
     private var itemID: UUID?
     var onSelectRelated: ((UUID) -> Void)?
+    /// A name or a site was clicked: show everything connected to it.
+    var onOpenView: ((Scope.Base) -> Void)?
     /// Supplies related items (filled in by the understanding layer).
     var related: ((Item) -> [Item])?
 
@@ -93,11 +95,25 @@ final class InspectorViewController: NSViewController {
             body.maximumNumberOfLines = 8
             stack.addArrangedSubview(body)
         }
-        if let names = item.entities, !names.isEmpty {
-            stack.addArrangedSubview(label("提到的名字", size: 11, color: .tertiaryLabelColor))
-            let list = label(names.prefix(8).map(\.name).joined(separator: "  ·  "), size: 12, color: .secondaryLabelColor)
-            list.maximumNumberOfLines = 3
-            stack.addArrangedSubview(list)
+        // Connections: each name and the site lead to everything else they appear in.
+        var links: [(String, Scope.Base)] = (item.entities ?? []).prefix(8).map { ($0.name, .mentions($0.name)) }
+        if let domain = item.domain { links.append((domain, .site(domain))) }
+        let connected = links.filter { library.items(for: Scope(base: $0.1)).count > 1 }
+        if !connected.isEmpty {
+            stack.addArrangedSubview(label("連到其他收藏", size: 11, color: .tertiaryLabelColor))
+            let row = NSStackView()
+            row.orientation = .vertical
+            row.alignment = .leading
+            row.spacing = 2
+            for (title, base) in connected {
+                let n = library.items(for: Scope(base: base)).count
+                let b = ClosureButton(title: "\(title)  \(n)") { [weak self] in self?.onOpenView?(base) }
+                b.isBordered = false
+                b.contentTintColor = .controlAccentColor
+                b.font = .systemFont(ofSize: 12)
+                row.addArrangedSubview(b)
+            }
+            stack.addArrangedSubview(row)
         }
         if let labels = item.labels, !labels.isEmpty {
             stack.addArrangedSubview(label("系統看到的", size: 11, color: .tertiaryLabelColor))

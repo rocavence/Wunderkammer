@@ -14,6 +14,10 @@ struct Scope: Equatable, Sendable {
         case similar(UUID)
         /// A theme the system found (a Vision label).
         case subject(String)
+        /// Everything that mentions a name.
+        case mentions(String)
+        /// Everything from one website.
+        case site(String)
     }
 
     /// Auto collections by what things are.
@@ -63,6 +67,8 @@ struct Scope: Equatable, Sendable {
         case .forgotten: "forgotten"
         case .similar(let id): "similar:\(id.uuidString)"
         case .subject(let label): "subject:\(label)"
+        case .mentions(let name): "mentions:\(name)"
+        case .site(let domain): "site:\(domain)"
         }
     }
 }
@@ -79,6 +85,10 @@ extension Library {
         case .forgotten: result = Rediscovery.forgotten(items, now: now)
         case .similar(let id): result = (item(id).map { [$0] } ?? []) + (similarity?(id) ?? [])
         case .subject(let label): result = items.filter { $0.labels?.contains(label) == true }
+        case .mentions(let name):
+            let key = Search.normalize(name)
+            result = items.filter { $0.entities?.contains { Search.normalize($0.name) == key } == true }
+        case .site(let domain): result = items.filter { $0.domain == domain }
         }
         if scope.isSearching {
             let pool = result
