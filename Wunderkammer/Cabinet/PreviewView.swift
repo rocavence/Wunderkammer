@@ -104,7 +104,9 @@ final class PreviewView: NSView {
 
     private func loadFull(_ item: Item) {
         let shown = index
-        thumbnailer.load(library.originalURL(item), maxPixel: 2400) { [weak self] image in
+        // Pictures at full size; everything else is its representation.
+        let url = item.hasFullImage ? (library.originalURL(item) ?? library.thumbnailURL(item)) : library.thumbnailURL(item)
+        thumbnailer.load(url, maxPixel: 2400) { [weak self] image in
             guard let self, self.index == shown, self.isOpen else { return }
             withoutAnimation { self.imageLayer.contents = image }
         }

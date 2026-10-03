@@ -1,23 +1,5 @@
 import AppKit
-import CryptoKit
 import ImageIO
-import UniformTypeIdentifiers
-
-struct Item: Codable, Identifiable, Hashable {
-    var id: UUID
-    var originalFilename: String
-    var storedFilename: String
-    var pixelWidth: Int
-    var pixelHeight: Int
-    var contentHash: String
-    var dateAdded: Date
-
-    var aspect: CGFloat {
-        guard pixelWidth > 0, pixelHeight > 0 else { return 1 }
-        // Clamp so panoramas and slivers don't wreck a row.
-        return min(max(CGFloat(pixelWidth) / CGFloat(pixelHeight), 0.25), 4)
-    }
-}
 
 struct Board: Codable, Identifiable, Hashable {
     var id: UUID
@@ -35,13 +17,15 @@ struct CanvasGroup: Codable, Identifiable, Hashable {
     var itemIDs: [UUID]
 }
 
-/// On-disk library: library.json + originals/ + thumbnails/ under
-/// ~/Library/Application Support/Wunderkammer.
+/// The cabinet: every curiosity, the optional boards, canvas layouts. Lives in
+/// ~/Library/Application Support/Wunderkammer as library.json plus
+/// originals/ (only content with no file of its own) and thumbnails/ (the
+/// representations). Referenced files stay where they are.
 @MainActor
 final class Library {
     static let didChange = Notification.Name("LibraryDidChange")
-    nonisolated static let thumbnailSize = 600
-    /// Canvas key for "All Images", which isn't a real collection.
+    nonisolated static let thumbnailSize = Representer.thumbnailSize
+    /// Canvas key for the whole cabinet, which isn't a real board.
     static let allKey = "all"
 
     let root: URL
@@ -51,6 +35,8 @@ final class Library {
     private(set) var collections: [Board] = []
     private var canvases: [String: [CanvasGroup]] = [:]
     private var byID: [UUID: Int] = [:]
+    /// Set while the app is sending changes in quick succession (enrichment).
+    private var saveWork: DispatchWorkItem?
 
     static let defaultRoot = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         .appendingPathComponent("Wunderkammer")
@@ -82,12 +68,22 @@ final class Library {
         reindex()
     }
 
-    private func save() {
+    func save() {
+        saveWork?.cancel()
+        saveWork = nil
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         if let data = try? encoder.encode(Stored(items: items, collections: collections, canvases: canvases)) {
             try? data.write(to: jsonURL, options: .atomic)
         }
+    }
+
+    /// Coalesces bursts of small updates into one write.
+    private func saveSoon() {
+        saveWork?.cancel()
+        let work = DispatchWorkItem { [weak self] in MainActor.assumeIsolated { self?.save() } }
+        saveWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: work)
     }
 
     private func changed() {
@@ -101,16 +97,52 @@ final class Library {
 
     func item(_ id: UUID) -> Item? { byID[id].map { items[$0] } }
 
-    func originalURL(_ item: Item) -> URL { originalsDir.appendingPathComponent(item.storedFilename) }
-    func thumbnailURL(_ item: Item) -> URL {
-        thumbnailsDir.appendingPathComponent(item.id.uuidString + ".jpg")
+    /// The content itself, wherever it lives. nil for web pages and text, and
+    /// for files that have since disappeared.
+    func originalURL(_ item: Item) -> URL? {
+        if let stored = item.storedFilename { return originalsDir.appendingPathComponent(stored) }
+        guard let path = item.filePath else { return nil }
+        if FileManager.default.fileExists(atPath: path) { return URL(fileURLWithPath: path) }
+        // Moved or renamed: follow the bookmark and remember the new place.
+        var stale = false
+        if let bookmark = item.fileBookmark,
+           let url = try? URL(resolvingBookmarkData: bookmark, options: [.withoutUI], relativeTo: nil, bookmarkDataIsStale: &stale),
+           FileManager.default.fileExists(atPath: url.path) {
+            update(item.id, notify: false) { $0.filePath = url.path }
+            return url
+        }
+        return nil
     }
 
-    // MARK: Collections
+    /// Where the item can be opened: its file, or its page.
+    func openURL(_ item: Item) -> URL? {
+        originalURL(item) ?? item.url.flatMap(URL.init(string:))
+    }
+
+    func thumbnailURL(_ item: Item) -> URL {
+        Representer.thumbnailURL(thumbnailsDir, id: item.id, version: item.representationVersion)
+    }
+
+    /// Changes one item in place. `notify` re-renders the views.
+    func update(_ id: UUID, notify: Bool = true, _ change: (inout Item) -> Void) {
+        guard let i = byID[id] else { return }
+        change(&items[i])
+        saveSoon()
+        if notify { NotificationCenter.default.post(name: Self.didChange, object: self) }
+    }
+
+    func markViewed(_ id: UUID) {
+        update(id, notify: false) {
+            $0.viewCount += 1
+            $0.lastViewed = Date()
+        }
+    }
+
+    // MARK: Boards
 
     func collection(_ id: UUID) -> Board? { collections.first { $0.id == id } }
 
-    /// Items shown for a collection, or the whole library for nil.
+    /// Items shown for a board, or the whole cabinet for nil.
     func items(in collectionID: UUID?) -> [Item] {
         guard let collectionID else { return items }
         return collection(collectionID)?.itemIDs.compactMap(item) ?? []
@@ -152,25 +184,64 @@ final class Library {
         changed()
     }
 
-    /// Deletes items everywhere and moves their files to the Trash.
-    func delete(_ ids: Set<UUID>) {
-        let doomed = items.filter { ids.contains($0.id) }
-        guard !doomed.isEmpty else { return }
-        for item in doomed {
-            try? FileManager.default.trashItem(at: originalURL(item), resultingItemURL: nil)
-            try? FileManager.default.removeItem(at: thumbnailURL(item))
-        }
+    // MARK: Removing (undoable)
+
+    /// Everything needed to put removed items back exactly as they were.
+    struct Removal {
+        var items: [(index: Int, item: Item)]
+        var collections: [Board]
+        var canvases: [String: [CanvasGroup]]
+    }
+
+    /// Takes items out of the cabinet. Nothing is deleted from disk: a
+    /// referenced file was never ours, and our own copies stay until the next
+    /// launch so the removal can be undone.
+    @discardableResult
+    func delete(_ ids: Set<UUID>) -> Removal? {
+        let doomed = items.enumerated().filter { ids.contains($0.element.id) }.map { (index: $0.offset, item: $0.element) }
+        guard !doomed.isEmpty else { return nil }
+        let removal = Removal(items: doomed, collections: collections, canvases: canvases)
         items.removeAll { ids.contains($0.id) }
         for i in collections.indices { collections[i].itemIDs.removeAll { ids.contains($0) } }
         reindex()
         changed()
+        return removal
+    }
+
+    func restore(_ removal: Removal) {
+        for (index, item) in removal.items.sorted(by: { $0.index < $1.index }) where byID[item.id] == nil {
+            items.insert(item, at: min(index, items.count))
+        }
+        collections = removal.collections
+        canvases = removal.canvases
+        reindex()
+        changed()
+    }
+
+    /// Our own copies and thumbnails nothing refers to any more (removed in an
+    /// earlier session). Run at launch.
+    func purgeOrphans() {
+        let keep = Set(items.compactMap(\.storedFilename))
+        let ids = Set(items.map(\.id.uuidString))
+        let fm = FileManager.default
+        for file in (try? fm.contentsOfDirectory(atPath: originalsDir.path)) ?? [] where !keep.contains(file) {
+            try? fm.removeItem(at: originalsDir.appendingPathComponent(file))
+        }
+        let current = Set(items.map { thumbnailURL($0).lastPathComponent })
+        for file in (try? fm.contentsOfDirectory(atPath: thumbnailsDir.path)) ?? [] where !current.contains(file) {
+            // Old versions of a current item's representation, or removed items.
+            let id = String(file.prefix(36))
+            if !ids.contains(id) || !current.contains(file) {
+                try? fm.removeItem(at: thumbnailsDir.appendingPathComponent(file))
+            }
+        }
     }
 
     // MARK: Canvas
 
     static func canvasKey(_ collectionID: UUID?) -> String { collectionID?.uuidString ?? allKey }
 
-    /// The stored piles, reconciled with the collection's current items: missing
+    /// The stored piles, reconciled with the board's current items: missing
     /// items are dropped, new ones join the first pile (or a fresh one).
     func canvasGroups(for collectionID: UUID?) -> [CanvasGroup] {
         let ids = items(in: collectionID).map(\.id)
@@ -196,25 +267,42 @@ final class Library {
         save()
     }
 
-    // MARK: Import
+    // MARK: Capture
 
-    /// Imports image files and folders. Duplicates (same content hash) aren't
-    /// copied again, but their existing IDs are returned, so the caller can still
-    /// add them to a collection. Returned in the order given.
+    private var context: Representer.Context {
+        Representer.Context(originalsDir: originalsDir, thumbnailsDir: thumbnailsDir, sourceApp: nil)
+    }
+
+    /// Turns sources into curiosities, newest first. Something already in the
+    /// cabinet isn't added twice, but its ID is still returned so it can join
+    /// a board. Folders become their contents.
     @discardableResult
-    func importFiles(_ urls: [URL], into collectionID: UUID? = nil) async -> [UUID] {
+    func capture(_ sources: [Source], into collectionID: UUID? = nil, sourceApp: String? = nil) async -> [UUID] {
         var known: [String: UUID] = [:]
         for item in items { known[item.contentHash] = item.id }
-        let originalsDir = originalsDir, thumbnailsDir = thumbnailsDir
+        var context = context
+        context.sourceApp = sourceApp
         let hashes = Set(known.keys)
-        let results = await Task.detached(priority: .userInitiated) {
-            Self.ingestAll(urls, known: hashes, originalsDir: originalsDir, thumbnailsDir: thumbnailsDir)
+        let expanded: [Source] = sources.flatMap { source -> [Source] in
+            if case .file(let url) = source { return Representer.expand(url).map { .file($0) } }
+            return [source]
+        }
+        let ctx = context
+        let outcomes = await Task.detached(priority: .userInitiated) {
+            var results: [Representer.Outcome] = []
+            var seen = hashes
+            for source in expanded {
+                guard let outcome = await Representer.ingest(source, context: ctx, known: seen) else { continue }
+                if case .new(let item) = outcome { seen.insert(item.contentHash) }
+                results.append(outcome)
+            }
+            return results
         }.value
 
         var ids: [UUID] = []
         var added: [Item] = []
-        for result in results {
-            switch result {
+        for outcome in outcomes {
+            switch outcome {
             case .new(let item):
                 added.append(item)
                 ids.append(item.id)
@@ -231,75 +319,86 @@ final class Library {
         } else if !added.isEmpty {
             changed()
         }
+        for item in added where item.kind == .web { enrichWeb(item.id) }
+        if !added.isEmpty { NotificationCenter.default.post(name: Self.didCapture, object: self, userInfo: ["ids": added.map(\.id)]) }
         return ids
     }
 
-    /// Writes raw image data (paste, browser drag) to a temp file and imports it.
+    static let didCapture = Notification.Name("LibraryDidCapture")
+
+    @discardableResult
+    func importFiles(_ urls: [URL], into collectionID: UUID? = nil) async -> [UUID] {
+        await capture(urls.map { .file($0) }, into: collectionID)
+    }
+
     @discardableResult
     func importImageData(_ data: Data, suggestedName: String, into collectionID: UUID? = nil) async -> [UUID] {
-        let tmp = FileManager.default.temporaryDirectory.appendingPathComponent(suggestedName)
-        guard (try? data.write(to: tmp)) != nil else { return [] }
-        defer { try? FileManager.default.removeItem(at: tmp) }
-        return await importFiles([tmp], into: collectionID)
+        await capture([.imageData(data, name: suggestedName, origin: nil)], into: collectionID)
     }
 
-    nonisolated private enum Ingested: Sendable {
-        case new(Item)
-        case duplicate(String)
-    }
+    // MARK: Enrichment
 
-    nonisolated private static func ingestAll(_ urls: [URL], known: Set<String>,
-                                              originalsDir: URL, thumbnailsDir: URL) -> [Ingested] {
-        var results: [Ingested] = []
-        var seen = known
-        for url in urls.flatMap(expand) {
-            guard let result = ingest(url, originalsDir: originalsDir, thumbnailsDir: thumbnailsDir, skipping: seen)
-            else { continue }
-            if case .new(let item) = result { seen.insert(item.contentHash) }
-            results.append(result)
+    /// Fetches the page and replaces the placeholder card with the page's own
+    /// preview image, title and description. A link straight to an image
+    /// becomes that image.
+    func enrichWeb(_ id: UUID) {
+        guard let item = item(id), let url = item.url.flatMap(URL.init(string:)) else { return }
+        let context = context
+        Task {
+            guard let meta = await WebMetadata.fetch(url) else { return }
+            if meta.isImage, let data = await WebMetadata.imageData(url) {
+                await self.becomeImage(id, data: data, origin: url, context: context)
+                return
+            }
+            let version = item.representationVersion + 1
+            var picture: CGImage?
+            if let imageURL = meta.imageURL {
+                picture = await WebMetadata.image(imageURL, maxPixel: Representer.cardSize)
+            }
+            if picture == nil {
+                var icon: CGImage?
+                if let iconURL = meta.iconURL { icon = await WebMetadata.image(iconURL, maxPixel: 64) }
+                picture = CardRenderer.web(title: meta.title ?? item.displayTitle, domain: item.domain ?? "",
+                                           description: meta.description, favicon: icon)
+            }
+            let finalPicture = picture
+            await Task.detached { Representer.writeThumbnail(finalPicture, id, context, version: version) }.value
+            self.update(id) {
+                $0.title = $0.title ?? meta.title
+                if meta.title != nil, $0.title == $0.domain { $0.title = meta.title }
+                $0.text = meta.description ?? $0.text
+                $0.creator = meta.author ?? meta.siteName ?? $0.creator
+                $0.createdDate = meta.published ?? $0.createdDate
+                if let finalPicture {
+                    $0.pixelWidth = finalPicture.width
+                    $0.pixelHeight = finalPicture.height
+                    $0.representationVersion = version
+                }
+            }
         }
-        return results
     }
 
-    /// Folders become their image contents, recursively.
-    nonisolated private static func expand(_ url: URL) -> [URL] {
-        var isDir: ObjCBool = false
-        guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir) else { return [] }
-        guard isDir.boolValue else { return [url] }
-        let walker = FileManager.default.enumerator(at: url, includingPropertiesForKeys: nil,
-                                                    options: [.skipsHiddenFiles])
-        return (walker?.allObjects as? [URL] ?? []).sorted { $0.path < $1.path }
-    }
-
-    nonisolated private static func ingest(_ url: URL, originalsDir: URL, thumbnailsDir: URL,
-                                           skipping known: Set<String>) -> Ingested? {
-        guard let type = UTType(filenameExtension: url.pathExtension), type.conforms(to: .image),
-              let data = try? Data(contentsOf: url) else { return nil }
-
-        let hash = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
-        guard !known.contains(hash) else { return .duplicate(hash) }
-
+    private func becomeImage(_ id: UUID, data: Data, origin: URL, context: Representer.Context) async {
         guard let source = CGImageSourceCreateWithData(data as CFData, nil),
               let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
-              var w = props[kCGImagePropertyPixelWidth] as? Int,
-              var h = props[kCGImagePropertyPixelHeight] as? Int else { return nil }
-
-        // EXIF orientations 5–8 are rotated 90°, so the displayed size is swapped.
-        if let o = props[kCGImagePropertyOrientation] as? Int, o >= 5 { swap(&w, &h) }
-
-        let id = UUID()
-        let ext = url.pathExtension.lowercased()
+              let w = props[kCGImagePropertyPixelWidth] as? Int, let h = props[kCGImagePropertyPixelHeight] as? Int,
+              let current = item(id) else { return }
+        let ext = origin.pathExtension.isEmpty ? "jpg" : origin.pathExtension.lowercased()
         let stored = id.uuidString + "." + ext
-        do {
-            try data.write(to: originalsDir.appendingPathComponent(stored))
-        } catch { return nil }
-
-        if let thumb = Thumbnailer.decode(source: source, maxPixel: Library.thumbnailSize) {
-            Thumbnailer.writeJPEG(thumb, to: thumbnailsDir.appendingPathComponent(id.uuidString + ".jpg"))
+        let version = current.representationVersion + 1
+        await Task.detached {
+            try? data.write(to: context.originalsDir.appendingPathComponent(stored))
+            Representer.writeThumbnail(Thumbnailer.decode(source: source, maxPixel: Representer.thumbnailSize), id, context, version: version)
+        }.value
+        update(id) {
+            $0.kind = .image
+            $0.storedFilename = stored
+            $0.originalFilename = origin.lastPathComponent
+            $0.pixelWidth = w
+            $0.pixelHeight = h
+            $0.representationVersion = version
+            $0.contentHash = Representer.sha256(data)
         }
-
-        return .new(Item(id: id, originalFilename: url.lastPathComponent, storedFilename: stored,
-                         pixelWidth: w, pixelHeight: h, contentHash: hash, dateAdded: Date()))
     }
 
     // MARK: Atlas
@@ -307,7 +406,7 @@ final class Library {
     static let atlasRoot = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         .appendingPathComponent("Atlas")
 
-    /// Imports every original from an Atlas library. Returns how many were new.
+    /// Brings in every original from an Atlas library. Returns how many were new.
     func importFromAtlas() async -> Int {
         let originals = Self.atlasRoot.appendingPathComponent("originals")
         guard let files = try? FileManager.default.contentsOfDirectory(
@@ -324,21 +423,13 @@ final class Library {
                 }
             }
         }
-        // Copy under the original filename so it survives into our library.
-        let staging = FileManager.default.temporaryDirectory
-            .appendingPathComponent("wk-atlas-\(UUID().uuidString)")
-        try? FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: staging) }
-        var staged: [URL] = []
-        for (i, file) in files.enumerated() {
-            let name = names[file.lastPathComponent] ?? file.lastPathComponent
-            let dir = staging.appendingPathComponent(String(format: "%05d", i))
-            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-            let dest = dir.appendingPathComponent(name)
-            if (try? FileManager.default.copyItem(at: file, to: dest)) != nil { staged.append(dest) }
+        // Atlas's storage isn't a place the user manages, so keep our own copy.
+        let sources: [Source] = files.compactMap { file in
+            guard let data = try? Data(contentsOf: file) else { return nil }
+            return .imageData(data, name: names[file.lastPathComponent] ?? file.lastPathComponent, origin: nil)
         }
         let before = items.count
-        await importFiles(staged)
+        await capture(sources)
         return items.count - before
     }
 }

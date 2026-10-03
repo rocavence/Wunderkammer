@@ -242,16 +242,22 @@ final class SelfTest {
         await wait(0.6)
         check(!ui.preview.isOpen, "esc closes preview")
 
-        // 9. Delete for real (All Images, confirmed) and watch the grid close the gap.
+        // 9. Remove with Delete (no dialog), watch the grid close the gap, then ⌘Z.
         ui.setMode(.grid)
         await wait(0.4)
         let victim = all[3]
-        library.delete([victim.id])
+        let wasInBoard = library.collection(board.id)?.itemIDs.contains(victim.id) == true
+        grid.reveal(victim.id)
+        key(51)
         await wait(0.6)
-        check(library.item(victim.id) == nil && grid.shownItems.count == all.count - 1, "delete removes from library and grid")
-        check(!FileManager.default.fileExists(atPath: library.originalURL(victim).path), "original moved out of the library")
-        check(library.collection(board.id)?.itemIDs.contains(victim.id) == false, "deleted image leaves its boards")
+        check(library.item(victim.id) == nil && grid.shownItems.count == all.count - 1, "Delete removes from cabinet and grid, no dialog")
+        check(library.originalURL(victim).map { FileManager.default.fileExists(atPath: $0.path) } ?? true, "the file itself is untouched (undo possible)")
+        check(library.collection(board.id)?.itemIDs.contains(victim.id) == false, "removed item leaves its boards")
         shot("14-grid-after-delete")
+        window.undoManager?.undo()
+        await wait(0.6)
+        check(library.item(victim.id) != nil && grid.shownItems.count == all.count, "⌘Z brings it back")
+        check(library.collection(board.id)?.itemIDs.contains(victim.id) == wasInBoard, "…into its boards too")
 
         // 10. Persistence: a fresh Library on the same root sees the same state.
         let reread = Library(root: library.root)

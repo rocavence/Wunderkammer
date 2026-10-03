@@ -17,7 +17,8 @@ final class TilePool {
     /// Keyed by an arbitrary string so Infinity can show one item many times.
     private(set) var tiles: [String: CALayer] = [:]
     private var tileItem: [String: Item] = [:]
-    private var tileBucket: [String: Int] = [:]
+    /// What each tile shows or is loading: "bucket|path".
+    private var tileSource: [String: String] = [:]
     private var tileRequests: [String: [Thumbnailer.Request]] = [:]
     private var pruneWork: DispatchWorkItem?
 
@@ -50,13 +51,13 @@ final class TilePool {
         var keep = Set<String>()
         for p in placements {
             keep.insert(p.key)
+            tileItem[p.key] = p.item
             let tile: CALayer
             if let existing = tiles[p.key] {
                 tile = existing
             } else {
                 tile = makeTile()
                 tiles[p.key] = tile
-                tileItem[p.key] = p.item
                 if animated {
                     // New tile: grow out of its destination instead of popping in.
                     withoutAnimation {
@@ -258,7 +259,7 @@ final class TilePool {
             for (key, tile) in tiles where !keep.contains(key) {
                 tile.removeFromSuperlayer()
                 tiles[key] = nil
-                tileBucket[key] = nil
+                tileSource[key] = nil
                 for request in tileRequests.removeValue(forKey: key) ?? [] { thumbnailer.cancel(request) }
                 tileItem[key] = nil
             }
@@ -277,16 +278,22 @@ final class TilePool {
         return tile
     }
 
+    /// Small sizes come from the representation. Large pictures from the
+    /// original; everything else only has its representation.
     private func imageURL(_ item: Item, bucket: Int) -> URL {
-        bucket <= Library.thumbnailSize ? library.thumbnailURL(item) : library.originalURL(item)
+        guard bucket > Library.thumbnailSize, item.hasFullImage, let original = library.originalURL(item) else {
+            return library.thumbnailURL(item)
+        }
+        return original
     }
 
     /// Shows whatever resolution is ready now, then upgrades when the right one decodes.
     private func loadImage(key: String, item: Item, into tile: CALayer, pixels: CGFloat) {
         let bucket = Thumbnailer.bucket(for: pixels)
-        guard tileBucket[key] != bucket else { return }
         let url = imageURL(item, bucket: bucket)
-        tileBucket[key] = bucket
+        let wanted = "\(bucket)|\(url.path)"
+        guard tileSource[key] != wanted else { return }
+        tileSource[key] = wanted
         // A new size replaces whatever this tile was still waiting for.
         for request in tileRequests.removeValue(forKey: key) ?? [] { thumbnailer.cancel(request) }
         if let image = thumbnailer.cached(url, maxPixel: bucket) {
@@ -303,7 +310,7 @@ final class TilePool {
             if let r { requests.append(r) }
         }
         let r = thumbnailer.load(url, maxPixel: bucket) { [weak self, weak tile] image in
-            guard let self, let tile, self.tiles[key] === tile, self.tileBucket[key] == bucket else { return }
+            guard let self, let tile, self.tiles[key] === tile, self.tileSource[key] == wanted else { return }
             self.setContents(tile, image, fade: true)
         }
         if let r { requests.append(r) }

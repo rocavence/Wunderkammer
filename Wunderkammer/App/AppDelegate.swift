@@ -27,6 +27,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, Sel
     private static let boardKey = "board"
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Copies and representations of items removed in an earlier session.
+        library.purgeOrphans()
         grid = GridView(library: library, thumbnailer: thumbnailer)
         scroll = NSScrollView()
         scroll.documentView = grid

@@ -22,28 +22,25 @@ protocol ItemSurface: AnyObject {
 
 @MainActor
 enum ItemActions {
-    /// In a board, Delete takes items out of the board. In All Images it
-    /// deletes them (files go to the Trash) after confirming.
+    /// Removing never asks (no modal interruption) and can always be undone
+    /// with ⌘Z. In a board it takes items out of the board; in the cabinet it
+    /// removes them from Wunderkammer. Referenced files on disk are never touched.
     static func delete(_ ids: [UUID], board: UUID?, library: Library, window: NSWindow?) {
         guard !ids.isEmpty else { return }
+        let undo = window?.undoManager
         if let board {
             library.remove(Set(ids), from: board)
+            undo?.registerUndo(withTarget: library) { lib in
+                MainActor.assumeIsolated { lib.add(ids, to: board) }
+            }
+            undo?.setActionName(ids.count == 1 ? "從 board 移除" : "從 board 移除 \(ids.count) 件")
             return
         }
-        let alert = NSAlert()
-        alert.messageText = ids.count == 1 ? "刪除這張圖？" : "刪除 \(ids.count) 張圖？"
-        alert.informativeText = "原始檔會移到垃圾桶，所有 board 裡的這些圖也會一起移除。"
-        alert.addButton(withTitle: "刪除")
-        alert.addButton(withTitle: "取消")
-        alert.buttons[0].hasDestructiveAction = true
-        let run = { (response: NSApplication.ModalResponse) in
-            if response == .alertFirstButtonReturn { library.delete(Set(ids)) }
+        guard let removal = library.delete(Set(ids)) else { return }
+        undo?.registerUndo(withTarget: library) { lib in
+            MainActor.assumeIsolated { lib.restore(removal) }
         }
-        if let window {
-            alert.beginSheetModal(for: window) { response in MainActor.assumeIsolated { run(response) } }
-        } else {
-            run(alert.runModal())
-        }
+        undo?.setActionName(ids.count == 1 ? "移除收藏" : "移除 \(ids.count) 件收藏")
     }
 
     static func menu(for ids: [UUID], board: UUID?, library: Library, window: NSWindow?,
@@ -66,11 +63,11 @@ enum ItemActions {
         menu.addItem(addTo)
 
         menu.addItem(ClosureMenuItem("在 Finder 中顯示") {
-            let urls = ids.compactMap(library.item).map(library.originalURL)
+            let urls = ids.compactMap(library.item).compactMap(library.originalURL)
             NSWorkspace.shared.activateFileViewerSelecting(urls)
         })
         menu.addItem(.separator())
-        let title = board == nil ? "刪除…" : "從 board 移除"
+        let title = board == nil ? "移除" : "從 board 移除"
         menu.addItem(ClosureMenuItem(title) { delete(ids, board: board, library: library, window: window) })
         return menu
     }
@@ -93,7 +90,13 @@ enum ItemActions {
     static func pasteboardItem(for item: Item, library: Library) -> NSPasteboardItem {
         let pb = NSPasteboardItem()
         pb.setString(item.id.uuidString, forType: .wunderkammerItem)
-        pb.setString(library.originalURL(item).absoluteString, forType: .fileURL)
+        if let file = library.originalURL(item) {
+            pb.setString(file.absoluteString, forType: .fileURL)
+        } else if let url = item.url {
+            pb.setString(url, forType: .URL)
+        } else if let text = item.text {
+            pb.setString(text, forType: .string)
+        }
         return pb
     }
 
