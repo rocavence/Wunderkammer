@@ -15,6 +15,7 @@ enum EmptyState {
         case .subject: return "這個主題現在沒有東西了"
         case .mentions(let name): return "沒有其他收藏提到「\(name)」"
         case .site(let domain): return "沒有其他來自 \(domain) 的收藏"
+        case .trail: return "還沒有足跡\n打開的每一件收藏，都會依序留在這裡"
         }
     }
 }

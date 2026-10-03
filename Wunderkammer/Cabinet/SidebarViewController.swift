@@ -101,6 +101,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         r += [.header("重新發現"),
               .view(.onThisDay, title: "過去的今天", icon: .calendarDay, count: nil),
               .view(.forgotten, title: "被遺忘的", icon: .history, count: nil),
+              .view(.trail, title: "足跡", icon: .eye, count: nil),
               .random]
         if !library.collections.isEmpty {
             r += [.header("Boards")] + library.collections.map { .board($0) }

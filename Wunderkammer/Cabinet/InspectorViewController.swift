@@ -7,11 +7,14 @@ final class InspectorViewController: NSViewController {
     private let library: Library
     private let stack = NSStackView()
     private var itemID: UUID?
+    var currentID: UUID? { itemID }
     var onSelectRelated: ((UUID) -> Void)?
     /// A name or a site was clicked: show everything connected to it.
     var onOpenView: ((Scope.Base) -> Void)?
     /// Supplies related items (filled in by the understanding layer).
     var related: ((Item) -> [Item])?
+    /// How you last arrived at an item ("上次是從搜尋…來的").
+    var arrival: ((Item) -> String?)?
 
     init(library: Library) {
         self.library = library
@@ -82,6 +85,9 @@ final class InspectorViewController: NSViewController {
         stack.addArrangedSubview(title)
         stack.setCustomSpacing(4, after: title)
         stack.addArrangedSubview(label(Rediscovery.ageLine(item), size: 11, color: .secondaryLabelColor))
+        if let arrived = arrival?(item) {
+            stack.addArrangedSubview(label(arrived, size: 11, color: .tertiaryLabelColor))
+        }
 
         stack.addArrangedSubview(divider())
         for (key, value) in Self.facts(item, library: library) {

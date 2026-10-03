@@ -8,7 +8,7 @@
 
 1. Wunderkammer 已經開著（`dist/Wunderkammer.app`）。你的 30 張迷因已轉成新格式並分析完成。
 2. 在 Safari 或 Zen 隨便打開一頁，按 `⌘⇧C`。Safari 會先問「自動化」權限；Zen 要到「系統設定 → 隱私權與安全性 → 輔助使用」打開 Wunderkammer。
-3. 在 app 裡按 `R`、`⌘K` 搜尋「receive」（只出現在 Trade Offer 圖裡的字），再右鍵任一張「找相似的」。
+3. 在 app 裡按 `R`、`⌘K` 搜尋「receive」（只出現在 Trade Offer 圖裡的字）、搜尋「a cat at a dinner table」（語意搜尋），再右鍵任一張「找相似的」。
 
 截圖在 `docs/screenshots/`。
 
@@ -33,7 +33,14 @@
 | US-013 移除與復原 | 完成 | `Delete` 不跳對話框，`⌘Z` 復原 |
 | US-014 零整理 | 完成 | 不需要建立任何資料夾或 tag；側欄的 view 都由系統維護 |
 
-另外：服務選單（任何 app 右鍵「服務 → 收進 Wunderkammer」）、`wunderkammer://capture` 連結、app icon（Reicon cabinet）。
+另外：服務選單（任何 app 右鍵「服務 → 收進 Wunderkammer」）、`wunderkammer://capture` 連結、app icon（Reicon cabinet）、拖到 Dock icon、選單列 icon、Spotlight、設定視窗（自訂快捷鍵）。關掉視窗後 app 繼續在背景收藏。
+
+### Stage 3 — World（先做的部分）
+
+| User Story | 狀態 | 說明 |
+|---|---|---|
+| US-301 Canvas | 完成 | 原本就有；現在每個 view（類型、主題、board）都有自己的 canvas |
+| US-303 Spatial Clustering | 部分 | Canvas 右鍵「依主題分堆」，系統分成有名稱的堆 |
 
 ### Stage 2 — Intelligence（本機）
 
@@ -47,8 +54,9 @@
 | US-208 On This Day | 完成 | 「過去的今天」 |
 | US-210 Auto Collections | 部分 | 依物件標籤自動長出「主題」（人物、插畫、動物……） |
 | US-204 Entities | 部分 | 英文名字可以；中文沒有命名實體辨識（系統不支援） |
-| US-201 Semantic Search | 未做 | 需要文字與圖片共用的 embedding 模型，見「需要你決定的事」 |
-| US-209、US-211 | 未做 | 需要 Entity Model 與 LLM 層 |
+| US-201 Semantic Search | 完成 | 本機 MobileCLIP：用描述找圖，30 張迷因上 9 個描述全部第一名命中；中文描述需系統翻譯語言 |
+| US-209 Connections | 部分 | Inspector 的名字與網站可以點開，看所有連到它的收藏 |
+| US-211 Questions | 未做 | 需要 Apple 的本機語言模型；這台 Mac 回報 `modelNotReady`（Apple Intelligence 模型未就緒），無法驗證所以沒做 |
 
 ### 依你半夜的回饋修正
 
@@ -88,16 +96,16 @@
 
 ## 需要你決定的事
 
-1. **語意搜尋（US-201）。** 「很像 Blade Runner 的東西」需要能同時理解文字與圖片的模型（例如 CLIP 類模型轉 Core ML，約 150–300 MB）。選項：內建一個本機模型、改用雲端（違反預設 Local-first，需要明確開關），或先不做。
-2. **`⌘⇧C` 的衝突。** Chrome 開發者工具（檢查元素）和 Finder 也用這組。要保留，還是換成例如 `⌥⌘C`？
-3. **Board 的去留。** 規劃文件說 Folder 不應是必要的；目前 board 保留在側欄最下面，Canvas 依然用得到。要不要完全隱藏，只在 Canvas 裡出現？
+1. **語意搜尋的模型要不要隨 app 散布。** 目前模型（106 MB）由 `scripts/models/fetch-mobileclip.sh` 另外安裝，已裝在這台 Mac。要給別人用時，可以內建在 app 裡（app 變大），或第一次使用時詢問後下載。
+2. **中文描述搜尋。** 需要系統的「中文（繁體）→ 英文」翻譯語言。到選單「編輯 → 啟用中文描述搜尋…」按「下載」即可；沒下載時只對應已知詞（紅色、椅子、貓…）。
+3. **`⌘⇧C` 的衝突。** Chrome 開發者工具和 Finder 也用這組。現在可以在設定（⌘,）自己換；要不要換預設值？
+4. **Board 的去留。** 規劃文件說 Folder 不應是必要的；目前 board 保留在側欄最下面，Canvas 依然用得到。要不要完全隱藏，只在 Canvas 裡出現？
 
 ## 已知問題
 
 * 中文的人名、地名抓不到（Apple NaturalLanguage 不支援中文命名實體辨識）。
 * 被參照的檔案如果被刪除，只剩 representation 可看，無法開原檔。
-* Timeline 的日期標題在捲動時不會固定在頂端。
-* 收藏提示（toast）在淺色模式下的對比尚未逐一檢查。
+* 淺色模式已修正預覽背景與日期標題；其他畫面只截圖檢查過 Grid、Timeline、Inspector 與預覽。
 
 ## Commit 一覽
 

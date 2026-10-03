@@ -97,3 +97,26 @@ struct RediscoveryTests {
         #expect(Rediscovery.ageLine(item(added: at(2023, 3, 7)), now: now, calendar: cal) == "你在 1,307 天前收藏了這個")
     }
 }
+
+@MainActor
+struct TrailTests {
+    @Test func recordsPathsAndPersists() {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("wk-trail-\(UUID().uuidString)")
+        try? FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let a = UUID(), b = UUID(), c = UUID()
+        let trail = Trail(root: root)
+        let t0 = Date()
+        trail.record(a, via: .browse, at: t0)
+        trail.record(a, via: .browse, at: t0.addingTimeInterval(5))       // same visit
+        trail.record(b, via: .search("receive"), at: t0.addingTimeInterval(10))
+        trail.record(c, via: .similar(b), at: t0.addingTimeInterval(20))
+        trail.record(a, via: .random, at: t0.addingTimeInterval(30))
+        #expect(trail.steps.count == 4)
+        #expect(trail.recentItems(existing: [a, b, c]) == [a, c, b])
+        #expect(trail.recentItems(existing: [b, c]) == [c, b])
+        #expect(trail.lastArrival(at: c)?.via == .similar(b))
+        #expect(Trail.describe(.search("receive"), title: { _ in nil }) == "上次是從搜尋「receive」來的")
+        trail.save()
+        #expect(Trail(root: root).steps == trail.steps)
+    }
+}

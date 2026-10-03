@@ -40,6 +40,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private var capture: CaptureController!
     private let quickLook = QuickLookHost()
     private var understanding: Understanding!
+    private lazy var trail = Trail(root: library.root)
+    /// How the next opened item was reached (set by R, related clicks…).
+    private var pendingVia: Trail.Via?
     private var spotlight: SpotlightIndexer?
     private var statusItem: NSStatusItem?
     private lazy var settings: SettingsWindowController = {
@@ -113,11 +116,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         sidebar.onSelect = { [weak self] base in self?.show(base: base) }
         sidebar.onRandom = { [weak self] in self?.showRandom() }
         inspector = InspectorViewController(library: library)
-        inspector.onSelectRelated = { [weak self] id in self?.reveal(id) }
+        inspector.onSelectRelated = { [weak self] id in
+            guard let self else { return }
+            // Following a related item is a step on the trail in itself.
+            if let from = self.inspectorItemID { self.trail.record(id, via: .related(from)) }
+            self.reveal(id)
+        }
         inspector.onOpenView = { [weak self] base in self?.sidebar.select(base) }
         understanding = Understanding(library: library)
         library.similarity = { [weak self] id in self?.understanding.similar(to: id) ?? [] }
         inspector.related = { [weak self] item in self?.understanding.related(to: item) ?? [] }
+        library.recentlyViewed = { [weak self] in
+            guard let self else { return [] }
+            return self.trail.recentItems(existing: Set(self.library.items.map(\.id)))
+        }
+        inspector.arrival = { [weak self] item in
+            guard let self, let step = self.trail.lastArrival(at: item.id) else { return nil }
+            return Trail.describe(step.via) { self.library.item($0)?.displayTitle }
+        }
         NotificationCenter.default.addObserver(forName: Understanding.didProgress, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.updateTitle() }
         }
@@ -249,7 +265,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         return true
     }
 
-    func applicationWillTerminate(_ notification: Notification) { library.save() }
+    func applicationWillTerminate(_ notification: Notification) {
+        library.save()
+        trail.save()
+    }
 
     // MARK: State
 
@@ -276,6 +295,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         case .subject(let label): window.title = Subjects.title(label)
         case .mentions(let name): window.title = "提到「\(name)」"
         case .site(let domain): window.title = domain
+        case .trail: window.title = "足跡"
         }
         let count = library.items(for: scope).count
         let learning = understanding?.pending ?? 0
@@ -322,6 +342,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private func openPreview(_ id: UUID, caption: String? = nil) {
         guard let item = library.item(id) else { return }
         library.markViewed(id)
+        trail.record(id, via: pendingVia ?? currentVia)
+        pendingVia = nil
         inspector.show(id)
         if [.video, .audio, .pdf, .file].contains(item.kind), let url = library.originalURL(item) {
             quickLook.show(url, for: id)
@@ -343,6 +365,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         preview.open(id, from: currentSurface, caption: caption ?? hint)
     }
 
+    /// How the cabinet is being browsed right now, for the trail.
+    private var currentVia: Trail.Via {
+        if scope.isSearching { return .search(scope.search) }
+        switch scope.base {
+        case .similar(let id): return .similar(id)
+        case .mentions(let n): return .mentions(n)
+        case .site(let d): return .site(d)
+        case .subject(let l): return .theme(Subjects.title(l))
+        default: return .browse
+        }
+    }
+
     /// Enter: the page in the browser, the file in its app.
     private func openExternally(_ id: UUID) {
         guard let item = library.item(id), let url = library.openURL(item) else { NSSound.beep(); return }
@@ -362,10 +396,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         if scope.isSearching { clearSearch() }
         currentSurface.reveal(pick.id)
         let caption = Rediscovery.ageLine(pick)
+        pendingVia = .random
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
             MainActor.assumeIsolated { self?.openPreview(pick.id, caption: caption) }
         }
     }
+
+    /// The item the inspector is showing (for "came from related").
+    private var inspectorItemID: UUID? { inspector.currentID }
 
     private func reveal(_ id: UUID) {
         if !library.items(for: scope).contains(where: { $0.id == id }) { sidebar.select(.all) }

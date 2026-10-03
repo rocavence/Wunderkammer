@@ -39,6 +39,8 @@ final class Library {
     private var byID: [UUID: Int] = [:]
     /// Visually similar items, supplied by the understanding layer.
     var similarity: ((UUID) -> [Item])?
+    /// The trail's most recent items, newest first.
+    var recentlyViewed: (() -> [UUID])?
     /// Set while the app is sending changes in quick succession (enrichment).
     private var saveWork: DispatchWorkItem?
 

@@ -723,6 +723,14 @@ final class SelfTest {
         key(53)
         await wait(0.8)
 
+        // The trail remembers what was looked at, newest first, and how.
+        ui.sidebar.select(.trail)
+        await wait(0.6)
+        check(!ui.grid.shownItems.isEmpty, "trail shows what was looked at (\(ui.grid.shownItems.count))")
+        shot("ui-trail")
+        ui.sidebar.select(.all)
+        await wait(0.4)
+
         // Inspector shows the focused item's metadata.
         ui.toggleInspectorForTest()
         if let pdfItem = library.items.first(where: { $0.kind == .pdf }) {
