@@ -1,0 +1,526 @@
+import AppKit
+import QuartzCore
+
+/// The grid: justified rows drawn as plain CALayers. Only tiles near the
+/// viewport exist, so scrolling cost doesn't grow with library size. Zooming
+/// changes the row height and every tile animates from where it was to where
+/// it now belongs.
+@MainActor
+final class GridView: NSView, ItemSurface, NSDraggingSource {
+    static let minRowHeight: CGFloat = 48
+    static let maxRowHeight: CGFloat = 1400
+
+    let library: Library
+    let pool: TilePool
+    var onOpen: ((UUID) -> Void)?
+
+    /// nil = All Images.
+    private(set) var board: UUID?
+    private(set) var items: [Item] = []
+    private(set) var frames: [CGRect] = []
+    private(set) var rowHeight: CGFloat = 220
+    private(set) var selection = Selection()
+
+    private var layoutWidth: CGFloat = 0
+    private var isRelayingOut = false
+    private var order: [UUID] { items.map(\.id) }
+
+    // Mouse tracking
+    private var downPoint: NSPoint?
+    private var downHit: UUID?
+    private var marquee: CAShapeLayer?
+    private var marqueeBase: Set<UUID> = []
+
+    init(library: Library, thumbnailer: Thumbnailer) {
+        self.library = library
+        pool = TilePool(library: library, thumbnailer: thumbnailer)
+        super.init(frame: .zero)
+        wantsLayer = true
+        layer?.masksToBounds = true
+        pool.host = layer
+        registerForDraggedTypes([.fileURL, .png, .tiff])
+        NotificationCenter.default.addObserver(forName: Library.didChange, object: library, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.reload(animated: true) }
+        }
+        items = library.items(in: nil)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override var isFlipped: Bool { true }
+    override var acceptsFirstResponder: Bool { true }
+    /// Clicking into an inactive window selects/drags right away.
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+    override var isOpaque: Bool { true }
+
+    override func viewDidMoveToSuperview() {
+        super.viewDidMoveToSuperview()
+        guard let clip = superview as? NSClipView else { return }
+        clip.postsBoundsChangedNotifications = true
+        clip.postsFrameChangedNotifications = true
+        NotificationCenter.default.addObserver(forName: NSView.boundsDidChangeNotification, object: clip, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                // Our own scroll during a relayout is handled by the relayout itself.
+                guard !self.isRelayingOut else { return }
+                if self.isLiveZooming { self.applyLiveZoom() } else { self.updateTiles(animated: false) }
+            }
+        }
+        NotificationCenter.default.addObserver(forName: NSView.frameDidChangeNotification, object: clip, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.relayoutIfWidthChanged() }
+        }
+        relayoutIfWidthChanged()
+    }
+
+    override func updateLayer() {
+        layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
+    }
+
+    // MARK: Layout
+
+    func show(board: UUID?) {
+        self.board = board
+        selection = Selection()
+        pool.removeAll()
+        items = library.items(in: board)
+        relayout(animated: false, anchor: nil)
+        if let clip = superview as? NSClipView {
+            clip.scroll(to: NSPoint(x: 0, y: -clip.contentInsets.top))
+            enclosingScrollView?.reflectScrolledClipView(clip)
+        }
+        needsDisplay = true
+    }
+
+    func reload(animated: Bool) {
+        items = library.items(in: board)
+        selection.restrict(to: Set(order))
+        relayout(animated: animated, anchor: nil)
+        needsDisplay = true
+    }
+
+    private func relayoutIfWidthChanged() {
+        guard let clip = superview else { return }
+        if clip.bounds.width != layoutWidth { relayout(animated: false, anchor: nil) }
+    }
+
+    /// `anchor`: a point in this view's coordinates that should stay over the
+    /// same spot of the same image after the relayout (cursor during zoom).
+    private func relayout(animated: Bool, anchor: NSPoint?) {
+        guard let clip = superview as? NSClipView else { return }
+        isRelayingOut = true
+        defer { isRelayingOut = false }
+        layoutWidth = clip.bounds.width
+
+        var anchorIndex: Int?
+        var anchorFraction: CGFloat = 0.5
+        var anchorOnScreenY: CGFloat = 0
+        if let anchor, let i = nearestIndex(to: anchor) {
+            let f = frames[i]
+            anchorIndex = i
+            anchorFraction = (anchor.y - f.minY) / max(f.height, 1)
+            anchorOnScreenY = anchor.y - clip.bounds.minY
+        }
+
+        let result = JustifiedLayout(width: layoutWidth, rowHeight: rowHeight)
+            .layout(aspects: items.map(\.aspect))
+        frames = result.frames
+        setFrameSize(NSSize(width: layoutWidth, height: max(result.height, clip.bounds.height - clip.contentInsets.top)))
+
+        if let i = anchorIndex, frames.indices.contains(i) {
+            let f = frames[i]
+            let y = f.minY + anchorFraction * f.height - anchorOnScreenY
+            // Under a transparent titlebar the top of the scroll range is -inset, not 0.
+            let minY = -clip.contentInsets.top
+            let maxY = max(bounds.height - clip.bounds.height, minY)
+            let newY = min(max(y, minY), maxY)
+            // Tiles are in document coordinates, so a scroll jump would move them
+            // on screen. Shift them by the same amount first so they start the
+            // animation exactly where they appear.
+            let oldY = clip.bounds.minY
+            clip.scroll(to: NSPoint(x: 0, y: newY))
+            enclosingScrollView?.reflectScrolledClipView(clip)
+            // The clip view may adjust the requested offset; compensate the real one.
+            if animated { pool.rebase(dy: clip.bounds.minY - oldY) }
+        }
+        updateTiles(animated: animated)
+    }
+
+    private func nearestIndex(to p: NSPoint) -> Int? {
+        guard !frames.isEmpty else { return nil }
+        if let hit = index(at: p) { return hit }
+        let range = indices(in: NSRect(x: 0, y: p.y - rowHeight, width: bounds.width, height: rowHeight * 2))
+        let pool = range.isEmpty ? Array(frames.indices) : Array(range)
+        return pool.min { distance(frames[$0], p) < distance(frames[$1], p) }
+    }
+
+    private func distance(_ r: CGRect, _ p: CGPoint) -> CGFloat {
+        hypot(r.midX - p.x, r.midY - p.y)
+    }
+
+    func index(at p: NSPoint) -> Int? {
+        indices(in: NSRect(x: p.x, y: p.y, width: 1, height: 1)).first { frames[$0].contains(p) }
+    }
+
+    /// Frames are in row order, so binary-search the first one that reaches `rect`.
+    private func indices(in rect: NSRect) -> Range<Int> {
+        var lo = 0, hi = frames.count
+        while lo < hi {
+            let mid = (lo + hi) / 2
+            if frames[mid].maxY < rect.minY { lo = mid + 1 } else { hi = mid }
+        }
+        var end = lo
+        while end < frames.count, frames[end].minY <= rect.maxY { end += 1 }
+        return lo..<end
+    }
+
+    private func updateTiles(animated: Bool) {
+        guard let clip = superview else { return }
+        let visible = clip.bounds.insetBy(dx: 0, dy: -clip.bounds.height)
+        let placements = indices(in: visible).map { i in
+            TilePool.Placement(key: items[i].id.uuidString, item: items[i], frame: frames[i],
+                               selected: selection.ids.contains(items[i].id))
+        }
+        pool.apply(placements, animated: animated, scale: window?.backingScaleFactor ?? 2, spring: animated)
+    }
+
+    private func showSelection() {
+        pool.setSelected(Set(selection.ids.map(\.uuidString)))
+    }
+
+    // MARK: ItemSurface
+
+    var shownItems: [Item] { items }
+
+    func rectInWindow(for id: UUID) -> NSRect? {
+        guard let i = order.firstIndex(of: id) else { return nil }
+        return convert(frames[i], to: nil)
+    }
+
+    func currentImage(for id: UUID) -> CGImage? { pool.image(id.uuidString) }
+
+    func reveal(_ id: UUID) {
+        selection.set([id], anchor: id)
+        showSelection()
+        scrollToVisible(id)
+    }
+
+    func previewWillOpen(_ id: UUID) {
+        guard let i = order.firstIndex(of: id) else { return }
+        pool.scatter(from: CGPoint(x: frames[i].midX, y: frames[i].midY), hiding: id.uuidString)
+    }
+
+    func previewWillClose(landingOn id: UUID) {
+        pool.gather(landing: id.uuidString)
+    }
+
+    func previewDidClose() {
+        pool.revealHidden()
+        updateTiles(animated: false)
+    }
+
+    private func scrollToVisible(_ id: UUID) {
+        guard let i = order.firstIndex(of: id) else { return }
+        scrollToVisible(frames[i].insetBy(dx: 0, dy: -16))
+    }
+
+    // MARK: Zoom
+
+    /// Live zoom (pinch, ⌘-scroll on a trackpad): tiles just scale around the
+    /// cursor every frame, no reflow and no animation, so it tracks the fingers.
+    /// When the gesture ends or pauses, the grid reflows once and animates there.
+    private var liveScale: CGFloat = 1
+    private var liveAnchor: NSPoint?
+    private var commitWork: DispatchWorkItem?
+
+    var isLiveZooming: Bool { liveAnchor != nil }
+
+    /// Discrete step (menu, mouse wheel): one animated reflow.
+    func zoom(by factor: CGFloat, around anchor: NSPoint? = nil) {
+        commitLiveZoom()
+        let next = min(max(rowHeight * factor, Self.minRowHeight), Self.maxRowHeight)
+        guard next != rowHeight else { return }
+        rowHeight = next
+        let point = anchor ?? superview.map { NSPoint(x: $0.bounds.midX, y: $0.bounds.midY) }
+        relayout(animated: true, anchor: point)
+    }
+
+    func liveZoom(by factor: CGFloat, around p: NSPoint) {
+        if liveAnchor == nil {
+            liveAnchor = p
+            liveScale = 1
+        }
+        let target = min(max(rowHeight * liveScale * factor, Self.minRowHeight), Self.maxRowHeight)
+        liveScale = target / rowHeight
+        applyLiveZoom()
+        // Reflow when the fingers pause, not only when they lift.
+        commitWork?.cancel()
+        let work = DispatchWorkItem { [weak self] in MainActor.assumeIsolated { self?.commitLiveZoom() } }
+        commitWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18, execute: work)
+    }
+
+    func commitLiveZoom() {
+        commitWork?.cancel()
+        commitWork = nil
+        guard let anchor = liveAnchor else { return }
+        liveAnchor = nil
+        let scale = liveScale
+        liveScale = 1
+        guard abs(scale - 1) > 0.001 else { return updateTiles(animated: false) }
+        rowHeight = min(max(rowHeight * scale, Self.minRowHeight), Self.maxRowHeight)
+        // The point under the cursor is the scaling center, so it maps to itself:
+        // anchoring on it keeps that image under the cursor through the reflow.
+        relayout(animated: true, anchor: anchor)
+    }
+
+    private func applyLiveZoom() {
+        guard let a = liveAnchor, let clip = superview else { return }
+        let s = liveScale
+        let visible = clip.bounds.insetBy(dx: 0, dy: -clip.bounds.height / 2)
+        // Which laid-out tiles land on screen once scaled around `a`.
+        let source = CGRect(x: a.x + (visible.minX - a.x) / s, y: a.y + (visible.minY - a.y) / s,
+                            width: visible.width / s, height: visible.height / s)
+        let placements = indices(in: source).map { i in
+            let f = frames[i]
+            return TilePool.Placement(
+                key: items[i].id.uuidString, item: items[i],
+                frame: CGRect(x: a.x + (f.minX - a.x) * s, y: a.y + (f.minY - a.y) * s,
+                              width: f.width * s, height: f.height * s),
+                selected: selection.ids.contains(items[i].id))
+        }
+        pool.apply(placements, animated: false, scale: window?.backingScaleFactor ?? 2)
+    }
+
+    override func magnify(with event: NSEvent) {
+        liveZoom(by: 1 + event.magnification, around: convert(event.locationInWindow, from: nil))
+        if event.phase == .ended || event.phase == .cancelled { commitLiveZoom() }
+    }
+
+    override func scrollWheel(with event: NSEvent) {
+        if event.modifierFlags.contains(.command) {
+            let p = convert(event.locationInWindow, from: nil)
+            if event.hasPreciseScrollingDeltas {
+                liveZoom(by: 1 + event.scrollingDeltaY / 200, around: p)
+            } else {
+                zoom(by: 1 + event.scrollingDeltaY / 20, around: p)
+            }
+        } else {
+            commitLiveZoom()
+            super.scrollWheel(with: event)
+        }
+    }
+
+    // MARK: Mouse
+
+    override func mouseDown(with event: NSEvent) {
+        commitLiveZoom()
+        window?.makeFirstResponder(self)
+        let p = convert(event.locationInWindow, from: nil)
+        let hit = index(at: p).map { items[$0].id }
+        let modifier = Selection.modifier(event.modifierFlags)
+        downPoint = p
+        downHit = hit
+
+        if event.clickCount == 2, let hit {
+            onOpen?(hit)
+            return
+        }
+        // Clicking an already-selected tile keeps the group, so it can be dragged;
+        // mouseUp narrows it to one if no drag happened.
+        if let hit, modifier == .none, selection.ids.contains(hit) { return }
+        selection.click(hit, modifier, order: order)
+        showSelection()
+        if hit == nil { marqueeBase = modifier == .none ? [] : selection.ids }
+    }
+
+    override func mouseDragged(with event: NSEvent) {
+        guard let start = downPoint else { return }
+        let p = convert(event.locationInWindow, from: nil)
+        if downHit != nil {
+            guard hypot(p.x - start.x, p.y - start.y) > 4 else { return }
+            downPoint = nil
+            beginItemDrag(event)
+        } else {
+            autoscroll(with: event)
+            updateMarquee(from: start, to: p)
+        }
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        if let hit = downHit, downPoint != nil, Selection.modifier(event.modifierFlags) == .none, event.clickCount < 2 {
+            selection.click(hit, .none, order: order)
+            showSelection()
+        }
+        marquee?.removeFromSuperlayer()
+        marquee = nil
+        downPoint = nil
+        downHit = nil
+    }
+
+    private func updateMarquee(from a: NSPoint, to b: NSPoint) {
+        let rect = NSRect(x: min(a.x, b.x), y: min(a.y, b.y), width: abs(a.x - b.x), height: abs(a.y - b.y))
+        if marquee == nil {
+            let m = CAShapeLayer()
+            m.fillColor = NSColor.controlAccentColor.withAlphaComponent(0.15).cgColor
+            m.strokeColor = NSColor.controlAccentColor.cgColor
+            m.lineWidth = 1
+            m.zPosition = 100
+            layer?.addSublayer(m)
+            marquee = m
+        }
+        withoutAnimation { marquee?.path = CGPath(rect: rect, transform: nil) }
+        let hits = indices(in: rect).filter { frames[$0].intersects(rect) }.map { items[$0].id }
+        selection.set(marqueeBase.union(hits), anchor: hits.first)
+        showSelection()
+    }
+
+    override func menu(for event: NSEvent) -> NSMenu? {
+        let p = convert(event.locationInWindow, from: nil)
+        guard let i = index(at: p) else { return nil }
+        let id = items[i].id
+        if !selection.ids.contains(id) {
+            selection.click(id, .none, order: order)
+            showSelection()
+        }
+        let ids = selection.ordered(order)
+        return ItemActions.menu(for: ids, board: board, library: library, window: window) { [weak self] in
+            self?.onOpen?(id)
+        }
+    }
+
+    // MARK: Keyboard
+
+    override func keyDown(with event: NSEvent) {
+        switch event.keyCode {
+        case 49: // space
+            if let id = selection.anchor ?? selection.ordered(order).first { onOpen?(id) }
+        case 51, 117: // delete, forward delete
+            deleteSelection()
+        case 123: moveSelection(-1, event)
+        case 124: moveSelection(1, event)
+        case 125: moveSelectionVertically(down: true, event)
+        case 126: moveSelectionVertically(down: false, event)
+        default: super.keyDown(with: event)
+        }
+    }
+
+    @objc override func selectAll(_ sender: Any?) {
+        selection.set(Set(order))
+        showSelection()
+    }
+
+    @objc func delete(_ sender: Any?) { deleteSelection() }
+
+    private func deleteSelection() {
+        ItemActions.delete(selection.ordered(order), board: board, library: library, window: window)
+    }
+
+    private func moveSelection(_ delta: Int, _ event: NSEvent) {
+        guard !items.isEmpty else { return }
+        let current = selection.anchor.flatMap(order.firstIndex(of:)) ?? -delta
+        select(index: min(max(current + delta, 0), items.count - 1), event)
+    }
+
+    private func moveSelectionVertically(down: Bool, _ event: NSEvent) {
+        guard let s = selection.anchor.flatMap(order.firstIndex(of:)) else { return moveSelection(1, event) }
+        let f = frames[s]
+        let probe = NSPoint(x: f.midX, y: down ? f.maxY + rowHeight / 2 + 8 : f.minY - rowHeight / 2 - 8)
+        if let n = nearestIndex(to: probe), frames[n].minY != f.minY { select(index: n, event) }
+    }
+
+    private func select(index: Int, _ event: NSEvent) {
+        let id = items[index].id
+        if event.modifierFlags.contains(.shift) {
+            selection.ids.insert(id)
+            selection.anchor = id
+        } else {
+            selection.set([id], anchor: id)
+        }
+        showSelection()
+        scrollToVisible(id)
+    }
+
+    // MARK: Empty state
+
+    override func draw(_ dirtyRect: NSRect) {
+        guard items.isEmpty else { return }
+        let text = (board == nil
+            ? "把圖片或資料夾拖進來\n或從選單「檔案 → 從 Atlas 匯入」"
+            : "這個 board 還是空的\n把圖拖到左邊的 board 名稱上，或直接拖檔案進來") as NSString
+        let style = NSMutableParagraphStyle()
+        style.alignment = .center
+        style.lineSpacing = 6
+        let attrs: [NSAttributedString.Key: Any] = [
+            .font: NSFont.systemFont(ofSize: 15),
+            .foregroundColor: NSColor.secondaryLabelColor,
+            .paragraphStyle: style,
+        ]
+        let size = text.boundingRect(with: NSSize(width: 460, height: 200), options: .usesLineFragmentOrigin, attributes: attrs).size
+        let visible = visibleRect
+        text.draw(in: NSRect(x: visible.midX - 230, y: visible.midY - size.height / 2, width: 460, height: size.height), withAttributes: attrs)
+    }
+
+    // MARK: Drag out
+
+    private func beginItemDrag(_ event: NSEvent) {
+        let ids = selection.ordered(order)
+        let scale = window?.backingScaleFactor ?? 2
+        let draggingItems: [NSDraggingItem] = ids.prefix(50).enumerated().compactMap { n, id in
+            guard let item = library.item(id), let i = order.firstIndex(of: id) else { return nil }
+            let d = NSDraggingItem(pasteboardWriter: ItemActions.pasteboardItem(for: item, library: library))
+            let image = pool.image(id.uuidString).map { NSImage(cgImage: $0, size: NSSize(width: CGFloat($0.width) / scale, height: CGFloat($0.height) / scale)) }
+            d.setDraggingFrame(frames[i], contents: image)
+            return d
+        }
+        guard !draggingItems.isEmpty else { return }
+        beginDraggingSession(with: draggingItems, event: event, source: self).draggingFormation = .pile
+    }
+
+    func draggingSession(_ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation {
+        .copy
+    }
+
+    // MARK: Drop & paste
+
+    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        (sender.draggingSource as? GridView) === self ? [] : .copy
+    }
+
+    override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        draggingEntered(sender)
+    }
+
+    override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        importFrom(sender.draggingPasteboard)
+    }
+
+    @objc func paste(_ sender: Any?) {
+        _ = importFrom(NSPasteboard.general)
+    }
+
+    private func importFrom(_ pasteboard: NSPasteboard) -> Bool {
+        importPasteboard(pasteboard, library: library, board: board)
+    }
+}
+
+/// Files, our own items, or raw image data → library (and the given board).
+@MainActor
+func importPasteboard(_ pasteboard: NSPasteboard, library: Library, board: UUID?) -> Bool {
+    let own = ItemActions.ids(from: pasteboard)
+    if !own.isEmpty {
+        if let board { library.add(own, to: board) }
+        return board != nil
+    }
+    let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL] ?? []
+    if !urls.isEmpty {
+        Task { await library.importFiles(urls, into: board) }
+        return true
+    }
+    for (type, ext) in [(NSPasteboard.PasteboardType.png, "png"), (.tiff, "tiff")] {
+        if let data = pasteboard.data(forType: type) {
+            Task { await library.importImageData(data, suggestedName: "Pasted \(UUID().uuidString.prefix(6)).\(ext)", into: board) }
+            return true
+        }
+    }
+    return false
+}

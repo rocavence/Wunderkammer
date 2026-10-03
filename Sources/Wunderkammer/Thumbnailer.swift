@@ -1,0 +1,110 @@
+import AppKit
+import ImageIO
+import UniformTypeIdentifiers
+
+/// Decodes images off the main thread at the size they're actually shown,
+/// and keeps recent decodes in memory.
+@MainActor
+final class Thumbnailer {
+    private let cache = NSCache<NSString, CGImage>()
+    private let queue: OperationQueue = {
+        let q = OperationQueue()
+        q.maxConcurrentOperationCount = 4
+        q.qualityOfService = .userInitiated
+        return q
+    }()
+    /// One decode per key; several views may wait on it. Each wait has a token
+    /// so one view giving up doesn't cancel the image for another.
+    private var pending: [NSString: (op: Operation, waiters: [Int: @MainActor (CGImage) -> Void])] = [:]
+    private var nextToken = 0
+
+    struct Request: Hashable {
+        fileprivate let key: NSString
+        fileprivate let token: Int
+    }
+
+    init() {
+        cache.totalCostLimit = 512 * 1024 * 1024
+    }
+
+    /// Size buckets so nearby zoom levels share one decode.
+    static func bucket(for pixels: CGFloat) -> Int {
+        if pixels <= CGFloat(Library.thumbnailSize) { return Library.thumbnailSize }
+        if pixels <= 1200 { return 1200 }
+        return 2400
+    }
+
+    func cached(_ url: URL, maxPixel: Int) -> CGImage? {
+        cache.object(forKey: Self.key(url, maxPixel))
+    }
+
+    /// Calls `completion` on the main actor once decoded (right away if cached).
+    /// Returns a request to cancel, or nil when it was already answered.
+    @discardableResult
+    func load(_ url: URL, maxPixel: Int, completion: @escaping @MainActor (CGImage) -> Void) -> Request? {
+        let key = Self.key(url, maxPixel)
+        let keyString = key as String
+        if let image = cache.object(forKey: key) { completion(image); return nil }
+        nextToken += 1
+        let request = Request(key: key, token: nextToken)
+        if pending[key] != nil {
+            pending[key]!.waiters[request.token] = completion
+            return request
+        }
+        let op = BlockOperation()
+        op.addExecutionBlock { [weak op, weak self] in
+            guard op?.isCancelled == false,
+                  let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+                  let image = Self.decode(source: source, maxPixel: maxPixel) else { return }
+            let box = ImageBox(image: image)
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated { self?.finish(keyString as NSString, box.image) }
+            }
+        }
+        pending[key] = (op, [request.token: completion])
+        queue.addOperation(op)
+        return request
+    }
+
+    private func finish(_ key: NSString, _ image: CGImage) {
+        cache.setObject(image, forKey: key, cost: image.bytesPerRow * image.height)
+        // A newer decode may own this key if ours was cancelled mid-flight; its waiters still want the image.
+        let waiters = pending.removeValue(forKey: key)?.waiters ?? [:]
+        for waiter in waiters.values { waiter(image) }
+    }
+
+    /// Stops waiting; the decode itself is dropped once nobody waits for it.
+    func cancel(_ request: Request) {
+        guard var entry = pending[request.key] else { return }
+        entry.waiters[request.token] = nil
+        if entry.waiters.isEmpty {
+            entry.op.cancel()
+            pending[request.key] = nil
+        } else {
+            pending[request.key] = entry
+        }
+    }
+
+    private static func key(_ url: URL, _ maxPixel: Int) -> NSString {
+        "\(maxPixel)|\(url.path)" as NSString
+    }
+
+    nonisolated static func decode(source: CGImageSource, maxPixel: Int) -> CGImage? {
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxPixel,
+        ]
+        return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
+    }
+
+    nonisolated static func writeJPEG(_ image: CGImage, to url: URL) {
+        guard let dest = CGImageDestinationCreateWithURL(url as CFURL, UTType.jpeg.identifier as CFString, 1, nil)
+        else { return }
+        CGImageDestinationAddImage(dest, image, [kCGImageDestinationLossyCompressionQuality: 0.85] as CFDictionary)
+        CGImageDestinationFinalize(dest)
+    }
+}
+
+private struct ImageBox: @unchecked Sendable { let image: CGImage }
