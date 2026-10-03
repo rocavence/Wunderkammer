@@ -149,6 +149,17 @@ final class SelfTest {
             shot("semantic-search")
             ui.search("")
             return finish()
+        case "settings":
+            if let w = ui.showSettingsForTest(), let dir = Self.outputDir {
+                await wait(0.6)
+                let p = Process()
+                p.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
+                p.arguments = ["-x", "-o", "-l", "\(w.windowNumber)", dir.appendingPathComponent("settings.png").path]
+                try? p.run()
+                p.waitUntilExit()
+                check(w.isVisible, "settings window shows")
+            }
+            return finish()
         case "timeline":
             // Spread the cabinet over a few days, then scroll through it.
             for (i, item) in library.items.enumerated() {
@@ -773,4 +784,5 @@ protocol SelfTestUI: AnyObject {
     func search(_ text: String)
     func showRandom()
     func toggleInspectorForTest()
+    func showSettingsForTest() -> NSWindow?
 }

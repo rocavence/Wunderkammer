@@ -15,11 +15,13 @@ macOS 原生的個人珍奇室。看到喜歡的東西就收進來，不用分�
 | 全域快捷鍵 | `⌘⇧C`：剛複製的東西優先；否則收最前面瀏覽器的目前分頁 |
 | 截圖 | `⌃⌘⇧C`：選範圍或視窗，截好直接收進來 |
 | 拖放、貼上 | 把檔案、圖片、網址或文字拖進視窗，或按 `⌘V` |
+| Dock | 把檔案拖到 Dock 上的 icon |
+| 選單列 | 珍奇櫃 icon：收藏剪貼簿、截圖收藏、隨機一件 |
 | 分享選單 | 任何 app 的「分享 → Wunderkammer」 |
 | 服務選單 | 選取文字或檔案後，右鍵「服務 → 收進 Wunderkammer」 |
 | 瀏覽器 | 擴充或書籤小程式，見 [extensions/README.md](extensions/README.md) |
 
-收藏不會跳出任何對話框，收完在螢幕上方出現 1.6 秒的提示。
+收藏不會跳出任何對話框，收完在螢幕上方出現 1.6 秒的提示。關掉視窗後 app 仍在背景執行，收藏照常運作；點 Dock icon 或按 `⌘0` 叫回視窗。
 
 能收的東西：圖片、影片、聲音、PDF、網頁、文字與任何檔案。檔案以參照方式收藏（記路徑與 bookmark），不會複製一份；只有本身沒有檔案的內容（複製的圖片、截圖）才保存在圖庫裡。
 
@@ -41,8 +43,11 @@ macOS 原生的個人珍奇室。看到喜歡的東西就收進來，不用分�
 ## 找到
 
 * `⌘K` 搜尋標題、檔名、網站、文字、圖中文字（OCR）、系統辨識的物件與顏色、收藏年份。中文查詢會斷詞並對應英文標籤，例如「紅色的椅子」。
+* 語意搜尋：用描述找圖，例如「a cat at a dinner table」。需要先執行 `scripts/models/fetch-mobileclip.sh` 安裝本機模型（約 106 MB）。中文描述需要系統的「中文（繁體）→ 英文」翻譯語言，可從選單「編輯 → 啟用中文描述搜尋…」下載。
+* 收藏也編入 Spotlight（只放標題、網站與主題，不放文字內容）。
 * 側欄的 view 都由系統維護：依類型（圖片、網頁、文字……）、自動發現的主題（人物、插畫……）。
-* 右鍵「找相似的」依視覺相似度排序；`⌘I` 列出相關的收藏。
+* 右鍵「找相似的」依視覺相似度排序；`⌘I` 列出相關的收藏，名字與網站可以點開，看所有連到它的收藏。
+* Canvas 空白處右鍵「依主題分堆」：系統依主題分成有名稱的幾堆。
 
 ## 重新發現
 
@@ -68,7 +73,9 @@ scripts/build-release.sh        # 輸出 dist/Wunderkammer.app
 xcodebuild -project Wunderkammer.xcodeproj -scheme Wunderkammer -derivedDataPath build test
 scripts/selftest.sh             # 端對端：完整流程
 scripts/selftest.sh ui          # 收藏、顯示方式、搜尋、隨機、Inspector
-scripts/selftest.sh understand  # OCR、主題、相似
+scripts/selftest.sh understand  # OCR、主題、相似、主題分堆
+scripts/selftest.sh semantic    # 語意搜尋（需要模型）
+scripts/selftest.sh formats     # 系統內建的影片、聲音、HEIC、PDF、app
 WK_SELFTEST_TIMEOUT=400 scripts/selftest.sh perf   # 3,000 件的效能
 ```
 
@@ -86,4 +93,4 @@ WK_SELFTEST_TIMEOUT=400 scripts/selftest.sh perf   # 3,000 件的效能
 | `extensions/browser` | Chrome、Zen、Firefox 擴充 |
 | `docs/DECISIONS.md` | 決策紀錄 |
 
-圖庫位置：`~/Library/Application Support/Wunderkammer/`（`library.json`、`originals/`、`thumbnails/`、`featureprints/`）。
+圖庫位置：`~/Library/Application Support/Wunderkammer/`（`library.json`、`originals/`、`thumbnails/`、`featureprints/`、`embeddings/`、`models/`）。

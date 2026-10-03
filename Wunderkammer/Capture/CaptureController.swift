@@ -20,8 +20,17 @@ final class CaptureController: NSObject {
     /// A copy this recent is what ⌘⇧C means; older, the frontmost page wins.
     private let freshClipboard: TimeInterval = 60
 
-    static let captureShortcut = GlobalHotkeys.Shortcut(keyCode: kVK_ANSI_C, modifiers: [.command, .shift])
-    static let screenshotShortcut = GlobalHotkeys.Shortcut(keyCode: kVK_ANSI_C, modifiers: [.command, .shift, .control])
+    static let defaultCaptureShortcut = GlobalHotkeys.Shortcut(keyCode: kVK_ANSI_C, modifiers: [.command, .shift])
+    static let defaultScreenshotShortcut = GlobalHotkeys.Shortcut(keyCode: kVK_ANSI_C, modifiers: [.command, .shift, .control])
+    static let captureKey = "shortcut.capture", screenshotKey = "shortcut.screenshot"
+
+    /// The user's choice (Settings), else the default.
+    static var captureShortcut: GlobalHotkeys.Shortcut {
+        UserDefaults.standard.string(forKey: captureKey).flatMap(GlobalHotkeys.Shortcut.init(stored:)) ?? defaultCaptureShortcut
+    }
+    static var screenshotShortcut: GlobalHotkeys.Shortcut {
+        UserDefaults.standard.string(forKey: screenshotKey).flatMap(GlobalHotkeys.Shortcut.init(stored:)) ?? defaultScreenshotShortcut
+    }
 
     init(library: Library) {
         self.library = library
@@ -31,16 +40,26 @@ final class CaptureController: NSObject {
     private(set) var shortcutRegistered = false
     private var shareInbox: ShareInboxWatcher?
 
-    func start() {
+    /// (Re)binds both shortcuts; called again after Settings changes them.
+    func registerShortcuts() {
+        hotkeys.unregisterAll()
         shortcutRegistered = hotkeys.register(Self.captureShortcut) { [weak self] in
             Task { await self?.captureNow() }
         }
         if !shortcutRegistered {
-            toast.show(title: "⌘⇧C 已被其他 app 使用", detail: "仍可從選單「檔案 → 收藏剪貼簿或目前頁面」收藏", image: nil)
+            toast.show(title: "\(Self.captureShortcut.display) 已被其他 app 使用",
+                       detail: "到設定換一組快捷鍵，或從選單「檔案 → 收藏剪貼簿或目前頁面」收藏", image: nil)
         }
         hotkeys.register(Self.screenshotShortcut) { [weak self] in
             Task { await self?.captureScreenshot() }
         }
+    }
+
+    /// While Settings records a new shortcut, the old ones must not swallow it.
+    func suspendShortcuts() { hotkeys.unregisterAll() }
+
+    func start() {
+        registerShortcuts()
         NSApp.servicesProvider = self
         NSUpdateDynamicServices()
         NSAppleEventManager.shared().setEventHandler(self, andSelector: #selector(handleURL(_:reply:)),

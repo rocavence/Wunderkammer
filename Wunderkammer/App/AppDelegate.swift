@@ -42,6 +42,31 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private var understanding: Understanding!
     private var spotlight: SpotlightIndexer?
     private var statusItem: NSStatusItem?
+    private lazy var settings: SettingsWindowController = {
+        let s = SettingsWindowController()
+        s.onShortcutsChanged = { [weak self] in
+            self?.capture.registerShortcuts()
+            self?.buildMenu()
+            self?.buildStatusItem()
+        }
+        s.onRecording = { [weak self] recording in
+            if recording { self?.capture.suspendShortcuts() } else { self?.capture.registerShortcuts() }
+        }
+        s.onSpotlightChanged = { [weak self] on in
+            guard let self else { return }
+            self.spotlight = on ? SpotlightIndexer(library: self.library) : nil
+            if !on { SpotlightIndexer.clear() }
+        }
+        s.semanticReady = { [weak self] in self?.understanding.semantic != nil }
+        return s
+    }()
+
+    @objc private func showSettings() { settings.showWindow(nil) }
+
+    func showSettingsForTest() -> NSWindow? {
+        settings.showWindow(nil)
+        return settings.window
+    }
     /// Recently shown by R, so it doesn't repeat itself.
     private var recentRandom: [UUID] = []
 
@@ -144,7 +169,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
 
         understanding.start()
         if !SelfTest.isEnabled {
-            spotlight = SpotlightIndexer(library: library)
+            if SettingsWindowController.spotlightEnabled { spotlight = SpotlightIndexer(library: library) }
             buildStatusItem()
         }
 
@@ -173,15 +198,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         NSApp.activate()
     }
 
+    /// Shows the user's shortcut next to a menu item (the global hotkey does the work).
+    static func show(_ shortcut: GlobalHotkeys.Shortcut, on item: NSMenuItem) {
+        let key = GlobalHotkeys.Shortcut.keyName(shortcut.keyCode).lowercased()
+        guard key.count == 1 else { return }
+        item.keyEquivalent = key
+        item.keyEquivalentModifierMask = shortcut.modifiers
+    }
+
     private func buildStatusItem() {
+        if let old = statusItem { NSStatusBar.system.removeStatusItem(old) }
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         item.button?.image = Icon.image(.cabinet, size: 16)
         item.button?.toolTip = "Wunderkammer"
         let menu = NSMenu()
-        let c = menu.addItem(withTitle: "收藏剪貼簿或目前頁面", action: #selector(captureNow), keyEquivalent: "c")
-        c.keyEquivalentModifierMask = [.command, .shift]
-        let s = menu.addItem(withTitle: "截圖收藏", action: #selector(captureScreenshot), keyEquivalent: "c")
-        s.keyEquivalentModifierMask = [.command, .shift, .control]
+        Self.show(CaptureController.captureShortcut, on: menu.addItem(withTitle: "收藏剪貼簿或目前頁面", action: #selector(captureNow), keyEquivalent: ""))
+        Self.show(CaptureController.screenshotShortcut, on: menu.addItem(withTitle: "截圖收藏", action: #selector(captureScreenshot), keyEquivalent: ""))
         menu.addItem(.separator())
         menu.addItem(withTitle: "隨機一件", action: #selector(randomFromStatus), keyEquivalent: "")
         menu.addItem(withTitle: "打開珍奇室", action: #selector(showCabinet), keyEquivalent: "")
@@ -493,6 +525,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         let appMenu = NSMenu()
         appMenu.addItem(withTitle: "關於 Wunderkammer", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
         appMenu.addItem(.separator())
+        appMenu.addItem(withTitle: "設定…", action: #selector(showSettings), keyEquivalent: ",").target = self
+        appMenu.addItem(.separator())
         let services = NSMenuItem(title: "服務", action: nil, keyEquivalent: "")
         services.submenu = NSMenu()
         NSApp.servicesMenu = services.submenu
@@ -505,12 +539,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
 
         let fileItem = NSMenuItem()
         let fileMenu = NSMenu(title: "檔案")
-        let captureItem = fileMenu.addItem(withTitle: "收藏剪貼簿或目前頁面", action: #selector(captureNow), keyEquivalent: "c")
-        captureItem.keyEquivalentModifierMask = [.command, .shift]
+        let captureItem = fileMenu.addItem(withTitle: "收藏剪貼簿或目前頁面", action: #selector(captureNow), keyEquivalent: "")
         captureItem.target = self
-        let shot = fileMenu.addItem(withTitle: "截圖收藏", action: #selector(captureScreenshot), keyEquivalent: "c")
-        shot.keyEquivalentModifierMask = [.command, .shift, .control]
+        Self.show(CaptureController.captureShortcut, on: captureItem)
+        let shot = fileMenu.addItem(withTitle: "截圖收藏", action: #selector(captureScreenshot), keyEquivalent: "")
         shot.target = self
+        Self.show(CaptureController.screenshotShortcut, on: shot)
         fileMenu.addItem(withTitle: "加入檔案…", action: #selector(importFiles), keyEquivalent: "o").target = self
         fileMenu.addItem(withTitle: "從 Atlas 匯入", action: #selector(importAtlas), keyEquivalent: "").target = self
         fileMenu.addItem(.separator())

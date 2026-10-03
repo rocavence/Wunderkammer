@@ -115,3 +115,8 @@
 * **模型位置**：`~/Library/Application Support/Wunderkammer/models`，由 `scripts/models/fetch-mobileclip.sh` 下載與編譯，不進版控、不隨 app 散布。沒有模型時，搜尋只用文字比對，其他功能不受影響。
 * **門檻**：只收明顯相符的（餘弦相似度 ≥ 0.19，且與最佳結果差距在 0.05 內，最多 24 件）。在 30 張迷因上，9 個描述全部第一名命中。
 * **與規劃文件**：這是 Stage 2 的 US-201。仍是本機運算，符合 Local-first。
+
+## D20　設定只放三件事
+
+* **選擇**：設定視窗（⌘,）只有兩組快捷鍵（收藏、截圖）、Spotlight 開關與語意搜尋模型的狀態。快捷鍵必須含 ⌘、⌃ 或 ⌥，避免吃掉一般輸入；Delete 還原預設。
+* **理由**：規劃文件「避免 Excessive settings」。⌘⇧C 與 Chrome 開發者工具、Finder 衝突，所以要能換。

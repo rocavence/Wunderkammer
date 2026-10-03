@@ -52,6 +52,11 @@ final class SpotlightIndexer {
         return h.finalize()
     }
 
+    /// Settings turned Spotlight off: take everything out.
+    static func clear() {
+        CSSearchableIndex(name: "Wunderkammer").deleteAllSearchableItems(completionHandler: nil)
+    }
+
     private func searchable(_ item: Item) -> CSSearchableItem {
         let attributes = CSSearchableItemAttributeSet(contentType: .content)
         // Text curiosities are their content: name them by kind and source instead.

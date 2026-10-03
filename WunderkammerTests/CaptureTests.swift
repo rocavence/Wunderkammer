@@ -133,3 +133,15 @@ struct ShareInboxTests {
         #expect(a.absoluteString == "https://example.com/a" && b.absoluteString == "https://example.org/b" && t == "a thought")
     }
 }
+
+@MainActor
+struct ShortcutTests {
+    @Test func storedRoundTripAndDisplay() {
+        let s = GlobalHotkeys.Shortcut(keyCode: 8, modifiers: [.command, .shift, .capsLock])  // C
+        #expect(s.modifiers == [.command, .shift])
+        #expect(GlobalHotkeys.Shortcut(stored: s.stored) == s)
+        #expect(s.display == "⇧⌘C")
+        #expect(GlobalHotkeys.Shortcut(keyCode: 8, modifiers: [.option, .command]).display == "⌥⌘C")
+        #expect(GlobalHotkeys.Shortcut(stored: "garbage") == nil)
+    }
+}
