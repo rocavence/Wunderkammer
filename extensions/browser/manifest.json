@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Wunderkammer",
+  "description": "Keep what catches your eye: save the page, a link, an image or the selected text to Wunderkammer.",
+  "version": "0.1.0",
+  "permissions": ["contextMenus", "activeTab"],
+  "background": {
+    "service_worker": "background.js",
+    "scripts": ["background.js"]
+  },
+  "action": {
+    "default_title": "收進 Wunderkammer"
+  },
+  "icons": { "128": "icon-128.png" },
+  "browser_specific_settings": {
+    "gecko": { "id": "wunderkammer@rocavence.com", "strict_min_version": "121.0" }
+  }
+}

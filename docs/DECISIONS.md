@@ -62,3 +62,14 @@
 * **重跑**：`Analyzer.version` 提高時，舊的分析結果會在背景重做。
 * **相似**：視覺特徵距離只保留明顯較近的（平均減半個標準差，至少 6、最多 24 件）。「相關的收藏」再加上同網站、同作者、共同物件標籤。
 * **還沒做**：語意搜尋（「很像 Blade Runner 的東西」）需要文字與圖片共用的 embedding 模型，留到下一階段評估。
+
+## D11　瀏覽器擴充走 wunderkammer://，不開本機伺服器
+
+* **選擇**：擴充與書籤小程式都只是組出 `wunderkammer://capture?url=…` 交給 macOS 開啟。Chrome 與 Zen／Firefox 共用同一份 MV3 擴充（`extensions/browser`）。
+* **理由**：不需要在本機開 HTTP port，也就沒有被其他網站呼叫的風險；app 只接受 http(s) 網址（見 D05 之後的安全修正）。
+* **代價**：瀏覽器第一次會詢問是否開啟 Wunderkammer。
+
+## D12　App icon
+
+* **選擇**：紙色圓角方形，中間是 Reicon 的 `cabinet`（實心）以墨色呈現。由 `scripts/icon/make-icon.sh` 產生。
+* **怎麼改**：改 `scripts/icon/make-icon.swift` 後重跑。
