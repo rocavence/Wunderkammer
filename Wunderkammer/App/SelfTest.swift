@@ -114,6 +114,20 @@ final class SelfTest {
         case "perf":
             await performanceCheck()
             return finish()
+        case "toast":
+            let toast = CaptureToast()
+            let image = library.items.first.flatMap { NSImage(contentsOf: library.thumbnailURL($0)) }
+            toast.show(title: "收進珍奇室", detail: library.items.first?.displayTitle, image: image)
+            await wait(0.5)
+            if let panel = toast.panel, let dir = Self.outputDir {
+                let p = Process()
+                p.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
+                p.arguments = ["-x", "-o", "-l", "\(panel.windowNumber)", dir.appendingPathComponent("toast.png").path]
+                try? p.run()
+                p.waitUntilExit()
+            }
+            check(toast.panel?.isVisible == true && toast.panel?.isKeyWindow == false, "toast shows without taking focus")
+            return finish()
         case "share":
             // Picks up whatever the Share extension left in the App Group inbox.
             let before = library.items.count

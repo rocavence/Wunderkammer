@@ -8,7 +8,7 @@ import Carbon.HIToolbox
 final class CaptureController: NSObject {
     private let library: Library
     private let hotkeys = GlobalHotkeys()
-    private let toast = CaptureToast()
+    let toast = CaptureToast()
     /// The board new captures also join (the one being looked at), if any.
     var currentBoard: () -> UUID? = { nil }
 
@@ -34,6 +34,9 @@ final class CaptureController: NSObject {
     func start() {
         shortcutRegistered = hotkeys.register(Self.captureShortcut) { [weak self] in
             Task { await self?.captureNow() }
+        }
+        if !shortcutRegistered {
+            toast.show(title: "⌘⇧C 已被其他 app 使用", detail: "仍可從選單「檔案 → 收藏剪貼簿或目前頁面」收藏", image: nil)
         }
         hotkeys.register(Self.screenshotShortcut) { [weak self] in
             Task { await self?.captureScreenshot() }

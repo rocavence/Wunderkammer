@@ -4,7 +4,7 @@ import AppKit
 /// that never takes focus, never needs an answer, and fades by itself.
 @MainActor
 final class CaptureToast {
-    private var panel: NSPanel?
+    private(set) var panel: NSPanel?
     private var hideWork: DispatchWorkItem?
 
     func show(title: String, detail: String?, image: NSImage?) {

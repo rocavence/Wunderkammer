@@ -227,7 +227,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             quickLook.show(url, for: id)
             return
         }
-        preview.open(id, from: currentSurface, caption: caption)
+        // Long text doesn't fit a card: read all of it in Quick Look.
+        if item.kind == .text, let text = item.text, text.count > 280 {
+            let file = FileManager.default.temporaryDirectory.appendingPathComponent("\(item.displayTitle.prefix(40)).txt")
+            if (try? text.write(to: file, atomically: true, encoding: .utf8)) != nil {
+                quickLook.show(file, for: id)
+                return
+            }
+        }
+        let hint: String? = switch item.kind {
+        case .web: [item.domain, "按 Return 在瀏覽器打開"].compactMap { $0 }.joined(separator: " · ")
+        case .text where item.url != nil: [item.domain, "按 Return 打開來源"].compactMap { $0 }.joined(separator: " · ")
+        default: nil
+        }
+        preview.open(id, from: currentSurface, caption: caption ?? hint)
     }
 
     /// Enter: the page in the browser, the file in its app.
