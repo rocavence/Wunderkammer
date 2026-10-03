@@ -549,6 +549,14 @@ final class SelfTest {
         check(snapped && (b.map { abs(CGFloat($0.pixelWidth) / CGFloat($0.pixelHeight) - 1.5) < 0.01 } ?? false),
               "page without og:image gets a screenshot (\(b?.pixelWidth ?? 0)×\(b?.pixelHeight ?? 0), title: \(b?.title ?? "–"))")
         await wait(0.8)
+        // Resting on a page shows its title at the foot of the tile.
+        if let p = center(of: ids[3], in: ui.grid),
+           let e = NSEvent.mouseEvent(with: .mouseMoved, location: ui.grid.convert(p, to: nil), modifierFlags: [],
+                                      timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber,
+                                      context: nil, eventNumber: 0, clickCount: 0, pressure: 0) {
+            ui.grid.mouseMoved(with: e)
+            await wait(0.4)
+        }
         shot("capture-03-snapshot")
 
         // Capturing the same things again adds nothing.

@@ -212,6 +212,7 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
     private func updateTiles(animated: Bool) {
         guard let clip = superview else { return }
         hoverVideo.stop()
+        showCaption(for: nil)
         guard !isHiddenOrHasHiddenAncestor else {
             pool.removeAll()
             return
@@ -565,9 +566,65 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
         let i = index(at: p)
         let item = i.map { items[$0] }
         hoverVideo.hover(item, url: item.flatMap(library.originalURL), frame: i.map { frames[$0] } ?? .zero, in: root)
+        showCaption(for: i)
     }
 
-    override func mouseExited(with event: NSEvent) { hoverVideo.stop() }
+    override func mouseExited(with event: NSEvent) {
+        hoverVideo.stop()
+        showCaption(for: nil)
+    }
+
+    private let caption = CALayer()
+    private var captionIndex: Int?
+
+    /// The title of what's under the pointer, at the foot of its tile. Only
+    /// for things with a real title (a photo's file name says little).
+    private func showCaption(for index: Int?) {
+        guard index != captionIndex else { return }
+        captionIndex = index
+        guard let i = index, frames.indices.contains(i), frames[i].width > 120, frames[i].height > 70,
+              items[i].kind != .image || items[i].title != nil, let root = layer else {
+            CATransaction.begin()
+            CATransaction.setAnimationDuration(0.15)
+            caption.opacity = 0
+            CATransaction.commit()
+            return
+        }
+        let f = frames[i]
+        withoutAnimation {
+            if caption.superlayer == nil {
+                caption.zPosition = 4
+                caption.cornerRadius = 6
+                caption.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+                caption.masksToBounds = true
+                let shade = CAGradientLayer()
+                shade.colors = [CGColor(gray: 0, alpha: 0), CGColor(gray: 0, alpha: 0.65)]
+                shade.name = "shade"
+                let text = CATextLayer()
+                text.name = "text"
+                text.truncationMode = .end
+                text.isWrapped = false
+                caption.addSublayer(shade)
+                caption.addSublayer(text)
+                caption.opacity = 0
+                root.addSublayer(caption)
+            }
+            let h: CGFloat = 46
+            caption.frame = CGRect(x: f.minX, y: f.maxY - h, width: f.width, height: h)
+            caption.sublayers?.first { $0.name == "shade" }?.frame = caption.bounds
+            if let text = caption.sublayers?.first(where: { $0.name == "text" }) as? CATextLayer {
+                text.contentsScale = window?.backingScaleFactor ?? 2
+                text.string = NSAttributedString(string: items[i].displayTitle, attributes: [
+                    .font: NSFont.systemFont(ofSize: 12, weight: .medium), .foregroundColor: NSColor.white,
+                ])
+                text.frame = CGRect(x: 10, y: h - 22, width: f.width - 20, height: 16)
+            }
+        }
+        CATransaction.begin()
+        CATransaction.setAnimationDuration(0.15)
+        caption.opacity = 1
+        CATransaction.commit()
+    }
 
     /// Whatever moves the tiles stops the hover video (tests read this too).
     var hoverPlaying: UUID? { hoverVideo.playing }
