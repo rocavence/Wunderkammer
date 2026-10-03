@@ -114,6 +114,26 @@ final class SelfTest {
         case "perf":
             await performanceCheck()
             return finish()
+        case "formats":
+            // Real files from macOS itself: video, audio, HEIC, PDF, a package.
+            let files = ["/System/Library/Wallpapers/.default/Golden Gate.mov", "/System/Library/Sounds/Basso.aiff",
+                         "/System/Library/Desktop Pictures/iMac Blue.heic", "/System/Library/ProductDocuments/ProductGuides/ENERGY STAR.pdf",
+                         "/System/Applications/Calculator.app"].map { URL(fileURLWithPath: $0) }
+            let t = CACurrentMediaTime()
+            let ids = await library.capture(files.map { .file($0) })
+            let elapsed = (CACurrentMediaTime() - t) * 1000
+            let got = ids.compactMap(library.item)
+            check(got.map(\.kind) == [.video, .audio, .image, .pdf, .file], "kinds: \(got.map(\.kind.rawValue)) in \(Int(elapsed)) ms")
+            check(got[0].duration.map { $0 > 1 } == true && got[0].pixelWidth > got[0].pixelHeight, "video: \(got[0].duration.map { String(format: "%.1f s", $0) } ?? "–"), poster \(got[0].pixelWidth)×\(got[0].pixelHeight)")
+            check(got[1].duration.map { $0 > 0.1 } == true, "audio: \(got[1].duration.map { String(format: "%.2f s", $0) } ?? "–"), waveform card")
+            check(got[2].pixelWidth > 1000, "HEIC: \(got[2].pixelWidth)×\(got[2].pixelHeight)")
+            check((got[3].pageCount ?? 0) >= 1, "PDF: \(got[3].pageCount ?? 0) pages")
+            check(got.allSatisfy { FileManager.default.fileExists(atPath: library.thumbnailURL($0).path) }, "every one has a representation")
+            check(got.allSatisfy { $0.storedFilename == nil }, "all referenced, none copied")
+            ui.setMode(.grid)
+            await wait(1.2)
+            shot("formats")
+            return finish()
         case "semantic":
             var waited = 0.0
             while library.items.contains(where: { !$0.analyzed }), waited < 60 { await wait(0.5); waited += 0.5 }

@@ -102,7 +102,24 @@ final class Thumbnailer {
         return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
     }
 
+    nonisolated static func hasAlpha(_ image: CGImage) -> Bool {
+        switch image.alphaInfo {
+        case .none, .noneSkipFirst, .noneSkipLast: false
+        default: true
+        }
+    }
+
+    /// JPEG has no transparency: transparent areas sit on paper, not black.
     nonisolated static func writeJPEG(_ image: CGImage, to url: URL) {
+        var image = image
+        if hasAlpha(image),
+           let ctx = CGContext(data: nil, width: image.width, height: image.height, bitsPerComponent: 8, bytesPerRow: 0,
+                               space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) {
+            ctx.setFillColor(CardRenderer.paper)
+            ctx.fill(CGRect(x: 0, y: 0, width: image.width, height: image.height))
+            ctx.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+            if let flat = ctx.makeImage() { image = flat }
+        }
         guard let dest = CGImageDestinationCreateWithURL(url as CFURL, UTType.jpeg.identifier as CFString, 1, nil)
         else { return }
         CGImageDestinationAddImage(dest, image, [kCGImageDestinationLossyCompressionQuality: 0.85] as CFDictionary)

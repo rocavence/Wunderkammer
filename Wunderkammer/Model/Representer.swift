@@ -188,14 +188,16 @@ enum Representer {
 
     private static func genericFile(_ url: URL, type: UTType, hash: String, _ context: Context) async -> Item {
         let request = QLThumbnailGenerator.Request(fileAt: url, size: CGSize(width: 600, height: 600), scale: 2,
-                                                   representationTypes: .thumbnail)
+                                                   representationTypes: .all)
         let thumb = try? await QLThumbnailGenerator.shared.generateBestRepresentation(for: request).cgImage
         let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize).map {
             ByteCountFormatter.string(fromByteCount: Int64($0), countStyle: .file)
         }
         let card = CardRenderer.file(name: url.lastPathComponent, ext: url.pathExtension,
                                      detail: [type.localizedDescription, size].compactMap { $0 }.joined(separator: " · "))
-        return representation(.file, thumb ?? card, name: url.lastPathComponent, hash: hash, context)
+        // Icons (apps, folders…) have transparent corners: set them on a card.
+        let picture = thumb.map { Thumbnailer.hasAlpha($0) ? (CardRenderer.framed($0, size: CGSize(width: 360, height: 360)) ?? $0) : $0 }
+        return representation(.file, picture ?? card, name: url.lastPathComponent, hash: hash, context)
     }
 
     // MARK: Content without a file
