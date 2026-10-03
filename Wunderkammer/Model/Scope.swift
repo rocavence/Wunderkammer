@@ -10,6 +10,8 @@ struct Scope: Equatable, Sendable {
         case kind(KindView)
         case onThisDay
         case forgotten
+        /// Looks like this one (visual fingerprint).
+        case similar(UUID)
     }
 
     /// Auto collections by what things are.
@@ -55,6 +57,7 @@ struct Scope: Equatable, Sendable {
         case .kind(let k): "kind:\(k.rawValue)"
         case .onThisDay: "onThisDay"
         case .forgotten: "forgotten"
+        case .similar(let id): "similar:\(id.uuidString)"
         }
     }
 }
@@ -69,6 +72,7 @@ extension Library {
         case .kind(let k): result = items.filter { k.kinds.contains($0.kind) }
         case .onThisDay: result = Rediscovery.onThisDay(items, now: now)
         case .forgotten: result = Rediscovery.forgotten(items, now: now)
+        case .similar(let id): result = (item(id).map { [$0] } ?? []) + (similarity?(id) ?? [])
         }
         if scope.isSearching { result = Search.run(scope.search, in: result, now: now) }
         return result

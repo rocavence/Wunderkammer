@@ -38,6 +38,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private(set) var scope = Scope()
     private var capture: CaptureController!
     private let quickLook = QuickLookHost()
+    private var understanding: Understanding!
     /// Recently shown by R, so it doesn't repeat itself.
     private var recentRandom: [UUID] = []
 
@@ -63,6 +64,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             surface.onActivate = { [weak self] id in self?.openExternally(id) }
             surface.onRandom = { [weak self] in self?.showRandom() }
             surface.onFocus = { [weak self] id in self?.inspector.show(id) }
+            surface.onSimilar = { [weak self] id in self?.sidebar.select(.similar(id)) }
         }
         infinity.onOpen = { [weak self] id in self?.openPreview(id) }
         infinity.onRandom = { [weak self] in self?.showRandom() }
@@ -84,6 +86,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         sidebar.onRandom = { [weak self] in self?.showRandom() }
         inspector = InspectorViewController(library: library)
         inspector.onSelectRelated = { [weak self] id in self?.reveal(id) }
+        understanding = Understanding(library: library)
+        library.similarity = { [weak self] id in self?.understanding.similar(to: id) ?? [] }
+        inspector.related = { [weak self] item in self?.understanding.related(to: item) ?? [] }
+        NotificationCenter.default.addObserver(forName: Understanding.didProgress, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.updateTitle() }
+        }
 
         let split = NSSplitViewController()
         let sideItem = NSSplitViewItem(sidebarWithViewController: sidebar)
@@ -129,6 +137,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         // The self-test runs next to the real app; the shortcuts belong to that one.
         if !SelfTest.isEnabled { capture.start() }
 
+        understanding.start()
+
         if SelfTest.isEnabled {
             window.setFrameAutosaveName("")
             window.setFrame(NSRect(x: 80, y: 80, width: 1280, height: 820), display: true)
@@ -164,9 +174,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         case .kind(let k): window.title = k.title
         case .onThisDay: window.title = "過去的今天"
         case .forgotten: window.title = "被遺忘的"
+        case .similar(let id): window.title = "與「\(library.item(id)?.displayTitle.prefix(20) ?? "")」相似"
         }
         let count = library.items(for: scope).count
-        window.subtitle = scope.isSearching ? "找到 \(count) 件" : "\(count) 件"
+        let learning = understanding?.pending ?? 0
+        window.subtitle = (scope.isSearching ? "找到 \(count) 件" : "\(count) 件") + (learning > 0 ? " · 正在理解 \(learning) 件" : "")
     }
 
     func setMode(_ new: ViewMode) {
@@ -492,6 +504,7 @@ protocol CabinetSurface: AnyObject {
     var onActivate: ((UUID) -> Void)? { get set }
     var onRandom: (() -> Void)? { get set }
     var onFocus: ((UUID?) -> Void)? { get set }
+    var onSimilar: ((UUID) -> Void)? { get set }
 }
 
 /// System Quick Look for media and documents: plays video and audio, pages

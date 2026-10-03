@@ -44,9 +44,12 @@ enum ItemActions {
     }
 
     static func menu(for ids: [UUID], board: UUID?, library: Library, window: NSWindow?,
-                     open: @escaping () -> Void) -> NSMenu {
+                     open: @escaping () -> Void, similar: (() -> Void)? = nil) -> NSMenu {
         let menu = NSMenu()
         menu.addItem(ClosureMenuItem("打開預覽") { open() })
+        if let similar, ids.count == 1 {
+            menu.addItem(ClosureMenuItem("找相似的") { similar() })
+        }
 
         let addTo = NSMenuItem(title: "加入 board", action: nil, keyEquivalent: "")
         let sub = NSMenu()

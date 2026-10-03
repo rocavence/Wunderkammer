@@ -49,7 +49,9 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
     var ocrText: String?
     var labels: [String]?
     var colors: [String]?
-    var analyzed: Bool
+    /// Which version of the Analyzer last looked at it (0 = not yet).
+    var analysisVersion: Int
+    var analyzed: Bool { analysisVersion >= Analyzer.version }
 
     // Interaction
     var viewCount: Int
@@ -65,7 +67,7 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
         self.pixelHeight = pixelHeight
         self.contentHash = contentHash
         representationVersion = 0
-        analyzed = false
+        analysisVersion = 0
         viewCount = 0
     }
 
@@ -96,7 +98,7 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
         ocrText = try c.decodeIfPresent(String.self, forKey: .ocrText)
         labels = try c.decodeIfPresent([String].self, forKey: .labels)
         colors = try c.decodeIfPresent([String].self, forKey: .colors)
-        analyzed = try c.decodeIfPresent(Bool.self, forKey: .analyzed) ?? false
+        analysisVersion = try c.decodeIfPresent(Int.self, forKey: .analysisVersion) ?? 0
         viewCount = try c.decodeIfPresent(Int.self, forKey: .viewCount) ?? 0
         lastViewed = try c.decodeIfPresent(Date.self, forKey: .lastViewed)
     }

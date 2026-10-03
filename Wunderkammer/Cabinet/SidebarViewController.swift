@@ -127,7 +127,11 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     }
 
     private func selectRow(for base: Scope.Base) {
-        let row = rows.indices.first { self.base(at: $0) == base } ?? 0
+        // Views without a row of their own (similar to…) leave nothing highlighted.
+        guard let row = rows.indices.first(where: { self.base(at: $0) == base }) else {
+            table.deselectAll(nil)
+            return
+        }
         if table.selectedRow != row { table.selectRowIndexes([row], byExtendingSelection: false) }
     }
 
@@ -206,7 +210,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     }
 
     func tableViewSelectionDidChange(_ notification: Notification) {
-        guard let base = base(at: table.selectedRow), base != selected else { return }
+        guard table.selectedRow >= 0, let base = base(at: table.selectedRow), base != selected else { return }
         selected = base
         onSelect?(base)
     }

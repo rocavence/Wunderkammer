@@ -16,6 +16,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
     var onActivate: ((UUID) -> Void)?
     var onRandom: (() -> Void)?
     var onFocus: ((UUID?) -> Void)?
+    var onSimilar: ((UUID) -> Void)?
 
     private(set) var scope = Scope()
     var board: UUID? { scope.board }
@@ -453,6 +454,8 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         }
         return ItemActions.menu(for: selection.ordered(order), board: board, library: library, window: window) { [weak self] in
             self?.onOpen?(id)
+        } similar: { [weak self] in
+            self?.onSimilar?(id)
         }
     }
 

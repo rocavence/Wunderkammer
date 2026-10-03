@@ -16,6 +16,7 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
     var onActivate: ((UUID) -> Void)?
     var onRandom: (() -> Void)?
     var onFocus: ((UUID?) -> Void)?
+    var onSimilar: ((UUID) -> Void)?
 
     private(set) var scope = Scope()
     var board: UUID? { scope.board }
@@ -444,6 +445,8 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
         let ids = selection.ordered(order)
         return ItemActions.menu(for: ids, board: board, library: library, window: window) { [weak self] in
             self?.onOpen?(id)
+        } similar: { [weak self] in
+            self?.onSimilar?(id)
         }
     }
 

@@ -35,6 +35,8 @@ final class Library {
     private(set) var collections: [Board] = []
     private var canvases: [String: [CanvasGroup]] = [:]
     private var byID: [UUID: Int] = [:]
+    /// Visually similar items, supplied by the understanding layer.
+    var similarity: ((UUID) -> [Item])?
     /// Set while the app is sending changes in quick succession (enrichment).
     private var saveWork: DispatchWorkItem?
 

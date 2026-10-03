@@ -108,6 +108,9 @@ final class SelfTest {
             await captureCheck()
             await cabinetUICheck()
             return finish()
+        case "understand":
+            await understandingCheck()
+            return finish()
         default:
             break
         }
@@ -402,6 +405,39 @@ final class SelfTest {
         // Capturing the same things again adds nothing.
         let again = await library.capture([.file(pdf), .web(page, title: nil)])
         check(library.items.count == before + 4 && Set(again) == Set([ids[1], ids[3]]), "duplicates recognised")
+    }
+
+    /// Stage 2: words in pictures, what's in them, similar and related things.
+    private func understandingCheck() async {
+        var waited = 0.0
+        while library.items.contains(where: { !$0.analyzed }), waited < 90 {
+            await wait(0.5)
+            waited += 0.5
+        }
+        let analyzed = library.items.filter(\.analyzed).count
+        check(analyzed == library.items.count, "every item understood (\(analyzed)/\(library.items.count) in \(Int(waited))s)")
+        let labelled = library.items.filter { !($0.labels ?? []).isEmpty }.count
+        check(labelled >= library.items.count * 3 / 4, "labels for most items (\(labelled))")
+        let bernie = library.items.first { $0.originalFilename.contains("Bernie") }
+        check(bernie?.ocrText?.lowercased().contains("asking") == true, "OCR reads meme text (\(bernie?.ocrText?.prefix(40) ?? "–"))")
+        // "receive" is only in the picture, not in the file name.
+        let trade = library.items.first { $0.originalFilename.contains("Trade Offer") }
+        ui.search("receive")
+        await wait(0.8)
+        check(trade != nil && ui.grid.shownItems.first?.id == trade?.id, "search finds words inside pictures (\(trade?.ocrText?.replacingOccurrences(of: "\n", with: " ").prefix(40) ?? "–"))")
+        shot("understand-search-ocr")
+        ui.search("")
+        if let drake = library.items.first(where: { $0.originalFilename.contains("Drake") }) {
+            ui.sidebar.select(.similar(drake.id))
+            await wait(0.8)
+            check(ui.grid.shownItems.count > 3 && ui.grid.shownItems.first?.id == drake.id, "similar view: the item, then look-alikes")
+            shot("understand-similar")
+            ui.sidebar.select(.all)
+            await wait(0.5)
+        }
+        for item in library.items.prefix(3) {
+            log("labels \(item.displayTitle.prefix(24)): \((item.labels ?? []).prefix(5)) colors \(item.colors ?? [])")
+        }
     }
 
     /// Masonry, Timeline, search, kind views, R, Inspector.
