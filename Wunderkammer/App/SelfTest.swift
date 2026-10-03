@@ -316,6 +316,16 @@ final class SelfTest {
             shot("09-canvas-joined")
         }
 
+        // Connect two images on the canvas with ⌥-drag.
+        if let a = center(of: ids[2], in: canvas), let b = center(of: ids[4], in: canvas) {
+            await drag(canvas, from: a, to: b, flags: .option)
+            await wait(0.3)
+            let links = library.links(key: board.id.uuidString)
+            check(links.count == 1 && Set([links[0].a, links[0].b]) == Set([ids[2], ids[4]]), "⌥-drag connects two items (\(links.count))")
+            check(Library(root: library.root).links(key: board.id.uuidString).count == 1, "connection persists")
+            shot("09b-canvas-connected")
+        }
+
         // 7. Arrange.
         ui.canvas.arrange(nil)
         await wait(0.7)

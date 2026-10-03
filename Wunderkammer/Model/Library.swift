@@ -19,6 +19,12 @@ struct CanvasGroup: Codable, Identifiable, Hashable {
     var title: String?
 }
 
+/// A line drawn between two curiosities on a canvas.
+struct CanvasLink: Codable, Hashable {
+    var a: UUID
+    var b: UUID
+}
+
 /// The cabinet: every curiosity, the optional boards, canvas layouts. Lives in
 /// ~/Library/Application Support/Wunderkammer as library.json plus
 /// originals/ (only content with no file of its own) and thumbnails/ (the
@@ -36,6 +42,7 @@ final class Library {
     private(set) var items: [Item] = []
     private(set) var collections: [Board] = []
     private var canvases: [String: [CanvasGroup]] = [:]
+    private var canvasLinks: [String: [CanvasLink]] = [:]
     private var byID: [UUID: Int] = [:]
     /// Visually similar items, supplied by the understanding layer.
     var similarity: ((UUID) -> [Item])?
@@ -63,6 +70,7 @@ final class Library {
         var items: [Item]
         var collections: [Board]?
         var canvases: [String: [CanvasGroup]]?
+        var links: [String: [CanvasLink]]?
     }
 
     private func load() {
@@ -71,6 +79,7 @@ final class Library {
         items = stored.items
         collections = stored.collections ?? []
         canvases = stored.canvases ?? [:]
+        canvasLinks = stored.links ?? [:]
         reindex()
     }
 
@@ -79,7 +88,7 @@ final class Library {
         saveWork = nil
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        if let data = try? encoder.encode(Stored(items: items, collections: collections, canvases: canvases)) {
+        if let data = try? encoder.encode(Stored(items: items, collections: collections, canvases: canvases, links: canvasLinks)) {
             try? data.write(to: jsonURL, options: .atomic)
         }
     }
@@ -197,6 +206,7 @@ final class Library {
         var items: [(index: Int, item: Item)]
         var collections: [Board]
         var canvases: [String: [CanvasGroup]]
+        var links: [String: [CanvasLink]] = [:]
     }
 
     /// Takes items out of the cabinet. Nothing is deleted from disk: a
@@ -206,7 +216,7 @@ final class Library {
     func delete(_ ids: Set<UUID>) -> Removal? {
         let doomed = items.enumerated().filter { ids.contains($0.element.id) }.map { (index: $0.offset, item: $0.element) }
         guard !doomed.isEmpty else { return nil }
-        let removal = Removal(items: doomed, collections: collections, canvases: canvases)
+        let removal = Removal(items: doomed, collections: collections, canvases: canvases, links: canvasLinks)
         items.removeAll { ids.contains($0.id) }
         for i in collections.indices { collections[i].itemIDs.removeAll { ids.contains($0) } }
         reindex()
@@ -220,6 +230,7 @@ final class Library {
         }
         collections = removal.collections
         canvases = removal.canvases
+        canvasLinks = removal.links
         reindex()
         changed()
     }
@@ -268,6 +279,16 @@ final class Library {
 
     func canvasGroups(for collectionID: UUID?) -> [CanvasGroup] {
         canvasGroups(key: Self.canvasKey(collectionID), ids: items(in: collectionID).map(\.id))
+    }
+
+    /// Lines between items on a canvas, minus any whose ends are gone.
+    func links(key: String) -> [CanvasLink] {
+        (canvasLinks[key] ?? []).filter { byID[$0.a] != nil && byID[$0.b] != nil }
+    }
+
+    func setLinks(_ links: [CanvasLink], key: String) {
+        canvasLinks[key] = links
+        save()
     }
 
     /// Canvas edits don't post didChange: the canvas already shows them.

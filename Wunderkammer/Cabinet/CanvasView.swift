@@ -21,6 +21,8 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
     private(set) var scope = Scope()
     var board: UUID? { scope.board }
     private var groups: [CanvasGroup] = []
+    private var links: [CanvasLink] = []
+    private let linesLayer = CAShapeLayer()
     private var itemFrames: [UUID: CGRect] = [:]
     private var groupFrames: [UUID: CGRect] = [:]
     private var selection = Selection()
@@ -44,6 +46,8 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         case movingItems(ItemDrag)
         case marquee(start: NSPoint, base: Set<UUID>)
         case pan(last: NSPoint)
+        /// ⌥-drag from one item towards another to connect them.
+        case connecting(from: UUID, to: NSPoint)
     }
 
     private var gesture = Gesture.none
@@ -61,6 +65,15 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         layer?.masksToBounds = true
         pool.host = layer
         pool.colors = { [unowned self] in self.resolved($0) }
+        linesLayer.fillColor = nil
+        linesLayer.lineWidth = 2
+        linesLayer.lineCap = .round
+        // Over the pictures (neighbours would hide it), under anything being dragged.
+        linesLayer.zPosition = 6
+        linesLayer.shadowOpacity = 0.35
+        linesLayer.shadowRadius = 2
+        linesLayer.shadowOffset = .zero
+        layer?.addSublayer(linesLayer)
         registerForDraggedTypes([.fileURL, .URL, .string, .png, .tiff, .wunderkammerItem])
         NotificationCenter.default.addObserver(forName: Library.didChange, object: library, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.reload() }
@@ -112,6 +125,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         selection = Selection()
         pool.removeAll()
         groups = currentGroups()
+        links = library.links(key: scope.canvasKey)
         layoutGroups()
         needsFit = true
         fit()
@@ -125,6 +139,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
 
     private func reload() {
         groups = currentGroups()
+        links = library.links(key: scope.canvasKey)
         layoutGroups()
         resolveOverlaps(pinned: [])
         selection.restrict(to: Set(order))
@@ -281,6 +296,52 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         pool.apply(placements, animated: animated, scale: (window?.backingScaleFactor ?? 2), duration: duration,
                    spring: animated && !isMoving)
         renderTitles(visible: visible, animated: animated)
+        renderLines(animated: animated)
+    }
+
+    /// Where an item sits on screen now (following a drag if it's being moved).
+    private func screenCenter(_ id: UUID) -> CGPoint? {
+        if case .movingItems(let drag) = gesture, let f = drag.block[id] {
+            let origin = CGPoint(x: drag.cursor.x - drag.grab.x, y: drag.cursor.y - drag.grab.y)
+            let r = toScreen(f.offsetBy(dx: origin.x, dy: origin.y))
+            return CGPoint(x: r.midX, y: r.midY)
+        }
+        guard let world = itemFrames[id] else { return nil }
+        let r = toScreen(world)
+        return CGPoint(x: r.midX, y: r.midY)
+    }
+
+    /// The connections, plus the one being drawn.
+    private func renderLines(animated: Bool = false) {
+        let path = CGMutablePath()
+        for link in links {
+            guard let a = screenCenter(link.a), let b = screenCenter(link.b) else { continue }
+            path.move(to: a)
+            path.addLine(to: b)
+            for end in [a, b] { path.addEllipse(in: CGRect(x: end.x - 3.5, y: end.y - 3.5, width: 7, height: 7)) }
+        }
+        if case .connecting(let from, let to) = gesture, let a = screenCenter(from) {
+            path.move(to: a)
+            path.addLine(to: to)
+        }
+        CATransaction.begin()
+        CATransaction.setDisableActions(!animated)
+        CATransaction.setAnimationDuration(TilePool.animation)
+        linesLayer.strokeColor = resolved(.controlAccentColor)
+        linesLayer.fillColor = resolved(.controlAccentColor)
+        linesLayer.frame = bounds
+        linesLayer.path = path
+        CATransaction.commit()
+    }
+
+    /// A connection under the point (within a few points of the line).
+    private func link(at p: NSPoint) -> CanvasLink? {
+        links.first { link in
+            guard let a = screenCenter(link.a), let b = screenCenter(link.b) else { return false }
+            let dx = b.x - a.x, dy = b.y - a.y
+            let t = max(0, min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / max(dx * dx + dy * dy, 1)))
+            return hypot(a.x + t * dx - p.x, a.y + t * dy - p.y) < 6
+        }
     }
 
     private var titleLayers: [UUID: CATextLayer] = [:]
@@ -376,22 +437,28 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         let p = convert(event.locationInWindow, from: nil)
         let id = hit(p)
         let modifier = Selection.modifier(event.modifierFlags)
+        let option = event.modifierFlags.contains(.option)
 
         if event.clickCount == 2, let id {
             onOpen?(id)
             gesture = .none
             return
         }
-        if let id {
+        switch (id, option) {
+        case (let id?, true):
+            // ⌥ on an item: start a connection.
+            gesture = .connecting(from: id, to: p)
+            renderLines()
+        case (let id?, false):
             let keepGroup = modifier == .none && selection.ids.contains(id)
             if !keepGroup {
                 selection.click(id, modifier, order: order)
                 showSelection()
             }
             gesture = .pressedItem(start: p, hit: id, narrowOnUp: keepGroup)
-        } else if event.modifierFlags.contains(.option) {
+        case (nil, true):
             gesture = .pan(last: p)
-        } else {
+        case (nil, false):
             let base = modifier == .none ? Set<UUID>() : selection.ids
             selection.click(nil, modifier, order: order)
             showSelection()
@@ -417,6 +484,9 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
             offset.y -= (p.y - last.y) / zoom
             gesture = .pan(last: p)
             render(animated: false)
+        case .connecting(let from, _):
+            gesture = .connecting(from: from, to: p)
+            renderLines()
         case .none:
             break
         }
@@ -434,10 +504,18 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         case .marquee:
             marqueeLayer?.removeFromSuperlayer()
             marqueeLayer = nil
+        case .connecting(let from, _):
+            let p = convert(event.locationInWindow, from: nil)
+            if let to = hit(p), to != from,
+               !links.contains(where: { Set([$0.a, $0.b]) == Set([from, to]) }) {
+                links.append(CanvasLink(a: from, b: to))
+                library.setLinks(links, key: scope.canvasKey)
+            }
         default:
             break
         }
         gesture = .none
+        renderLines()
     }
 
     override func otherMouseDown(with event: NSEvent) {
@@ -515,11 +593,25 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
 
     override func menu(for event: NSEvent) -> NSMenu? {
         let p = convert(event.locationInWindow, from: nil)
+        if hit(p) == nil, let line = link(at: p) {
+            let menu = NSMenu()
+            menu.addItem(ClosureMenuItem("刪除這條連線") { [weak self] in
+                guard let self else { return }
+                self.links.removeAll { $0 == line }
+                self.library.setLinks(self.links, key: self.scope.canvasKey)
+                self.renderLines()
+            })
+            return menu
+        }
         guard let id = hit(p) else {
             let menu = NSMenu()
             menu.addItem(ClosureMenuItem("依主題分堆") { [weak self] in self?.clusterByTheme(nil) })
             menu.addItem(ClosureMenuItem("整理成整齊的排列") { [weak self] in self?.arrange(nil) })
             menu.addItem(ClosureMenuItem("顯示全部") { [weak self] in self?.fit(animated: true) })
+            menu.addItem(.separator())
+            let hint = NSMenuItem(title: "按住 ⌥ 從一件拖到另一件，可以連起來", action: nil, keyEquivalent: "")
+            hint.isEnabled = false
+            menu.addItem(hint)
             return menu
         }
         if !selection.ids.contains(id) {
