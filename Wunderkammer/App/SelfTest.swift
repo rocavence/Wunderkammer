@@ -662,7 +662,10 @@ final class SelfTest {
         // Search: by title words, then a kind word.
         ui.search("cabinet")
         await wait(0.8)
-        check(grid.shownItems.count >= 1 && grid.shownItems.allSatisfy { Search.run("cabinet", in: [$0]).count == 1 }, "search filters in place (\(grid.shownItems.count))")
+        // Word matches first; matches by meaning (if the models are installed) after them.
+        let wordHits = Search.run("cabinet", in: library.items).map(\.id)
+        check(!wordHits.isEmpty && Array(grid.shownItems.prefix(wordHits.count).map(\.id)) == wordHits,
+              "search filters in place: \(wordHits.count) by words, \(grid.shownItems.count - wordHits.count) more by meaning")
         shot("ui-search")
         ui.search("pdf")
         await wait(0.6)
