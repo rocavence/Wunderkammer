@@ -29,6 +29,7 @@ final class CaptureController: NSObject {
     }
 
     private(set) var shortcutRegistered = false
+    private var shareInbox: ShareInboxWatcher?
 
     func start() {
         shortcutRegistered = hotkeys.register(Self.captureShortcut) { [weak self] in
@@ -47,6 +48,9 @@ final class CaptureController: NSObject {
         }
         RunLoop.main.add(timer, forMode: .common)
         pollTimer = timer
+        let inbox = ShareInboxWatcher { [weak self] sources in await self?.collect(sources, sourceApp: "分享") }
+        inbox.start()
+        shareInbox = inbox
     }
 
     private func watchClipboard() {

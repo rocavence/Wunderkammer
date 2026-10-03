@@ -73,3 +73,10 @@
 
 * **選擇**：紙色圓角方形，中間是 Reicon 的 `cabinet`（實心）以墨色呈現。由 `scripts/icon/make-icon.sh` 產生。
 * **怎麼改**：改 `scripts/icon/make-icon.swift` 後重跑。
+
+## D13　Share extension 透過 App Group 收件匣
+
+* **選擇**：「分享 → Wunderkammer」的延伸功能（沙盒）把內容寫進 App Group `7F654HZB2H.com.rocavence.wunderkammer` 的 `Inbox/`（每次分享一個資料夾，最後寫 `manifest.json`），立刻關閉；app 每 1.5 秒看一次收件匣，收進來後刪掉資料夾。
+* **理由**：不能用 `wunderkammer://` 傳檔案路徑，那會讓任何網頁都能要 app 讀本機檔案。檔案仍然以參照方式收藏（D02）；圖片另帶一份副本，以防 app 讀不到原檔。
+* **前提**：App Group 需要用 Team `7F654HZB2H` 簽章（`Config/Signing.local.xcconfig`）。ad-hoc 簽章時分享延伸功能不會運作，其他功能不受影響。
+* **啟用**：macOS 預設不開新的分享延伸功能，要在「系統設定 → 一般 → 登入項目與延伸功能 → 分享」打開（已用 `pluginkit -e use` 替這台 Mac 打開）。

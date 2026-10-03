@@ -111,6 +111,15 @@ final class SelfTest {
         case "understand":
             await understandingCheck()
             return finish()
+        case "share":
+            // Picks up whatever the Share extension left in the App Group inbox.
+            let before = library.items.count
+            let watcher = ShareInboxWatcher { [library] sources in await library.capture(sources, sourceApp: "分享") }
+            watcher.start()
+            await wait(4)
+            let got = library.items.first { $0.url?.contains("shared-from-test") == true }
+            check(got != nil && library.items.count == before + 1, "shared page arrived via the inbox (\(got?.url ?? "–"))")
+            return finish()
         default:
             break
         }

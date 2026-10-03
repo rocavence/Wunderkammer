@@ -38,11 +38,15 @@ targets:
         INFOPLIST_KEY_NSHumanReadableCopyright: ""
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ENABLE_HARDENED_RUNTIME: YES
-    # 讀取瀏覽器目前分頁的網址（⌘⇧C）需要 Apple Events
+    dependencies:
+      - target: ShareExtension
+        embed: true
+    # 讀取瀏覽器目前分頁的網址（⌘⇧C）需要 Apple Events；App Group 是分享延伸功能的收件匣
     entitlements:
       path: Wunderkammer/Wunderkammer.entitlements
       properties:
         com.apple.security.automation.apple-events: true
+        com.apple.security.application-groups: [7F654HZB2H.com.rocavence.wunderkammer]
     info:
       path: Wunderkammer/Info.plist
       properties:
@@ -62,6 +66,43 @@ targets:
             NSRequiredContext: {}
             NSSendTypes: [public.utf8-plain-text, public.url, public.file-url, public.png, public.tiff, public.rtf]
             NSSendFileTypes: [public.item]
+  # 「分享」選單 → Wunderkammer：放進 App Group 收件匣後立刻關閉，由 app 收進來
+  ShareExtension:
+    type: app-extension
+    platform: macOS
+    sources:
+      - ShareExtension
+    configFiles:
+      Debug: Config/Signing.xcconfig
+      Release: Config/Signing.xcconfig
+    entitlements:
+      path: ShareExtension/ShareExtension.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.files.user-selected.read-only: true
+        com.apple.security.application-groups: [7F654HZB2H.com.rocavence.wunderkammer]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.rocavence.wunderkammer.share
+        # NSItemProvider 還沒有 Swift 6 的並行標註
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Wunderkammer
+        ENABLE_HARDENED_RUNTIME: YES
+    info:
+      path: ShareExtension/Info.plist
+      properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.share-services
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShareViewController
+          NSExtensionAttributes:
+            NSExtensionActivationRule:
+              NSExtensionActivationSupportsWebURLWithMaxCount: 1
+              NSExtensionActivationSupportsFileWithMaxCount: 20
+              NSExtensionActivationSupportsImageWithMaxCount: 20
+              NSExtensionActivationSupportsText: true
   WunderkammerTests:
     type: bundle.unit-test
     platform: macOS

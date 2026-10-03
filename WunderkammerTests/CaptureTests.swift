@@ -90,3 +90,29 @@ struct CaptureURLTests {
         #expect(CaptureController.sources(fromCaptureURL: URL(string: "https://capture?url=x")!).isEmpty)
     }
 }
+
+struct ShareInboxTests {
+    @Test func manifestBecomesSources() throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("wk-share-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let referenced = folder.appendingPathComponent("doc.txt")
+        try "hello".write(to: referenced, atomically: true, encoding: .utf8)
+        try Data([0x89, 0x50, 0x4E, 0x47]).write(to: folder.appendingPathComponent("pic.png"))
+        let manifest: [String: Any] = ["entries": [
+            ["path": referenced.path],
+            ["path": "/nonexistent/gone.png", "image": "pic.png"],
+            ["url": "https://example.com/a"],
+            ["url": "file:///etc/passwd"],
+            ["text": "  https://example.org/b  "],
+            ["text": "a thought"],
+        ]]
+        try JSONSerialization.data(withJSONObject: manifest).write(to: folder.appendingPathComponent("manifest.json"))
+        let sources = ShareInboxWatcher.sources(in: folder)
+        #expect(sources.count == 5)
+        guard case .file(let f) = sources[0], case .imageData(_, let name, _) = sources[1],
+              case .web(let a, _) = sources[2], case .web(let b, _) = sources[3], case .text(let t, _) = sources[4]
+        else { Issue.record("wrong kinds: \(sources)"); return }
+        #expect(f.path == referenced.path && name == "pic.png")
+        #expect(a.absoluteString == "https://example.com/a" && b.absoluteString == "https://example.org/b" && t == "a thought")
+    }
+}
