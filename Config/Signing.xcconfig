@@ -1,0 +1,9 @@
+// 程式碼簽章。預設 ad-hoc（"-"），任何人都能直接建置。
+// 想用自己的開發者憑證（避免每次重建鑰匙圈都要求密碼，D21）：
+// 在同一個資料夾建立 Signing.local.xcconfig（不進版控），例如：
+//   CODE_SIGN_IDENTITY = Apple Development: you@example.com (XXXXXXXXXX)
+//   DEVELOPMENT_TEAM = XXXXXXXXXX
+CODE_SIGN_STYLE = Manual
+CODE_SIGN_IDENTITY = -
+DEVELOPMENT_TEAM =
+#include? "Signing.local.xcconfig"

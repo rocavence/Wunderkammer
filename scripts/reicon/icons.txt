@@ -1,0 +1,41 @@
+# Wunderkammer 使用的 Reicon icon（名稱即 Reicon 原名）
+# 新增 icon：加一行後執行 python3 scripts/reicon/generate.py
+
+# 顯示方式
+grid
+layout
+calendar
+layers
+infinite
+
+# Cabinet 與系統 view
+cabinet
+image
+globe
+text
+video
+music-note
+file-text
+file
+calendar-day
+history
+shuffle
+sparkles
+clapperboard
+
+# 動作
+search
+plus
+trash
+share
+link
+eye
+sidebar
+info-circle
+arrow-up-right
+copy
+x
+undo
+camera
+clipboard
+inbox-in

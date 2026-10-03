@@ -1,3 +1,8 @@
 .build/
 build/
+build-release/
+dist/
+.cache/
 .DS_Store
+Config/Signing.local.xcconfig
+*.xcodeproj/

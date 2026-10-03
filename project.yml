@@ -1,0 +1,61 @@
+name: Wunderkammer
+options:
+  bundleIdPrefix: com.rocavence
+  developmentLanguage: en
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.3.0"
+    CURRENT_PROJECT_VERSION: "1"
+schemes:
+  Wunderkammer:
+    build:
+      targets:
+        Wunderkammer: all
+        WunderkammerTests: [test]
+    test:
+      targets:
+        - WunderkammerTests
+targets:
+  Wunderkammer:
+    type: application
+    platform: macOS
+    sources:
+      - Wunderkammer
+    # 簽章設定在 Config/Signing.xcconfig；本機憑證放 Signing.local.xcconfig（不進版控）
+    configFiles:
+      Debug: Config/Signing.xcconfig
+      Release: Config/Signing.xcconfig
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.rocavence.wunderkammer
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Wunderkammer
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+        INFOPLIST_KEY_NSHumanReadableCopyright: ""
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_HARDENED_RUNTIME: YES
+    info:
+      path: Wunderkammer/Info.plist
+      properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+  WunderkammerTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - WunderkammerTests
+    dependencies:
+      - target: Wunderkammer
+    # 測試 bundle 要和 app 同一個簽章身分，否則 hardened runtime 不讓它載入
+    configFiles:
+      Debug: Config/Signing.xcconfig
+      Release: Config/Signing.xcconfig
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        BUNDLE_LOADER: $(TEST_HOST)
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Wunderkammer.app/Contents/MacOS/Wunderkammer
