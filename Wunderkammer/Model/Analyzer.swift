@@ -146,7 +146,7 @@ final class Understanding {
             let knownText = item.kind == .text
             let id = item.id, printsDir = printsDir
             let result = await Task.detached(priority: .utility) {
-                let r = Analyzer.analyze(imageAt: image, pdf: pdf, knownText: knownText)
+                let r = autoreleasepool { Analyzer.analyze(imageAt: image, pdf: pdf, knownText: knownText) }
                 if let fp = r.featurePrint { try? fp.write(to: printsDir.appendingPathComponent(id.uuidString)) }
                 return r
             }.value

@@ -185,8 +185,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         mode = new
         if !SelfTest.isEnabled { UserDefaults.standard.set(new.rawValue, forKey: Self.modeKey) }
         modeControl?.selectedSegment = new.rawValue
-        if let style = new.cabinetStyle { grid.style = style }
         scroll.isHidden = new.cabinetStyle == nil
+        if let style = new.cabinetStyle {
+            if grid.style == style { grid.reload(animated: false) } else { grid.style = style }
+        }
         canvas.isHidden = new != .canvas
         infinity.isHidden = new != .infinity
         focusCurrent()

@@ -101,11 +101,13 @@ final class InfinityView: NSView, ItemSurface {
         super.viewDidHide()
         timer?.invalidate()
         timer = nil
+        pool.removeAll()
     }
 
     override func viewDidUnhide() {
         super.viewDidUnhide()
         startTimer()
+        render()
     }
 
     override func viewDidMoveToWindow() {
@@ -147,6 +149,7 @@ final class InfinityView: NSView, ItemSurface {
     // MARK: Rendering
 
     private func render() {
+        guard !isHiddenOrHasHiddenAncestor else { return }
         guard !items.isEmpty, blockSize.width > 0, blockSize.height > 0 else {
             pool.removeAll()
             visibleTiles = [:]

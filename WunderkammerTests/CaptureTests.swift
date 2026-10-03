@@ -92,8 +92,25 @@ struct CaptureURLTests {
 }
 
 struct ShareInboxTests {
+    @Test func untrustedManifestsCantReachOutside() throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("wk-share-evil-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let manifest: [String: Any] = ["entries": [
+            ["image": "../../../../etc/hosts"],
+            ["image": ".hidden"],
+            ["path": "/etc/hosts"],
+            ["path": NSHomeDirectory() + "/Library/Preferences/com.apple.finder.plist"],
+            ["path": NSHomeDirectory() + "/.ssh/id_rsa"],
+        ]]
+        try JSONSerialization.data(withJSONObject: manifest).write(to: folder.appendingPathComponent("manifest.json"))
+        #expect(ShareInboxWatcher.sources(in: folder).isEmpty)
+        #expect(ShareInboxWatcher.contained("../x", in: folder) == nil)
+    }
+
     @Test func manifestBecomesSources() throws {
-        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("wk-share-\(UUID().uuidString)")
+        // A visible folder under home, like a share from Finder.
+        let folder = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("wk-share-test-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: folder) }
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         let referenced = folder.appendingPathComponent("doc.txt")
         try "hello".write(to: referenced, atomically: true, encoding: .utf8)

@@ -111,6 +111,9 @@ final class SelfTest {
         case "understand":
             await understandingCheck()
             return finish()
+        case "perf":
+            await performanceCheck()
+            return finish()
         case "share":
             // Picks up whatever the Share extension left in the App Group inbox.
             let before = library.items.count
@@ -414,6 +417,122 @@ final class SelfTest {
         // Capturing the same things again adds nothing.
         let again = await library.capture([.file(pdf), .web(page, title: nil)])
         check(library.items.count == before + 4 && Set(again) == Set([ids[1], ids[3]]), "duplicates recognised")
+    }
+
+    /// The One-Second Rule, and a cabinet of thousands that still scrolls.
+    private func performanceCheck() async {
+        func ms(_ start: CFTimeInterval) -> Double { (CACurrentMediaTime() - start) * 1000 }
+        // Capture latency, from the call to the item being in the cabinet.
+        var t = CACurrentMediaTime()
+        await library.capture([.text("A thought worth keeping, timed.", origin: nil)])
+        let textMs = ms(t)
+        t = CACurrentMediaTime()
+        await library.capture([.web(URL(string: "https://example.com/timed-\(UUID().uuidString)")!, title: nil)])
+        let webMs = ms(t)
+        let photo = makeImage(width: 3000, height: 2000, hue: 0.6)
+        t = CACurrentMediaTime()
+        await library.capture([.imageData(photo, name: "large.png", origin: nil)])
+        let imageMs = ms(t)
+        check(textMs < 1000 && webMs < 1000 && imageMs < 1000,
+              String(format: "capture under a second: text %.0f ms, link %.0f ms, 3000×2000 image %.0f ms", textMs, webMs, imageMs))
+
+        // Fill the cabinet to 3,000.
+        let memoryStart = residentMB()
+        let target = 3000
+        t = CACurrentMediaTime()
+        var batch: [Source] = []
+        var i = library.items.count
+        while i < target {
+            let w = [600, 800, 400, 900, 500][i % 5], h = [400, 600, 700, 500, 800][(i / 5) % 5]
+            let data = autoreleasepool { makeImage(width: w, height: h, hue: Double(i % 97) / 97, seed: i) }
+            batch.append(.imageData(data, name: "synthetic-\(i).png", origin: nil))
+            if batch.count == 100 {
+                await library.capture(batch)
+                batch = []
+            }
+            i += 1
+        }
+        if !batch.isEmpty { await library.capture(batch) }
+        let fillSeconds = ms(t) / 1000
+        log(String(format: "PERF memory while collecting 3,000: %.0f MB → %.0f MB", memoryStart, residentMB()))
+        log(String(format: "PERF filled to %d items in %.1f s (%.1f ms per image)", library.items.count, fillSeconds, fillSeconds * 1000 / Double(max(target - 33, 1))))
+
+        let grid: GridView = ui.grid
+        ui.setMode(.grid)
+        ui.sidebar.select(board: nil)
+        await wait(1)
+        guard let clip = grid.superview as? NSClipView else { return }
+
+        let memoryBefore = residentMB()
+        // Scroll the whole cabinet a screen at a time, one step per frame.
+        var worst = 0.0, total = 0.0, steps = 0
+        let height = grid.bounds.height
+        var y: CGFloat = 0
+        while y < height - clip.bounds.height {
+            y += 60
+            let s = CACurrentMediaTime()
+            clip.scroll(to: NSPoint(x: 0, y: y))
+            CATransaction.flush()
+            let d = ms(s)
+            worst = max(worst, d); total += d; steps += 1
+            if steps % 3 == 0 { await wait(0.001) }
+        }
+        let avg = total / Double(max(steps, 1))
+        check(avg < 8, String(format: "scroll 3,000 items: %.2f ms per step on average, worst %.1f ms (%d steps)", avg, worst, steps))
+        shot("perf-scrolled")
+
+        // Live pinch on a full cabinet.
+        clip.scroll(to: NSPoint(x: 0, y: 0))
+        await wait(0.3)
+        var pinchWorst = 0.0, pinchTotal = 0.0
+        let anchor = NSPoint(x: grid.bounds.midX, y: clip.bounds.midY)
+        for k in 0..<40 {
+            let s = CACurrentMediaTime()
+            grid.liveZoom(by: k < 20 ? 0.96 : 1.04, around: anchor)
+            CATransaction.flush()
+            let d = ms(s)
+            pinchWorst = max(pinchWorst, d); pinchTotal += d
+            await wait(0.008)
+        }
+        let s = CACurrentMediaTime()
+        grid.commitLiveZoom()
+        CATransaction.flush()
+        let reflow = ms(s)
+        check(pinchTotal / 40 < 8, String(format: "pinch on 3,000 items: %.2f ms per frame, worst %.1f ms; reflow on release %.1f ms", pinchTotal / 40, pinchWorst, reflow))
+
+        // Search across everything.
+        let q = CACurrentMediaTime()
+        let hits = library.items(for: Scope(base: .all, search: "synthetic 2026")).count
+        log(String(format: "PERF search over %d items: %.1f ms (%d hits)", library.items.count, ms(q), hits))
+
+        let memoryAfter = residentMB()
+        check(memoryAfter - memoryBefore < 600,
+              String(format: "memory stays bounded while scrolling: %.0f MB → %.0f MB", memoryBefore, memoryAfter))
+    }
+
+    private func residentMB() -> Double {
+        var info = mach_task_basic_info()
+        var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size / MemoryLayout<natural_t>.size)
+        _ = withUnsafeMutablePointer(to: &info) {
+            $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) { task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), $0, &count) }
+        }
+        return Double(info.resident_size) / 1_048_576
+    }
+
+    private func makeImage(width: Int, height: Int, hue: Double, seed: Int = 0) -> Data {
+        let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: width, pixelsHigh: height, bitsPerSample: 8,
+                                   samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB,
+                                   bytesPerRow: 0, bitsPerPixel: 0)!
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+        NSColor(hue: hue, saturation: 0.45, brightness: 0.85, alpha: 1).setFill()
+        NSRect(x: 0, y: 0, width: width, height: height).fill()
+        NSColor(hue: (hue + 0.5).truncatingRemainder(dividingBy: 1), saturation: 0.5, brightness: 0.5, alpha: 1).setFill()
+        let r = CGFloat(min(width, height)) * 0.3
+        NSBezierPath(ovalIn: NSRect(x: CGFloat(seed * 37 % max(width - Int(r), 1)), y: CGFloat(height) / 3, width: r, height: r)).fill()
+        ("\(seed)" as NSString).draw(at: NSPoint(x: 20, y: 20), withAttributes: [.font: NSFont.boldSystemFont(ofSize: 48), .foregroundColor: NSColor.white])
+        NSGraphicsContext.restoreGraphicsState()
+        return rep.representation(using: .png, properties: [:])!
     }
 
     /// Stage 2: words in pictures, what's in them, similar and related things.

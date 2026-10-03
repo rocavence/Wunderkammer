@@ -32,7 +32,10 @@ final class ShareInboxWatcher {
         guard !busy, let inbox,
               let folders = try? FileManager.default.contentsOfDirectory(at: inbox, includingPropertiesForKeys: nil)
         else { return }
-        let ready = folders.filter { FileManager.default.fileExists(atPath: $0.appendingPathComponent("manifest.json").path) }
+        let ready = folders.filter {
+            (try? $0.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink) != true
+                && FileManager.default.fileExists(atPath: $0.appendingPathComponent("manifest.json").path)
+        }
         guard !ready.isEmpty else { return }
         busy = true
         Task {
@@ -45,17 +48,23 @@ final class ShareInboxWatcher {
         }
     }
 
-    /// The manifest's entries as capture sources. Web addresses only for links.
+    /// The manifest's entries as capture sources. Anything that could write to
+    /// the inbox could also write a manifest, so nothing in it is trusted:
+    /// image names can't leave their folder, referenced files must be ordinary
+    /// files where a user keeps things, links must be web addresses.
     nonisolated static func sources(in folder: URL) -> [Source] {
-        guard let data = try? Data(contentsOf: folder.appendingPathComponent("manifest.json")),
+        guard !isSymlink(folder),
+              let data = try? Data(contentsOf: folder.appendingPathComponent("manifest.json")),
+              data.count < 2_000_000,
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let entries = json["entries"] as? [[String: String]] else { return [] }
-        return entries.compactMap { entry -> Source? in
-            if let path = entry["path"], FileManager.default.isReadableFile(atPath: path) {
-                return .file(URL(fileURLWithPath: path))
+        return entries.prefix(50).compactMap { entry -> Source? in
+            if let path = entry["path"], let url = referenceableFile(path) {
+                return .file(url)
             }
-            if let name = entry["image"], let data = try? Data(contentsOf: folder.appendingPathComponent(name)) {
-                return .imageData(data, name: name, origin: nil)
+            if let name = entry["image"], let file = contained(name, in: folder),
+               let data = try? Data(contentsOf: file), data.count < 200_000_000 {
+                return .imageData(data, name: file.lastPathComponent, origin: nil)
             }
             if let s = entry["url"], let url = URL(string: s), ["http", "https"].contains(url.scheme?.lowercased() ?? "") {
                 return .web(url, title: nil)
@@ -66,5 +75,37 @@ final class ShareInboxWatcher {
             }
             return nil
         }
+    }
+
+    /// A file inside the share's own folder, by name only (no "../", no links).
+    nonisolated static func contained(_ name: String, in folder: URL) -> URL? {
+        let leaf = (name as NSString).lastPathComponent
+        guard !leaf.isEmpty, leaf != ".", leaf != "..", !leaf.hasPrefix(".") else { return nil }
+        let file = folder.appendingPathComponent(leaf)
+        guard file.deletingLastPathComponent().standardizedFileURL == folder.standardizedFileURL,
+              !isSymlink(file), isRegularFile(file) else { return nil }
+        return file
+    }
+
+    /// Only ordinary, visible files in the places people keep things: the home
+    /// folder outside ~/Library, or an external volume.
+    nonisolated static func referenceableFile(_ path: String) -> URL? {
+        let url = URL(fileURLWithPath: path).standardizedFileURL.resolvingSymlinksInPath()
+        let home = FileManager.default.homeDirectoryForCurrentUser.standardizedFileURL.resolvingSymlinksInPath().path
+        let p = url.path
+        let inHome = p.hasPrefix(home + "/") && !p.hasPrefix(home + "/Library/")
+        let onVolume = p.hasPrefix("/Volumes/")
+        guard inHome || onVolume,
+              !url.pathComponents.contains(where: { $0.hasPrefix(".") }),
+              isRegularFile(url), FileManager.default.isReadableFile(atPath: p) else { return nil }
+        return url
+    }
+
+    nonisolated private static func isSymlink(_ url: URL) -> Bool {
+        (try? url.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink) == true
+    }
+
+    nonisolated private static func isRegularFile(_ url: URL) -> Bool {
+        (try? url.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true
     }
 }

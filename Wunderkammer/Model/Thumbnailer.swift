@@ -6,7 +6,9 @@ import UniformTypeIdentifiers
 /// and keeps recent decodes in memory.
 @MainActor
 final class Thumbnailer {
-    private let cache = NSCache<NSString, CGImage>()
+    /// Decoded images, least recently used dropped first. NSCache's limits
+    /// are only hints (3,000 thumbnails stayed resident); this one is strict.
+    private let cache = ImageCache(limit: 384 * 1024 * 1024)
     private let queue: OperationQueue = {
         let q = OperationQueue()
         q.maxConcurrentOperationCount = 4
@@ -23,19 +25,20 @@ final class Thumbnailer {
         fileprivate let token: Int
     }
 
-    init() {
-        cache.totalCostLimit = 512 * 1024 * 1024
-    }
+    init() {}
 
-    /// Size buckets so nearby zoom levels share one decode.
+    /// Size buckets so nearby zoom levels share one decode. Small tiles get
+    /// small decodes: a zoomed-out wall of thousands stays light.
     static func bucket(for pixels: CGFloat) -> Int {
+        if pixels <= 160 { return 160 }
+        if pixels <= 320 { return 320 }
         if pixels <= CGFloat(Library.thumbnailSize) { return Library.thumbnailSize }
         if pixels <= 1200 { return 1200 }
         return 2400
     }
 
     func cached(_ url: URL, maxPixel: Int) -> CGImage? {
-        cache.object(forKey: Self.key(url, maxPixel))
+        cache[Self.key(url, maxPixel)]
     }
 
     /// Calls `completion` on the main actor once decoded (right away if cached).
@@ -44,7 +47,7 @@ final class Thumbnailer {
     func load(_ url: URL, maxPixel: Int, completion: @escaping @MainActor (CGImage) -> Void) -> Request? {
         let key = Self.key(url, maxPixel)
         let keyString = key as String
-        if let image = cache.object(forKey: key) { completion(image); return nil }
+        if let image = cache[key] { completion(image); return nil }
         nextToken += 1
         let request = Request(key: key, token: nextToken)
         if pending[key] != nil {
@@ -67,7 +70,7 @@ final class Thumbnailer {
     }
 
     private func finish(_ key: NSString, _ image: CGImage) {
-        cache.setObject(image, forKey: key, cost: image.bytesPerRow * image.height)
+        cache.insert(image, for: key)
         // A newer decode may own this key if ours was cancelled mid-flight; its waiters still want the image.
         let waiters = pending.removeValue(forKey: key)?.waiters ?? [:]
         for waiter in waiters.values { waiter(image) }
@@ -108,3 +111,40 @@ final class Thumbnailer {
 }
 
 private struct ImageBox: @unchecked Sendable { let image: CGImage }
+
+/// A strict LRU of decoded images by byte cost.
+@MainActor
+final class ImageCache {
+    private let limit: Int
+    private var images: [NSString: (image: CGImage, cost: Int, tick: Int)] = [:]
+    private var total = 0
+    private var tick = 0
+
+    init(limit: Int) { self.limit = limit }
+
+    var bytes: Int { total }
+
+    subscript(key: NSString) -> CGImage? {
+        guard var entry = images[key] else { return nil }
+        tick += 1
+        entry.tick = tick
+        images[key] = entry
+        return entry.image
+    }
+
+    func insert(_ image: CGImage, for key: NSString) {
+        let cost = image.bytesPerRow * image.height
+        if let old = images[key] { total -= old.cost }
+        tick += 1
+        images[key] = (image, cost, tick)
+        total += cost
+        guard total > limit else { return }
+        // Evict the oldest quarter at once rather than one by one.
+        let target = limit * 3 / 4
+        for (k, v) in images.sorted(by: { $0.value.tick < $1.value.tick }) {
+            guard total > target else { break }
+            images[k] = nil
+            total -= v.cost
+        }
+    }
+}

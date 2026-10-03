@@ -43,11 +43,13 @@ enum Representer {
 
     static func ingest(_ source: Source, context: Context, known: Set<String>) async -> Outcome? {
         var outcome: Outcome?
+        // Background tasks don't drain autorelease pools by themselves: wrap the
+        // synchronous image work, or thousands of captures keep gigabytes alive.
         switch source {
         case .file(let url): outcome = await file(url, context, known)
-        case .imageData(let data, let name, let origin): outcome = imageData(data, name: name, origin: origin, context, known)
-        case .web(let url, let title): outcome = web(url, title: title, context, known)
-        case .text(let text, let origin): outcome = textItem(text, origin: origin, context, known)
+        case .imageData(let data, let name, let origin): outcome = autoreleasepool { imageData(data, name: name, origin: origin, context, known) }
+        case .web(let url, let title): outcome = autoreleasepool { web(url, title: title, context, known) }
+        case .text(let text, let origin): outcome = autoreleasepool { textItem(text, origin: origin, context, known) }
         }
         if case .new(var item) = outcome {
             item.sourceApp = item.sourceApp ?? context.sourceApp
@@ -86,10 +88,10 @@ enum Representer {
         if known.contains(hash) { return .duplicate(hash) }
 
         var item: Item
-        if type.conforms(to: .image), let made = image(at: url, hash: hash, context) {
+        if type.conforms(to: .image), let made = autoreleasepool(invoking: { image(at: url, hash: hash, context) }) {
             item = made
         } else if type.conforms(to: .pdf) {
-            item = pdf(url, hash: hash, context)
+            item = autoreleasepool { pdf(url, hash: hash, context) }
         } else if type.conforms(to: .audio) {
             item = await audio(url, hash: hash, context)
         } else if type.conforms(to: .movie) || type.conforms(to: .audiovisualContent) {

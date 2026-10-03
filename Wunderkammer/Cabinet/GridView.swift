@@ -192,6 +192,10 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
 
     private func updateTiles(animated: Bool) {
         guard let clip = superview else { return }
+        guard !isHiddenOrHasHiddenAncestor else {
+            pool.removeAll()
+            return
+        }
         let visible = clip.bounds.insetBy(dx: 0, dy: -clip.bounds.height)
         let placements = indices(in: visible).map { i in
             TilePool.Placement(key: items[i].id.uuidString, item: items[i], frame: frames[i],

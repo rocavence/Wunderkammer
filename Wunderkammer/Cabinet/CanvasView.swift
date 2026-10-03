@@ -224,7 +224,19 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
 
     // MARK: Rendering
 
+    override func viewDidHide() {
+        super.viewDidHide()
+        pool.removeAll()
+    }
+
+    override func viewDidUnhide() {
+        super.viewDidUnhide()
+        if needsFit { fit() } else { render(animated: false) }
+    }
+
     private func render(animated: Bool, duration: CFTimeInterval = TilePool.animation) {
+        // Off screen, nothing to draw (and nothing to decode).
+        guard !isHiddenOrHasHiddenAncestor else { return }
         let visible = CGRect(x: offset.x, y: offset.y, width: bounds.width / zoom, height: bounds.height / zoom)
             .insetBy(dx: -200 / zoom, dy: -200 / zoom)
         var placements: [TilePool.Placement] = []
