@@ -6,3 +6,5 @@ dist/
 .DS_Store
 Config/Signing.local.xcconfig
 *.xcodeproj/
+
+build/selftest-empty/

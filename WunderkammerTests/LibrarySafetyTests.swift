@@ -102,4 +102,22 @@ struct LibrarySafetyTests {
         library.restore(removal)
         #expect(Set(library.links(key: key)) == [CanvasLink(a: ids[0], b: ids[1]), CanvasLink(a: ids[2], b: ids[3])])
     }
+
+    @Test func undoReturnsToItsPileAfterRearranging() async {
+        let library = Library(root: tempRoot())
+        let ids = await library.capture((11...14).map { .imageData(png($0), name: "\($0).png", origin: nil) })
+        let key = Library.allKey
+        let a = CanvasGroup(id: UUID(), x: 0, y: 0, itemIDs: [ids[0], ids[1]])
+        let b = CanvasGroup(id: UUID(), x: 500, y: 0, itemIDs: [ids[2], ids[3]])
+        library.setCanvasGroups([a, b], key: key)
+        guard let removal = library.delete([ids[3]]) else { return }
+        // The canvas (which no longer sees ids[3]) moves pile b and saves.
+        var shown = library.canvasGroups(key: key, ids: library.items.map(\.id))
+        if let i = shown.firstIndex(where: { $0.id == b.id }) { shown[i].x = 900 }
+        library.setCanvasGroups(shown, key: key)
+        library.restore(removal)
+        let piles = library.canvasGroups(key: key, ids: library.items.map(\.id))
+        #expect(piles.first { $0.id == b.id }?.itemIDs.contains(ids[3]) == true)
+        #expect(piles.first { $0.id == b.id }?.x == 900)
+    }
 }

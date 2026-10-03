@@ -33,6 +33,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private(set) var canvas: CanvasView!
     private(set) var infinity: InfinityView!
     private(set) var graphView: GraphView!
+    private var emptyCabinet: EmptyCabinetView!
     private(set) var preview: PreviewView!
     private var modeControl: NSSegmentedControl!
     private var searchItem: NSSearchToolbarItem?
@@ -112,7 +113,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         preview.onRandom = { [weak self] in self?.showRandom() }
 
         let content = NSView()
-        for v in [scroll!, canvas!, infinity!, graphView!, preview!] as [NSView] {
+        emptyCabinet = EmptyCabinetView(frame: .zero)
+        emptyCabinet.onImportAtlas = { [weak self] in self?.importAtlas() }
+        emptyCabinet.onDrop = { [weak self] pb in
+            guard let self else { return false }
+            return importPasteboard(pb, library: self.library, board: self.scope.board)
+        }
+        for v in [scroll!, canvas!, infinity!, graphView!, emptyCabinet!, preview!] as [NSView] {
             v.frame = content.bounds
             v.autoresizingMask = [.width, .height]
             content.addSubview(v)
@@ -143,6 +150,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             return Trail.describe(step.via) { self.library.item($0)?.displayTitle }
         }
         NotificationCenter.default.addObserver(forName: Understanding.didProgress, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.updateTitle() }
+        }
+        NotificationCenter.default.addObserver(forName: Library.didChange, object: library, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.updateTitle() }
         }
 
@@ -313,6 +323,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         let count = library.items(for: scope).count
         let learning = understanding?.pending ?? 0
         window.subtitle = (scope.isSearching ? "找到 \(count) 件" : "\(count) 件") + (learning > 0 ? " · 正在理解 \(learning) 件" : "")
+        // A cabinet with nothing in it yet gets its welcome instead of empty views.
+        emptyCabinet?.isHidden = !library.items.isEmpty
     }
 
     func setMode(_ new: ViewMode) {
@@ -692,7 +704,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         Task { await library.importFiles(urls, into: board) }
     }
 
-    @objc private func importAtlas() {
+    @objc func importAtlas() {
         Task { _ = await library.importFromAtlas() }
     }
 

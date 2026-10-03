@@ -344,7 +344,20 @@ final class Library {
     }
 
     /// Canvas edits don't post didChange: the canvas already shows them.
+    /// Removed items stay in the pile they were in (hidden), so ⌘Z puts them
+    /// back there even if the canvas was rearranged meanwhile.
     func setCanvasGroups(_ groups: [CanvasGroup], key: String) {
+        var groups = groups
+        let shown = Set(groups.flatMap(\.itemIDs))
+        for old in canvases[key] ?? [] {
+            let hidden = old.itemIDs.filter { byID[$0] == nil && !shown.contains($0) }
+            guard !hidden.isEmpty else { continue }
+            if let i = groups.firstIndex(where: { $0.id == old.id }) {
+                groups[i].itemIDs += hidden
+            } else if !groups.isEmpty {
+                groups[0].itemIDs += hidden
+            }
+        }
         canvases[key] = groups
         save()
     }

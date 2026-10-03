@@ -36,7 +36,7 @@
 | US-013 移除與復原 | 完成 | `Delete` 不跳對話框，`⌘Z` 復原 |
 | US-014 零整理 | 完成 | 不需要建立任何資料夾或 tag；側欄的 view 都由系統維護 |
 
-另外：服務選單、拖到 Dock、選單列 icon、Spotlight、`wunderkammer://` 連結、app icon（Reicon cabinet）、關掉視窗仍可在背景收藏、淺色與深色模式、VoiceOver（Grid）。
+另外：第一次打開的歡迎頁（三種收藏方式，偵測到 Atlas 圖庫時可一鍵帶進來）、服務選單、拖到 Dock、選單列 icon、Spotlight、`wunderkammer://` 連結、app icon（Reicon cabinet）、關掉視窗仍可在背景收藏、淺色與深色模式、VoiceOver（Grid）。
 
 ### Stage 2 — Intelligence（全部在本機）
 
@@ -115,7 +115,7 @@
 * 被參照的檔案如果被刪除，只剩 representation 可看，無法開原檔。
 * 分享延伸功能需要 Team `7F654HZB2H` 簽章；ad-hoc 簽章時不運作。
 * 只有圖片時，文化圖譜只有主題節點；收進網頁與文字後才會出現名字與網站。
-* 移除後若在 Canvas 拖動了堆，⌘Z 復原的項目會回到第一堆，而不是原本那堆。
+
 
 ## Commit 一覽
 

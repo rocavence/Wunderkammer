@@ -165,6 +165,15 @@ final class SelfTest {
                 check(ui.grid.shownItems.count == theme.items.count, "clicking “\(theme.title)” shows its \(theme.items.count) curiosities")
             }
             return finish()
+        case "empty":
+            // A brand-new cabinet: the welcome, then the first capture replaces it.
+            await wait(0.5)
+            shot("empty-cabinet")
+            await library.capture([.text("The first curiosity.", origin: nil)])
+            await wait(0.6)
+            check(library.items.count == 1, "first capture lands in an empty cabinet")
+            shot("empty-after-first")
+            return finish()
         case "settings":
             if let w = ui.showSettingsForTest(), let dir = Self.outputDir {
                 await wait(0.6)
