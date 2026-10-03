@@ -54,5 +54,14 @@ enum Subjects {
         "sport": "運動", "ball": "球", "game": "遊戲", "toy": "玩具", "map": "地圖", "space": "太空", "night_sky": "夜空", "night sky": "夜空",
         "jacket": "外套", "suit": "西裝", "eyeglasses": "眼鏡", "optical equipment": "光學器材", "branch": "樹枝", "grass": "草",
         "wood": "木頭", "metal": "金屬", "glass": "玻璃", "light": "光", "shadow": "陰影", "pattern": "圖案",
+        "recreation": "休閒", "celebration": "慶祝", "party": "派對", "wedding": "婚禮", "people_group": "群體", "people group": "群體",
+        "office": "辦公室", "workplace": "工作場所", "classroom": "教室", "restaurant": "餐廳", "shop": "商店", "museum": "博物館",
+        "gadget": "小器材", "electronics": "電子產品", "appliance": "家電", "radio": "收音機", "clock": "時鐘", "screen": "螢幕",
+        "monitor": "螢幕", "keyboard": "鍵盤", "turntable": "唱盤", "vinyl": "黑膠", "record": "唱片", "film": "電影", "movie": "電影",
+        "comics": "漫畫", "anime": "動畫", "graphic design": "平面設計", "handwriting": "手寫字", "calligraphy": "書法",
+        "flag": "旗子", "fireworks": "煙火", "candle": "蠟燭", "bottle": "瓶子", "cup": "杯子", "plate": "盤子", "bowl": "碗",
+        "dining": "用餐", "cooking": "烹飪", "bread": "麵包", "cake": "蛋糕", "pizza": "披薩", "sushi": "壽司", "wine": "葡萄酒",
+        "flowerpot": "盆栽", "houseplant": "室內植物", "leaf": "葉子", "rock": "岩石", "lake": "湖", "river": "河", "waterfall": "瀑布",
+        "cloud": "雲", "rain": "雨", "winter": "冬天", "autumn": "秋天", "spring": "春天", "summer": "夏天",
     ]
 }
