@@ -372,6 +372,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         // However this ends, the "how you got here" hint is for this visit only.
         defer { pendingVia = nil }
         guard let item = library.item(id) else { return }
+        grid.stopHover()
         library.markViewed(id)
         trail.record(id, via: pendingVia ?? currentVia)
         inspector.show(id)

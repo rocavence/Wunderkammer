@@ -179,7 +179,8 @@ final class Understanding {
     }
 
     /// Fingerprints and vectors of items no longer in the cabinet (and stale
-    /// versions) go, unless the library couldn't be read.
+    /// versions) go, unless the library couldn't be read. Only at launch: a
+    /// removed item can come back with ⌘Z during the session.
     private func purge() {
         guard !library.loadFailed else { return }
         let ids = Set(library.items.map(\.id.uuidString))
@@ -202,7 +203,12 @@ final class Understanding {
     }
 
     private func loop() async {
-        defer { running = false }
+        defer {
+            running = false
+            // Work that arrived while this pass ran (a page's preview, an undo).
+            let more = library.items.contains { (!$0.analyzed && isReady($0)) || (semantic != nil && isReady($0) && !hasEmbedding($0)) }
+            if more { DispatchQueue.main.async { [weak self] in MainActor.assumeIsolated { self?.start() } } }
+        }
         var done = 0
         while let item = library.items.first(where: { !$0.analyzed && isReady($0) }) {
             let image = item.hasFullImage ? (library.originalURL(item) ?? library.thumbnailURL(item)) : library.thumbnailURL(item)
@@ -245,7 +251,6 @@ final class Understanding {
                     unembeddable.insert(key)
                 }
             }
-            purge()
             await preloadEmbeddings()
         }
         library.save()

@@ -9,16 +9,20 @@ final class HoverVideo {
     private var looper: AVPlayerLooper?
     private var playerLayer: AVPlayerLayer?
     private var pending: DispatchWorkItem?
+    private var pendingID: UUID?
     private(set) var playing: UUID?
 
     /// Starts after a short rest, so sweeping across the grid doesn't fire every video.
     func hover(_ item: Item?, url: URL?, frame: CGRect, in host: CALayer) {
-        guard item?.id != playing else {
+        guard let item else { return stop() }
+        if item.id == playing {
             withoutAnimation { playerLayer?.frame = frame }
             return
         }
+        if item.id == pendingID { return }
         stop()
-        guard let item, item.kind == .video, let url else { return }
+        guard item.kind == .video, let url else { return }
+        pendingID = item.id
         let work = DispatchWorkItem { [weak self, weak host] in
             MainActor.assumeIsolated {
                 guard let self, let host else { return }
@@ -30,6 +34,7 @@ final class HoverVideo {
     }
 
     private func start(_ id: UUID, url: URL, frame: CGRect, in host: CALayer) {
+        pendingID = nil
         let item = AVPlayerItem(url: url)
         let player = AVQueuePlayer()
         player.isMuted = true
@@ -56,6 +61,7 @@ final class HoverVideo {
     func stop() {
         pending?.cancel()
         pending = nil
+        pendingID = nil
         player?.pause()
         playerLayer?.removeFromSuperlayer()
         player = nil

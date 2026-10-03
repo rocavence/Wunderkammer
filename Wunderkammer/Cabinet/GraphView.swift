@@ -29,10 +29,7 @@ final class GraphView: NSView {
         edgesLayer.lineCap = .round
         layer?.addSublayer(edgesLayer)
         let refresh: (Notification) -> Void = { [weak self] _ in
-            MainActor.assumeIsolated {
-                self?.dirty = true
-                if self?.isHiddenOrHasHiddenAncestor == false { self?.rebuild() }
-            }
+            MainActor.assumeIsolated { self?.scheduleRebuild() }
         }
         NotificationCenter.default.addObserver(forName: Library.didChange, object: library, queue: .main, using: refresh)
         NotificationCenter.default.addObserver(forName: Understanding.didProgress, object: nil, queue: .main, using: refresh)
@@ -64,16 +61,34 @@ final class GraphView: NSView {
 
     // MARK: Model
 
-    func rebuild() {
+    private var rebuildWork: DispatchWorkItem?
+
+    /// Changes come in bursts (analysis, enrichment): rebuild once they settle,
+    /// and only when the graph is on screen.
+    private func scheduleRebuild() {
+        dirty = true
+        guard !isHiddenOrHasHiddenAncestor else { return }
+        rebuildWork?.cancel()
+        let w = DispatchWorkItem { [weak self] in MainActor.assumeIsolated { self?.rebuild(keepCamera: true) } }
+        rebuildWork = w
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: w)
+    }
+
+    func rebuild(keepCamera: Bool = false) {
         dirty = false
+        let hadNodes = !graph.nodes.isEmpty
         var g = CultureGraph.build(from: library.items, subjects: Subjects.discover(in: library.items, limit: 12))
         // Few nodes sit close together; many get room.
         let side = max(520, CGFloat(g.nodes.count).squareRoot() * 360)
         g.layout(size: CGSize(width: side * 1.4, height: side))
         graph = g
-        for (_, l) in nodeLayers { l.label.removeFromSuperlayer(); l.circle.removeFromSuperlayer(); l.ring.removeFromSuperlayer() }
-        nodeLayers = [:]
-        fit()
+        // Nodes that are still there keep their layers (no flicker).
+        let ids = Set(g.nodes.map(\.id))
+        for (id, l) in nodeLayers where !ids.contains(id) {
+            l.label.removeFromSuperlayer(); l.circle.removeFromSuperlayer(); l.ring.removeFromSuperlayer()
+            nodeLayers[id] = nil
+        }
+        if keepCamera, hadNodes { render() } else { fit() }
         needsDisplay = true
     }
 

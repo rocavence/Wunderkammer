@@ -287,6 +287,11 @@ final class Library {
     func purgeOrphans() {
         // If the library couldn't be read, every file would look orphaned.
         guard !loadFailed else { return }
+        // Canvas piles and links kept removed items for undo; a new session can't undo.
+        for key in canvases.keys {
+            canvases[key] = canvases[key]?.map { var g = $0; g.itemIDs.removeAll { byID[$0] == nil }; return g }.filter { !$0.itemIDs.isEmpty }
+        }
+        for key in canvasLinks.keys { canvasLinks[key]?.removeAll { byID[$0.a] == nil || byID[$0.b] == nil } }
         let keep = Set(items.compactMap(\.storedFilename))
         let ids = Set(items.map(\.id.uuidString))
         let fm = FileManager.default

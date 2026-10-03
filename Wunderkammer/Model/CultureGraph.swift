@@ -50,6 +50,10 @@ struct CultureGraph {
         nodes += names.filter { $0.value.items.count >= 2 }.map { Node(id: "name:\($0.key)", title: $0.value.title, kind: .name, items: $0.value.items) }
         nodes += sites.filter { $0.value.count >= 2 }.map { Node(id: "site:\($0.key)", title: $0.key, kind: .site, items: $0.value) }
 
+        // Only the biggest candidates are worth pairing up (edges are O(n²)).
+        if nodes.count > limit * 2 {
+            nodes = Array(nodes.sorted { ($0.items.count, $1.id) > ($1.items.count, $0.id) }.prefix(limit * 2))
+        }
         func edges(of nodes: [Node]) -> [Edge] {
             let sets = nodes.map { Set($0.items) }
             var out: [Edge] = []

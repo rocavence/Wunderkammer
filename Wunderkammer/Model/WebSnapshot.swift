@@ -27,8 +27,22 @@ final class WebSnapshot: NSObject, WKNavigationDelegate {
         view.navigationDelegate = self
     }
 
+    /// Many links captured at once shouldn't spin up a web view each.
+    private static var running = 0
+    private static var waiting: [CheckedContinuation<Void, Never>] = []
+
     static func capture(_ url: URL, size: CGSize = CGSize(width: 1200, height: 800), timeout: TimeInterval = 12) async -> CGImage? {
         guard WebMetadata.isWeb(url) else { return nil }
+        if running >= 2 { await withCheckedContinuation { waiting.append($0) } }
+        running += 1
+        defer {
+            running -= 1
+            if !waiting.isEmpty { waiting.removeFirst().resume() }
+        }
+        return await take(url, size: size, timeout: timeout)
+    }
+
+    private static func take(_ url: URL, size: CGSize, timeout: TimeInterval) async -> CGImage? {
         let snap = WebSnapshot(size: size)
         return await withCheckedContinuation { c in
             snap.done = c

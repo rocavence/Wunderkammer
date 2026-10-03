@@ -374,6 +374,7 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
 
     private func applyLiveZoom() {
         guard let a = liveAnchor, let clip = superview else { return }
+        stopHover()
         let s = liveScale
         let visible = clip.bounds.insetBy(dx: 0, dy: -clip.bounds.height / 2)
         // Which laid-out tiles land on screen once scaled around `a`.
@@ -561,12 +562,24 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
     }
 
     override func mouseMoved(with event: NSEvent) {
-        guard let root = layer, !isLiveZooming else { return }
+        // Not under an open preview, not mid-pinch.
+        guard let root = layer, !isLiveZooming, window?.firstResponder === self else { return stopHover() }
         let p = convert(event.locationInWindow, from: nil)
         let i = index(at: p)
         let item = i.map { items[$0] }
         hoverVideo.hover(item, url: item.flatMap(library.originalURL), frame: i.map { frames[$0] } ?? .zero, in: root)
         showCaption(for: i)
+    }
+
+    /// Stops the hover video and hides the title (hidden, preview opened, pinch).
+    func stopHover() {
+        hoverVideo.stop()
+        showCaption(for: nil)
+    }
+
+    override func viewDidHide() {
+        super.viewDidHide()
+        stopHover()
     }
 
     override func mouseExited(with event: NSEvent) {
