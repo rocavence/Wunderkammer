@@ -133,6 +133,16 @@ final class SelfTest {
             ui.setMode(.grid)
             await wait(1.2)
             shot("formats")
+            // Resting on the video plays it in its tile.
+            if let video = got.first, let p = center(of: video.id, in: ui.grid),
+               let e = NSEvent.mouseEvent(with: .mouseMoved, location: ui.grid.convert(p, to: nil), modifierFlags: [],
+                                          timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber,
+                                          context: nil, eventNumber: 0, clickCount: 0, pressure: 0) {
+                ui.grid.mouseMoved(with: e)
+                await wait(1.5)
+                check(ui.grid.hoverPlaying == video.id, "hovering the video plays it in place")
+                shot("formats-hover-video")
+            }
             return finish()
         case "semantic":
             var waited = 0.0

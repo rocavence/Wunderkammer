@@ -211,6 +211,7 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
 
     private func updateTiles(animated: Bool) {
         guard let clip = superview else { return }
+        hoverVideo.stop()
         guard !isHiddenOrHasHiddenAncestor else {
             pool.removeAll()
             return
@@ -543,6 +544,33 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
         showSelection()
         scrollToVisible(id)
     }
+
+    // MARK: Hover
+
+    private let hoverVideo = HoverVideo()
+    private var hoverArea: NSTrackingArea?
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        if let hoverArea { removeTrackingArea(hoverArea) }
+        let area = NSTrackingArea(rect: .zero, options: [.mouseMoved, .mouseEnteredAndExited, .activeInKeyWindow, .inVisibleRect],
+                                  owner: self, userInfo: nil)
+        addTrackingArea(area)
+        hoverArea = area
+    }
+
+    override func mouseMoved(with event: NSEvent) {
+        guard let root = layer, !isLiveZooming else { return }
+        let p = convert(event.locationInWindow, from: nil)
+        let i = index(at: p)
+        let item = i.map { items[$0] }
+        hoverVideo.hover(item, url: item.flatMap(library.originalURL), frame: i.map { frames[$0] } ?? .zero, in: root)
+    }
+
+    override func mouseExited(with event: NSEvent) { hoverVideo.stop() }
+
+    /// Whatever moves the tiles stops the hover video (tests read this too).
+    var hoverPlaying: UUID? { hoverVideo.playing }
 
     // MARK: Accessibility
 
