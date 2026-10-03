@@ -38,11 +38,30 @@ targets:
         INFOPLIST_KEY_NSHumanReadableCopyright: ""
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ENABLE_HARDENED_RUNTIME: YES
+    # 讀取瀏覽器目前分頁的網址（⌘⇧C）需要 Apple Events
+    entitlements:
+      path: Wunderkammer/Wunderkammer.entitlements
+      properties:
+        com.apple.security.automation.apple-events: true
     info:
       path: Wunderkammer/Info.plist
       properties:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSAppleEventsUsageDescription: 按 ⌘⇧C 時，Wunderkammer 會讀取瀏覽器目前分頁的網址與標題，把這個頁面收進珍奇室。
+        # wunderkammer://capture?url=…（書籤小程式、瀏覽器擴充）
+        CFBundleURLTypes:
+          - CFBundleURLName: com.rocavence.wunderkammer
+            CFBundleURLSchemes: [wunderkammer]
+        # 任何 app 的「服務」選單：選取文字、網址、檔案或圖片 →「收進 Wunderkammer」
+        NSServices:
+          - NSMessage: collectService
+            NSPortName: Wunderkammer
+            NSMenuItem:
+              default: 收進 Wunderkammer
+            NSRequiredContext: {}
+            NSSendTypes: [public.utf8-plain-text, public.url, public.file-url, public.png, public.tiff, public.rtf]
+            NSSendFileTypes: [public.item]
   WunderkammerTests:
     type: bundle.unit-test
     platform: macOS

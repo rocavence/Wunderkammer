@@ -16,7 +16,49 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.rocavence.wunderkammer</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>wunderkammer</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>按 ⌘⇧C 時，Wunderkammer 會讀取瀏覽器目前分頁的網址與標題，把這個頁面收進珍奇室。</string>
+	<key>NSServices</key>
+	<array>
+		<dict>
+			<key>NSMenuItem</key>
+			<dict>
+				<key>default</key>
+				<string>收進 Wunderkammer</string>
+			</dict>
+			<key>NSMessage</key>
+			<string>collectService</string>
+			<key>NSPortName</key>
+			<string>Wunderkammer</string>
+			<key>NSRequiredContext</key>
+			<dict/>
+			<key>NSSendFileTypes</key>
+			<array>
+				<string>public.item</string>
+			</array>
+			<key>NSSendTypes</key>
+			<array>
+				<string>public.utf8-plain-text</string>
+				<string>public.url</string>
+				<string>public.file-url</string>
+				<string>public.png</string>
+				<string>public.tiff</string>
+				<string>public.rtf</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

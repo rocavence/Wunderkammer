@@ -97,9 +97,15 @@ final class SelfTest {
     func run() async {
         await wait(1.5)
         log("window key: \(window.isKeyWindow)")
-        if ProcessInfo.processInfo.environment["WK_SELFTEST_ONLY"] == "infinity-close" {
+        switch ProcessInfo.processInfo.environment["WK_SELFTEST_ONLY"] {
+        case "infinity-close":
             await infinityCloseCheck()
             return finish()
+        case "capture":
+            await captureCheck()
+            return finish()
+        default:
+            break
         }
         let all = library.items
         check(all.count >= 8, "library has test images (\(all.count))")
@@ -341,6 +347,57 @@ final class SelfTest {
         check(settled < 0.5 && allVisible && !ui.preview.isOpen,
               "after closing every tile is home and visible (\(String(format: "%.1f", settled))pt)")
         shot("02f-ripple-closed")
+    }
+
+    /// Every kind of source becomes a curiosity with a sensible look; a web
+    /// page's own preview arrives by itself after the instant capture.
+    private func captureCheck() async {
+        guard let dir = Self.outputDir?.appendingPathComponent("capture-files") else { return }
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let pdf = dir.appendingPathComponent("A Short Paper.pdf")
+        var box = CGRect(x: 0, y: 0, width: 420, height: 595)
+        if let ctx = CGContext(pdf as CFURL, mediaBox: &box, [kCGPDFContextTitle as String: "On Cabinets of Curiosities"] as CFDictionary) {
+            for page in 0..<2 {
+                ctx.beginPDFPage(nil)
+                ctx.setFillColor(CGColor(gray: 0.15, alpha: 1))
+                ctx.fill(CGRect(x: 40, y: 480 - CGFloat(page) * 40, width: 340, height: 60))
+                for line in 0..<14 { ctx.fill(CGRect(x: 40, y: 420 - CGFloat(line) * 24, width: CGFloat(200 + (line * 37) % 140), height: 8)) }
+                ctx.endPDFPage()
+            }
+            ctx.closePDF()
+        }
+        let note = dir.appendingPathComponent("note.md")
+        try? "Wunderkammer is a place for the things you don't want to lose, but don't want to organize either.".write(to: note, atomically: true, encoding: .utf8)
+        let page = URL(string: "https://en.wikipedia.org/wiki/Cabinet_of_curiosities")!
+        let before = library.items.count
+        let pb = NSPasteboard(name: .init("wk-selftest-capture"))
+        pb.clearContents()
+        pb.setString("Collect without organizing.", forType: .string)
+        let ids = await library.capture(PasteboardReader.sources(from: pb) + [.file(pdf), .file(note), .web(page, title: nil)])
+        pb.releaseGlobally()
+        check(ids.count == 4 && library.items.count == before + 4, "4 different sources captured (\(ids.count))")
+        let kinds = ids.compactMap(library.item).map(\.kind)
+        check(kinds == [.text, .pdf, .text, .web], "kinds detected: \(kinds.map(\.rawValue))")
+        check(library.item(ids[1])?.pageCount == 2 && library.item(ids[1])?.title == "On Cabinets of Curiosities", "PDF metadata read")
+        check(library.item(ids[1])?.storedFilename == nil && library.item(ids[1])?.filePath != nil, "PDF referenced, not copied")
+        ui.setMode(.grid)
+        ui.sidebar.select(board: nil)
+        await wait(1)
+        shot("capture-01-instant")
+        // The page's title and preview image come in the background.
+        var enriched = false
+        for _ in 0..<40 {
+            if let web = library.item(ids[3]), web.representationVersion > 0 { enriched = true; break }
+            await wait(0.25)
+        }
+        let web = library.item(ids[3])
+        check(enriched, "web preview fetched (title: \(web?.title ?? "–"))")
+        check(web?.title?.localizedCaseInsensitiveContains("cabinet") == true, "web title from the page")
+        await wait(1)
+        shot("capture-02-enriched")
+        // Capturing the same things again adds nothing.
+        let again = await library.capture([.file(pdf), .web(page, title: nil)])
+        check(library.items.count == before + 4 && Set(again) == Set([ids[1], ids[3]]), "duplicates recognised")
     }
 
     /// Clicking the empty area around an open preview must close it, not

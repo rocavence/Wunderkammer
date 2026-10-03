@@ -55,7 +55,7 @@ final class CanvasView: NSView, ItemSurface {
         wantsLayer = true
         layer?.masksToBounds = true
         pool.host = layer
-        registerForDraggedTypes([.fileURL, .png, .tiff, .wunderkammerItem])
+        registerForDraggedTypes([.fileURL, .URL, .string, .png, .tiff, .wunderkammerItem])
         NotificationCenter.default.addObserver(forName: Library.didChange, object: library, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.reload() }
         }

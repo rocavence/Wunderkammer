@@ -30,7 +30,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         table.delegate = self
         table.target = self
         table.doubleAction = #selector(doubleClicked)
-        table.registerForDraggedTypes([.wunderkammerItem, .fileURL, .png, .tiff])
+        table.registerForDraggedTypes([.wunderkammerItem, .fileURL, .URL, .string, .png, .tiff])
         table.setDraggingSourceOperationMask(.copy, forLocal: false)
         table.menu = NSMenu()
         table.menu?.delegate = self

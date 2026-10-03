@@ -38,7 +38,7 @@ final class GridView: NSView, ItemSurface, NSDraggingSource {
         wantsLayer = true
         layer?.masksToBounds = true
         pool.host = layer
-        registerForDraggedTypes([.fileURL, .png, .tiff])
+        registerForDraggedTypes([.fileURL, .URL, .string, .png, .tiff, .init("public.jpeg"), .init("public.heic"), .init("com.compuserve.gif")])
         NotificationCenter.default.addObserver(forName: Library.didChange, object: library, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.reload(animated: true) }
         }
@@ -503,7 +503,8 @@ final class GridView: NSView, ItemSurface, NSDraggingSource {
     }
 }
 
-/// Files, our own items, or raw image data → library (and the given board).
+/// Our own items join the board; anything else (files, images, links, text)
+/// becomes new curiosities, in the board being looked at.
 @MainActor
 func importPasteboard(_ pasteboard: NSPasteboard, library: Library, board: UUID?) -> Bool {
     let own = ItemActions.ids(from: pasteboard)
@@ -511,16 +512,8 @@ func importPasteboard(_ pasteboard: NSPasteboard, library: Library, board: UUID?
         if let board { library.add(own, to: board) }
         return board != nil
     }
-    let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL] ?? []
-    if !urls.isEmpty {
-        Task { await library.importFiles(urls, into: board) }
-        return true
-    }
-    for (type, ext) in [(NSPasteboard.PasteboardType.png, "png"), (.tiff, "tiff")] {
-        if let data = pasteboard.data(forType: type) {
-            Task { await library.importImageData(data, suggestedName: "Pasted \(UUID().uuidString.prefix(6)).\(ext)", into: board) }
-            return true
-        }
-    }
-    return false
+    let sources = PasteboardReader.sources(from: pasteboard)
+    guard !sources.isEmpty else { return false }
+    Task { await library.capture(sources, into: board) }
+    return true
 }

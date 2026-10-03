@@ -22,6 +22,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, Sel
     private var modeControl: NSSegmentedControl!
     private var mode = ViewMode.grid
     private var board: UUID?
+    private var capture: CaptureController!
 
     private static let modeKey = "mode"
     private static let boardKey = "board"
@@ -86,6 +87,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, Sel
         setMode(ViewMode(rawValue: defaults.integer(forKey: Self.modeKey)) ?? .grid)
         sidebar.select(board: savedBoard)
         NSApp.activate()
+
+        capture = CaptureController(library: library)
+        capture.currentBoard = { [weak self] in self?.board }
+        // The self-test runs next to the real app; the shortcuts belong to that one.
+        if !SelfTest.isEnabled { capture.start() }
 
         if SelfTest.isEnabled {
             window.setFrameAutosaveName("")
