@@ -12,6 +12,7 @@ enum EmptyState {
         case .onThisDay: return "過去的今天，你還沒有收藏東西\n明年的今天，這裡會有今天收的東西"
         case .forgotten: return "沒有被遺忘的東西\n收藏超過一個月沒看的，會慢慢出現在這裡"
         case .similar: return "系統還在看這件收藏\n看完就能找到相似的東西"
+        case .subject: return "這個主題現在沒有東西了"
         }
     }
 }

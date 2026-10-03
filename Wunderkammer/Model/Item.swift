@@ -49,6 +49,8 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
     var ocrText: String?
     var labels: [String]?
     var colors: [String]?
+    /// People, places and organisations named in the title, text or picture.
+    var entities: [Entity]?
     /// Which version of the Analyzer last looked at it (0 = not yet).
     var analysisVersion: Int
     var analyzed: Bool { analysisVersion >= Analyzer.version }
@@ -98,9 +100,16 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
         ocrText = try c.decodeIfPresent(String.self, forKey: .ocrText)
         labels = try c.decodeIfPresent([String].self, forKey: .labels)
         colors = try c.decodeIfPresent([String].self, forKey: .colors)
+        entities = try c.decodeIfPresent([Entity].self, forKey: .entities)
         analysisVersion = try c.decodeIfPresent(Int.self, forKey: .analysisVersion) ?? 0
         viewCount = try c.decodeIfPresent(Int.self, forKey: .viewCount) ?? 0
         lastViewed = try c.decodeIfPresent(Date.self, forKey: .lastViewed)
+    }
+
+    struct Entity: Codable, Hashable, Sendable {
+        enum Kind: String, Codable, Sendable { case person, place, organization }
+        var kind: Kind
+        var name: String
     }
 
     var aspect: CGFloat {

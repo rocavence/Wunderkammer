@@ -89,6 +89,11 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         }
         // Only worth a section when the cabinet holds more than one kind of thing.
         if kinds.count > 1 { r += [.header("系統整理")] + kinds }
+        // Themes the system noticed; they come and go on their own.
+        let subjects = Subjects.discover(in: library.items, limit: 6)
+        if !subjects.isEmpty {
+            r += [.header("主題")] + subjects.map { .view(.subject($0.label), title: $0.title, icon: .sparkles, count: $0.count) }
+        }
         r += [.header("重新發現"),
               .view(.onThisDay, title: "過去的今天", icon: .calendarDay, count: nil),
               .view(.forgotten, title: "被遺忘的", icon: .history, count: nil),

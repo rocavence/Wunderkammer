@@ -41,3 +41,29 @@ struct AnalyzerTests {
         #expect(d < 0.001)
     }
 }
+
+struct EntityAndSubjectTests {
+    /// Names are found; their kind (person, place) is only a guess, so it isn't relied on.
+    @Test func namesInEnglish() {
+        let names = Set(Analyzer.entities(in: "Wong Kar-wai filmed In the Mood for Love in Hong Kong with Tony Leung and Maggie Cheung.").map(\.name))
+        #expect(names.isSuperset(of: ["Wong Kar-wai", "Tony Leung", "Maggie Cheung", "Hong Kong"]))
+    }
+
+    @Test func chineseQueriesAreSegmented() {
+        #expect(Search.tokens("王家衛的電影") == ["王家衛", "電影"])
+        #expect(Search.tokens("紅色的椅子") == ["紅色", "椅子"])
+    }
+
+    @Test func themesNeedEnoughButNotEverything() {
+        func item(_ labels: [String]) -> Item {
+            var i = Item(kind: .image, originalFilename: "", pixelWidth: 1, pixelHeight: 1, contentHash: UUID().uuidString)
+            i.labels = labels
+            return i
+        }
+        let items = (0..<10).map { i in item(["people"] + (i < 4 ? ["cat"] : []) + (i < 2 ? ["dog"] : []) + ["structure"]) }
+        let subjects = Subjects.discover(in: items)
+        // "people" is on everything, "dog" on too few, "structure" is too general.
+        #expect(subjects.map(\.label) == ["cat"])
+        #expect(subjects.first?.title == "貓" && subjects.first?.count == 4)
+    }
+}

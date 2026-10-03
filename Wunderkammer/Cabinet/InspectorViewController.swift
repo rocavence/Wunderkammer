@@ -93,9 +93,15 @@ final class InspectorViewController: NSViewController {
             body.maximumNumberOfLines = 8
             stack.addArrangedSubview(body)
         }
+        if let names = item.entities, !names.isEmpty {
+            stack.addArrangedSubview(label("提到的名字", size: 11, color: .tertiaryLabelColor))
+            let list = label(names.prefix(8).map(\.name).joined(separator: "  ·  "), size: 12, color: .secondaryLabelColor)
+            list.maximumNumberOfLines = 3
+            stack.addArrangedSubview(list)
+        }
         if let labels = item.labels, !labels.isEmpty {
             stack.addArrangedSubview(label("系統看到的", size: 11, color: .tertiaryLabelColor))
-            let tags = label(labels.prefix(8).joined(separator: "  ·  "), size: 12, color: .secondaryLabelColor)
+            let tags = label(labels.prefix(8).map(Subjects.title).joined(separator: "  ·  "), size: 12, color: .secondaryLabelColor)
             tags.maximumNumberOfLines = 3
             stack.addArrangedSubview(tags)
         }

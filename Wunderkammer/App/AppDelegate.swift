@@ -175,6 +175,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         case .onThisDay: window.title = "過去的今天"
         case .forgotten: window.title = "被遺忘的"
         case .similar(let id): window.title = "與「\(library.item(id)?.displayTitle.prefix(20) ?? "")」相似"
+        case .subject(let label): window.title = Subjects.title(label)
         }
         let count = library.items(for: scope).count
         let learning = understanding?.pending ?? 0

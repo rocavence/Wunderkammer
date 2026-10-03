@@ -563,6 +563,17 @@ final class SelfTest {
             ui.sidebar.select(.all)
             await wait(0.5)
         }
+        let subjects = Subjects.discover(in: library.items)
+        check(!subjects.isEmpty, "themes found by themselves: \(subjects.map { "\($0.title)(\($0.count))" })")
+        if let first = subjects.first {
+            ui.sidebar.select(.subject(first.label))
+            await wait(0.8)
+            check(ui.grid.shownItems.count == first.count && ui.grid.shownItems.allSatisfy { $0.labels?.contains(first.label) == true },
+                  "theme view shows its \(first.count) items")
+            shot("understand-subject")
+            ui.sidebar.select(.all)
+            await wait(0.4)
+        }
         for item in library.items.prefix(3) {
             log("labels \(item.displayTitle.prefix(24)): \((item.labels ?? []).prefix(5)) colors \(item.colors ?? [])")
         }

@@ -1,6 +1,7 @@
 import AppKit
 import ImageIO
 import PDFKit
+import NaturalLanguage
 import Vision
 
 /// Quietly understands what's in the cabinet, on this Mac only: words in
@@ -9,13 +10,37 @@ import Vision
 /// first, and never asks anything.
 enum Analyzer {
     /// Bump when the analysis improves: older results are redone in the background.
-    static let version = 2
+    static let version = 3
 
     struct Result: Sendable {
         var ocrText: String?
         var labels: [String]
         var colors: [String]
         var featurePrint: Data?
+        var entities: [Item.Entity] = []
+    }
+
+    /// Names of people, places and organisations in a piece of text.
+    static func entities(in text: String) -> [Item.Entity] {
+        let tagger = NLTagger(tagSchemes: [.nameType])
+        tagger.string = text
+        var found: [Item.Entity] = []
+        var seen = Set<String>()
+        tagger.enumerateTags(in: text.startIndex..<text.endIndex, unit: .word, scheme: .nameType,
+                             options: [.omitWhitespace, .omitPunctuation, .joinNames]) { tag, range in
+            let kind: Item.Entity.Kind? = switch tag {
+            case .personalName: .person
+            case .placeName: .place
+            case .organizationName: .organization
+            default: nil
+            }
+            let name = text[range].trimmingCharacters(in: .whitespacesAndNewlines)
+            if let kind, name.count > 1, name.count < 60, seen.insert(name.lowercased()).inserted {
+                found.append(Item.Entity(kind: kind, name: name))
+            }
+            return found.count < 20
+        }
+        return found
     }
 
     /// The picture to look at: the original for images, else the representation.
@@ -144,9 +169,11 @@ final class Understanding {
             let image = item.hasFullImage ? (library.originalURL(item) ?? library.thumbnailURL(item)) : library.thumbnailURL(item)
             let pdf = item.kind == .pdf ? library.originalURL(item) : nil
             let knownText = item.kind == .text
+            let words = [item.title, item.text, item.creator].compactMap { $0 }.joined(separator: "\n")
             let id = item.id, printsDir = printsDir
             let result = await Task.detached(priority: .utility) {
-                let r = autoreleasepool { Analyzer.analyze(imageAt: image, pdf: pdf, knownText: knownText) }
+                var r = autoreleasepool { Analyzer.analyze(imageAt: image, pdf: pdf, knownText: knownText) }
+                r.entities = Analyzer.entities(in: [words, r.ocrText ?? ""].joined(separator: "\n").prefix(8000).description)
                 if let fp = r.featurePrint { try? fp.write(to: printsDir.appendingPathComponent(id.uuidString)) }
                 return r
             }.value
@@ -155,6 +182,7 @@ final class Understanding {
                 $0.ocrText = result.ocrText ?? $0.ocrText
                 $0.labels = result.labels
                 $0.colors = result.colors
+                $0.entities = result.entities
                 $0.analysisVersion = Analyzer.version
             }
             done += 1
@@ -208,12 +236,14 @@ final class Understanding {
             score[other.id, default: 0] += 3 * (1 - Double(rank) / 30)
         }
         let labels = Set(item.labels ?? [])
+        let names = Set((item.entities ?? []).map { $0.name.lowercased() })
         for other in library.items where other.id != item.id {
             var s = 0.0
             if let d = item.domain, d == other.domain { s += 2 }
             if let c = item.creator, c == other.creator { s += 2 }
             if let a = item.sourceApp, a == other.sourceApp, a != "Screenshot" { s += 0.3 }
             if !labels.isEmpty { s += Double(labels.intersection(other.labels ?? []).count) * 0.6 }
+            if !names.isEmpty { s += Double(names.intersection((other.entities ?? []).map { $0.name.lowercased() }).count) * 2.5 }
             if Calendar.current.isDate(item.dateAdded, inSameDayAs: other.dateAdded) { s += 0.2 }
             if s > 0 { score[other.id, default: 0] += s }
         }

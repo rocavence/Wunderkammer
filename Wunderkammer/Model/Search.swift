@@ -1,4 +1,5 @@
 import Foundation
+import NaturalLanguage
 
 /// Search over everything the system knows: titles, file names, sites, text,
 /// words in pictures (OCR), what's in them (labels), their colours, when they
@@ -68,31 +69,12 @@ enum Search {
         return words.filter { !$0.isEmpty && !stopwords.contains($0) }
     }
 
-    /// "紅色的椅子" → ["紅色", "椅子"]: longest known words first, stopwords dropped,
-    /// unknown runs kept whole.
+    /// "紅色的椅子" → ["紅色", "椅子"], "王家衛的電影" → ["王家衛", "電影"]: the
+    /// system word segmenter, then stopwords dropped.
     private static func splitCJK(_ s: String) -> [String] {
-        let chars = Array(s)
-        let known = Set(synonyms.keys).union(stopwords)
-        var out: [String] = []
-        var pending = ""
-        var i = 0
-        while i < chars.count {
-            var matched: String?
-            for len in stride(from: min(4, chars.count - i), through: 1, by: -1) {
-                let piece = String(chars[i..<i + len])
-                if known.contains(piece) { matched = piece; break }
-            }
-            if let m = matched {
-                if !pending.isEmpty { out.append(pending); pending = "" }
-                out.append(m)
-                i += m.count
-            } else {
-                pending.append(chars[i])
-                i += 1
-            }
-        }
-        if !pending.isEmpty { out.append(pending) }
-        return out
+        let tokenizer = NLTokenizer(unit: .word)
+        tokenizer.string = s
+        return tokenizer.tokens(for: s.startIndex..<s.endIndex).map { String(s[$0]) }
     }
 
     /// How well one term matches: 0 if nowhere.
@@ -109,6 +91,8 @@ enum Search {
             if contains(item.domain, t) || contains(item.creator, t) { best = max(best, 2) }
             if item.labels?.contains(where: { normalize($0) == t || normalize($0).hasPrefix(t) }) == true { best = max(best, 2) }
             if item.colors?.contains(where: { normalize($0) == t }) == true { best = max(best, 1.8) }
+            if item.entities?.contains(where: { normalize($0.name).contains(t) }) == true { best = max(best, 2.2) }
+            if item.labels?.contains(where: { Subjects.chinese[$0].map(normalize) == t }) == true { best = max(best, 2) }
             if kindWords[item.kind]?.contains(t) == true { best = max(best, 1.5) }
             if contains(item.text, t) || contains(item.ocrText, t) { best = max(best, 1.2) }
             if contains(item.url, t) || contains(item.sourceApp, t) { best = max(best, 1) }

@@ -12,6 +12,8 @@ struct Scope: Equatable, Sendable {
         case forgotten
         /// Looks like this one (visual fingerprint).
         case similar(UUID)
+        /// A theme the system found (a Vision label).
+        case subject(String)
     }
 
     /// Auto collections by what things are.
@@ -58,6 +60,7 @@ struct Scope: Equatable, Sendable {
         case .onThisDay: "onThisDay"
         case .forgotten: "forgotten"
         case .similar(let id): "similar:\(id.uuidString)"
+        case .subject(let label): "subject:\(label)"
         }
     }
 }
@@ -73,6 +76,7 @@ extension Library {
         case .onThisDay: result = Rediscovery.onThisDay(items, now: now)
         case .forgotten: result = Rediscovery.forgotten(items, now: now)
         case .similar(let id): result = (item(id).map { [$0] } ?? []) + (similarity?(id) ?? [])
+        case .subject(let label): result = items.filter { $0.labels?.contains(label) == true }
         }
         if scope.isSearching { result = Search.run(scope.search, in: result, now: now) }
         return result
