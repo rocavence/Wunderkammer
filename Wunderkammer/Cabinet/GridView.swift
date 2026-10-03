@@ -72,6 +72,11 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
     override var isOpaque: Bool { true }
 
+    /// The heading pinned at the top right now (tests).
+    var pinnedHeading: String? {
+        headerLayers.values.first { $0.backgroundColor != nil }.flatMap { ($0.string as? NSAttributedString)?.string }
+    }
+
     private func appearanceChanged() {
         for layer in headerLayers.values { layer.removeFromSuperlayer() }
         headerLayers = [:]
@@ -226,7 +231,18 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
         CATransaction.begin()
         CATransaction.setDisableActions(!animated)
         CATransaction.setAnimationDuration(TilePool.animation)
-        for (i, h) in headers.enumerated() where h.frame.intersects(visible) {
+        // The current day's heading stays at the top until the next one pushes it up.
+        let top = (superview?.bounds.minY ?? 0) + ((superview as? NSClipView)?.contentInsets.top ?? 0)
+        for (i, h) in headers.enumerated() {
+            var frame = h.frame
+            var pinned = false
+            if frame.minY < top + 6 {
+                let next = headers[safe: i + 1]?.frame.minY ?? .greatestFiniteMagnitude
+                guard next > top else { continue }
+                frame.origin.y = min(top + 6, next - frame.height - 12)
+                pinned = true
+            }
+            guard frame.intersects(visible) else { continue }
             keep.insert(i)
             let layer = headerLayers[i] ?? {
                 let t = CATextLayer()
@@ -241,8 +257,12 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
             layer.string = NSAttributedString(string: h.title, attributes: [
                 .font: serif ?? NSFont.systemFont(ofSize: 20), .foregroundColor: NSColor(cgColor: resolved(.labelColor)) ?? NSColor.labelColor,
             ])
-            layer.frame = h.frame
+            layer.frame = frame
             layer.opacity = 1
+            // A pinned heading sits over the pictures: give it a quiet backing.
+            layer.backgroundColor = pinned ? resolved(NSColor.windowBackgroundColor.withAlphaComponent(0.88)) : nil
+            layer.cornerRadius = 6
+            layer.zPosition = 20
         }
         for (i, layer) in headerLayers where !keep.contains(i) {
             layer.removeFromSuperlayer()

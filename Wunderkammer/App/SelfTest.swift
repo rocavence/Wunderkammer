@@ -114,6 +114,25 @@ final class SelfTest {
         case "perf":
             await performanceCheck()
             return finish()
+        case "timeline":
+            // Spread the cabinet over a few days, then scroll through it.
+            for (i, item) in library.items.enumerated() {
+                library.update(item.id, notify: false) { $0.dateAdded = Date().addingTimeInterval(-Double(i / 6) * 86400 - Double(i) * 60) }
+            }
+            ui.sidebar.select(.forgotten)
+            ui.sidebar.select(.all)
+            ui.setMode(.timeline)
+            await wait(0.8)
+            let grid: GridView = ui.grid
+            check(grid.headers.count >= 4, "timeline has a heading per day (\(grid.headers.map(\.title)))")
+            if let clip = grid.superview as? NSClipView, grid.headers.count > 2 {
+                let second = grid.headers[1].frame
+                clip.scroll(to: NSPoint(x: 0, y: second.minY + 120))
+                await wait(0.5)
+                check(grid.pinnedHeading == grid.headers[1].title, "current day's heading stays at the top (\(grid.pinnedHeading ?? "none"))")
+                shot("timeline-pinned")
+            }
+            return finish()
         case "toast":
             let toast = CaptureToast()
             let image = library.items.first.flatMap { NSImage(contentsOf: library.thumbnailURL($0)) }
