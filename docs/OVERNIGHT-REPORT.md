@@ -36,7 +36,7 @@
 | US-013 移除與復原 | 完成 | `Delete` 不跳對話框，`⌘Z` 復原 |
 | US-014 零整理 | 完成 | 不需要建立任何資料夾或 tag；側欄的 view 都由系統維護 |
 
-另外：第一次打開的歡迎頁（三種收藏方式，偵測到 Atlas 圖庫時可一鍵帶進來）、服務選單、拖到 Dock、選單列 icon、Spotlight、`wunderkammer://` 連結、app icon（Reicon cabinet）、關掉視窗仍可在背景收藏、淺色與深色模式、VoiceOver（Grid）。
+另外：滑鼠停在影片上原地靜音播放、停在網頁與文件上顯示標題、沒有預覽圖的網頁用頁面截圖、第一次打開的歡迎頁（三種收藏方式，偵測到 Atlas 圖庫時可一鍵帶進來）、服務選單、拖到 Dock、選單列 icon、Spotlight、`wunderkammer://` 連結、app icon（Reicon cabinet）、關掉視窗仍可在背景收藏、淺色與深色模式、VoiceOver（Grid）。
 
 ### Stage 2 — Intelligence（全部在本機）
 
