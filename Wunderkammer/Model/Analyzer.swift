@@ -142,18 +142,31 @@ final class Understanding {
     private var running = false
     private let printsDir: URL
     private var prints: [UUID: VNFeaturePrintObservation] = [:]
+    /// Meaning vectors (MobileCLIP), when the models are installed.
+    let semantic: SemanticIndex?
+    private let embeddingsDir: URL
+    private var embeddings: [UUID: [Float]] = [:]
+    static let modelsDir = URL(fileURLWithPath: ProcessInfo.processInfo.environment["WK_MODELS_DIR"]
+        ?? Library.defaultRoot.appendingPathComponent("models").path)
     static let didProgress = Notification.Name("UnderstandingDidProgress")
 
     init(library: Library) {
         self.library = library
         printsDir = library.root.appendingPathComponent("featureprints")
         try? FileManager.default.createDirectory(at: printsDir, withIntermediateDirectories: true)
+        embeddingsDir = library.root.appendingPathComponent("embeddings")
+        try? FileManager.default.createDirectory(at: embeddingsDir, withIntermediateDirectories: true)
+        semantic = SemanticIndex(modelsDir: Self.modelsDir)
         NotificationCenter.default.addObserver(forName: Library.didChange, object: library, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.start() }
         }
     }
 
     var pending: Int { library.items.filter { !$0.analyzed }.count }
+
+    private func hasEmbedding(_ id: UUID) -> Bool {
+        embeddings[id] != nil || FileManager.default.fileExists(atPath: embeddingsDir.appendingPathComponent(id.uuidString).path)
+    }
 
     /// Picks up wherever it left off; safe to call often.
     func start() {
@@ -188,8 +201,38 @@ final class Understanding {
             done += 1
             if done % 10 == 0 { NotificationCenter.default.post(name: Self.didProgress, object: self) }
         }
+        // Meaning vectors for everything that has a picture to look at.
+        if let semantic {
+            for item in library.items where !hasEmbedding(item.id) {
+                let url = library.thumbnailURL(item), id = item.id, dir = embeddingsDir
+                let vector = await Task.detached(priority: .utility) { () -> [Float]? in
+                    guard let v = autoreleasepool(invoking: { semantic.embed(imageAt: url) }) else { return nil }
+                    let data = v.withUnsafeBufferPointer { Data(buffer: $0) }
+                    try? data.write(to: dir.appendingPathComponent(id.uuidString))
+                    return v
+                }.value
+                if let vector { embeddings[id] = vector }
+            }
+        }
         library.save()
         NotificationCenter.default.post(name: Self.didProgress, object: self)
+    }
+
+    private func embedding(_ id: UUID) -> [Float]? {
+        if let e = embeddings[id] { return e }
+        guard let data = try? Data(contentsOf: embeddingsDir.appendingPathComponent(id.uuidString)), data.count == 512 * 4 else { return nil }
+        let v = data.withUnsafeBytes { Array($0.bindMemory(to: Float.self)) }
+        embeddings[id] = v
+        return v
+    }
+
+    /// Items whose picture matches an English description, best first. Only
+    /// the clear matches: close to the best score and above a floor.
+    func semanticMatches(_ query: [Float], in items: [Item], limit: Int = 24) -> [UUID] {
+        let scored = items.compactMap { item in embedding(item.id).map { (item.id, SemanticIndex.cosine(query, $0)) } }
+            .sorted { $0.1 > $1.1 }
+        guard let best = scored.first?.1, best >= 0.19 else { return [] }
+        return scored.prefix { $0.1 >= max(0.19, best - 0.05) }.prefix(limit).map(\.0)
     }
 
     /// Web pages are looked at once their own preview has arrived.

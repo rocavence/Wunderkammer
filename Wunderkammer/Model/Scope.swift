@@ -43,6 +43,8 @@ struct Scope: Equatable, Sendable {
 
     var base: Base = .all
     var search = ""
+    /// Items that match the search by meaning (MobileCLIP), filled in after the words.
+    var semantic: [UUID] = []
 
     var board: UUID? {
         if case .board(let id) = base { return id }
@@ -78,7 +80,14 @@ extension Library {
         case .similar(let id): result = (item(id).map { [$0] } ?? []) + (similarity?(id) ?? [])
         case .subject(let label): result = items.filter { $0.labels?.contains(label) == true }
         }
-        if scope.isSearching { result = Search.run(scope.search, in: result, now: now) }
+        if scope.isSearching {
+            let pool = result
+            result = Search.run(scope.search, in: pool, now: now)
+            // Then what matches by meaning, if the words didn't already find it.
+            let found = Set(result.map(\.id))
+            let inScope = Dictionary(uniqueKeysWithValues: pool.map { ($0.id, $0) })
+            result += scope.semantic.filter { !found.contains($0) }.compactMap { inScope[$0] }
+        }
         return result
     }
 }

@@ -114,6 +114,21 @@ final class SelfTest {
         case "perf":
             await performanceCheck()
             return finish()
+        case "semantic":
+            var waited = 0.0
+            while library.items.contains(where: { !$0.analyzed }), waited < 60 { await wait(0.5); waited += 0.5 }
+            await wait(4) // embeddings come after the analysis pass
+            let cases = [("a man in an orange jacket", "Drake"), ("astronauts in space", "Always Has Been"),
+                         ("a car swerving off the highway", "Left Exit"), ("an old man with raised hands", "Absolute Cinema")]
+            for (query, expected) in cases {
+                ui.search(query)
+                await wait(1.5)
+                let first = ui.grid.shownItems.first?.originalFilename ?? "–"
+                check(first.contains(expected), "by meaning: “\(query)” → \(first)")
+            }
+            shot("semantic-search")
+            ui.search("")
+            return finish()
         case "timeline":
             // Spread the cabinet over a few days, then scroll through it.
             for (i, item) in library.items.enumerated() {

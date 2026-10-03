@@ -357,10 +357,43 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
 
     func search(_ text: String) {
         scope.search = text
+        scope.semantic = []
         // Results are a list to scan: shown in the scrolling views.
         if scope.isSearching, mode.cabinetStyle == nil { setMode(.grid) }
         grid.show(scope: scope)
         updateTitle()
+        searchByMeaning(text)
+    }
+
+    private let translator = QueryTranslator()
+    private var meaningTask: Task<Void, Never>?
+
+    /// After the words, look for what the description means. Debounced; a
+    /// newer query cancels an older one.
+    private func searchByMeaning(_ text: String) {
+        meaningTask?.cancel()
+        guard scope.isSearching, let semantic = understanding.semantic else { return }
+        meaningTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(250))
+            guard let self, !Task.isCancelled else { return }
+            await self.translator.refresh()
+            guard let english = await self.translator.english(text), !Task.isCancelled else { return }
+            let vector = await Task.detached { semantic.embed(text: english) }.value
+            guard let vector, !Task.isCancelled, self.scope.search == text else { return }
+            let pool = self.library.items(for: Scope(base: self.scope.base))
+            let hits = self.understanding.semanticMatches(vector, in: pool)
+            guard !hits.isEmpty else { return }
+            self.scope.semantic = hits
+            self.grid.show(scope: self.scope)
+            self.updateTitle()
+        }
+    }
+
+    /// Lets the system offer the Chinese → English language pack.
+    @objc private func enableChineseDescriptions() {
+        TranslationSetup.present(over: window) { [weak self] in
+            Task { await self?.translator.refresh() }
+        }
     }
 
     private func clearSearch() {
@@ -499,6 +532,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         remove.keyEquivalentModifierMask = [.command]
         editMenu.addItem(.separator())
         editMenu.addItem(withTitle: "搜尋", action: #selector(focusSearch), keyEquivalent: "k").target = self
+        editMenu.addItem(withTitle: "啟用中文描述搜尋…", action: #selector(enableChineseDescriptions), keyEquivalent: "").target = self
         editMenu.addItem(withTitle: "搜尋", action: #selector(focusSearch), keyEquivalent: "f").target = self
         editMenu.items.last?.isAlternate = false
         editMenu.items.last?.isHidden = true
