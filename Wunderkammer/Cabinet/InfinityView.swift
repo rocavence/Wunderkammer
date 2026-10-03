@@ -120,13 +120,25 @@ final class InfinityView: NSView, ItemSurface {
         render()
     }
 
+    private var occlusionObserver: NSObjectProtocol?
+
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
+        if let o = occlusionObserver { NotificationCenter.default.removeObserver(o) }
+        // Closed, minimised or covered: no reason to animate at 60 Hz.
+        occlusionObserver = window.map { w in
+            NotificationCenter.default.addObserver(forName: NSWindow.didChangeOcclusionStateNotification, object: w, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    if w.occlusionState.contains(.visible), !self.isHiddenOrHasHiddenAncestor { self.startTimer() } else { self.timer?.invalidate(); self.timer = nil }
+                }
+            }
+        }
         if window != nil, !isHiddenOrHasHiddenAncestor { startTimer() } else { timer?.invalidate(); timer = nil }
     }
 
     private func startTimer() {
-        guard timer == nil else { return }
+        guard timer == nil, window?.occlusionState.contains(.visible) ?? false else { return }
         lastTick = CACurrentMediaTime()
         let t = Timer(timeInterval: 1.0 / 60, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }

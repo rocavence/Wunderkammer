@@ -99,7 +99,7 @@ extension Library {
             result = Search.run(scope.search, in: pool, now: now)
             // Then what matches by meaning, if the words didn't already find it.
             let found = Set(result.map(\.id))
-            let inScope = Dictionary(uniqueKeysWithValues: pool.map { ($0.id, $0) })
+            let inScope = Dictionary(pool.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
             result += scope.semantic.filter { !found.contains($0) }.compactMap { inScope[$0] }
         }
         return result

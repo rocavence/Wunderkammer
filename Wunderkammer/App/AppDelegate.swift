@@ -303,6 +303,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     }
 
     func setMode(_ new: ViewMode) {
+        // A preview belongs to the view it flew out of.
+        if new != mode, preview.isOpen { preview.dismissImmediately() }
         mode = new
         if !SelfTest.isEnabled { UserDefaults.standard.set(new.rawValue, forKey: Self.modeKey) }
         modeControl?.selectedSegment = new.rawValue
@@ -351,7 +353,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         }
         // Long text doesn't fit a card: read all of it in Quick Look.
         if item.kind == .text, let text = item.text, text.count > 280 {
-            let file = FileManager.default.temporaryDirectory.appendingPathComponent("\(item.displayTitle.prefix(40)).txt")
+            // Named by ID: the text is untrusted and may contain "/" or "..".
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent("wunderkammer-text", isDirectory: true)
+            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            let file = dir.appendingPathComponent("\(item.id.uuidString).txt")
             if (try? text.write(to: file, atomically: true, encoding: .utf8)) != nil {
                 quickLook.show(file, for: id)
                 return

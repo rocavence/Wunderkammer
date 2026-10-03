@@ -39,7 +39,7 @@ enum ShareInbox {
         }
         let data = try? JSONSerialization.data(withJSONObject: ["entries": entries])
         // Written last: the app only reads folders that have a manifest.
-        try? data?.write(to: folder.appendingPathComponent("manifest.json"))
+        try? data?.write(to: folder.appendingPathComponent("manifest.json"), options: .atomic)
     }
 
     /// Senders hand URLs over as URL, NSURL, bytes or a string.

@@ -137,7 +137,16 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         library.canvasGroups(key: scope.canvasKey, ids: library.items(for: scope).map(\.id))
     }
 
+    /// A library change that arrived mid-drag; applied after the drop.
+    private var reloadAfterDrop = false
+
     private func reload() {
+        // Rebuilding piles mid-drag would put the lifted items back in their old
+        // pile as well as the new one.
+        if case .movingItems = gesture {
+            reloadAfterDrop = true
+            return
+        }
         groups = currentGroups()
         links = library.links(key: scope.canvasKey)
         layoutGroups()
@@ -587,6 +596,10 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         resolveOverlaps(pinned: [pinned])
         save()
         render(animated: true)
+        if reloadAfterDrop {
+            reloadAfterDrop = false
+            reload()
+        }
     }
 
     // MARK: Menus & keys

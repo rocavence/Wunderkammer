@@ -15,6 +15,7 @@ struct WebMetadata: Sendable {
     var isImage = false
 
     static func fetch(_ url: URL) async -> WebMetadata? {
+        guard isWeb(url) else { return nil }
         var request = URLRequest(url: url, timeoutInterval: 12)
         request.setValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15",
                          forHTTPHeaderField: "User-Agent")
@@ -57,8 +58,12 @@ struct WebMetadata: Sendable {
         return meta
     }
 
+    /// Pages can point og:image anywhere; only ever fetch web addresses.
+    static func isWeb(_ url: URL) -> Bool { ["http", "https"].contains(url.scheme?.lowercased() ?? "") }
+
     /// Downloads an image and decodes it at most `maxPixel` on the long side.
     static func image(_ url: URL, maxPixel: Int) async -> CGImage? {
+        guard isWeb(url) else { return nil }
         var request = URLRequest(url: url, timeoutInterval: 12)
         request.setValue("Mozilla/5.0 (Macintosh)", forHTTPHeaderField: "User-Agent")
         guard let (data, _) = try? await URLSession.shared.data(for: request),
@@ -67,6 +72,7 @@ struct WebMetadata: Sendable {
     }
 
     static func imageData(_ url: URL) async -> Data? {
+        guard isWeb(url) else { return nil }
         var request = URLRequest(url: url, timeoutInterval: 20)
         request.setValue("Mozilla/5.0 (Macintosh)", forHTTPHeaderField: "User-Agent")
         guard let (data, _) = try? await URLSession.shared.data(for: request),

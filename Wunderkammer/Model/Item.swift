@@ -77,7 +77,8 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decode(UUID.self, forKey: .id)
-        kind = try c.decodeIfPresent(Kind.self, forKey: .kind) ?? .image
+        // A kind from a newer version reads as a generic file rather than failing the library.
+        kind = (try? c.decodeIfPresent(Kind.self, forKey: .kind)) ?? (c.contains(.kind) ? .file : .image)
         dateAdded = try c.decode(Date.self, forKey: .dateAdded)
         storedFilename = try c.decodeIfPresent(String.self, forKey: .storedFilename)
         filePath = try c.decodeIfPresent(String.self, forKey: .filePath)
@@ -100,7 +101,7 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
         ocrText = try c.decodeIfPresent(String.self, forKey: .ocrText)
         labels = try c.decodeIfPresent([String].self, forKey: .labels)
         colors = try c.decodeIfPresent([String].self, forKey: .colors)
-        entities = try c.decodeIfPresent([Entity].self, forKey: .entities)
+        entities = try? c.decodeIfPresent([Entity].self, forKey: .entities)
         analysisVersion = try c.decodeIfPresent(Int.self, forKey: .analysisVersion) ?? 0
         viewCount = try c.decodeIfPresent(Int.self, forKey: .viewCount) ?? 0
         lastViewed = try c.decodeIfPresent(Date.self, forKey: .lastViewed)

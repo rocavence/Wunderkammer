@@ -73,14 +73,40 @@ final class Library {
         var links: [String: [CanvasLink]]?
     }
 
+    /// Set when library.json exists but couldn't be read: nothing gets purged,
+    /// and the unreadable file is kept beside it.
+    private(set) var loadFailed = false
+
     private func load() {
-        guard let data = try? Data(contentsOf: jsonURL),
-              let stored = try? JSONDecoder().decode(Stored.self, from: data) else { return }
+        guard let data = try? Data(contentsOf: jsonURL) else { return }
+        let stored: Stored
+        do {
+            stored = try JSONDecoder().decode(Stored.self, from: data)
+        } catch {
+            loadFailed = true
+            let stamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
+            try? FileManager.default.copyItem(at: jsonURL, to: root.appendingPathComponent("library-unreadable-\(stamp).json"))
+            NSLog("Wunderkammer: library.json could not be read (%@); kept a copy, nothing purged", String(describing: error))
+            return
+        }
+        backUp(data)
         items = stored.items
         collections = stored.collections ?? []
         canvases = stored.canvases ?? [:]
         canvasLinks = stored.links ?? [:]
         reindex()
+    }
+
+    /// One copy of library.json per day in backups/, the last 7 kept.
+    private func backUp(_ data: Data) {
+        let dir = root.appendingPathComponent("backups")
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        let file = dir.appendingPathComponent("library-\(f.string(from: Date())).json")
+        if !FileManager.default.fileExists(atPath: file.path) { try? data.write(to: file) }
+        let all = ((try? FileManager.default.contentsOfDirectory(atPath: dir.path)) ?? []).filter { $0.hasPrefix("library-") }.sorted()
+        for old in all.dropLast(7) { try? FileManager.default.removeItem(at: dir.appendingPathComponent(old)) }
     }
 
     func save() {
@@ -160,7 +186,8 @@ final class Library {
     /// Items shown for a board, or the whole cabinet for nil.
     func items(in collectionID: UUID?) -> [Item] {
         guard let collectionID else { return items }
-        return collection(collectionID)?.itemIDs.compactMap(item) ?? []
+        var seen = Set<UUID>()
+        return collection(collectionID)?.itemIDs.filter { seen.insert($0).inserted }.compactMap(item) ?? []
     }
 
     @discardableResult
@@ -186,8 +213,9 @@ final class Library {
     /// Adds to the front, keeping the dragged order; already-present items stay put.
     func add(_ ids: [UUID], to collectionID: UUID) {
         guard let i = collections.firstIndex(where: { $0.id == collectionID }) else { return }
-        let existing = Set(collections[i].itemIDs)
-        let new = ids.filter { !existing.contains($0) && byID[$0] != nil }
+        var seen = Set(collections[i].itemIDs)
+        // The same item can come back twice (two identical photos in one folder).
+        let new = ids.filter { byID[$0] != nil && seen.insert($0).inserted }
         guard !new.isEmpty else { return }
         collections[i].itemIDs.insert(contentsOf: new, at: 0)
         changed()
@@ -202,35 +230,45 @@ final class Library {
     // MARK: Removing (undoable)
 
     /// Everything needed to put removed items back exactly as they were.
+    /// What a removal took away, to put back exactly that and nothing else.
     struct Removal {
         var items: [(index: Int, item: Item)]
-        var collections: [Board]
-        var canvases: [String: [CanvasGroup]]
-        var links: [String: [CanvasLink]] = [:]
+        /// Board → (position, item) the removed items had.
+        var memberships: [UUID: [(index: Int, id: UUID)]]
     }
 
     /// Takes items out of the cabinet. Nothing is deleted from disk: a
     /// referenced file was never ours, and our own copies stay until the next
-    /// launch so the removal can be undone.
+    /// launch so the removal can be undone. Canvas piles and connections keep
+    /// their entries (they're filtered when read), so undo brings those back too.
     @discardableResult
     func delete(_ ids: Set<UUID>) -> Removal? {
         let doomed = items.enumerated().filter { ids.contains($0.element.id) }.map { (index: $0.offset, item: $0.element) }
         guard !doomed.isEmpty else { return nil }
-        let removal = Removal(items: doomed, collections: collections, canvases: canvases, links: canvasLinks)
+        var memberships: [UUID: [(index: Int, id: UUID)]] = [:]
+        for board in collections {
+            let hits = board.itemIDs.enumerated().filter { ids.contains($0.element) }.map { (index: $0.offset, id: $0.element) }
+            if !hits.isEmpty { memberships[board.id] = hits }
+        }
         items.removeAll { ids.contains($0.id) }
         for i in collections.indices { collections[i].itemIDs.removeAll { ids.contains($0) } }
         reindex()
         changed()
-        return removal
+        return Removal(items: doomed, memberships: memberships)
     }
 
+    /// Puts the removed items back, into the boards that still exist, without
+    /// undoing anything else done since.
     func restore(_ removal: Removal) {
         for (index, item) in removal.items.sorted(by: { $0.index < $1.index }) where byID[item.id] == nil {
             items.insert(item, at: min(index, items.count))
         }
-        collections = removal.collections
-        canvases = removal.canvases
-        canvasLinks = removal.links
+        for (boardID, entries) in removal.memberships {
+            guard let b = collections.firstIndex(where: { $0.id == boardID }) else { continue }
+            for (index, id) in entries.sorted(by: { $0.index < $1.index }) where !collections[b].itemIDs.contains(id) {
+                collections[b].itemIDs.insert(id, at: min(index, collections[b].itemIDs.count))
+            }
+        }
         reindex()
         changed()
     }
@@ -238,6 +276,8 @@ final class Library {
     /// Our own copies and thumbnails nothing refers to any more (removed in an
     /// earlier session). Run at launch.
     func purgeOrphans() {
+        // If the library couldn't be read, every file would look orphaned.
+        guard !loadFailed else { return }
         let keep = Set(items.compactMap(\.storedFilename))
         let ids = Set(items.map(\.id.uuidString))
         let fm = FileManager.default
@@ -331,24 +371,30 @@ final class Library {
 
         var ids: [UUID] = []
         var added: [Item] = []
+        // Another capture may have brought the same content in meanwhile.
+        var current: [String: UUID] = [:]
+        for item in items { current[item.contentHash] = item.id }
         for outcome in outcomes {
             switch outcome {
             case .new(let item):
-                added.append(item)
-                ids.append(item.id)
+                if let existing = current[item.contentHash] {
+                    ids.append(existing)
+                } else {
+                    added.append(item)
+                    current[item.contentHash] = item.id
+                    ids.append(item.id)
+                }
             case .duplicate(let hash):
-                if let id = known[hash] ?? added.first(where: { $0.contentHash == hash })?.id { ids.append(id) }
+                if let id = current[hash] { ids.append(id) }
             }
         }
         if !added.isEmpty {
             items.insert(contentsOf: added, at: 0)
             reindex()
-        }
-        if let collectionID, !ids.isEmpty {
-            add(ids, to: collectionID) // posts the change
-        } else if !added.isEmpty {
             changed()
         }
+        // Even if the board went away during a long import, the items are saved above.
+        if let collectionID, !ids.isEmpty { add(ids, to: collectionID) }
         for item in added where item.kind == .web { enrichWeb(item.id) }
         if !added.isEmpty { NotificationCenter.default.post(name: Self.didCapture, object: self, userInfo: ["ids": added.map(\.id)]) }
         return ids

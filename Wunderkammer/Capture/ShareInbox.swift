@@ -40,12 +40,22 @@ final class ShareInboxWatcher {
         busy = true
         Task {
             for folder in ready {
-                let sources = Self.sources(in: folder)
-                if !sources.isEmpty { await collect(sources) }
+                // Reading may mean large images: not on the main thread.
+                let sources = await Task.detached { Self.sources(in: folder) }.value
+                if !sources.isEmpty {
+                    await collect(sources)
+                } else if Self.age(of: folder) < 30 {
+                    continue // perhaps still being written; look again later
+                }
                 try? FileManager.default.removeItem(at: folder)
             }
             busy = false
         }
+    }
+
+    nonisolated static func age(of folder: URL) -> TimeInterval {
+        let date = (try? folder.appendingPathComponent("manifest.json").resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
+        return Date().timeIntervalSince(date ?? .distantPast)
     }
 
     /// The manifest's entries as capture sources. Anything that could write to
