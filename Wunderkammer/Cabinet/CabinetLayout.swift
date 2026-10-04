@@ -12,8 +12,9 @@ struct CabinetLayout {
     var width: CGFloat
     /// Row height (grid, timeline) or column width (masonry): what zoom changes.
     var size: CGFloat
-    var spacing: CGFloat = 8
-    var inset: CGFloat = 16
+    /// Atlas: 14 pt between tiles and at the edges.
+    var spacing: CGFloat = 14
+    var inset: CGFloat = 14
     var headerHeight: CGFloat = 52
 
     struct Header: Equatable {
