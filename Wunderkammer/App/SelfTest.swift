@@ -787,6 +787,12 @@ final class SelfTest {
             check(!shown.isEmpty && shown.allSatisfy { $0.colors?.contains(colour) == true } && ui.grid.heading.detail.hasPrefix("顏色"),
                   "\(Colours.title(colour)) shows what's that colour, headed 顏色 (\(shown.count))")
             shot("heading-colour")
+            // 顏色 folds away and opens again (left as it was found).
+            let open = ui.sidebar.rowCount
+            ui.sidebar.toggleFold("顏色")
+            let folded = ui.sidebar.rowCount
+            ui.sidebar.toggleFold("顏色")
+            check(folded < open && ui.sidebar.rowCount == open, "顏色 folds and unfolds (\(open) → \(folded) → \(ui.sidebar.rowCount) rows)")
         }
         ui.sidebar.select(.all)
         await wait(0.3)

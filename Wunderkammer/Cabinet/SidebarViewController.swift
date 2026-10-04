@@ -181,16 +181,16 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         var r: [Row] = []
         // Every theme two or more pieces share: the more ways in, the better.
         let subjects = Subjects.discover(in: library.items, limit: .max, minimum: 2)
-        let themeRows: [Row] = subjects.isEmpty ? [] : [.header("主題")] + subjects.map {
+        let themeRows: [Row] = subjects.isEmpty ? [] : [.header("主題")] + (isFolded("主題") ? [] : subjects.map {
             .view(.subject($0.label), title: $0.title, icon: Self.themeIcon($0.label), count: $0.count)
-        }
+        })
         // The colours the pictures are mostly made of, in spectrum order.
         let colourRows: [Row] = {
             let rows: [Row] = Colours.all.compactMap { c in
                 let n = library.items.reduce(0) { $0 + ($1.colors?.contains(c.name) == true ? 1 : 0) }
                 return n > 0 ? .view(.color(c.name), title: c.title, icon: .palette, count: n) : nil
             }
-            return rows.isEmpty ? [] : [.header("顏色")] + rows
+            return rows.isEmpty ? [] : [.header("顏色")] + (isFolded("顏色") ? [] : rows)
         }()
         func count(_ k: Scope.KindView) -> Int { library.items.reduce(0) { $0 + (k.contains($1) ? 1 : 0) } }
         switch space {
@@ -290,7 +290,24 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             let label = NSTextField(labelWithString: title)
             label.font = .systemFont(ofSize: 11, weight: .semibold)
             label.textColor = .secondaryLabelColor
-            return label
+            guard Self.foldable.contains(title) else { return label }
+            // Long sections fold: a chevron that turns, the header itself the switch.
+            let chevron = NSImageView(image: Icon.image(.chevronDown, size: 11))
+            chevron.contentTintColor = .tertiaryLabelColor
+            chevron.frameCenterRotation = isFolded(title) ? 90 : 0
+            let row = NSView()
+            for v in [label, chevron] as [NSView] {
+                v.translatesAutoresizingMaskIntoConstraints = false
+                row.addSubview(v)
+            }
+            NSLayoutConstraint.activate([
+                label.leadingAnchor.constraint(equalTo: row.leadingAnchor),
+                label.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+                chevron.trailingAnchor.constraint(equalTo: row.trailingAnchor, constant: -6),
+                chevron.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+            ])
+            row.toolTip = isFolded(title) ? "展開\(title)" : "收起\(title)"
+            return row
         case .view(let base, let title, let icon, let count):
             let c = cell(title: title, icon: icon, count: count)
             // A colour is shown by itself, not by an icon.
@@ -346,7 +363,28 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         onSelect?(base)
     }
 
-    @objc private func clicked() {}
+    @objc private func clicked() {
+        let row = table.clickedRow
+        guard rows.indices.contains(row), case .header(let title) = rows[row], Self.foldable.contains(title) else { return }
+        toggleFold(title)
+    }
+
+    // MARK: Folding
+
+    /// Sections that can grow long fold away; the rest are short enough to stay open.
+    static let foldable: Set<String> = ["顏色", "主題"]
+
+    func isFolded(_ section: String) -> Bool {
+        UserDefaults.standard.bool(forKey: "sidebar.folded.\(section)")
+    }
+
+    /// How many rows the sidebar shows (tests).
+    var rowCount: Int { rows.count }
+
+    func toggleFold(_ section: String) {
+        UserDefaults.standard.set(!isFolded(section), forKey: "sidebar.folded.\(section)")
+        reload()
+    }
 
     // MARK: Rename
 
