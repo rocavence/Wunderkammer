@@ -75,23 +75,39 @@ final class Asker {
                 """).respond(to: question, generating: Plan.self, options: Self.options).content
             lastPlan = "\(plan.keywords) \(plan.looksLike) \(plan.kind) \(plan.days)"
             let found = await candidates(for: plan, question: question, now: now)
-            let session = LanguageModelSession(instructions: """
-                你是使用者私人收藏的助理。只根據提供的收藏回答，不要編造；\
-                收藏裡沒有的就直說沒有。用繁體中文（台灣）回答，提到收藏時用它的標題。\
+            // Instructions in the question's language: a small model answers in
+            // the language it's spoken to.
+            let chinese = QueryTranslator.needsTranslation(question)
+            let session = LanguageModelSession(instructions: chinese ? """
+                你是使用者私人收藏的助理。只根據提供的收藏回答，不要編造；收藏裡沒有的就直說沒有。\
                 人名與作品名可能用不同語言或拼法出現（例如王家衛就是 Wong Kar-Wai），視為同一個。\
-                回答兩三句，用《》標出符合問題的收藏標題；沒有符合的就只說沒有，不要列舉其他收藏。
+                直接回答，不要重述問題。用一兩句完整的話回答，例如「你收過《A》和《B》，都是王家衛導的。」；\
+                用《》標出符合問題的收藏標題；沒有符合的就只說沒有，不要列舉其他收藏。\
+                用繁體中文（台灣）回答。
+                """ : """
+                You help someone with their personal collection. Answer only from the curiosities listed; \
+                never make anything up, and if nothing fits, just say so. Names may appear in another language \
+                or spelling (王家衛 is Wong Kar-Wai): treat them as the same. Answer directly, without repeating \
+                the question, in two or three sentences, giving the titles of the curiosities that fit in quotes; \
+                if none fit, just say there are none and don't list others. Answer in English.
                 """)
             let listing = found.enumerated().map { "[\($0.offset + 1)] \(Self.describe($0.element, now: now))" }.joined(separator: "\n")
-            let reply = try await session.respond(to: """
+            let none = chinese ? "（沒有找到相關的收藏）" : "(nothing related was found)"
+            let reply = try await session.respond(to: chinese ? """
                 收藏（共 \(library.items.count) 件，以下是和問題相關的 \(found.count) 件）：
-                \(listing.isEmpty ? "（沒有找到相關的收藏）" : listing)
+                \(listing.isEmpty ? none : listing)
 
                 問題：\(question)
+                """ : """
+                The collection (\(library.items.count) curiosities; these \(found.count) relate to the question):
+                \(listing.isEmpty ? none : listing)
+
+                Question: \(question)
                 """, options: Self.options).content
+            let text = Self.withoutEcho(reply.trimmingCharacters(in: .whitespacesAndNewlines))
             // Plain text, not a structured reply: a long answer cut short still
             // reads. What it's about is whatever it names.
-            return Answer(text: reply.trimmingCharacters(in: .whitespacesAndNewlines),
-                          items: found.filter { Self.names($0, in: reply) })
+            return Answer(text: text, items: found.filter { Self.names($0, in: text) })
         } catch let error as LanguageModelSession.GenerationError {
             if case .guardrailViolation = error { throw Failure.refused }
             if case .refusal = error { throw Failure.refused }
@@ -127,6 +143,15 @@ final class Asker {
         let hits = Set(ranked.map(\.id))
         let rest = narrowed || namesNothing ? pool.filter { !hits.contains($0.id) } : []
         return Array((ranked + rest).prefix(20))
+    }
+
+    /// Small models like to repeat the question first: a first line ending in
+    /// a question mark, with an answer after it, is dropped.
+    nonisolated static func withoutEcho(_ reply: String) -> String {
+        let lines = reply.components(separatedBy: .newlines).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+        guard lines.count > 1, let first = lines.first?.trimmingCharacters(in: .whitespaces),
+              first.hasSuffix("?") || first.hasSuffix("？") else { return reply }
+        return lines.dropFirst().joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     /// Whether the answer mentions this curiosity by its title, or names who

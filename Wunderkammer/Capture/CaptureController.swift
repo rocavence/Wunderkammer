@@ -84,7 +84,9 @@ final class CaptureController: NSObject {
 
     /// Something just copied → that. Otherwise, in a browser → the page.
     /// Otherwise whatever is on the clipboard.
-    func captureNow() async {
+    /// Whether anything was collected (Siri says so).
+    @discardableResult
+    func captureNow() async -> Bool {
         watchClipboard()
         let front = NSWorkspace.shared.frontmostApplication
         let fromUs = front?.processIdentifier == ProcessInfo.processInfo.processIdentifier
@@ -98,7 +100,7 @@ final class CaptureController: NSObject {
                 sources = [.web(page.url, title: page.title)]
             case .failure(let error) where error.reason == .needsAccessibility:
                 toast.show(title: "需要「輔助使用」權限", detail: "允許後再按一次 ⌘⇧C，就能收藏這個瀏覽器的網址", image: nil)
-                return
+                return false
             case .failure:
                 break
             }
@@ -106,10 +108,11 @@ final class CaptureController: NSObject {
         if sources.isEmpty { sources = PasteboardReader.sources(from: pb) }
         guard !sources.isEmpty else {
             toast.show(title: "沒有東西可以收", detail: "先複製圖片、網址或文字，再按 ⌘⇧C", image: nil)
-            return
+            return false
         }
         capturedChangeCount = pb.changeCount
         await collect(sources, sourceApp: fromUs ? nil : front?.localizedName)
+        return true
     }
 
     // MARK: Screenshot

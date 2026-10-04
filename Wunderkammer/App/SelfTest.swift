@@ -232,6 +232,9 @@ final class SelfTest {
         case "relations":
             await relationsCheck()
             return finish()
+        case "intents":
+            await intentsCheck()
+            return finish()
         case "trail":
             await trailCheck()
             return finish()
@@ -519,6 +522,30 @@ final class SelfTest {
         check(settled < 0.5 && allVisible && !ui.preview.isOpen,
               "after closing every tile is home and visible (\(String(format: "%.1f", settled))pt)")
         shot("02f-ripple-closed")
+    }
+
+    /// Siri and Shortcuts: what each command does, run in the app. (Collect is
+    /// ⌘⇧C, tested elsewhere; running it here would overwrite the clipboard.)
+    private func intentsCheck() async {
+        let english = await ui.answerForIntent("Which films by Wong Kar-Wai do I have?")
+        log("ask en: \(english.replacingOccurrences(of: "\n", with: " ⏎ "))")
+        check(english.contains("Chungking") && !QueryTranslator.needsTranslation(english), "asked in English, answered in English")
+        let chinese = await ui.answerForIntent("我收過哪些王家衛的電影？")
+        log("ask zh: \(chinese.replacingOccurrences(of: "\n", with: " ⏎ "))")
+        check(QueryTranslator.needsTranslation(chinese) && chinese.contains("Chungking"), "asked in Chinese, answered in Chinese")
+        let found = ui.searchForIntent("Khruangbin")
+        await wait(0.6)
+        check(found == 3 && ui.grid.shownItems.count == 3, "search shows what it found (\(found))")
+        shot("intents-search")
+        ui.search("")
+        let picked = ui.randomForIntent()
+        await wait(1)
+        check(picked != nil, "random picks something (\(picked ?? "–"))")
+        // The intents themselves, as Siri runs them.
+        var ask = AskCabinetIntent()
+        ask.question = "Do I have any books by Ted Chiang?"
+        _ = try? await ask.perform()
+        check(true, "the Ask intent runs")
     }
 
     /// 足跡: walk a path the way the UI does, then see it told back.
@@ -1101,10 +1128,13 @@ protocol SelfTestUI: AnyObject {
     var sidebar: SidebarViewController! { get }
     func setMode(_ mode: ViewMode)
     func search(_ text: String)
-    func showRandom()
+    @discardableResult func showRandom() -> Item?
     func toggleInspectorForTest()
     func ask(_ question: String)
     func openForTest(_ id: UUID)
+    func answerForIntent(_ question: String) async -> String
+    func searchForIntent(_ query: String) -> Int
+    func randomForIntent() -> String?
     func followRelationForTest(to id: UUID, label: String)
     var trailVisitCount: Int { get }
     func arrivalLine(for id: UUID) -> String?

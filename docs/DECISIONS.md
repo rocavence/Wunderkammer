@@ -277,3 +277,20 @@ Atlas 的偵錯說明文字寫明舊版（1.6.7）的參數：質量 1.89、剛�
 * 點足跡裡的縮圖會回到珍奇室並選到那一件。
 
 修改位置：`Trail.visits` / `path` / `short`、`Cabinet/TrailView.swift`。
+
+## D34 Siri 與捷徑
+
+四個指令（App Intents），也會出現在「捷徑」app：
+
+| 指令 | 英文說法 | 中文說法 | 做什麼 |
+|---|---|---|---|
+| 提問 | Ask Wunderkammer | 問 Wunderkammer | 用本機模型回答，Siri 唸出來，不打開 app |
+| 搜尋 | Search Wunderkammer | 在 Wunderkammer 找 | 打開 app 顯示搜尋結果 |
+| 隨機 | Show me something from Wunderkammer | Wunderkammer 隨機一件 | 打開 app 預覽隨機一件 |
+| 收藏 | Collect into Wunderkammer | 收進 Wunderkammer | 跟 ⌘⇧C 一樣：剛複製的東西，或瀏覽器目前的頁面 |
+
+這台 Mac 的 Siri 是英文（en-US），所以主要說法用英文；中文說法放在 `zh-Hant.lproj/AppShortcuts.strings`，Siri 改成中文時生效。
+
+回答用提問的語言：英文問就英文答，免得英文的 Siri 聲音唸中文。實測發現本機模型會跟著「指示的語言」回答，而且常先重述問題，所以指示改成跟問題同語言、要求直接用完整句子回答，並把開頭重述問題的那一行去掉。
+
+修改位置：`App/Intents.swift`、`AppDelegate` 的 `answerForIntent` 等、`Asker` 的指示。

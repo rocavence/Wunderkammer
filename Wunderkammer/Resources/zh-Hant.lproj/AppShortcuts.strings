@@ -1,0 +1,9 @@
+/* Siri 設成中文時的說法；英文說法在 Intents.swift */
+"Ask ${applicationName}" = "問 ${applicationName}";
+"Ask ${applicationName} a question" = "問 ${applicationName} 一個問題";
+"Search ${applicationName}" = "在 ${applicationName} 找";
+"Find in ${applicationName}" = "在 ${applicationName} 搜尋";
+"Show me something from ${applicationName}" = "${applicationName} 隨機一件";
+"Random ${applicationName}" = "從 ${applicationName} 隨便拿一件";
+"Collect into ${applicationName}" = "收進 ${applicationName}";
+"Save to ${applicationName}" = "存到 ${applicationName}";

@@ -531,11 +531,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     }
 
     /// R: something from the past, with how long ago it was kept.
-    func showRandom() {
+    /// The curiosity picked, if any.
+    @discardableResult
+    func showRandom() -> Item? {
         if preview.isOpen { preview.dismissImmediately() }
         let pool = library.items(for: Scope(base: scope.base))
         guard let pick = Rediscovery.pick(pool, avoiding: recentRandom) ?? Rediscovery.pick(library.items, avoiding: recentRandom)
-        else { NSSound.beep(); return }
+        else { NSSound.beep(); return nil }
         recentRandom = Array(([pick.id] + recentRandom).prefix(20))
         if !pool.contains(where: { $0.id == pick.id }) { sidebar.select(.all) }
         if mode == .infinity || mode == .graph { setMode(.grid) }
@@ -546,6 +548,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
             MainActor.assumeIsolated { self?.openPreview(pick.id, caption: caption) }
         }
+        return pick
     }
 
     /// The item the inspector is showing (for "came from related").
@@ -646,6 +649,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         return false
     }
 
+    // MARK: Siri and Shortcuts (Intents.swift)
+
+    /// Spoken back in the language of the question.
+    func answerForIntent(_ question: String) async -> String {
+        let chinese = QueryTranslator.needsTranslation(question)
+        guard #available(macOS 26.0, *), Asker.isAvailable else {
+            return chinese ? "這台 Mac 的 Apple Intelligence 還不能用。" : "Apple Intelligence isn't available on this Mac."
+        }
+        do {
+            return try await asker.ask(question, within: 30).text
+        } catch Asker.Failure.refused {
+            return chinese ? "這個問題 Apple Intelligence 不回答，換個問法試試。" : "Apple Intelligence won't answer that one. Try asking another way."
+        } catch {
+            return chinese ? "沒有得到回答，換個說法再問一次試試。" : "I couldn't get an answer. Try asking another way."
+        }
+    }
+
+    func searchForIntent(_ query: String) -> Int {
+        showCabinet()
+        if mode.cabinetStyle == nil { setMode(.grid) }
+        searchItem?.searchField.stringValue = query
+        search(query)
+        return library.items(for: scope).count
+    }
+
+    func randomForIntent() -> String? {
+        showCabinet()
+        return showRandom()?.displayTitle
+    }
+
+    func collectForIntent() async -> Bool { await capture.captureNow() }
+
     // MARK: Asking (US-211)
 
     var isAsking: Bool { askTask != nil }
@@ -674,13 +709,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         return ["what ", "which ", "who ", "when ", "why ", "how ", "where ", "did i ", "do i ", "have i "].contains { t.hasPrefix($0) }
     }
 
+    @available(macOS 26.0, *)
+    private var asker: Asker {
+        if let a = askerBox as? Asker { return a }
+        let a = Asker(library: library) { [weak self] english, pool in await self?.looksLike(english, in: pool) ?? [] }
+        askerBox = a
+        return a
+    }
+
     func ask(_ question: String) {
         guard #available(macOS 26.0, *) else { return }
-        let asker = (askerBox as? Asker) ?? {
-            let a = Asker(library: library) { [weak self] english, pool in await self?.looksLike(english, in: pool) ?? [] }
-            askerBox = a
-            return a
-        }()
+        let asker = asker
         askTask?.cancel()
         lastQuestion = question
         answerBanner.thinking(about: question)

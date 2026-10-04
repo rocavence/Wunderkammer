@@ -15,6 +15,13 @@ struct AskTests {
     }
 
     @available(macOS 26.0, *)
+    @Test func aRepeatedQuestionIsDropped() {
+        #expect(Asker.withoutEcho("你收過哪些王家衛的電影？\n《Chungking Express》和《In the Mood for Love》。") == "《Chungking Express》和《In the Mood for Love》。")
+        #expect(Asker.withoutEcho("Is it there?") == "Is it there?")
+        #expect(Asker.withoutEcho("Yes, two.\nAnything else?") == "Yes, two.\nAnything else?")
+    }
+
+    @available(macOS 26.0, *)
     @Test func answersCiteByTitleOrMaker() throws {
         var book = Item(kind: .web, originalFilename: "", pixelWidth: 1, pixelHeight: 1, contentHash: "a")
         book.title = "The Dispossessed: An Ambiguous Utopia"
