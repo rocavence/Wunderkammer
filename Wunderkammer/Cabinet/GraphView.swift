@@ -79,7 +79,7 @@ final class GraphView: NSView {
     func rebuild(keepCamera: Bool = false) {
         dirty = false
         let hadNodes = !graph.nodes.isEmpty
-        var g = CultureGraph.build(from: library.items, subjects: Subjects.discover(in: library.items, limit: 12))
+        var g = CultureGraph.build(from: library.items, subjects: Subjects.discover(in: library.items, limit: 24))
         // Few nodes sit close together; many get room.
         let side = max(520, CGFloat(g.nodes.count).squareRoot() * 360)
         g.layout(size: CGSize(width: side * 1.4, height: side))

@@ -253,7 +253,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
             clusters.removeLast()
             let leftover = Set(rest.ids)
             clusters += CanvasLayout.clusters(items.filter { leftover.contains($0.id) },
-                                              subjects: Subjects.discover(in: library.items, limit: 12))
+                                              subjects: Subjects.discover(in: library.items, limit: 24))
         }
         groups = clusters.map { CanvasGroup(id: UUID(), x: 0, y: 0, itemIDs: $0.ids, title: $0.title) }
         layoutGroups()
@@ -262,7 +262,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
 
     @objc func clusterByTheme(_ sender: Any?) {
         let items = order.compactMap(library.item)
-        let clusters = CanvasLayout.clusters(items, subjects: Subjects.discover(in: library.items, limit: 12))
+        let clusters = CanvasLayout.clusters(items, subjects: Subjects.discover(in: library.items, limit: 24))
         groups = clusters.map { CanvasGroup(id: UUID(), x: 0, y: 0, itemIDs: $0.ids, title: $0.title) }
         layoutGroups()
         arrange(nil)

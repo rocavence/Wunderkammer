@@ -76,5 +76,6 @@ enum Subjects {
         "automobile": "汽車", "road other": "道路", "material": "材質", "fence": "圍欄", "necktie": "領帶",
         "foliage": "枝葉", "cityscape": "城市風景", "elevator": "電梯", "portal": "入口", "window": "窗戶",
         "electric fan": "電風扇", "plant": "植物",
+        "path": "小徑", "decoration": "裝飾", "frame": "框", "washbasin": "洗手台", "armchair": "扶手椅", "hill": "山丘", "bathroom room": "浴室空間", "carton": "紙盒", "utensil": "器具", "sneaker": "球鞋", "shower": "淋浴", "bucket": "水桶", "kitchen countertop": "流理台", "alley": "巷弄", "bath": "泡澡", "bathroom faucet": "浴室水龍頭", "broom": "掃把", "housewares": "家用品", "kitchen sink": "廚房水槽", "decorative plant": "裝飾植物",
     ]
 }

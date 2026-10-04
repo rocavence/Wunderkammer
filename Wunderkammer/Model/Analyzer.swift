@@ -10,7 +10,7 @@ import Vision
 /// first, and never asks anything.
 enum Analyzer {
     /// Bump when the analysis improves: older results are redone in the background.
-    static let version = 3
+    static let version = 4
 
     struct Result: Sendable {
         var ocrText: String?
@@ -64,8 +64,9 @@ enum Analyzer {
         try? handler.perform(requests)
 
         result.labels = (classify.results ?? [])
-            .filter { $0.confidence > 0.25 }
-            .prefix(10)
+            // Generous, so themes are many: about twice as many as at 0.25 and 10.
+            .filter { $0.confidence > 0.1 }
+            .prefix(20)
             .map { $0.identifier.replacingOccurrences(of: "_", with: " ") }
         if let observation = print.results?.first {
             result.featurePrint = try? NSKeyedArchiver.archivedData(withRootObject: observation, requiringSecureCoding: true)
@@ -355,7 +356,8 @@ final class Understanding {
             if let d = item.domain, d == other.domain { s += 2 }
             if let c = item.creator, c == other.creator { s += 2 }
             if let a = item.sourceApp, a == other.sourceApp, a != "Screenshot" { s += 0.3 }
-            if !labels.isEmpty { s += Double(labels.intersection(other.labels ?? []).count) * 0.6 }
+            // Twice the labels since v4, so each shared one counts about half.
+            if !labels.isEmpty { s += Double(labels.intersection(other.labels ?? []).count) * 0.35 }
             if !names.isEmpty { s += Double(names.intersection((other.entities ?? []).map { $0.name.lowercased() }).count) * 2.5 }
             if Calendar.current.isDate(item.dateAdded, inSameDayAs: other.dateAdded) { s += 0.2 }
             if s > 0 { score[other.id, default: 0] += s }
