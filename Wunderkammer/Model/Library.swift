@@ -586,7 +586,7 @@ final class Library {
     /// Pages collected before cookie notices were cleared off their pictures
     /// get their picture and saved copy once more, once.
     func redoWebPictures() {
-        let key = "webPictures.v4"
+        let key = "webPictures.v5"
         guard !UserDefaults.standard.bool(forKey: key) else { return }
         UserDefaults.standard.set(true, forKey: key)
         let ids = items.filter { $0.kind == .web }.map(\.id)

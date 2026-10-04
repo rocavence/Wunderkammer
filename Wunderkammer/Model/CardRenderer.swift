@@ -67,7 +67,7 @@ enum CardRenderer {
             ctx.setFillColor(rule)
             ctx.fill(CGRect(x: inset.minX, y: inset.minY + 30, width: inset.width, height: 0.5))
             let titleRect = CGRect(x: inset.minX, y: inset.minY + 46, width: inset.width, height: 120)
-            drawText(ctx, serif(title, size: 24, lineHeight: 1.18), in: titleRect)
+            drawText(ctx, heading(title, size: 24, lineHeight: 1.18), in: titleRect)
             if let description, !description.isEmpty {
                 drawText(ctx, sans(description, size: 12, color: muted, lineHeight: 1.4),
                          in: CGRect(x: inset.minX, y: inset.minY + 172, width: inset.width, height: inset.maxY - inset.minY - 172),
@@ -82,7 +82,7 @@ enum CardRenderer {
     static func pageShot(_ shot: CGImage, title: String, domain: String, favicon: CGImage?) -> CGImage? {
         let plate = CGRect(x: 0, y: 0, width: 600, height: 340)
         // As tall as the name needs: one line or two.
-        let name = serif(title, size: 24, lineHeight: 1.15)
+        let name = heading(title, size: 24, lineHeight: 1.15)
         let nameHeight = min(64, ceil(name.boundingRect(with: CGSize(width: 600 - 64, height: 200), options: [.usesLineFragmentOrigin]).height))
         let size = CGSize(width: 600, height: plate.maxY + 22 + 26 + nameHeight + 26)
         // The top of the page, as wide as the card.
@@ -120,7 +120,7 @@ enum CardRenderer {
                 ctx.fill(CGRect(x: inset.minX + CGFloat(i) * w + w * 0.2, y: mid - h / 2, width: w * 0.6, height: h))
             }
             let paperText = CGColor(srgbRed: 0.95, green: 0.93, blue: 0.89, alpha: 1)
-            drawText(ctx, serif(title, size: 22, color: paperText, lineHeight: 1.2),
+            drawText(ctx, heading(title, size: 22, color: paperText, lineHeight: 1.2),
                      in: CGRect(x: inset.minX, y: inset.minY, width: inset.width, height: 60))
             if let artist {
                 drawText(ctx, label(artist.uppercased(), size: 10, color: CGColor(gray: 0.6, alpha: 1), tracking: 1.2),
@@ -212,6 +212,11 @@ enum CardRenderer {
                 ctx.restoreGState()
             }
         }
+    }
+
+    /// Titles on cards: the app's display face (Chinese in PingFang, not Songti).
+    private static func heading(_ s: String, size: CGFloat, color: CGColor = ink, lineHeight: CGFloat) -> NSAttributedString {
+        attributed(s, font: Typography.display(size) ?? .systemFont(ofSize: size), color: color, lineHeight: lineHeight)
     }
 
     /// New York for Latin; Chinese in Songti TC, whose punctuation sits right.

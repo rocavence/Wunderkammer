@@ -29,8 +29,7 @@ final class CaptureToast {
         thumb.isHidden = image == nil
 
         let label = NSTextField(labelWithString: title)
-        let serif = NSFont.systemFont(ofSize: 15, weight: .regular).fontDescriptor.withDesign(.serif)
-        label.font = serif.flatMap { NSFont(descriptor: $0, size: 15) } ?? .systemFont(ofSize: 15)
+        label.font = Typography.display(15) ?? .systemFont(ofSize: 15)
         label.textColor = .labelColor
         let sub = NSTextField(labelWithString: detail ?? "")
         sub.font = .systemFont(ofSize: 11)

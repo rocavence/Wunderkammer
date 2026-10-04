@@ -24,7 +24,7 @@ final class AnswerBanner: NSVisualEffectView {
         question.textColor = .secondaryLabelColor
         question.lineBreakMode = .byTruncatingTail
         let size: CGFloat = 15
-        answer.font = NSFont.systemFont(ofSize: size).fontDescriptor.withDesign(.serif).flatMap { NSFont(descriptor: $0, size: size) }
+        answer.font = Typography.display(size)
             ?? .systemFont(ofSize: size)
         answer.maximumNumberOfLines = 6
         answer.isSelectable = true

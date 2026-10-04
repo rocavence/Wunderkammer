@@ -80,7 +80,7 @@ final class PreviewView: NSView {
             caption.contentsScale = window?.backingScaleFactor ?? 2
             caption.isWrapped = true
             let size: CGFloat = 17
-            let serif = NSFont.systemFont(ofSize: size).fontDescriptor.withDesign(.serif).flatMap { NSFont(descriptor: $0, size: size) }
+            let serif = Typography.display(size)
             let style = NSMutableParagraphStyle()
             style.alignment = .center
             style.lineBreakMode = .byTruncatingTail

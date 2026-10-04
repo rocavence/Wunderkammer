@@ -31,7 +31,7 @@ final class EmptyCabinetView: NSView {
     override var wantsUpdateLayer: Bool { true }
 
     private func serif(_ size: CGFloat) -> NSFont {
-        NSFont.systemFont(ofSize: size).fontDescriptor.withDesign(.serif).flatMap { NSFont(descriptor: $0, size: size) } ?? .systemFont(ofSize: size)
+        Typography.display(size) ?? .systemFont(ofSize: size)
     }
 
     private func build() {

@@ -188,8 +188,7 @@ final class GraphView: NSView {
         for node in graph.nodes.sorted(by: { $0.items.count > $1.items.count }) {
             let r = radius(node) * zoom, c = toScreen(node.position)
             let text = "\(node.title)  \(node.items.count)" as NSString
-            let serif = NSFont.systemFont(ofSize: labelSize).fontDescriptor.withDesign(.serif)
-                .flatMap { NSFont(descriptor: $0, size: labelSize) } ?? .systemFont(ofSize: labelSize)
+            let serif = Typography.display(labelSize) ?? .systemFont(ofSize: labelSize)
             let width = text.size(withAttributes: [.font: serif]).width + 12
             let rect = CGRect(x: c.x - width / 2, y: c.y + r + 4, width: width, height: labelSize * 1.5)
             guard !placed.contains(where: { $0.intersects(rect) }),
@@ -211,7 +210,7 @@ final class GraphView: NSView {
                                       cornerWidth: corner, cornerHeight: corner, transform: nil)
             layers.ring.lineWidth = max(2, 3 * zoom)
             let size = min(max(13 * zoom, 10), 18)
-            let serif = NSFont.systemFont(ofSize: size).fontDescriptor.withDesign(.serif).flatMap { NSFont(descriptor: $0, size: size) }
+            let serif = Typography.display(size)
             let text = NSAttributedString(string: "\(node.title)  \(node.items.count)", attributes: [
                 .font: serif ?? NSFont.systemFont(ofSize: size),
                 .foregroundColor: NSColor(cgColor: resolved(.labelColor)) ?? NSColor.labelColor,

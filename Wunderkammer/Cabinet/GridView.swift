@@ -180,8 +180,7 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
                 root.addSublayer(t)
             }
             let size: CGFloat = 30
-            let serif = NSFont.systemFont(ofSize: size, weight: .regular).fontDescriptor.withDesign(.serif)
-                .flatMap { NSFont(descriptor: $0, size: size) } ?? .systemFont(ofSize: size)
+            let serif = Typography.display(size) ?? .systemFont(ofSize: size)
             titleLayer.string = NSAttributedString(string: heading.title, attributes: [
                 .font: serif, .foregroundColor: NSColor(cgColor: resolved(.labelColor)) ?? .labelColor, .kern: 0.2,
             ])
@@ -314,7 +313,7 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
                 headerLayers[i] = t
                 return t
             }()
-            let serif = NSFont.systemFont(ofSize: 20).fontDescriptor.withDesign(.serif).flatMap { NSFont(descriptor: $0, size: 20) }
+            let serif = Typography.display(20)
             layer.string = NSAttributedString(string: h.title, attributes: [
                 .font: serif ?? NSFont.systemFont(ofSize: 20), .foregroundColor: NSColor(cgColor: resolved(.labelColor)) ?? NSColor.labelColor,
             ])

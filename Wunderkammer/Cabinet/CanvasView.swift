@@ -470,7 +470,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
                 return t
             }()
             let size = min(max(18 * zoom, 11), 28)
-            let serif = NSFont.systemFont(ofSize: size).fontDescriptor.withDesign(.serif).flatMap { NSFont(descriptor: $0, size: size) }
+            let serif = Typography.display(size)
             let attributes: [NSAttributedString.Key: Any] = [
                 .font: serif ?? NSFont.systemFont(ofSize: size),
                 .foregroundColor: NSColor(cgColor: resolved(.secondaryLabelColor)) ?? NSColor.secondaryLabelColor,

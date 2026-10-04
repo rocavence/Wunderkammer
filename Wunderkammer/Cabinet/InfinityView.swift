@@ -114,8 +114,7 @@ final class InfinityView: NSView, ItemSurface {
             bottomShade.frame = CGRect(x: 0, y: bounds.height - 190, width: bounds.width, height: 190)
         }
         let size: CGFloat = 24
-        titleLabel.font = NSFont.systemFont(ofSize: size).fontDescriptor.withDesign(.serif)
-            .flatMap { NSFont(descriptor: $0, size: size) } ?? .systemFont(ofSize: size)
+        titleLabel.font = Typography.display(size) ?? .systemFont(ofSize: size)
         titleLabel.stringValue = heading
         titleLabel.textColor = .labelColor
         hintLabel.textColor = .secondaryLabelColor
