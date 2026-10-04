@@ -181,6 +181,14 @@ final class CaptureController: NSObject {
 
     // MARK: Common end
 
+    /// Something dropped on the menu bar icon: collected like ⌘⇧C, with its toast.
+    func collectDrop(_ pasteboard: NSPasteboard) -> Bool {
+        let sources = PasteboardReader.sources(from: pasteboard)
+        guard !sources.isEmpty else { return false }
+        Task { await collect(sources, sourceApp: nil) }
+        return true
+    }
+
     private func collect(_ sources: [Source], sourceApp: String?) async {
         guard !sources.isEmpty else { return }
         let before = Set(library.items.map(\.id))

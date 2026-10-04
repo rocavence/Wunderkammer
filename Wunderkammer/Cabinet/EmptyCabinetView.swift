@@ -52,7 +52,7 @@ final class EmptyCabinetView: NSView {
         let capture = CaptureController.captureShortcut.display
         let ways = NSStackView(views: [
             way(.clipboard, "看到喜歡的東西，按 \(capture)", "圖片、網址、文字；在瀏覽器裡直接收目前的頁面"),
-            way(.inboxIn, "把東西拖進這個視窗", "檔案、資料夾、圖片、連結都可以，或拖到 Dock 上的 icon"),
+            way(.inboxIn, "把東西拖進這個視窗", "檔案、資料夾、圖片、連結都可以；也能拖到選單列的拱門或 Dock 上的圖示"),
             way(.share, "在任何 app 的分享選單選 Wunderkammer", "不用想要放哪裡，系統會替你整理"),
         ])
         ways.orientation = .vertical

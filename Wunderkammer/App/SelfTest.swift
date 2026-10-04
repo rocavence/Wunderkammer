@@ -233,6 +233,14 @@ final class SelfTest {
                 p.waitUntilExit()
             }
             check(toast.panel?.isVisible == true && toast.panel?.isKeyWindow == false, "toast shows without taking focus")
+            // Dropped on the menu bar's arch: collected like ⌘⇧C.
+            let before = library.items.count
+            let pb = NSPasteboard(name: NSPasteboard.Name("wk-drop-test"))
+            pb.clearContents()
+            pb.setString("拖到選單列的一句話 \(UUID().uuidString.prefix(6))", forType: .string)
+            check(ui.collectDropForTest(pb), "the menu bar arch takes a drop")
+            for _ in 0..<20 where library.items.count == before { await wait(0.25) }
+            check(library.items.count == before + 1, "what was dropped is collected (\(before) → \(library.items.count))")
             return finish()
         case "relations":
             await relationsCheck()
@@ -1532,6 +1540,7 @@ protocol SelfTestUI: AnyObject {
     var sidebarToggleForTest: NSView { get }
     var isSidebarCollapsed: Bool { get }
     func flipCabinetForTest()
+    func collectDropForTest(_ pasteboard: NSPasteboard) -> Bool
     func setCoverForTest(_ picture: URL?) -> Bool
     func setVaultForTest(_ folder: URL?)
     func leaveEmptySearchForTest()

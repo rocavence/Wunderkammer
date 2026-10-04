@@ -91,6 +91,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private var pendingVia: Trail.Via?
     private var spotlight: SpotlightIndexer?
     private var statusItem: NSStatusItem?
+    private let statusDrop = StatusDrop()
     private lazy var settings: SettingsWindowController = {
         let s = SettingsWindowController()
         s.onShortcutsChanged = { [weak self] in
@@ -464,8 +465,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private func buildStatusItem() {
         if let old = statusItem { NSStatusBar.system.removeStatusItem(old) }
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        item.button?.image = Icon.image(.cabinet, size: 16)
-        item.button?.toolTip = "Wunderkammer"
+        item.button?.toolTip = "Wunderkammer：把東西拖到這裡就收進珍奇櫃"
+        if let button = item.button { statusDrop.attach(to: button) }
+        statusDrop.onDrop = { [weak self] pasteboard in self?.capture.collectDrop(pasteboard) ?? false }
         let menu = NSMenu()
         Self.show(CaptureController.captureShortcut, on: menu.addItem(withTitle: "收藏剪貼簿或目前頁面", action: #selector(captureNow), keyEquivalent: ""))
         Self.show(CaptureController.screenshotShortcut, on: menu.addItem(withTitle: "截圖收藏", action: #selector(captureScreenshot), keyEquivalent: ""))
@@ -1273,6 +1275,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     var sidebarToggleForTest: NSView { topBar.sidebarButton }
     var isSidebarCollapsed: Bool { sidebarItem.isCollapsed }
     func flipCabinetForTest() { cabinetsPanel?.flipForTest(cabinets.currentID) }
+    func collectDropForTest(_ pasteboard: NSPasteboard) -> Bool { capture.collectDrop(pasteboard) }
     func setCoverForTest(_ picture: URL?) -> Bool {
         defer { cabinetsChanged() }
         guard let picture else { cabinets.clearCover(for: cabinets.currentID); return true }
