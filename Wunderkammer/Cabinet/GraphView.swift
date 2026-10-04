@@ -98,13 +98,15 @@ final class GraphView: NSView {
         24 + CGFloat(node.items.count).squareRoot() * 12
     }
 
+    func showAll() { fit() }
+
     private func fit() {
         guard !graph.nodes.isEmpty, bounds.width > 0 else { return render() }
         let xs = graph.nodes.map(\.position.x), ys = graph.nodes.map(\.position.y)
         let content = CGRect(x: xs.min()! - 120, y: ys.min()! - 120, width: xs.max()! - xs.min()! + 240, height: ys.max()! - ys.min()! + 240)
         let top = window.map { $0.frame.height - $0.contentLayoutRect.height } ?? 0
         // Room at the foot for the legend.
-        let legendRoom: CGFloat = 44
+        let legendRoom: CGFloat = 104
         zoom = min(1.2, max(0.2, min(bounds.width / content.width, (bounds.height - top - legendRoom) / content.height)))
         offset = CGPoint(x: content.midX - bounds.width / zoom / 2, y: content.midY - (bounds.height + top - legendRoom) / zoom / 2)
         render()
@@ -139,7 +141,8 @@ final class GraphView: NSView {
             addSubview(legend)
             NSLayoutConstraint.activate([
                 legend.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
-                legend.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16),
+                // Above the view bar.
+                legend.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -76),
             ])
         }
         let text = NSMutableAttributedString()

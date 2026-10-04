@@ -62,7 +62,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private(set) var preview: PreviewView!
     private var spaceControl: NSSegmentedControl?
     /// The layouts of the current space (格狀/瀑布/時間軸, 畫布/圖譜); hidden when there's one.
-    private var layoutControl: NSSegmentedControl?
+    /// The layouts and tools of the view in front, at its foot.
+    private let viewBar = ViewBar()
     private var searchItem: NSSearchToolbarItem?
     private(set) var mode = ViewMode.grid
     private(set) var scope = Scope()
@@ -224,6 +225,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             edgeFade.bottomAnchor.constraint(equalTo: content.safeAreaLayoutGuide.topAnchor, constant: 22),
         ])
         content.addSubview(answerBanner, positioned: .below, relativeTo: preview)
+        viewBar.translatesAutoresizingMaskIntoConstraints = false
+        viewBar.onLayout = { [weak self] m in self?.setMode(m) }
+        content.addSubview(viewBar, positioned: .below, relativeTo: emptyCabinet)
+        NSLayoutConstraint.activate([
+            viewBar.centerXAnchor.constraint(equalTo: content.centerXAnchor),
+            viewBar.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -18),
+        ])
         NSLayoutConstraint.activate([
             answerBanner.topAnchor.constraint(equalTo: content.safeAreaLayoutGuide.topAnchor, constant: 8),
             answerBanner.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 14),
@@ -490,6 +498,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         // A cabinet with nothing in it yet gets its welcome instead of empty views.
         emptyCabinet?.isHidden = !library.items.isEmpty
         emptyCabinet?.name = cabinets.current.name
+        updateViewBar()
     }
 
     func setMode(_ new: ViewMode) {
@@ -521,6 +530,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         if mode.cabinetStyle != nil { scroll.isHidden = showing }
         if mode == .infinity { infinity.isHidden = showing }
         if showing { trailView.show(trail.visits(existing: Set(library.items.map(\.id)))) }
+        updateViewBar()
     }
 
     /// The layout each space was last in (this session, else the saved one).
@@ -536,26 +546,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
 
     private func updateSpaceControls() {
         spaceControl?.selectedSegment = mode.space.rawValue
-        guard let layout = layoutControl else { return }
-        let layouts = mode.space.layouts
-        layout.segmentCount = layouts.count
-        for (i, m) in layouts.enumerated() {
-            layout.setImage(Icon.image(m.icon, size: 15), forSegment: i)
-            layout.setToolTip(m.title, forSegment: i)
-            layout.setTag(m.rawValue, forSegment: i)
-            layout.setWidth(32, forSegment: i)
+        updateViewBar()
+    }
+
+    /// The bar at the foot: this space's layouts, then the view's own tools.
+    /// Away while there's nothing to arrange (足跡, an empty cabinet).
+    private func updateViewBar() {
+        let zoom: [ViewBar.Tool] = [
+            .init(icon: .searchZoomOut, tip: "縮小（⌘-）") { [weak self] in self?.zoomOut() },
+            .init(icon: .searchZoomIn, tip: "放大（⌘=）") { [weak self] in self?.zoomIn() },
+        ]
+        var tools: [[ViewBar.Tool]]
+        switch mode {
+        case .canvas:
+            tools = [
+                [.init(icon: .sparkles, tip: "依主題分堆") { [weak self] in self?.canvas.clusterByTheme(nil) },
+                 .init(icon: .link, tip: "依關聯分堆", enabled: canvas.hasRelations) { [weak self] in self?.canvas.clusterByRelation(nil) },
+                 .init(icon: .broom, tip: "整理成整齊的排列") { [weak self] in self?.canvas.arrange(nil) }],
+                [.init(icon: .maximize, tip: "顯示全部") { [weak self] in self?.canvas.fit(animated: true) }] + zoom,
+                [.init(icon: .restart, tip: "重設擺放…", destructive: true) { [weak self] in self?.canvas.resetArrangement(nil) }],
+            ]
+        case .graph:
+            tools = [[.init(icon: .maximize, tip: "顯示全部") { [weak self] in self?.graphView.showAll() }] + zoom]
+        default:
+            tools = [zoom]
         }
-        layout.selectedSegment = layouts.firstIndex(of: mode) ?? 0
-        // One layout, no switch: the item leaves the toolbar (a hidden view would leave its capsule behind).
-        guard let toolbar = window?.toolbar else { return }
-        let index = toolbar.items.firstIndex { $0.itemIdentifier == Self.layoutID }
-        if layouts.count < 2, let index {
-            toolbar.removeItem(at: index)
-        } else if layouts.count >= 2, index == nil,
-                  let next = toolbar.items.firstIndex(where: { $0.itemIdentifier == Self.searchID }) {
-            // Back in its one place: after the spaces, before search.
-            toolbar.insertItem(withItemIdentifier: Self.layoutID, at: next)
-        }
+        viewBar.show(layouts: mode.space.layouts, current: mode, tools: tools)
+        let trail = trailView.map { !$0.isHidden } ?? false
+        let empty = emptyCabinet.map { !$0.isHidden } ?? false
+        if trail || empty { viewBar.isHidden = true }
     }
 
     private var currentView: NSView {
@@ -907,12 +926,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     // MARK: Toolbar
 
     private static let spaceID = NSToolbarItem.Identifier("space")
-    private static let layoutID = NSToolbarItem.Identifier("layout")
     private static let searchID = NSToolbarItem.Identifier("search")
     private static let inspectorID = NSToolbarItem.Identifier("inspector")
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        [.toggleSidebar, .sidebarTrackingSeparator, .flexibleSpace, Self.spaceID, .flexibleSpace, Self.layoutID,
+        [.toggleSidebar, .sidebarTrackingSeparator, .flexibleSpace, Self.spaceID, .flexibleSpace,
          Self.searchID, .inspectorTrackingSeparator, Self.inspectorID]
     }
 
@@ -936,15 +954,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             let item = NSToolbarItem(itemIdentifier: id)
             item.view = control
             item.label = "空間"
-            DispatchQueue.main.async { [weak self] in MainActor.assumeIsolated { self?.updateSpaceControls() } }
-            return item
-        case Self.layoutID:
-            let control = layoutControl ?? NSSegmentedControl(images: [], trackingMode: .selectOne, target: self, action: #selector(layoutChanged(_:)))
-            layoutControl = control
-            let item = NSToolbarItem(itemIdentifier: id)
-            item.view = control
-            item.label = "排法"
-            // Filled in after insertion (updating now would re-enter the toolbar).
             DispatchQueue.main.async { [weak self] in MainActor.assumeIsolated { self?.updateSpaceControls() } }
             return item
         case Self.searchID:
@@ -973,9 +982,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         setSpace(Space(rawValue: sender.selectedSegment) ?? .cabinet)
     }
 
-    @objc private func layoutChanged(_ sender: NSSegmentedControl) {
-        setMode(ViewMode(rawValue: sender.tag(forSegment: sender.selectedSegment)) ?? .grid)
-    }
 
     // MARK: Menu
 
@@ -1166,6 +1172,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         defer { cabinetsChanged() }
         return cabinets.watch(folder, in: cabinets.currentID)
     }
+    var viewBarTipsForTest: [String] { viewBar.isHidden ? [] : viewBar.tips }
     var watchedFoldersForTest: [URL] { cabinets.watched(cabinets.currentID) }
     func unwatchFolderForTest(_ folder: URL) { cabinets.unwatch(folder, in: cabinets.currentID); cabinetsChanged() }
     func canDeleteCabinet(_ id: UUID) -> Bool { cabinets.canDelete(id) }

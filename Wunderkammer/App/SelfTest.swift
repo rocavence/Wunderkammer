@@ -720,7 +720,8 @@ final class SelfTest {
         check(canvas.debugZoom > zoomBefore * 1.05, "scrolling up zooms in (\(zoomBefore) → \(canvas.debugZoom))")
         check(canvas.debugOffset != offsetBefore || canvas.debugZoom != zoomBefore, "the view changed around the pointer")
         // A tap, no drag: the preview, as before.
-        if let picture = library.items.first(where: { $0.kind == .image && canvas.rectInWindow(for: $0.id) != nil }),
+        // One clear of the bar at the foot.
+        if let picture = library.items.first(where: { $0.kind == .image && (canvas.rectInWindow(for: $0.id)?.midY ?? 0) > 140 }),
            let p = center(of: picture.id, in: canvas) {
             click(canvas, p)
             keyEvent(.keyDown, 49, " ")
@@ -737,9 +738,11 @@ final class SelfTest {
         ui.setMode(.masonry)
         await wait(0.5)
         shot("space-cabinet")
+        check(ui.viewBarTipsForTest.starts(with: ["格狀", "瀑布", "時間軸"]), "收藏's layouts are in the bar below (\(ui.viewBarTipsForTest))")
         ui.setSpace(.wander)
         await wait(0.8)
         check(ui.mode == .infinity, "漫遊 is the wall")
+        check(!ui.viewBarTipsForTest.contains("無限牆") && ui.viewBarTipsForTest.contains("放大（⌘=）"), "one layout, no switch; its tools stay (\(ui.viewBarTipsForTest))")
         shot("space-wander")
         ui.sidebar.select(.trail)
         await wait(0.6)
@@ -751,6 +754,8 @@ final class SelfTest {
         check(ui.mode == .canvas || ui.mode == .graph, "地圖 opens on a map layout (\(ui.mode))")
         ui.setMode(.canvas)
         await wait(0.6)
+        check(ui.viewBarTipsForTest.contains("依主題分堆") && ui.viewBarTipsForTest.contains("重設擺放…"), "the canvas's tools are in the bar (\(ui.viewBarTipsForTest))")
+        shot("space-map-canvas")
         await spacePanCheck()
         ui.setMode(.graph)
         await wait(0.8)
@@ -1387,6 +1392,7 @@ protocol SelfTestUI: AnyObject {
     func watchFolderForTest(_ folder: URL) -> Bool
     func unwatchFolderForTest(_ folder: URL)
     var watchedFoldersForTest: [URL] { get }
+    var viewBarTipsForTest: [String] { get }
     func canDeleteCabinet(_ id: UUID) -> Bool
     func deleteCabinetForTest(_ id: UUID)
     var currentCabinet: UUID { get }

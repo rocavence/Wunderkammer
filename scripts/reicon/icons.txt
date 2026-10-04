@@ -49,6 +49,11 @@ edit
 folder
 folder-add
 chevron-down
+search-zoom-in
+search-zoom-out
+maximize
+broom
+restart
 trash
 share
 link

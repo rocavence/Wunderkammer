@@ -250,6 +250,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
     }
 
     var debugLinkCount: Int { links.count }
+    var hasRelations: Bool { !relationLinks.isEmpty }
 
     @objc func arrange(_ sender: Any?) {
         let sizes = groups.map { groupFrames[$0.id]?.size ?? .zero }
