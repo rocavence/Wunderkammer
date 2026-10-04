@@ -734,6 +734,14 @@ final class SelfTest {
     }
 
     private func spacesCheck() async {
+        // Search waits folded as a button, opens when wanted, folds once left empty.
+        check(!ui.isSearchExpanded, "search starts folded away")
+        ui.openSearchForTest()
+        await wait(0.3)
+        check(ui.isSearchExpanded, "⌘K opens it")
+        ui.leaveEmptySearchForTest()
+        await wait(0.3)
+        check(!ui.isSearchExpanded, "left empty, it folds again")
         ui.setSpace(.cabinet)
         ui.setMode(.masonry)
         await wait(0.5)
@@ -1404,6 +1412,9 @@ protocol SelfTestUI: AnyObject {
     var watchedFoldersForTest: [URL] { get }
     var viewBarTipsForTest: [String] { get }
     func hoverViewBarForTest() -> String?
+    var isSearchExpanded: Bool { get }
+    func openSearchForTest()
+    func leaveEmptySearchForTest()
     var graphView: GraphView! { get }
     func canDeleteCabinet(_ id: UUID) -> Bool
     func deleteCabinetForTest(_ id: UUID)

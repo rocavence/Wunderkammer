@@ -693,9 +693,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     // MARK: Search (⌘K)
 
     @objc private func focusSearch() {
+        setSearchExpanded(true)
         guard let item = searchItem else { return }
         window.makeFirstResponder(item.searchField)
         item.beginSearchInteraction()
+    }
+
+    /// Search waits as a button; it opens into a field when wanted (click,
+    /// ⌘K, Siri) and folds away again once it's empty and left.
+    private func setSearchExpanded(_ open: Bool) {
+        guard let toolbar = window?.toolbar else { return }
+        let from = open ? Self.searchButtonID : Self.searchID
+        guard let i = toolbar.items.firstIndex(where: { $0.itemIdentifier == from }) else { return }
+        toolbar.removeItem(at: i)
+        toolbar.insertItem(withItemIdentifier: open ? Self.searchID : Self.searchButtonID, at: i)
+    }
+
+    var isSearchExpanded: Bool { window?.toolbar?.items.contains { $0.itemIdentifier == Self.searchID } == true }
+
+    /// Leaving an empty search folds it back into its button.
+    func controlTextDidEndEditing(_ obj: Notification) {
+        guard let field = obj.object as? NSSearchField, field === searchItem?.searchField, field.stringValue.isEmpty else { return }
+        DispatchQueue.main.async { [weak self] in MainActor.assumeIsolated { self?.setSearchExpanded(false) } }
     }
 
     func controlTextDidChange(_ obj: Notification) {
@@ -751,7 +770,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     }
 
     func searchFieldDidEndSearching(_ sender: NSSearchField) {
-        if sender.stringValue.isEmpty { clearSearch() }
+        if sender.stringValue.isEmpty {
+            clearSearch()
+            DispatchQueue.main.async { [weak self] in MainActor.assumeIsolated { self?.setSearchExpanded(false) } }
+        }
         focusCurrent()
     }
 
@@ -795,6 +817,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     func searchForIntent(_ query: String) -> Int {
         showCabinet()
         if mode.cabinetStyle == nil { setMode(.grid) }
+        setSearchExpanded(true)
         searchItem?.searchField.stringValue = query
         search(query)
         return library.items(for: scope).count
@@ -866,6 +889,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             self.askTask = nil
             if let ids {
                 self.searchItem?.searchField.stringValue = ""
+                self.setSearchExpanded(false)
                 if self.mode.cabinetStyle == nil { self.setMode(.grid) }
                 self.show(base: .answer(ids))
             }
@@ -927,15 +951,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
 
     private static let spaceID = NSToolbarItem.Identifier("space")
     private static let searchID = NSToolbarItem.Identifier("search")
+    private static let searchButtonID = NSToolbarItem.Identifier("searchButton")
     private static let inspectorID = NSToolbarItem.Identifier("inspector")
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
         [.toggleSidebar, .sidebarTrackingSeparator, .flexibleSpace, Self.spaceID, .flexibleSpace,
-         Self.searchID, .inspectorTrackingSeparator, Self.inspectorID]
+         Self.searchButtonID, .inspectorTrackingSeparator, Self.inspectorID]
     }
 
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        toolbarDefaultItemIdentifiers(toolbar)
+        toolbarDefaultItemIdentifiers(toolbar) + [Self.searchID]
     }
 
     func toolbar(_ toolbar: NSToolbar, itemForItemIdentifier id: NSToolbarItem.Identifier,
@@ -955,6 +980,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             item.view = control
             item.label = "空間"
             DispatchQueue.main.async { [weak self] in MainActor.assumeIsolated { self?.updateSpaceControls() } }
+            return item
+        case Self.searchButtonID:
+            let item = NSToolbarItem(itemIdentifier: id)
+            item.image = Icon.image(.search, size: 17)
+            item.label = "搜尋"
+            item.toolTip = "搜尋或提問（⌘K）"
+            item.target = self
+            item.action = #selector(focusSearch)
             return item
         case Self.searchID:
             let item = NSSearchToolbarItem(itemIdentifier: id)
@@ -1138,6 +1171,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         trail = Trail(root: library.root)
         understanding.libraryChanged()
         searchItem?.searchField.stringValue = ""
+        setSearchExpanded(false)
         sidebar.select(.all)
         cabinetsChanged()
     }
@@ -1173,6 +1207,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         return cabinets.watch(folder, in: cabinets.currentID)
     }
     func hoverViewBarForTest() -> String? { viewBar.hoverFirstForTest() }
+    func openSearchForTest() { focusSearch() }
+    func leaveEmptySearchForTest() {
+        guard let field = searchItem?.searchField else { return }
+        field.stringValue = ""
+        searchFieldDidEndSearching(field)
+    }
     var viewBarTipsForTest: [String] { viewBar.isHidden ? [] : viewBar.tips }
     var watchedFoldersForTest: [URL] { cabinets.watched(cabinets.currentID) }
     func unwatchFolderForTest(_ folder: URL) { cabinets.unwatch(folder, in: cabinets.currentID); cabinetsChanged() }
