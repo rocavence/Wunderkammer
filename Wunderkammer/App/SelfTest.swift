@@ -1,4 +1,5 @@
 import AppKit
+import Quartz
 
 /// `WK_SELFTEST=<output dir>` runs a scripted walk through every feature
 /// against `WK_LIBRARY_ROOT` (a throwaway copy), sending mouse and key events
@@ -230,6 +231,9 @@ final class SelfTest {
             return finish()
         case "relations":
             await relationsCheck()
+            return finish()
+        case "trail":
+            await trailCheck()
             return finish()
         case "keep":
             await keepCheck()
@@ -508,6 +512,40 @@ final class SelfTest {
         check(settled < 0.5 && allVisible && !ui.preview.isOpen,
               "after closing every tile is home and visible (\(String(format: "%.1f", settled))pt)")
         shot("02f-ripple-closed")
+    }
+
+    /// 足跡: walk a path the way the UI does, then see it told back.
+    private func trailCheck() async {
+        guard let chungking = library.items.first(where: { $0.displayTitle == "Chungking Express" }),
+              let mood = library.items.first(where: { $0.displayTitle == "In the Mood for Love" }) else {
+            return check(false, "the sample films are in the library")
+        }
+        ui.showRandom()
+        await wait(0.8)
+        key(53)
+        await wait(0.6)
+        ui.search("Chungking")
+        await wait(0.6)
+        ui.openForTest(chungking.id)
+        await wait(0.8)
+        key(53)
+        await wait(0.6)
+        ui.followRelationForTest(to: mood.id, label: "Wong Kar-Wai")
+        await wait(0.6)
+        let line = ui.arrivalLine(for: mood.id) ?? "–"
+        log("arrival: \(line)")
+        check(line.contains("搜尋「Chungking」") && line.contains("Chungking Express") && line.contains("Wong Kar-Wai"),
+              "the way to a film is told back")
+        ui.search("")
+        ui.sidebar.select(.trail)
+        await wait(0.8)
+        check(ui.trailVisitCount >= 1, "足跡 shows sittings (\(ui.trailVisitCount))")
+        shot("trail-view")
+        ui.toggleInspectorForTest()
+        ui.sidebar.select(.all)
+        ui.grid.reveal(mood.id)
+        await wait(0.8)
+        shot("trail-inspector")
     }
 
     /// Relations across kinds in the real library copy (network: pages are read again).
@@ -976,8 +1014,14 @@ final class SelfTest {
         // R: a preview with how long ago it was collected.
         ui.setMode(.grid)
         await wait(0.4)
-        ui.showRandom()
-        await wait(1.0)
+        // Video, sound, PDFs and files open in Quick Look instead: try again.
+        for _ in 0..<8 {
+            ui.showRandom()
+            await wait(1.0)
+            if ui.preview.isOpen { break }
+            if QLPreviewPanel.sharedPreviewPanelExists() { QLPreviewPanel.shared().close() }
+            await wait(0.4)
+        }
         check(ui.preview.isOpen && ui.preview.captionText?.contains("收藏") == true, "R opens a past curiosity (\(ui.preview.captionText ?? "–"))")
         shot("ui-random")
         key(53)
@@ -1053,6 +1097,10 @@ protocol SelfTestUI: AnyObject {
     func showRandom()
     func toggleInspectorForTest()
     func ask(_ question: String)
+    func openForTest(_ id: UUID)
+    func followRelationForTest(to id: UUID, label: String)
+    var trailVisitCount: Int { get }
+    func arrivalLine(for id: UUID) -> String?
     var isAsking: Bool { get }
     var answerText: String { get }
     func showSettingsForTest() -> NSWindow?

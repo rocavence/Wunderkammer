@@ -119,4 +119,28 @@ struct TrailTests {
         trail.save()
         #expect(Trail(root: root).steps == trail.steps)
     }
+
+    @Test func sittingsAndTheWayToSomething() {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("wk-trail-\(UUID().uuidString)")
+        try? FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let a = UUID(), b = UUID(), c = UUID(), d = UUID(), gone = UUID()
+        let trail = Trail(root: root)
+        let t0 = Date()
+        // Yesterday: one look. Today: random → a relation → a removed one → a search.
+        trail.record(d, via: .browse, at: t0.addingTimeInterval(-86_400))
+        trail.record(a, via: .random, at: t0)
+        trail.record(b, via: .relation(a, "Wong Kar-Wai"), at: t0.addingTimeInterval(60))
+        trail.record(gone, via: .browse, at: t0.addingTimeInterval(90))
+        trail.record(c, via: .search("love"), at: t0.addingTimeInterval(120))
+        let visits = trail.visits(existing: [a, b, c, d])
+        #expect(visits.map { $0.map(\.item) } == [[a, b, c], [d]])
+        #expect(trail.path(to: b, existing: [a, b, c, d]).map(\.item) == [a, b])
+        #expect(trail.path(to: d, existing: [a, b, c, d]).count == 1)
+        #expect(trail.path(to: UUID(), existing: [a]).isEmpty)
+        #expect(Trail.short(.relation(a, "Wong Kar-Wai")) == "Wong Kar-Wai")
+        #expect(Trail.short(.search("love")) == "搜尋「love」")
+        // New reasons survive a save and a reload.
+        trail.save()
+        #expect(Trail(root: root).steps == trail.steps)
+    }
 }

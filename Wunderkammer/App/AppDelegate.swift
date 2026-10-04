@@ -41,6 +41,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private(set) var scope = Scope()
     private var capture: CaptureController!
     private let answerBanner = AnswerBanner()
+    private var trailView: TrailView!
+    /// The question the cabinet is showing the answer to, for the trail.
+    private var lastQuestion = ""
     /// An Asker on systems that have Apple's on-device model.
     private var askerBox: AnyObject?
     private var askTask: Task<Void, Never>?
@@ -166,7 +169,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             guard let self else { return false }
             return importPasteboard(pb, library: self.library, board: self.scope.board)
         }
-        for v in [scroll!, canvas!, infinity!, graphView!, emptyCabinet!, preview!] as [NSView] {
+        trailView = TrailView(library: library)
+        trailView.isHidden = true
+        trailView.onSelect = { [weak self] id in
+            guard let self else { return }
+            self.sidebar.select(.all)
+            self.reveal(id)
+        }
+        for v in [scroll!, canvas!, infinity!, graphView!, trailView!, emptyCabinet!, preview!] as [NSView] {
             v.frame = content.bounds
             v.autoresizingMask = [.width, .height]
             content.addSubview(v)
@@ -193,6 +203,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             if let from = self.inspectorItemID { self.trail.record(id, via: .related(from)) }
             self.reveal(id)
         }
+        inspector.onFollowRelation = { [weak self] id, label in
+            guard let self else { return }
+            if let from = self.inspectorItemID { self.trail.record(id, via: .relation(from, label)) }
+            self.reveal(id)
+        }
         inspector.onOpenView = { [weak self] base in self?.sidebar.select(base) }
         understanding = Understanding(library: library)
         library.similarity = { [weak self] id in self?.understanding.similar(to: id) ?? [] }
@@ -202,8 +217,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             return self.trail.recentItems(existing: Set(self.library.items.map(\.id)))
         }
         inspector.arrival = { [weak self] item in
-            guard let self, let step = self.trail.lastArrival(at: item.id) else { return nil }
-            return Trail.describe(step.via) { self.library.item($0)?.displayTitle }
+            guard let self else { return nil }
+            // The way here, from where that sitting began: 隨機 → 《A》 → 相似 → 這件.
+            let path = self.trail.path(to: item.id, existing: Set(self.library.items.map(\.id)))
+            guard let last = path.last else { return nil }
+            if path.count == 1 { return Trail.describe(last.via) { self.library.item($0)?.displayTitle } }
+            var parts: [String] = []
+            for (i, step) in path.enumerated() {
+                parts.append(Trail.short(step.via))
+                parts.append(i == path.count - 1 ? "這件" : "《\(self.library.item(step.item)?.displayTitle.prefix(20) ?? "")》")
+            }
+            return "怎麼來的：" + parts.joined(separator: " → ")
         }
         NotificationCenter.default.addObserver(forName: Understanding.didProgress, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.updateTitle() }
@@ -371,6 +395,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         canvas.show(scope: scope)
         infinity.show(scope: scope)
         inspector.show(nil)
+        updateTrailView()
         focusCurrent()
     }
 
@@ -408,7 +433,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         canvas.isHidden = new != .canvas
         infinity.isHidden = new != .infinity
         graphView.isHidden = new != .graph
+        updateTrailView()
         focusCurrent()
+    }
+
+    /// 足跡 in the scrolling views is the path itself, not a grid of what was seen.
+    private func updateTrailView() {
+        let showing = scope.base == .trail && mode.cabinetStyle != nil && !scope.isSearching
+        trailView.isHidden = !showing
+        if mode.cabinetStyle != nil { scroll.isHidden = showing }
+        if showing { trailView.show(trail.visits(existing: Set(library.items.map(\.id)))) }
     }
 
     private var currentView: NSView {
@@ -477,6 +511,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         case .mentions(let n): return .mentions(n)
         case .site(let d): return .site(d)
         case .subject(let l): return .theme(Subjects.title(l))
+        case .answer: return .ask(lastQuestion)
         default: return .browse
         }
     }
@@ -538,6 +573,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         // Results are a list to scan: shown in the scrolling views.
         if scope.isSearching, mode.cabinetStyle == nil { setMode(.grid) }
         grid.show(scope: scope)
+        updateTrailView()
         updateTitle()
         searchByMeaning(text)
     }
@@ -606,6 +642,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     // MARK: Asking (US-211)
 
     var isAsking: Bool { askTask != nil }
+
+    // Self-test hooks for the trail: the same paths the UI takes.
+    func openForTest(_ id: UUID) { openPreview(id) }
+    func followRelationForTest(to id: UUID, label: String) { inspector.onFollowRelation?(id, label) }
+    var trailVisitCount: Int { trailView.isHidden ? -1 : trailView.visitCount }
+    func arrivalLine(for id: UUID) -> String? { library.item(id).flatMap { inspector.arrival?($0) } }
     var answerText: String {
         if #available(macOS 26.0, *), let plan = (askerBox as? Asker)?.lastPlan { return answerBanner.answerText + " ⟨\(plan)⟩" }
         return answerBanner.answerText
@@ -633,6 +675,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             return a
         }()
         askTask?.cancel()
+        lastQuestion = question
         answerBanner.thinking(about: question)
         showAnswerBanner()
         askTask = Task { [weak self] in

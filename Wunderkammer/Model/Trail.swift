@@ -14,6 +14,10 @@ final class Trail {
         case mentions(String)
         case site(String)
         case theme(String)
+        /// Followed a relation from another curiosity ("Wong Kar-Wai", "提到 Ole Worm", "New York").
+        case relation(UUID, String)
+        /// What an answer to a question was about.
+        case ask(String)
     }
 
     struct Step: Codable, Equatable, Sendable {
@@ -57,6 +61,46 @@ final class Trail {
 
     func lastArrival(at item: UUID) -> Step? { steps.last { $0.item == item } }
 
+    /// Sittings: steps closer than `gap` belong together. Newest sitting
+    /// first, each in the order it happened; removed curiosities left out.
+    func visits(existing: Set<UUID>, gap: TimeInterval = 30 * 60) -> [[Step]] {
+        var out: [[Step]] = []
+        for step in steps where existing.contains(step.item) {
+            if let last = out.last?.last, step.date.timeIntervalSince(last.date) <= gap {
+                out[out.count - 1].append(step)
+            } else {
+                out.append([step])
+            }
+        }
+        return out.reversed()
+    }
+
+    /// How you got to `item` last time: that sitting, from its start up to it.
+    func path(to item: UUID, existing: Set<UUID>, limit: Int = 6) -> [Step] {
+        for visit in visits(existing: existing) {
+            if let i = visit.lastIndex(where: { $0.item == item }) {
+                return Array(visit[...i].suffix(limit))
+            }
+        }
+        return []
+    }
+
+    /// A few words for the arrow into a step: "相似", "搜尋「receive」", "Wong Kar-Wai".
+    static func short(_ via: Via) -> String {
+        switch via {
+        case .browse: "瀏覽"
+        case .search(let q): "搜尋「\(q)」"
+        case .similar: "相似"
+        case .related: "相關"
+        case .random: "隨機"
+        case .mentions(let name): "提到 \(name)"
+        case .site(let domain): domain
+        case .theme(let t): "主題 \(t)"
+        case .relation(_, let label): label
+        case .ask(let q): "問「\(q.prefix(16))」"
+        }
+    }
+
     /// "上次是從搜尋「receive」來的".
     static func describe(_ via: Via, title: (UUID) -> String?) -> String {
         switch via {
@@ -68,6 +112,8 @@ final class Trail {
         case .mentions(let name): "上次是從提到「\(name)」的收藏來的"
         case .site(let domain): "上次是從 \(domain) 的收藏來的"
         case .theme(let t): "上次是從主題「\(t)」來的"
+        case .relation(let id, let label): "上次是從「\(title(id) ?? "另一件收藏")」經由 \(label) 來的"
+        case .ask(let q): "上次是從問題「\(q)」來的"
         }
     }
 }

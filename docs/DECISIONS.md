@@ -266,3 +266,14 @@ Atlas 的偵錯說明文字寫明舊版（1.6.7）的參數：質量 1.89、剛�
 修正：分堆名稱比堆寬時會蓋到隔壁，改成最多延伸到右邊下一堆為止。CATextLayer 截斷有樣式的文字時會什麼都不畫，所以改成先自己量好長度、用「…」縮短，件數一定保留。
 
 修改位置：`CanvasView.findRelations` / `renderRelations` / `clusterByRelation`、`CanvasLayout.relationClusters`。
+
+## D33 足跡顯示怎麼從 A 走到 B（US-305）
+
+原本的足跡只是「最近看過」的格狀列表，看不出路徑。現在：
+
+* 相隔 30 分鐘以上的步驟算不同次逛；「足跡」每次逛一列，由新到舊，縮圖之間寫著怎麼過去的：隨機、搜尋「…」、相似、主題、提到 X、問「…」，或沿著哪個關聯（例如 Wong Kar-Wai）。
+* 資訊面板的「怎麼來的」顯示該次逛到這件的整條路，最多 6 步：隨機 → 《Calculator》 → 搜尋「Chungking」 → 《Chungking Express》 → Wong Kar-Wai → 這件。
+* 點「關聯」時記下是哪個關聯，而不只是「相關」；從問題的回答打開的，記成「問「…」」。
+* 點足跡裡的縮圖會回到珍奇室並選到那一件。
+
+修改位置：`Trail.visits` / `path` / `short`、`Cabinet/TrailView.swift`。

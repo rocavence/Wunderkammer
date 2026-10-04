@@ -9,6 +9,8 @@ final class InspectorViewController: NSViewController {
     private var itemID: UUID?
     var currentID: UUID? { itemID }
     var onSelectRelated: ((UUID) -> Void)?
+    /// A relation was followed: the other curiosity, and what connects them.
+    var onFollowRelation: ((UUID, String) -> Void)?
     /// A name or a site was clicked: show everything connected to it.
     var onOpenView: ((Scope.Base) -> Void)?
     /// Supplies related items (filled in by the understanding layer).
@@ -86,7 +88,9 @@ final class InspectorViewController: NSViewController {
         stack.setCustomSpacing(4, after: title)
         stack.addArrangedSubview(label(Rediscovery.ageLine(item), size: 11, color: .secondaryLabelColor))
         if let arrived = arrival?(item) {
-            stack.addArrangedSubview(label(arrived, size: 11, color: .tertiaryLabelColor))
+            let line = label(arrived, size: 11, color: .tertiaryLabelColor)
+            line.maximumNumberOfLines = 3
+            stack.addArrangedSubview(line)
         }
 
         stack.addArrangedSubview(divider())
@@ -113,7 +117,7 @@ final class InspectorViewController: NSViewController {
                 guard let other = library.item(r.other) else { continue }
                 let title = String((CrossMedia.name(of: other) ?? other.displayTitle).prefix(40))
                 let b = ClosureButton(title: r.sentence(title: title, kindName: Self.kindName(other))) { [weak self] in
-                    self?.onSelectRelated?(other.id)
+                    self?.onFollowRelation?(other.id, r.label)
                 }
                 b.isBordered = false
                 b.contentTintColor = .controlAccentColor
