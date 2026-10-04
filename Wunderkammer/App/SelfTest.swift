@@ -1237,6 +1237,7 @@ protocol SelfTestUI: AnyObject {
     func createCabinetForTest(_ name: String) -> UUID
     func manageCabinets()
     func closeCabinetsForTest()
+    var cabinetsWindowNumber: Int? { get }
     func canDeleteCabinet(_ id: UUID) -> Bool
     func deleteCabinetForTest(_ id: UUID)
     var currentCabinet: UUID { get }
