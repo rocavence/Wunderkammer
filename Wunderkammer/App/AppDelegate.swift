@@ -1172,6 +1172,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         defer { cabinetsChanged() }
         return cabinets.watch(folder, in: cabinets.currentID)
     }
+    func hoverViewBarForTest() -> String? { viewBar.hoverFirstForTest() }
     var viewBarTipsForTest: [String] { viewBar.isHidden ? [] : viewBar.tips }
     var watchedFoldersForTest: [URL] { cabinets.watched(cabinets.currentID) }
     func unwatchFolderForTest(_ folder: URL) { cabinets.unwatch(folder, in: cabinets.currentID); cabinetsChanged() }

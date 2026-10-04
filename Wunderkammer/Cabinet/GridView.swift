@@ -226,7 +226,7 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
         headers = result.headers.map { var h = $0; h.frame = h.frame.offsetBy(dx: 0, dy: top); return h }
         spatial = SpatialIndex(frames)
         // Room at the foot so the last row clears the view bar.
-        setFrameSize(NSSize(width: layoutWidth, height: max(result.height + top + 64, clip.bounds.height - clip.contentInsets.top)))
+        setFrameSize(NSSize(width: layoutWidth, height: max(result.height + top + 84, clip.bounds.height - clip.contentInsets.top)))
         renderHeading()
 
         if let i = anchorIndex, frames.indices.contains(i) {

@@ -759,7 +759,17 @@ final class SelfTest {
         await spacePanCheck()
         ui.setMode(.graph)
         await wait(0.8)
+        check(ui.hoverViewBarForTest() == "畫布", "pointing at a bar button names it (\(ui.hoverViewBarForTest() ?? "nothing"))")
+        await wait(0.3)
         shot("space-map-graph")
+        // Closer in: the map spreads out and more names show.
+        let graph = ui.graphView!
+        let namesFar = graph.shownNames
+        for _ in 0..<6 { graph.zoom(by: 1.4) }
+        await wait(0.3)
+        check(graph.shownNames > namesFar, "zooming in shows more names (\(namesFar) → \(graph.shownNames))")
+        shot("space-map-graph-near")
+        graph.showAll()
         ui.setSpace(.cabinet)
         await wait(0.4)
         check(ui.mode == .masonry, "收藏 remembers its layout (\(ui.mode))")
@@ -1393,6 +1403,8 @@ protocol SelfTestUI: AnyObject {
     func unwatchFolderForTest(_ folder: URL)
     var watchedFoldersForTest: [URL] { get }
     var viewBarTipsForTest: [String] { get }
+    func hoverViewBarForTest() -> String?
+    var graphView: GraphView! { get }
     func canDeleteCabinet(_ id: UUID) -> Bool
     func deleteCabinetForTest(_ id: UUID)
     var currentCabinet: UUID { get }

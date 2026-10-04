@@ -98,15 +98,30 @@ final class GraphView: NSView {
         24 + CGFloat(node.items.count).squareRoot() * 12
     }
 
+    // Zoom as in Obsidian: closer in, the map spreads out far more than its
+    // nodes grow, so there's room for every name; lines stay fine, words stay
+    // a readable size, and the smaller nodes' names fade in as you come near.
+
+    /// A node's radius on screen: it grows with the square root of the zoom.
+    private func screenRadius(_ node: CultureGraph.Node) -> CGFloat {
+        radius(node) * 0.6 * zoom.squareRoot()
+    }
+
+    /// How visible the names of the smaller nodes are at this zoom: none far
+    /// out, all from 1×, fading in between.
+    private var smallNamesOpacity: Float {
+        Float(min(max((zoom - 0.5) / 0.5, 0), 1))
+    }
+
     func showAll() { fit() }
 
     private func fit() {
         guard !graph.nodes.isEmpty, bounds.width > 0 else { return render() }
         let xs = graph.nodes.map(\.position.x), ys = graph.nodes.map(\.position.y)
         let content = CGRect(x: xs.min()! - 120, y: ys.min()! - 120, width: xs.max()! - xs.min()! + 240, height: ys.max()! - ys.min()! + 240)
-        let top = window.map { $0.frame.height - $0.contentLayoutRect.height } ?? 0
-        // Room at the foot for the legend.
-        let legendRoom: CGFloat = 104
+        // Room at the top for the legend, at the foot for the view bar.
+        let top = (window.map { $0.frame.height - $0.contentLayoutRect.height } ?? 0) + 36
+        let legendRoom: CGFloat = 90
         zoom = min(1.2, max(0.2, min(bounds.width / content.width, (bounds.height - top - legendRoom) / content.height)))
         offset = CGPoint(x: content.midX - bounds.width / zoom / 2, y: content.midY - (bounds.height + top - legendRoom) / zoom / 2)
         render()
@@ -141,8 +156,8 @@ final class GraphView: NSView {
             addSubview(legend)
             NSLayoutConstraint.activate([
                 legend.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
-                // Above the view bar.
-                legend.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -76),
+                // At the top, clear of the view bar and its names.
+                legend.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 14),
             ])
         }
         let text = NSMutableAttributedString()
@@ -177,21 +192,25 @@ final class GraphView: NSView {
             // More shared, thicker and brighter: the legend's promise, visible.
             let strength = min(1, 0.25 + CGFloat(weight - 1) * 0.15)
             line.strokeColor = resolved(NSColor.labelColor).copy(alpha: strength)
-            line.lineWidth = max(1, (1 + CGFloat(weight - 1) * 1.6) * zoom)
+            line.lineWidth = min(max(0.8, (1 + CGFloat(weight - 1) * 1.1) * pow(zoom, 0.3) * 0.9), 6)
             edgesLayer.addSublayer(line)
         }
 
         // Labels go biggest node first; one that would land on another label or
         // circle stays hidden rather than overprint.
         let circles = graph.nodes.map { n -> (String, CGRect) in
-            let r = radius(n) * zoom, c = toScreen(n.position)
+            let r = screenRadius(n), c = toScreen(n.position)
             return (n.id, CGRect(x: c.x - r, y: c.y - r, width: r * 2, height: r * 2))
         }
         var placed: [CGRect] = []
         var clear: Set<String> = []
-        let labelSize = min(max(13 * zoom, 10), 18)
+        let labelSize = Self.labelSize(zoom)
+        let far = labelledWhenFar
+        let smallOpacity = smallNamesOpacity
         for node in graph.nodes.sorted(by: { $0.items.count > $1.items.count }) {
-            let r = radius(node) * zoom, c = toScreen(node.position)
+            // Names not yet showing don't keep others from being placed.
+            guard far.contains(node.id) || smallOpacity > 0 else { continue }
+            let r = screenRadius(node), c = toScreen(node.position)
             let text = "\(node.title)  \(node.items.count)" as NSString
             let serif = Typography.display(labelSize) ?? .systemFont(ofSize: labelSize)
             let width = text.size(withAttributes: [.font: serif]).width + 12
@@ -203,7 +222,7 @@ final class GraphView: NSView {
         }
 
         for node in graph.nodes {
-            let r = radius(node) * zoom
+            let r = screenRadius(node)
             let c = toScreen(node.position)
             let layers = nodeLayers[node.id] ?? makeNode(node, in: root)
             layers.circle.frame = CGRect(x: c.x - r, y: c.y - r, width: r * 2, height: r * 2)
@@ -213,8 +232,8 @@ final class GraphView: NSView {
             layers.ring.frame = layers.circle.frame
             layers.ring.path = CGPath(roundedRect: CGRect(x: 0, y: 0, width: r * 2, height: r * 2),
                                       cornerWidth: corner, cornerHeight: corner, transform: nil)
-            layers.ring.lineWidth = max(2, 3 * zoom)
-            let size = min(max(13 * zoom, 10), 18)
+            layers.ring.lineWidth = max(1.5, 2.6 * zoom.squareRoot() * 0.6)
+            let size = labelSize
             let serif = Typography.display(size)
             let text = NSAttributedString(string: "\(node.title)  \(node.items.count)", attributes: [
                 .font: serif ?? NSFont.systemFont(ofSize: size),
@@ -226,10 +245,16 @@ final class GraphView: NSView {
             layers.label.frame = CGRect(x: c.x - w / 2, y: c.y + r + 4, width: w, height: size * 1.5)
             layers.label.backgroundColor = resolved(.windowBackgroundColor).copy(alpha: 0.78)
             layers.label.cornerRadius = 4
-            // Zoomed out, only the biggest are named; closer in, all of them.
-            layers.label.isHidden = zoom < 0.15 || (zoom < 0.6 && !labelledWhenFar.contains(node.id)) || !clear.contains(node.id)
+            // Far out, only the biggest are named; the rest fade in coming closer.
+            layers.label.isHidden = zoom < 0.15 || !clear.contains(node.id)
+            layers.label.opacity = far.contains(node.id) ? 1 : smallOpacity
         }
         CATransaction.commit()
+    }
+
+    /// Words keep about the same size on screen whatever the zoom.
+    private static func labelSize(_ zoom: CGFloat) -> CGFloat {
+        min(max(11 + 2 * zoom.squareRoot(), 11.5), 15)
     }
 
     private func makeNode(_ node: CultureGraph.Node, in root: CALayer) -> (circle: CALayer, ring: CAShapeLayer, label: CATextLayer) {
@@ -259,6 +284,10 @@ final class GraphView: NSView {
         return layers
     }
 
+    /// Names showing right now, and the zoom (tests).
+    var shownNames: Int { nodeLayers.values.filter { !$0.label.isHidden && $0.label.opacity > 0.5 }.count }
+    var debugZoom: CGFloat { zoom }
+
     /// Where a node is on screen (tests).
     func screenPoint(of id: String) -> NSPoint? {
         graph.nodes.first { $0.id == id }.map { toScreen($0.position) }
@@ -267,7 +296,7 @@ final class GraphView: NSView {
     // MARK: Input
 
     private func node(at p: NSPoint) -> CultureGraph.Node? {
-        graph.nodes.first { hypot(toScreen($0.position).x - p.x, toScreen($0.position).y - p.y) <= radius($0) * zoom }
+        graph.nodes.first { hypot(toScreen($0.position).x - p.x, toScreen($0.position).y - p.y) <= screenRadius($0) }
     }
 
     override func mouseDown(with event: NSEvent) {
@@ -325,7 +354,8 @@ final class GraphView: NSView {
     func zoom(by factor: CGFloat, around p: NSPoint? = nil) {
         let p = p ?? NSPoint(x: bounds.midX, y: bounds.midY)
         let world = CGPoint(x: p.x / zoom + offset.x, y: p.y / zoom + offset.y)
-        zoom = min(max(zoom * factor, 0.15), 3)
+        // Nodes grow slowly, so the map can come much closer.
+        zoom = min(max(zoom * factor, 0.15), 8)
         offset = CGPoint(x: world.x - p.x / zoom, y: world.y - p.y / zoom)
         render()
     }
