@@ -32,7 +32,7 @@ struct Relation: Hashable, Sendable {
     var label: String {
         switch kind {
         case .samePerson(let name, _): name
-        case .mentions, .mentionedBy: "提到"
+        case .mentions(let what), .mentionedBy(let what): "提到 \(what)"
         case .samePlace(let city): city
         }
     }

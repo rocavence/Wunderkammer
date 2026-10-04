@@ -545,6 +545,23 @@ final class SelfTest {
             await wait(0.8)
             shot("relations-cabinet")
         }
+        ui.toggleInspectorForTest()
+        // On the canvas: the relations as lines, then piles by relation.
+        ui.sidebar.select(.all)
+        ui.setMode(.canvas)
+        let canvas: CanvasView = ui.canvas
+        for _ in 0..<40 where canvas.debugRelationCount == 0 { await wait(0.25) }
+        check(canvas.debugRelationCount >= 10, "the canvas finds the relations (\(canvas.debugRelationCount))")
+        shot("relations-canvas-lines")
+        canvas.clusterByRelation(nil)
+        await wait(1)
+        let titles = canvas.debugPileTitles
+        log("piles: \(titles.joined(separator: "、"))")
+        check(["Wong Kar-Wai", "New York", "Khruangbin"].allSatisfy(titles.contains), "piles by relation are named by what connects them")
+        canvas.fit()
+        await wait(0.6)
+        shot("relations-canvas-piles")
+        log("titles: " + canvas.debugTitleFrames.joined(separator: " | "))
     }
 
     /// What's kept when the source is only a link or a path: pages are saved

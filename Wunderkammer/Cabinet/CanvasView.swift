@@ -23,6 +23,11 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
     private var groups: [CanvasGroup] = []
     private var links: [CanvasLink] = []
     private let linesLayer = CAShapeLayer()
+    /// Relations the system found (CrossMedia), dashed under the user's own lines.
+    private let relationsLayer = CAShapeLayer()
+    private var relationLinks: [(a: UUID, b: UUID, label: String)] = []
+    private var relationLabels: [CATextLayer] = []
+    private var relationsTask: Task<Void, Never>?
     private var itemFrames: [UUID: CGRect] = [:]
     private var groupFrames: [UUID: CGRect] = [:]
     private var selection = Selection()
@@ -74,6 +79,11 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         linesLayer.shadowRadius = 2
         linesLayer.shadowOffset = .zero
         layer?.addSublayer(linesLayer)
+        relationsLayer.fillColor = nil
+        relationsLayer.lineWidth = 1.2
+        relationsLayer.lineDashPattern = [4, 4]
+        relationsLayer.zPosition = 5.5
+        layer?.addSublayer(relationsLayer)
         registerForDraggedTypes([.fileURL, .URL, .string, .png, .tiff, .wunderkammerItem])
         NotificationCenter.default.addObserver(forName: Library.didChange, object: library, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.reload() }
@@ -130,6 +140,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         pool.removeAll()
         groups = currentGroups()
         links = library.links(key: scope.canvasKey)
+        findRelations()
         layoutGroups()
         needsFit = true
         fit()
@@ -153,6 +164,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         }
         groups = currentGroups()
         links = library.links(key: scope.canvasKey)
+        findRelations()
         layoutGroups()
         resolveOverlaps(pinned: [])
         selection.restrict(to: Set(order))
@@ -206,6 +218,34 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
     }
 
     /// The system sorts the canvas into piles by theme, each with its name.
+    /// What the system sees connecting the things on this canvas; worked out
+    /// off the main thread (every item's words against every other's names).
+    private func findRelations() {
+        relationsTask?.cancel()
+        let items = order.compactMap(library.item)
+        guard items.count <= 1500 else { relationLinks = []; return }
+        relationsTask = Task { [weak self] in
+            let found = await Task.detached(priority: .utility) { CrossMedia.links(among: items) }.value
+            guard let self, !Task.isCancelled else { return }
+            self.relationLinks = found
+            self.renderLines()
+        }
+    }
+
+    var debugPileTitles: [String] { groups.compactMap(\.title) }
+    var debugRelationCount: Int { relationLinks.count }
+    var debugTitleFrames: [String] {
+        groups.compactMap { g in titleLayers[g.id].map { "\(g.title ?? "") \($0.frame.integral) hidden \($0.isHidden)" } }
+    }
+
+    @objc func clusterByRelation(_ sender: Any?) {
+        let items = order.compactMap(library.item)
+        let clusters = CanvasLayout.relationClusters(items, links: relationLinks)
+        groups = clusters.map { CanvasGroup(id: UUID(), x: 0, y: 0, itemIDs: $0.ids, title: $0.title) }
+        layoutGroups()
+        arrange(nil)
+    }
+
     @objc func clusterByTheme(_ sender: Any?) {
         let items = order.compactMap(library.item)
         let clusters = CanvasLayout.clusters(items, subjects: Subjects.discover(in: library.items, limit: 12))
@@ -344,7 +384,48 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         linesLayer.fillColor = resolved(.controlAccentColor)
         linesLayer.frame = bounds
         linesLayer.path = path
+        renderRelations()
         CATransaction.commit()
+    }
+
+    /// The system's relations: dashed, with what connects them written along
+    /// the way when there's room (zoomed in, not too many).
+    private func renderRelations() {
+        let mine = Set(links.map { Set([$0.a, $0.b]) })
+        let shown = relationLinks.filter { !mine.contains(Set([$0.a, $0.b])) }
+            .compactMap { l -> (CGPoint, CGPoint, String)? in
+                guard let a = screenCenter(l.a), let b = screenCenter(l.b) else { return nil }
+                return (a, b, l.label)
+            }
+        let path = CGMutablePath()
+        for (a, b, _) in shown {
+            path.move(to: a)
+            path.addLine(to: b)
+        }
+        relationsLayer.frame = bounds
+        relationsLayer.strokeColor = resolved(.secondaryLabelColor)
+        relationsLayer.path = path
+        let labelled = zoom >= 0.45 && shown.count <= 60 ? shown : []
+        while relationLabels.count < labelled.count {
+            let t = CATextLayer()
+            t.fontSize = 11
+            t.alignmentMode = .center
+            t.cornerRadius = 4
+            t.zPosition = 5.6
+            t.contentsScale = window?.backingScaleFactor ?? 2
+            layer?.addSublayer(t)
+            relationLabels.append(t)
+        }
+        for (i, t) in relationLabels.enumerated() {
+            guard i < labelled.count else { t.isHidden = true; continue }
+            let (a, b, text) = labelled[i]
+            t.isHidden = false
+            t.string = text
+            t.foregroundColor = resolved(.secondaryLabelColor)
+            t.backgroundColor = resolved(.windowBackgroundColor)
+            let width = min(CGFloat(text.count) * 7 + 12, 180)
+            t.frame = CGRect(x: (a.x + b.x) / 2 - width / 2, y: (a.y + b.y) / 2 - 8, width: width, height: 16)
+        }
     }
 
     /// A connection under the point (within a few points of the line).
@@ -380,12 +461,19 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
             }()
             let size = min(max(18 * zoom, 11), 28)
             let serif = NSFont.systemFont(ofSize: size).fontDescriptor.withDesign(.serif).flatMap { NSFont(descriptor: $0, size: size) }
-            t.string = NSAttributedString(string: "\(title)  \(g.itemIDs.count)", attributes: [
+            let attributes: [NSAttributedString.Key: Any] = [
                 .font: serif ?? NSFont.systemFont(ofSize: size),
                 .foregroundColor: NSColor(cgColor: resolved(.secondaryLabelColor)) ?? NSColor.secondaryLabelColor,
-            ])
+            ]
             let screen = toScreen(frame)
-            t.frame = CGRect(x: screen.minX, y: screen.minY - size * 1.9, width: max(screen.width, 200), height: size * 1.5)
+            // As wide as it likes up to the next pile on its right, then "…".
+            let titleBand = CGRect(x: frame.maxX, y: frame.minY - 60, width: .greatestFiniteMagnitude, height: 60)
+            let nextPile = groupFrames.values.filter { $0.minX >= frame.maxX - 1 && $0.insetBy(dx: 0, dy: -60).intersects(titleBand) }
+                .map(\.minX).min().map { toScreen(CGRect(x: $0, y: 0, width: 0, height: 0)).minX }
+            let width = max(screen.width, min(300, (nextPile ?? .greatestFiniteMagnitude) - screen.minX - 10))
+            t.frame = CGRect(x: screen.minX, y: screen.minY - size * 1.9, width: width, height: size * 1.5)
+            // Shortened here: a CATextLayer that has to truncate a styled string draws nothing.
+            t.string = Self.fitting("\(g.itemIDs.count)", after: title, width: width, attributes: attributes)
             t.zPosition = 5
         }
         for (id, t) in titleLayers where !keep.contains(id) {
@@ -393,6 +481,16 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
             titleLayers[id] = nil
         }
         CATransaction.commit()
+    }
+
+    /// "Ursula K. Le Guin  4" or, when it doesn't fit, "Ursula K…  4": the count always shows.
+    static func fitting(_ count: String, after title: String, width: CGFloat, attributes: [NSAttributedString.Key: Any]) -> NSAttributedString {
+        var name = title
+        func text(_ n: String) -> NSAttributedString { NSAttributedString(string: "\(n)  \(count)", attributes: attributes) }
+        while text(name).size().width > width, name.count > 1 {
+            name = String(name.dropLast(name.hasSuffix("…") ? 2 : 1)).trimmingCharacters(in: .whitespaces) + "…"
+        }
+        return text(name)
     }
 
     private func showSelection() {
@@ -623,6 +721,9 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         guard let id = hit(p) else {
             let menu = NSMenu()
             menu.addItem(ClosureMenuItem("依主題分堆") { [weak self] in self?.clusterByTheme(nil) })
+            if !relationLinks.isEmpty {
+                menu.addItem(ClosureMenuItem("依關聯分堆") { [weak self] in self?.clusterByRelation(nil) })
+            }
             menu.addItem(ClosureMenuItem("整理成整齊的排列") { [weak self] in self?.arrange(nil) })
             menu.addItem(ClosureMenuItem("顯示全部") { [weak self] in self?.fit(animated: true) })
             menu.addItem(.separator())
