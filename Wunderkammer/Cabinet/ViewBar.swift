@@ -131,7 +131,8 @@ private final class BarButton: NSButton {
         self.tool = tool
         self.bar = bar
         super.init(frame: .zero)
-        image = Icon.image(tool.icon, size: 20)
+        // Optically matched: each icon's drawing comes out the same size.
+        image = Icon.optical(tool.icon, size: 20)
         isBordered = false
         setAccessibilityLabel(tool.tip)
         isEnabled = tool.enabled
