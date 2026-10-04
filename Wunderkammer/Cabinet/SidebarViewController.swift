@@ -11,9 +11,14 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     var onSelect: ((Scope.Base) -> Void)?
     var onRandom: (() -> Void)?
 
+    /// The sidebar follows the space: filters for 收藏 and 地圖, ways in for 漫遊.
+    var space: Space = .cabinet {
+        didSet { if space != oldValue { reload() } }
+    }
+
     private enum Row {
         case header(String)
-        case view(Scope.Base, title: String, icon: Reicon, count: Int?)
+        case view(Scope.Base, title: String, icon: Reicon, count: Int?, indent: Bool = false)
         case random
         case board(Board)
     }
@@ -85,32 +90,51 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         .books: .book, .films: .film, .music: .vinyl, .products: .shoppingBag, .places: .mapPoint,
     ]
 
+    /// Kinds of file first; what a page is about (書, 電影…) sits under 網頁.
+    private static let fileKinds: [Scope.KindView] = [.images, .web, .text, .media, .documents]
+    private static let pageKinds: [Scope.KindView] = [.books, .films, .music, .products, .places]
+
     private func reload() {
-        var r: [Row] = [.view(.all, title: "珍奇室", icon: .cabinet, count: library.items.count)]
-        let kinds = Scope.KindView.allCases.compactMap { k -> Row? in
-            let n = library.items.reduce(0) { $0 + (k.contains($1) ? 1 : 0) }
-            return n > 0 ? .view(.kind(k), title: k.title, icon: Self.kindIcons[k]!, count: n) : nil
-        }
-        // Only worth a section when the cabinet holds more than one kind of thing.
-        if kinds.count > 1 { r += [.header("系統整理")] + kinds }
-        // Themes the system noticed; they come and go on their own.
+        var r: [Row] = []
         let subjects = Subjects.discover(in: library.items, limit: 6)
-        if !subjects.isEmpty {
-            r += [.header("主題")] + subjects.map { .view(.subject($0.label), title: $0.title, icon: .sparkles, count: $0.count) }
+        let themeRows: [Row] = subjects.isEmpty ? [] : [.header("主題")] + subjects.map {
+            .view(.subject($0.label), title: $0.title, icon: .sparkles, count: $0.count)
         }
-        r += [.header("重新發現"),
-              .view(.onThisDay, title: "過去的今天", icon: .calendarDay, count: nil),
-              .view(.forgotten, title: "被遺忘的", icon: .history, count: nil),
-              .view(.trail, title: "足跡", icon: .eye, count: nil),
-              .random]
-        if !library.collections.isEmpty {
-            r += [.header("Boards")] + library.collections.map { .board($0) }
+        func count(_ k: Scope.KindView) -> Int { library.items.reduce(0) { $0 + (k.contains($1) ? 1 : 0) } }
+        switch space {
+        case .wander:
+            // Ways into the wall: everything, what time brings back, where you've been.
+            r = [.view(.all, title: "整個珍奇室", icon: .infinite, count: library.items.count),
+                 .view(.onThisDay, title: "過去的今天", icon: .calendarDay, count: nil),
+                 .view(.forgotten, title: "被遺忘的", icon: .history, count: nil),
+                 .view(.trail, title: "足跡", icon: .eye, count: nil),
+                 .random] + themeRows
+        case .cabinet, .map:
+            r = [.view(.all, title: "珍奇室", icon: .cabinet, count: library.items.count)]
+            var kinds: [Row] = []
+            for k in Self.fileKinds {
+                let n = count(k)
+                guard n > 0 else { continue }
+                kinds.append(.view(.kind(k), title: k.title, icon: Self.kindIcons[k]!, count: n))
+                if k == .web {
+                    for sub in Self.pageKinds where count(sub) > 0 {
+                        kinds.append(.view(.kind(sub), title: sub.title, icon: Self.kindIcons[sub]!, count: count(sub), indent: true))
+                    }
+                }
+            }
+            // Only worth a section when the cabinet holds more than one kind of thing.
+            if kinds.count > 1 { r += [.header("類型")] + kinds }
+            r += themeRows
+            if !library.collections.isEmpty {
+                r += [.header("Boards")] + library.collections.map { .board($0) }
+            }
         }
         rows = r
         table.reloadData()
         if case .board(let id) = selected, library.collection(id) == nil {
             select(.all)
-        } else if case .kind(let k) = selected, !rows.contains(where: { if case .view(.kind(k), _, _, _) = $0 { return true }; return false }) {
+        } else if case .kind(let k) = selected, space != .wander,
+                  !rows.contains(where: { if case .view(.kind(k), _, _, _, _) = $0 { return true }; return false }) {
             select(.all)
         } else {
             selectRow(for: selected)
@@ -130,7 +154,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     private func base(at row: Int) -> Scope.Base? {
         guard rows.indices.contains(row) else { return nil }
         switch rows[row] {
-        case .view(let base, _, _, _): return base
+        case .view(let base, _, _, _, _): return base
         case .board(let b): return .board(b.id)
         default: return nil
         }
@@ -176,8 +200,8 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             label.font = .systemFont(ofSize: 11, weight: .semibold)
             label.textColor = .tertiaryLabelColor
             return label
-        case .view(_, let title, let icon, let count):
-            return cell(title: title, icon: icon, count: count)
+        case .view(_, let title, let icon, let count, let indent):
+            return cell(title: title, icon: icon, count: count, indent: indent)
         case .random:
             return cell(title: "隨機一件", icon: .shuffle, count: nil, hint: "R")
         case .board(let b):
@@ -188,7 +212,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         }
     }
 
-    private func cell(title: String, icon: Reicon, count: Int?, hint: String? = nil) -> NSTableCellView {
+    private func cell(title: String, icon: Reicon, count: Int?, hint: String? = nil, indent: Bool = false) -> NSTableCellView {
         let cell = NSTableCellView()
         let image = NSImageView(image: Icon.image(icon))
         image.contentTintColor = .secondaryLabelColor
@@ -204,7 +228,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         }
         text.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         NSLayoutConstraint.activate([
-            image.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 2),
+            image.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: indent ? 20 : 2),
             image.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
             image.widthAnchor.constraint(equalToConstant: 16),
             image.heightAnchor.constraint(equalToConstant: 16),
@@ -270,7 +294,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         switch rows[row] {
         case .board: return .copy
         // Our own items are already in the cabinet; anything else gets collected.
-        case .view(.all, _, _, _): return ItemActions.ids(from: info.draggingPasteboard).isEmpty ? .copy : []
+        case .view(.all, _, _, _, _): return ItemActions.ids(from: info.draggingPasteboard).isEmpty ? .copy : []
         default: return []
         }
     }

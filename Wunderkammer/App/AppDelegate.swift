@@ -2,11 +2,33 @@ import AppKit
 import CoreSpotlight
 import Quartz
 
+/// What you came to do: look through the cabinet, wander it, or map it.
+/// Each space has one or more layouts (ViewMode) and remembers the last one.
+enum Space: Int, CaseIterable {
+    case cabinet, wander, map
+
+    var title: String { ["收藏", "漫遊", "地圖"][rawValue] }
+    var layouts: [ViewMode] {
+        switch self {
+        case .cabinet: [.grid, .masonry, .timeline]
+        case .wander: [.infinity]
+        case .map: [.canvas, .graph]
+        }
+    }
+}
+
 enum ViewMode: Int, CaseIterable {
     case grid, masonry, timeline, canvas, infinity, graph
 
-    var title: String { ["Grid", "Masonry", "Timeline", "Canvas", "Infinity", "Graph"][rawValue] }
+    var title: String { ["格狀", "瀑布", "時間軸", "畫布", "無限牆", "圖譜"][rawValue] }
     var icon: Reicon { [.grid, .layout, .calendar, .layers, .infinite, .nodes][rawValue] }
+    var space: Space {
+        switch self {
+        case .grid, .masonry, .timeline: .cabinet
+        case .infinity: .wander
+        case .canvas, .graph: .map
+        }
+    }
 
     /// The three scrolling views share one cabinet view in different styles.
     var cabinetStyle: CabinetStyle? {
@@ -35,7 +57,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private(set) var graphView: GraphView!
     private var emptyCabinet: EmptyCabinetView!
     private(set) var preview: PreviewView!
-    private var modeControl: NSSegmentedControl!
+    private var spaceControl: NSSegmentedControl?
+    /// The layouts of the current space (格狀/瀑布/時間軸, 畫布/圖譜); hidden when there's one.
+    private var layoutControl: NSSegmentedControl?
     private var searchItem: NSSearchToolbarItem?
     private(set) var mode = ViewMode.grid
     private(set) var scope = Scope()
@@ -432,7 +456,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         if new != mode, preview.isOpen { preview.dismissImmediately() }
         mode = new
         if !SelfTest.isEnabled { UserDefaults.standard.set(new.rawValue, forKey: Self.modeKey) }
-        modeControl?.selectedSegment = new.rawValue
+        lastLayout[new.space] = new
+        if !SelfTest.isEnabled { UserDefaults.standard.set(new.rawValue, forKey: "mode.\(new.space.rawValue)") }
+        updateSpaceControls()
+        sidebar.space = new.space
         scroll.isHidden = new.cabinetStyle == nil
         if let style = new.cabinetStyle {
             if grid.style == style { grid.reload(animated: false) } else { grid.style = style }
@@ -446,10 +473,44 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
 
     /// 足跡 in the scrolling views is the path itself, not a grid of what was seen.
     private func updateTrailView() {
-        let showing = scope.base == .trail && mode.cabinetStyle != nil && !scope.isSearching
+        let showing = scope.base == .trail && (mode.cabinetStyle != nil || mode == .infinity) && !scope.isSearching
         trailView.isHidden = !showing
         if mode.cabinetStyle != nil { scroll.isHidden = showing }
+        if mode == .infinity { infinity.isHidden = showing }
         if showing { trailView.show(trail.visits(existing: Set(library.items.map(\.id)))) }
+    }
+
+    /// The layout each space was last in (this session, else the saved one).
+    private var lastLayout: [Space: ViewMode] = [:]
+
+    func setSpace(_ space: Space) {
+        guard space != mode.space else { return }
+        let saved = SelfTest.isEnabled ? nil
+            : (UserDefaults.standard.object(forKey: "mode.\(space.rawValue)") as? Int).flatMap(ViewMode.init(rawValue:))
+        let remembered = lastLayout[space] ?? saved
+        setMode(remembered.flatMap { space.layouts.contains($0) ? $0 : nil } ?? space.layouts[0])
+    }
+
+    private func updateSpaceControls() {
+        spaceControl?.selectedSegment = mode.space.rawValue
+        guard let layout = layoutControl else { return }
+        let layouts = mode.space.layouts
+        layout.segmentCount = layouts.count
+        for (i, m) in layouts.enumerated() {
+            layout.setImage(Icon.image(m.icon, size: 15), forSegment: i)
+            layout.setToolTip(m.title, forSegment: i)
+            layout.setTag(m.rawValue, forSegment: i)
+            layout.setWidth(32, forSegment: i)
+        }
+        layout.selectedSegment = layouts.firstIndex(of: mode) ?? 0
+        // One layout, no switch: the item leaves the toolbar (a hidden view would leave its capsule behind).
+        guard let toolbar = window?.toolbar else { return }
+        let index = toolbar.items.firstIndex { $0.itemIdentifier == Self.layoutID }
+        if layouts.count < 2, let index {
+            toolbar.removeItem(at: index)
+        } else if layouts.count >= 2, index == nil, let search = toolbar.items.firstIndex(where: { $0.itemIdentifier == Self.searchID }) {
+            toolbar.insertItem(withItemIdentifier: Self.layoutID, at: search)
+        }
     }
 
     private var currentView: NSView {
@@ -540,7 +601,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         else { NSSound.beep(); return nil }
         recentRandom = Array(([pick.id] + recentRandom).prefix(20))
         if !pool.contains(where: { $0.id == pick.id }) { sidebar.select(.all) }
-        if mode == .infinity || mode == .graph { setMode(.grid) }
+        // The wall can show it; the graph can't.
+        if mode == .graph { setMode(.grid) }
         if scope.isSearching { clearSearch() }
         currentSurface.reveal(pick.id)
         let caption = Rediscovery.ageLine(pick)
@@ -799,12 +861,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
 
     // MARK: Toolbar
 
-    private static let modeItem = NSToolbarItem.Identifier("mode")
+    private static let spaceID = NSToolbarItem.Identifier("space")
+    private static let layoutID = NSToolbarItem.Identifier("layout")
     private static let searchID = NSToolbarItem.Identifier("search")
     private static let inspectorID = NSToolbarItem.Identifier("inspector")
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        [.toggleSidebar, .sidebarTrackingSeparator, .flexibleSpace, Self.modeItem, Self.searchID, .inspectorTrackingSeparator, Self.inspectorID]
+        [.toggleSidebar, .sidebarTrackingSeparator, .flexibleSpace, Self.spaceID, .flexibleSpace, Self.layoutID, Self.searchID,
+         .inspectorTrackingSeparator, Self.inspectorID]
     }
 
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
@@ -814,19 +878,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     func toolbar(_ toolbar: NSToolbar, itemForItemIdentifier id: NSToolbarItem.Identifier,
                  willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
         switch id {
-        case Self.modeItem:
-            let images = ViewMode.allCases.map { Icon.image($0.icon, size: 17) }
-            let control = NSSegmentedControl(images: images, trackingMode: .selectOne, target: self, action: #selector(modeChanged(_:)))
-            for m in ViewMode.allCases { control.setToolTip("\(m.title)（⌘\(m.rawValue + 1)）", forSegment: m.rawValue) }
-            control.selectedSegment = mode.rawValue
-            modeControl = control
+        case Self.spaceID:
+            let control = NSSegmentedControl(labels: Space.allCases.map(\.title), trackingMode: .selectOne,
+                                             target: self, action: #selector(spaceChanged(_:)))
+            for s in Space.allCases {
+                control.setToolTip("\(s.title)（⌘\(s.rawValue + 1)）", forSegment: s.rawValue)
+                control.setWidth(64, forSegment: s.rawValue)
+            }
+            control.segmentStyle = .automatic
+            spaceControl = control
             let item = NSToolbarItem(itemIdentifier: id)
             item.view = control
-            item.label = "顯示方式"
+            item.label = "空間"
+            DispatchQueue.main.async { [weak self] in MainActor.assumeIsolated { self?.updateSpaceControls() } }
+            return item
+        case Self.layoutID:
+            let control = layoutControl ?? NSSegmentedControl(images: [], trackingMode: .selectOne, target: self, action: #selector(layoutChanged(_:)))
+            layoutControl = control
+            let item = NSToolbarItem(itemIdentifier: id)
+            item.view = control
+            item.label = "排法"
+            // Filled in after insertion (updating now would re-enter the toolbar).
+            DispatchQueue.main.async { [weak self] in MainActor.assumeIsolated { self?.updateSpaceControls() } }
             return item
         case Self.searchID:
             let item = NSSearchToolbarItem(itemIdentifier: id)
-            item.searchField.placeholderString = "搜尋，或問一個問題：我收過哪些書？"
+            item.searchField.placeholderString = "搜尋或提問"
             item.searchField.delegate = self
             item.preferredWidthForSearchField = 260
             item.toolTip = "搜尋（⌘K）"
@@ -845,8 +922,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         }
     }
 
-    @objc private func modeChanged(_ sender: NSSegmentedControl) {
-        setMode(ViewMode(rawValue: sender.selectedSegment) ?? .grid)
+    @objc private func spaceChanged(_ sender: NSSegmentedControl) {
+        if preview.isOpen { preview.dismissImmediately() }
+        setSpace(Space(rawValue: sender.selectedSegment) ?? .cabinet)
+    }
+
+    @objc private func layoutChanged(_ sender: NSSegmentedControl) {
+        setMode(ViewMode(rawValue: sender.tag(forSegment: sender.selectedSegment)) ?? .grid)
     }
 
     // MARK: Menu
@@ -911,8 +993,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
 
         let viewItem = NSMenuItem()
         let viewMenu = NSMenu(title: "顯示方式")
-        for m in ViewMode.allCases {
-            let item = viewMenu.addItem(withTitle: m.title, action: #selector(modeFromMenu(_:)), keyEquivalent: "\(m.rawValue + 1)")
+        // ⌘1–3 the spaces; ⌥⌘ and a number the layouts within them.
+        for s in Space.allCases {
+            let item = viewMenu.addItem(withTitle: s.title, action: #selector(spaceFromMenu(_:)), keyEquivalent: "\(s.rawValue + 1)")
+            item.tag = s.rawValue
+            item.target = self
+        }
+        viewMenu.addItem(.separator())
+        for (i, m) in [ViewMode.grid, .masonry, .timeline, .canvas, .graph].enumerated() {
+            let item = viewMenu.addItem(withTitle: "\(m.space.title)：\(m.title)", action: #selector(modeFromMenu(_:)), keyEquivalent: "\(i + 1)")
+            item.keyEquivalentModifierMask = [.command, .option]
             item.tag = m.rawValue
             item.target = self
         }
@@ -941,6 +1031,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         main.addItem(windowItem)
 
         NSApp.mainMenu = main
+    }
+
+    @objc private func spaceFromMenu(_ sender: NSMenuItem) {
+        if preview.isOpen { return }
+        setSpace(Space(rawValue: sender.tag) ?? .cabinet)
     }
 
     @objc private func modeFromMenu(_ sender: NSMenuItem) {

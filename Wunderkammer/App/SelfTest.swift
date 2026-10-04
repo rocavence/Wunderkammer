@@ -232,6 +232,9 @@ final class SelfTest {
         case "relations":
             await relationsCheck()
             return finish()
+        case "spaces":
+            await spacesCheck()
+            return finish()
         case "intents":
             await intentsCheck()
             return finish()
@@ -522,6 +525,34 @@ final class SelfTest {
         check(settled < 0.5 && allVisible && !ui.preview.isOpen,
               "after closing every tile is home and visible (\(String(format: "%.1f", settled))pt)")
         shot("02f-ripple-closed")
+    }
+
+    /// Three spaces, each remembering its layout; the sidebar follows.
+    private func spacesCheck() async {
+        ui.setSpace(.cabinet)
+        ui.setMode(.masonry)
+        await wait(0.5)
+        shot("space-cabinet")
+        ui.setSpace(.wander)
+        await wait(0.8)
+        check(ui.mode == .infinity, "漫遊 is the wall")
+        shot("space-wander")
+        ui.sidebar.select(.trail)
+        await wait(0.6)
+        shot("space-wander-trail")
+        ui.sidebar.select(.all)
+        ui.setSpace(.map)
+        await wait(0.8)
+        check(ui.mode == .canvas, "地圖 starts on the canvas")
+        ui.setMode(.graph)
+        await wait(0.8)
+        shot("space-map-graph")
+        ui.setSpace(.cabinet)
+        await wait(0.4)
+        check(ui.mode == .masonry, "收藏 remembers its layout (\(ui.mode))")
+        ui.setSpace(.map)
+        await wait(0.4)
+        check(ui.mode == .graph, "地圖 remembers its layout (\(ui.mode))")
     }
 
     /// Siri and Shortcuts: what each command does, run in the app. (Collect is
@@ -1127,6 +1158,8 @@ protocol SelfTestUI: AnyObject {
     var preview: PreviewView! { get }
     var sidebar: SidebarViewController! { get }
     func setMode(_ mode: ViewMode)
+    func setSpace(_ space: Space)
+    var mode: ViewMode { get }
     func search(_ text: String)
     @discardableResult func showRandom() -> Item?
     func toggleInspectorForTest()
