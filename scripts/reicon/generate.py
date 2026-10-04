@@ -5,6 +5,7 @@
 """
 
 import json
+import re
 import shutil
 import sys
 import urllib.request
@@ -37,14 +38,16 @@ def load_names() -> list[str]:
     return [l for l in lines if l and not l.startswith("#")]
 
 
-# 線條版加粗：每一筆外面再描一圈，1.5 的線約變成 2.2
-BOLDEN = 0.7
+# 線條版加粗：每一筆外面再描一圈，1.5 的線約變成 2.7
+BOLDEN = 1.2
 
 
 def to_svg(code: str, bold: bool = False) -> str:
     # CoreSVG 不支援 currentColor；template image 只看 alpha，顏色固定黑色即可
     code = code.replace("currentColor", "#000000")
     if bold:
+        # 本身用描邊畫的線（自帶 stroke-width）也一起加粗
+        code = re.sub(r'stroke-width="([\d.]+)"', lambda m: f'stroke-width="{float(m.group(1)) + BOLDEN:g}"', code)
         code = (f'<g stroke="#000000" stroke-width="{BOLDEN}" stroke-linejoin="round" '
                 f'stroke-linecap="round">{code}</g>')
     return (
