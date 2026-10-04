@@ -80,7 +80,7 @@ final class InfinityView: NSView, ItemSurface {
     private let topShade = CAGradientLayer()
     private let bottomShade = CAGradientLayer()
     private let titleLabel = NSTextField(labelWithString: "")
-    private let hintLabel = NSTextField(labelWithString: "拖曳或捲動來漫遊 · 空白鍵 暫停漂移 · R 隨機一件")
+    private let hintLabel = NSTextField(labelWithString: String(localized: "拖曳或捲動來漫遊 · 空白鍵 暫停漂移 · R 隨機一件"))
 
     /// The wall fades out under the toolbar and at the foot, where its name sits.
     private func renderChrome() {
@@ -434,7 +434,7 @@ final class InfinityView: NSView, ItemSurface {
 
     override func draw(_ dirtyRect: NSRect) {
         guard items.isEmpty else { return }
-        let text = "這裡還沒有圖" as NSString
+        let text = String(localized: "這裡還沒有圖") as NSString
         let style = NSMutableParagraphStyle()
         style.alignment = .center
         let attrs: [NSAttributedString.Key: Any] = [

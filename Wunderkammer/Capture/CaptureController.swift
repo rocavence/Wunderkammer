@@ -47,8 +47,8 @@ final class CaptureController: NSObject {
             Task { await self?.captureNow() }
         }
         if !shortcutRegistered {
-            toast.show(title: "\(Self.captureShortcut.display) 已被其他 app 使用",
-                       detail: "到設定換一組快捷鍵，或從選單「檔案 → 收藏剪貼簿或目前頁面」收藏", image: nil)
+            toast.show(title: String(localized: "\(Self.captureShortcut.display) 已被其他 app 使用"),
+                       detail: String(localized: "到設定換一組快捷鍵，或從選單「檔案 → 收藏剪貼簿或目前頁面」收藏"), image: nil)
         }
         hotkeys.register(Self.screenshotShortcut) { [weak self] in
             Task { await self?.captureScreenshot() }
@@ -99,7 +99,7 @@ final class CaptureController: NSObject {
             case .success(let page):
                 sources = [.web(page.url, title: page.title)]
             case .failure(let error) where error.reason == .needsAccessibility:
-                toast.show(title: "需要「輔助使用」權限", detail: "允許後再按一次 ⌘⇧C，就能收藏這個瀏覽器的網址", image: nil)
+                toast.show(title: String(localized: "需要「輔助使用」權限"), detail: String(localized: "允許後再按一次 ⌘⇧C，就能收藏這個瀏覽器的網址"), image: nil)
                 return false
             case .failure:
                 break
@@ -107,7 +107,7 @@ final class CaptureController: NSObject {
         }
         if sources.isEmpty { sources = PasteboardReader.sources(from: pb) }
         guard !sources.isEmpty else {
-            toast.show(title: "沒有東西可以收", detail: "先複製圖片、網址或文字，再按 ⌘⇧C", image: nil)
+            toast.show(title: String(localized: "沒有東西可以收"), detail: String(localized: "先複製圖片、網址或文字，再按 ⌘⇧C"), image: nil)
             return false
         }
         capturedChangeCount = pb.changeCount
@@ -194,13 +194,13 @@ final class CaptureController: NSObject {
         let before = Set(library.items.map(\.id))
         let ids = await library.capture(sources, into: currentBoard(), sourceApp: sourceApp)
         guard let first = ids.first.flatMap(library.item) else {
-            toast.show(title: "收不進來", detail: "這個格式讀不到內容", image: nil)
+            toast.show(title: String(localized: "收不進來"), detail: String(localized: "這個格式讀不到內容"), image: nil)
             return
         }
         let isNew = !before.contains(first.id)
         let image = NSImage(contentsOf: library.thumbnailURL(first))
         let count = ids.count
-        let title = isNew ? (count > 1 ? "收進 \(count) 件" : "收進珍奇櫃") : "已經在珍奇櫃裡"
+        let title = isNew ? (count > 1 ? String(localized: "收進 \(count) 件") : String(localized: "收進珍奇櫃")) : String(localized: "已經在珍奇櫃裡")
         toast.show(title: title, detail: first.displayTitle, image: image)
     }
 }

@@ -211,10 +211,10 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
     @objc func resetArrangement(_ sender: Any?) {
         guard let window else { return }
         let first = NSAlert()
-        first.messageText = "重設地圖的擺放？"
-        first.informativeText = "拖過的位置和自己分的堆，會回到一開始自動排好的樣子。收藏和連線都不會動。"
-        first.addButton(withTitle: "繼續…")
-        first.addButton(withTitle: "取消")
+        first.messageText = String(localized: "重設地圖的擺放？")
+        first.informativeText = String(localized: "拖過的位置和自己分的堆，會回到一開始自動排好的樣子。收藏和連線都不會動。")
+        first.addButton(withTitle: String(localized: "繼續…"))
+        first.addButton(withTitle: String(localized: "取消"))
         first.beginSheetModal(for: window) { [weak self] response in
             guard let self, response == .alertFirstButtonReturn else { return }
             // The first sheet has to be gone before the second can show.
@@ -225,11 +225,11 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
     private func confirmReset(in window: NSWindow) {
         let second = NSAlert()
         second.alertStyle = .critical
-        second.messageText = "真的要重設嗎？"
+        second.messageText = String(localized: "真的要重設嗎？")
         let piles = groups.count
-        second.informativeText = (piles > 1 ? "\(piles) 個堆會合回一堆，" : "") + "所有位置回到原本的排列。這個動作無法復原。"
-        second.addButton(withTitle: "重設")
-        second.addButton(withTitle: "取消")
+        second.informativeText = (piles > 1 ? String(localized: "\(piles) 個堆會合回一堆，") : "") + String(localized: "所有位置回到原本的排列。這個動作無法復原。")
+        second.addButton(withTitle: String(localized: "重設"))
+        second.addButton(withTitle: String(localized: "取消"))
         second.buttons.first?.hasDestructiveAction = true
         second.beginSheetModal(for: window) { [weak self] response in
             guard response == .alertFirstButtonReturn else { return }
@@ -295,7 +295,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         let items = order.compactMap(library.item)
         var clusters = CanvasLayout.relationClusters(items, links: relationLinks)
         // What nothing connects is still sorted, by theme, rather than one big 其他.
-        if let rest = clusters.last, rest.title == "其他" {
+        if let rest = clusters.last, rest.title == CanvasLayout.otherPile {
             clusters.removeLast()
             let leftover = Set(rest.ids)
             clusters += CanvasLayout.clusters(items.filter { leftover.contains($0.id) },
@@ -777,7 +777,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         let p = convert(event.locationInWindow, from: nil)
         if hit(p) == nil, let line = link(at: p) {
             let menu = NSMenu()
-            menu.addItem(ClosureMenuItem("刪除這條連線") { [weak self] in
+            menu.addItem(ClosureMenuItem(String(localized: "刪除這條連線")) { [weak self] in
                 guard let self else { return }
                 self.links.removeAll { $0 == line }
                 self.library.setLinks(self.links, key: self.scope.canvasKey)
@@ -787,16 +787,16 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         }
         guard let id = hit(p) else {
             let menu = NSMenu()
-            menu.addItem(ClosureMenuItem("依主題分堆") { [weak self] in self?.clusterByTheme(nil) })
+            menu.addItem(ClosureMenuItem(String(localized: "依主題分堆")) { [weak self] in self?.clusterByTheme(nil) })
             if !relationLinks.isEmpty {
-                menu.addItem(ClosureMenuItem("依關聯分堆") { [weak self] in self?.clusterByRelation(nil) })
+                menu.addItem(ClosureMenuItem(String(localized: "依關聯分堆")) { [weak self] in self?.clusterByRelation(nil) })
             }
-            menu.addItem(ClosureMenuItem("整理成整齊的排列") { [weak self] in self?.arrange(nil) })
-            menu.addItem(ClosureMenuItem("顯示全部") { [weak self] in self?.fit(animated: true) })
+            menu.addItem(ClosureMenuItem(String(localized: "整理成整齊的排列")) { [weak self] in self?.arrange(nil) })
+            menu.addItem(ClosureMenuItem(String(localized: "顯示全部")) { [weak self] in self?.fit(animated: true) })
             menu.addItem(.separator())
-            menu.addItem(ClosureMenuItem("重設擺放…") { [weak self] in self?.resetArrangement(nil) })
+            menu.addItem(ClosureMenuItem(String(localized: "重設擺放…")) { [weak self] in self?.resetArrangement(nil) })
             menu.addItem(.separator())
-            let hint = NSMenuItem(title: "按住 ⌥ 從一件拖到另一件，可以連起來", action: nil, keyEquivalent: "")
+            let hint = NSMenuItem(title: String(localized: "按住 ⌥ 從一件拖到另一件，可以連起來"), action: nil, keyEquivalent: "")
             hint.isEnabled = false
             menu.addItem(hint)
             return menu
@@ -888,7 +888,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
 
     override func draw(_ dirtyRect: NSRect) {
         guard groups.isEmpty else { return }
-        let text = "畫布是空的\n收進來的東西會出現在這裡，也可以直接把檔案拖進來" as NSString
+        let text = String(localized: "畫布是空的\n收進來的東西會出現在這裡，也可以直接把檔案拖進來") as NSString
         let style = NSMutableParagraphStyle()
         style.alignment = .center
         style.lineSpacing = 6

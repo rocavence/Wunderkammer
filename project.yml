@@ -17,6 +17,7 @@ schemes:
         Wunderkammer: all
         WunderkammerTests: [test]
     test:
+      language: zh-Hant
       targets:
         - WunderkammerTests
 targets:
@@ -37,6 +38,8 @@ targets:
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
         INFOPLIST_KEY_NSHumanReadableCopyright: ""
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        SWIFT_EMIT_LOC_STRINGS: YES
+        LOCALIZATION_PREFERS_STRING_CATALOGS: YES
         ENABLE_HARDENED_RUNTIME: YES
     dependencies:
       - target: ShareExtension

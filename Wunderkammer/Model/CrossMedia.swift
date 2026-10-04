@@ -19,12 +19,12 @@ struct Relation: Hashable, Sendable {
 
     /// One line for the info panel, about `other` (titled `title`, of kind `kindName`).
     func sentence(title: String, kindName: String) -> String {
-        let thing = "《\(title)》\(kindName.isEmpty ? "" : "（\(kindName)）")"
+        let thing = kindName.isEmpty ? String(localized: "《\(title)》") : String(localized: "《\(title)》（\(kindName)）")
         switch kind {
-        case .samePerson(let name, let role): return "\(name) 也\(Self.verb(role))\(thing)"
-        case .mentions(let what): return what == title ? "這件提到\(thing)" : "這件提到 \(what)：\(thing)"
-        case .mentionedBy(let what): return "\(thing)提到 \(what)"
-        case .samePlace(let city): return "同在 \(city)：\(thing)"
+        case .samePerson(let name, let role): return String(localized: "\(name) 也\(Self.verb(role))\(thing)")
+        case .mentions(let what): return what == title ? String(localized: "這件提到\(thing)") : String(localized: "這件提到 \(what)：\(thing)")
+        case .mentionedBy(let what): return String(localized: "\(thing)提到 \(what)")
+        case .samePlace(let city): return String(localized: "同在 \(city)：\(thing)")
         }
     }
 
@@ -32,19 +32,29 @@ struct Relation: Hashable, Sendable {
     var label: String {
         switch kind {
         case .samePerson(let name, _): name
-        case .mentions(let what), .mentionedBy(let what): "提到 \(what)"
+        case .mentions(let what), .mentionedBy(let what): Self.mentionLabel(what)
         case .samePlace(let city): city
         }
     }
 
+    static func mentionLabel(_ what: String) -> String { String(localized: "提到 \(what)") }
+
+    /// The name inside a mention `label` ("提到 Ole Worm" → "Ole Worm"); nil for any other label.
+    static func mentioned(in label: String) -> String? {
+        let parts = mentionLabel("\u{1}").components(separatedBy: "\u{1}")
+        guard parts.count == 2, label.count >= parts[0].count + parts[1].count,
+              label.hasPrefix(parts[0]), label.hasSuffix(parts[1]) else { return nil }
+        return String(label.dropFirst(parts[0].count).dropLast(parts[1].count))
+    }
+
     static func verb(_ role: Item.Credit.Role) -> String {
         switch role {
-        case .author: "寫了"
-        case .director: "導了"
-        case .artist: "演出了"
-        case .actor: "演了"
-        case .creator: "做了"
-        case .brand: "出了"
+        case .author: String(localized: "寫了")
+        case .director: String(localized: "導了")
+        case .artist: String(localized: "演出了")
+        case .actor: String(localized: "演了")
+        case .creator: String(localized: "做了")
+        case .brand: String(localized: "出了")
         }
     }
 }

@@ -35,8 +35,8 @@ final class EmptyCabinetView: NSView {
     }
 
     /// The open 珍奇櫃's name, as its welcome.
-    var name = "珍奇櫃" { didSet { titleField.stringValue = name } }
-    private let titleField = NSTextField(labelWithString: "珍奇櫃")
+    var name = String(localized: "珍奇櫃") { didSet { titleField.stringValue = name } }
+    private let titleField = NSTextField(labelWithString: String(localized: "珍奇櫃"))
 
     private func build() {
         let icon = NSImageView(image: Icon.image(.cabinet, weight: .outline, size: 56))
@@ -45,15 +45,15 @@ final class EmptyCabinetView: NSView {
         let title = titleField
         title.stringValue = name
         title.font = serif(34)
-        let tagline = NSTextField(labelWithString: "收進來就好，不必整理。")
+        let tagline = NSTextField(labelWithString: String(localized: "收進來就好，不必整理。"))
         tagline.font = serif(16)
         tagline.textColor = .secondaryLabelColor
 
         let capture = CaptureController.captureShortcut.display
         let ways = NSStackView(views: [
-            way(.clipboard, "看到喜歡的東西，按 \(capture)", "圖片、網址、文字；在瀏覽器裡直接收目前的頁面"),
-            way(.inboxIn, "把東西拖進這個視窗", "檔案、資料夾、圖片、連結都可以；也能拖到選單列的拱門或 Dock 上的圖示"),
-            way(.share, "在任何 app 的分享選單選 Wunderkammer", "不用想要放哪裡，系統會替你整理"),
+            way(.clipboard, String(localized: "看到喜歡的東西，按 \(capture)"), String(localized: "圖片、網址、文字；在瀏覽器裡直接收目前的頁面")),
+            way(.inboxIn, String(localized: "把東西拖進這個視窗"), String(localized: "檔案、資料夾、圖片、連結都可以；也能拖到選單列的拱門或 Dock 上的圖示")),
+            way(.share, String(localized: "在任何 app 的分享選單選 Wunderkammer"), String(localized: "不用想要放哪裡，系統會替你整理")),
         ])
         ways.orientation = .vertical
         ways.alignment = .leading
@@ -67,7 +67,7 @@ final class EmptyCabinetView: NSView {
         stack.setCustomSpacing(36, after: tagline)
 
         if let count = Self.atlasCount(), count > 0 {
-            let b = ClosureButton(title: "從 Atlas 帶進 \(count) 件") { [weak self] in self?.onImportAtlas?() }
+            let b = ClosureButton(title: String(localized: "從 Atlas 帶進 \(count) 件")) { [weak self] in self?.onImportAtlas?() }
             b.bezelStyle = .rounded
             b.controlSize = .large
             stack.addArrangedSubview(b)

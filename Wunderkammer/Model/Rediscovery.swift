@@ -54,11 +54,11 @@ enum Rediscovery {
     static func ageLine(_ item: Item, now: Date = Date(), calendar: Calendar = .current) -> String {
         let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: item.dateAdded), to: calendar.startOfDay(for: now)).day ?? 0
         switch days {
-        case ..<1: return "今天收藏的"
-        case 1: return "昨天收藏的"
+        case ..<1: return String(localized: "今天收藏的")
+        case 1: return String(localized: "昨天收藏的")
         default:
             let n = NumberFormatter.localizedString(from: NSNumber(value: days), number: .decimal)
-            return "你在 \(n) 天前收藏了這個"
+            return String(localized: "你在 \(n) 天前收藏了這個")
         }
     }
 }

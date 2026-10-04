@@ -32,8 +32,11 @@ enum Subjects {
             .map { Subject(label: $0.key, title: title($0.key), count: $0.value) }
     }
 
+    /// A theme's name in the app's language: from the Themes table (keyed by
+    /// the Vision label), else the Chinese name, else the label itself.
     static func title(_ label: String) -> String {
-        chinese[label] ?? label.prefix(1).uppercased() + label.dropFirst()
+        let fallback = chinese[label] ?? label.prefix(1).uppercased() + label.dropFirst()
+        return Bundle.main.localizedString(forKey: label, value: fallback, table: "Themes")
     }
 
     /// Chinese names for the Vision labels that tend to become themes.
@@ -84,11 +87,12 @@ enum Subjects {
 /// spectrum, with their Chinese names and a swatch to show them by.
 enum Colours {
     static let all: [(name: String, title: String, swatch: NSColor)] = [
-        ("red", "紅色", .systemRed), ("orange", "橙色", .systemOrange), ("yellow", "黃色", .systemYellow),
-        ("green", "綠色", .systemGreen), ("blue", "藍色", .systemBlue), ("purple", "紫色", .systemPurple),
-        ("pink", "粉紅色", .systemPink), ("brown", "棕色", .systemBrown),
-        ("black", "黑色", NSColor(white: 0.08, alpha: 1)), ("white", "白色", NSColor(white: 0.97, alpha: 1)),
-        ("gray", "灰色", .systemGray),
+        ("red", String(localized: "紅色"), .systemRed), ("orange", String(localized: "橙色"), .systemOrange),
+        ("yellow", String(localized: "黃色"), .systemYellow), ("green", String(localized: "綠色"), .systemGreen),
+        ("blue", String(localized: "藍色"), .systemBlue), ("purple", String(localized: "紫色"), .systemPurple),
+        ("pink", String(localized: "粉紅色"), .systemPink), ("brown", String(localized: "棕色"), .systemBrown),
+        ("black", String(localized: "黑色"), NSColor(white: 0.08, alpha: 1)), ("white", String(localized: "白色"), NSColor(white: 0.97, alpha: 1)),
+        ("gray", String(localized: "灰色"), .systemGray),
     ]
 
     static func title(_ name: String) -> String { all.first { $0.name == name }?.title ?? name }

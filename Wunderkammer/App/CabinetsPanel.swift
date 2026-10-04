@@ -22,7 +22,7 @@ final class CabinetsPanel: NSObject {
     private let sheet: NSWindow
     private let grid = FlippedView()
     private let scroll = NSScrollView()
-    private let done = NSButton(title: "完成", target: nil, action: nil)
+    private let done = NSButton(title: String(localized: "完成"), target: nil, action: nil)
     private var cards: [NSView] = []
     /// A new 珍奇櫃 waiting for its name: a card, not yet a folder.
     private var drafting = false
@@ -57,9 +57,9 @@ final class CabinetsPanel: NSObject {
     }
 
     private func build() {
-        let title = NSTextField(labelWithString: "珍奇櫃")
+        let title = NSTextField(labelWithString: String(localized: "珍奇櫃"))
         title.font = Typography.display(26) ?? .systemFont(ofSize: 26)
-        let note = NSTextField(labelWithString: "每個珍奇櫃都有自己的收藏。點卡片打開，按編輯翻到背面設定名稱與檔案。")
+        let note = NSTextField(labelWithString: String(localized: "每個珍奇櫃都有自己的收藏。點卡片打開，按編輯翻到背面設定名稱與檔案。"))
         note.font = .systemFont(ofSize: 12.5)
         note.textColor = .secondaryLabelColor
         done.target = self
@@ -218,7 +218,7 @@ final class CabinetsPanel: NSObject {
         let open = NSOpenPanel()
         open.allowedContentTypes = [.image]
         open.allowsMultipleSelection = false
-        open.prompt = "用這張當封面"
+        open.prompt = String(localized: "用這張當封面")
         open.beginSheetModal(for: sheet) { [weak self] response in
             guard let self, response == .OK, let url = open.url else { return }
             if self.cabinets.setCover(from: url, for: id) {
@@ -311,8 +311,8 @@ final class CabinetsPanel: NSObject {
         open.canChooseFiles = false
         open.canCreateDirectories = true
         open.allowsMultipleSelection = false
-        open.prompt = "用這個資料夾收檔案"
-        open.message = "「\(entry.name)」收進來的檔案，都會複製一份到這個資料夾，用原本的檔名存。"
+        open.prompt = String(localized: "用這個資料夾收檔案")
+        open.message = String(localized: "「\(entry.name)」收進來的檔案，都會複製一份到這個資料夾，用原本的檔名存。")
         open.beginSheetModal(for: sheet) { [weak self] response in
             guard let self else { return }
             guard response == .OK, let folder = open.url else { return self.layoutCards() }
@@ -324,14 +324,14 @@ final class CabinetsPanel: NSObject {
     private func confirmVault(_ folder: URL, for entry: Cabinets.Entry) {
         let files = referenced(entry), watched = cabinets.watched(entry.id).count
         var lines: [String] = []
-        if files > 0 { lines.append("\(files) 件收藏的檔案會複製一份到「\(folder.lastPathComponent)」。") }
-        if watched > 0 { lines.append("連結的 \(watched) 個資料夾會停止監看，裡面的檔案不會被動到。") }
-        lines.append("之後收進來的檔案也都會存在這裡。")
+        if files > 0 { lines.append(String(localized: "\(files) 件收藏的檔案會複製一份到「\(folder.lastPathComponent)」。")) }
+        if watched > 0 { lines.append(String(localized: "連結的 \(watched) 個資料夾會停止監看，裡面的檔案不會被動到。")) }
+        lines.append(String(localized: "之後收進來的檔案也都會存在這裡。"))
         let alert = NSAlert()
-        alert.messageText = "改成把檔案收進珍奇櫃？"
+        alert.messageText = String(localized: "改成把檔案收進珍奇櫃？")
         alert.informativeText = lines.joined(separator: "\n")
-        alert.addButton(withTitle: files > 0 ? "複製並改用" : "改用")
-        alert.addButton(withTitle: "取消")
+        alert.addButton(withTitle: files > 0 ? String(localized: "複製並改用") : String(localized: "改用"))
+        alert.addButton(withTitle: String(localized: "取消"))
         alert.beginSheetModal(for: sheet) { [weak self] response in
             guard let self else { return }
             if response == .alertFirstButtonReturn {
@@ -348,8 +348,8 @@ final class CabinetsPanel: NSObject {
         open.canChooseDirectories = true
         open.canChooseFiles = false
         open.allowsMultipleSelection = false
-        open.prompt = "監看這個資料夾"
-        open.message = "放進這個資料夾的檔案會自動收進來，從資料夾拿走就跟著移除。裡面現有的檔案也會一起收進來。"
+        open.prompt = String(localized: "監看這個資料夾")
+        open.message = String(localized: "放進這個資料夾的檔案會自動收進來，從資料夾拿走就跟著移除。裡面現有的檔案也會一起收進來。")
         open.beginSheetModal(for: sheet) { [weak self] response in
             guard let self, response == .OK, let folder = open.url else { return }
             if self.cabinets.watch(folder, in: id) {
@@ -357,8 +357,8 @@ final class CabinetsPanel: NSObject {
                 self.onChange?()
             } else {
                 let alert = NSAlert()
-                alert.messageText = "不能監看這個資料夾"
-                alert.informativeText = "它已經在監看清單裡，或和清單裡的資料夾重疊，或是珍奇櫃自己存放資料的地方。"
+                alert.messageText = String(localized: "不能監看這個資料夾")
+                alert.informativeText = String(localized: "它已經在監看清單裡，或和清單裡的資料夾重疊，或是珍奇櫃自己存放資料的地方。")
                 alert.beginSheetModal(for: self.sheet)
             }
         }
@@ -367,10 +367,10 @@ final class CabinetsPanel: NSObject {
     private func delete(_ entry: Cabinets.Entry) {
         guard cabinets.canDelete(entry.id) else { return }
         let alert = NSAlert()
-        alert.messageText = "刪除「\(entry.name)」？"
-        alert.informativeText = "裡面的 \(count(entry)) 件收藏會一起移到垃圾桶，清空垃圾桶前都還能找回來。"
-        alert.addButton(withTitle: "刪除")
-        alert.addButton(withTitle: "取消")
+        alert.messageText = String(localized: "刪除「\(entry.name)」？")
+        alert.informativeText = String(localized: "裡面的 \(count(entry)) 件收藏會一起移到垃圾桶，清空垃圾桶前都還能找回來。")
+        alert.addButton(withTitle: String(localized: "刪除"))
+        alert.addButton(withTitle: String(localized: "取消"))
         alert.buttons.first?.hasDestructiveAction = true
         alert.beginSheetModal(for: sheet) { [weak self] response in
             guard let self, response == .alertFirstButtonReturn else { return }
@@ -421,9 +421,9 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
     init(name: String, count: Int, isCurrent: Bool, isDefault: Bool, canDelete: Bool, cover: CGImage?,
          watching: Int = 0, vault: URL? = nil, isDraft: Bool = false) {
         self.originalName = name
-        let held = count == 0 ? "還沒有收藏" : "\(count) 件收藏"
-        let files = vault.map { " · 收進「\($0.lastPathComponent)」" } ?? (watching > 0 ? " · 連結 \(watching) 個資料夾" : "")
-        detail = NSTextField(labelWithString: isDraft ? "按 Return 建立，Esc 取消" : held + files)
+        let held = count == 0 ? String(localized: "還沒有收藏") : String(localized: "\(count) 件收藏")
+        let files = vault.map { String(localized: " · 收進「\($0.lastPathComponent)」") } ?? (watching > 0 ? String(localized: " · 連結 \(watching) 個資料夾") : "")
+        detail = NSTextField(labelWithString: isDraft ? String(localized: "按 Return 建立，Esc 取消") : held + files)
         super.init(frame: .zero)
         wantsLayer = true
         layer?.cornerRadius = 16
@@ -443,7 +443,7 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
         coverView.layer?.masksToBounds = true
 
         nameField.stringValue = name
-        nameField.placeholderString = "替它取個名字"
+        nameField.placeholderString = String(localized: "替它取個名字")
         nameField.font = Typography.display(18, weight: .medium) ?? .systemFont(ofSize: 18, weight: .medium)
         nameField.isEditable = false
         nameField.isSelectable = false
@@ -459,8 +459,8 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
 
         var views: [NSView] = [coverView, nameField, detail]
         var badges: [NSView] = []
-        if isCurrent { badges.append(Self.pill("目前", fill: .accent, text: .white)) }
-        if isDefault { badges.append(Self.pill("預設", fill: NSColor.black.withAlphaComponent(0.5), text: .white)) }
+        if isCurrent { badges.append(Self.pill(String(localized: "目前"), fill: .accent, text: .white)) }
+        if isDefault { badges.append(Self.pill(String(localized: "預設"), fill: NSColor.black.withAlphaComponent(0.5), text: .white)) }
         let badgeRow = NSStackView(views: badges)
         badgeRow.spacing = 6
         views.append(badgeRow)
@@ -469,9 +469,9 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
         // 珍奇櫃 has no remove; the open one can't be removed while open.
         var tools: [NSView] = []
         if !isDraft {
-            tools.append(CardTool(icon: .edit, tip: "編輯：名稱與檔案", destructive: false) { [weak self] in self?.onEdit?() })
+            tools.append(CardTool(icon: .edit, tip: String(localized: "編輯：名稱與檔案"), destructive: false) { [weak self] in self?.onEdit?() })
             if !isDefault {
-                let trash = CardTool(icon: .trash, tip: canDelete ? "刪除" : "要先打開別的珍奇櫃，才能刪除這個",
+                let trash = CardTool(icon: .trash, tip: canDelete ? String(localized: "刪除") : String(localized: "要先打開別的珍奇櫃，才能刪除這個"),
                                      destructive: true) { [weak self] in self?.onDelete?() }
                 trash.isEnabled = canDelete
                 tools.append(trash)
@@ -508,12 +508,12 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
         if !isDraft {
             setAccessibilityElement(true)
             setAccessibilityRole(.button)
-            setAccessibilityLabel("\(name)，\(count) 件收藏" + (isCurrent ? "，目前開著" : ""))
+            setAccessibilityLabel(String(localized: "\(name)，\(count) 件收藏") + (isCurrent ? String(localized: "，目前開著") : ""))
             menu = NSMenu()
-            menu?.addItem(ClosureMenuItem("打開") { [weak self] in self?.onOpen?() })
-            menu?.addItem(ClosureMenuItem("編輯…") { [weak self] in self?.onEdit?() })
+            menu?.addItem(ClosureMenuItem(String(localized: "打開")) { [weak self] in self?.onOpen?() })
+            menu?.addItem(ClosureMenuItem(String(localized: "編輯…")) { [weak self] in self?.onEdit?() })
             if !isDefault {
-                let delete = ClosureMenuItem("刪除…") { [weak self] in self?.onDelete?() }
+                let delete = ClosureMenuItem(String(localized: "刪除…")) { [weak self] in self?.onDelete?() }
                 delete.isEnabled = canDelete
                 menu?.addItem(delete)
             }
@@ -810,7 +810,7 @@ private final class AddCabinetCard: NSView {
         layer?.addSublayer(outline)
         let plus = NSImageView(image: Icon.image(.plus, size: 28))
         plus.contentTintColor = .secondaryLabelColor
-        let label = NSTextField(labelWithString: "新增珍奇櫃")
+        let label = NSTextField(labelWithString: String(localized: "新增珍奇櫃"))
         label.font = .systemFont(ofSize: 13, weight: .medium)
         label.textColor = .secondaryLabelColor
         let stack = NSStackView(views: [plus, label])
@@ -824,7 +824,7 @@ private final class AddCabinetCard: NSView {
         ])
         setAccessibilityElement(true)
         setAccessibilityRole(.button)
-        setAccessibilityLabel("新增珍奇櫃")
+        setAccessibilityLabel(String(localized: "新增珍奇櫃"))
     }
 
     required init?(coder: NSCoder) { fatalError() }
@@ -898,8 +898,8 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
     private let subheading = NSTextField(labelWithString: "")
     private let coverActions = NSStackView()
     private let nameField = NSTextField()
-    private let linkTile = ChoiceTile(icon: .link, title: "連結資料夾", detail: "檔案留在原處。連結的資料夾裡有新檔案，會自動收進來。")
-    private let keepTile = ChoiceTile(icon: .box, title: "收進櫃子", detail: "每個收進來的檔案，都複製一份到你選的資料夾。")
+    private let linkTile = ChoiceTile(icon: .link, title: String(localized: "連結資料夾"), detail: String(localized: "檔案留在原處。連結的資料夾裡有新檔案，會自動收進來。"))
+    private let keepTile = ChoiceTile(icon: .box, title: String(localized: "收進櫃子"), detail: String(localized: "每個收進來的檔案，都複製一份到你選的資料夾。"))
     private let detail = NSStackView()
     private var currentName = ""
 
@@ -934,7 +934,7 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
         nameField.font = .systemFont(ofSize: 15)
         nameField.bezelStyle = .roundedBezel
         nameField.controlSize = .large
-        nameField.placeholderString = "珍奇櫃的名字"
+        nameField.placeholderString = String(localized: "珍奇櫃的名字")
         nameField.delegate = self
         nameField.lineBreakMode = .byTruncatingTail
         nameField.cell?.isScrollable = true
@@ -949,14 +949,14 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
         detail.alignment = .leading
         detail.spacing = 6
 
-        let done = NSButton(title: "完成", target: self, action: #selector(doneTapped))
+        let done = NSButton(title: String(localized: "完成"), target: self, action: #selector(doneTapped))
         done.bezelStyle = .rounded
         done.controlSize = .large
         done.keyEquivalent = "\r"
         let footer = NSStackView(views: [NSView(), done])
         footer.distribution = .fill
 
-        let body = NSStackView(views: [header, Self.caption("名稱"), nameField, Self.caption("收藏的檔案"), tiles, detail, footer])
+        let body = NSStackView(views: [header, Self.caption(String(localized: "名稱")), nameField, Self.caption(String(localized: "收藏的檔案")), tiles, detail, footer])
         body.orientation = .vertical
         body.alignment = .leading
         body.spacing = 8
@@ -1012,11 +1012,11 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
 
     func show(name: String, count: Int, cover: CGImage?, customCover: Bool, folders: [URL], vault: URL?, maxFolders: Int) {
         coverActions.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        coverActions.addArrangedSubview(Self.link("更換封面…") { [weak self] in self?.onChooseCover?() })
-        if customCover { coverActions.addArrangedSubview(Self.link("恢復自動") { [weak self] in self?.onResetCover?() }) }
+        coverActions.addArrangedSubview(Self.link(String(localized: "更換封面…")) { [weak self] in self?.onChooseCover?() })
+        if customCover { coverActions.addArrangedSubview(Self.link(String(localized: "恢復自動")) { [weak self] in self?.onResetCover?() }) }
         currentName = name
         heading.stringValue = name
-        subheading.stringValue = count == 0 ? "還沒有收藏" : "\(count) 件收藏"
+        subheading.stringValue = count == 0 ? String(localized: "還沒有收藏") : String(localized: "\(count) 件收藏")
         coverView.image = cover.map { NSImage(cgImage: $0, size: .zero) }
         if nameField.currentEditor() == nil { nameField.stringValue = name }
         linkTile.isChosen = vault == nil
@@ -1024,11 +1024,11 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
         detail.arrangedSubviews.forEach { $0.removeFromSuperview() }
         if let vault {
             detail.addArrangedSubview(row(vault, removable: false))
-            detail.addArrangedSubview(Self.button("在 Finder 中顯示", icon: .folder) { NSWorkspace.shared.activateFileViewerSelecting([vault]) })
+            detail.addArrangedSubview(Self.button(String(localized: "在 Finder 中顯示"), icon: .folder) { NSWorkspace.shared.activateFileViewerSelecting([vault]) })
         } else {
-            if folders.isEmpty { detail.addArrangedSubview(Self.note("還沒有連結資料夾。")) }
+            if folders.isEmpty { detail.addArrangedSubview(Self.note(String(localized: "還沒有連結資料夾。"))) }
             for f in folders { detail.addArrangedSubview(row(f, removable: true)) }
-            let add = Self.button(folders.count < maxFolders ? "加入資料夾…" : "最多 \(maxFolders) 個資料夾", icon: .folderAdd) { [weak self] in
+            let add = Self.button(folders.count < maxFolders ? String(localized: "加入資料夾…") : String(localized: "最多 \(maxFolders) 個資料夾"), icon: .folderAdd) { [weak self] in
                 self?.onAddFolder?()
             }
             add.isEnabled = folders.count < maxFolders
@@ -1062,7 +1062,7 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
             let x = ClosureButton(image: Icon.image(.x, size: 12)) { [weak self] in self?.onRemoveFolder?(folder) }
             x.isBordered = false
             x.contentTintColor = .tertiaryLabelColor
-            x.toolTip = "不再連結這個資料夾"
+            x.toolTip = String(localized: "不再連結這個資料夾")
             views.append(NSView())
             views.append(x)
         }
@@ -1222,14 +1222,14 @@ private final class CoverWell: NSImageView {
         wantsLayer = true
         veil.backgroundColor = NSColor.black.withAlphaComponent(0.45).cgColor
         veil.opacity = 0
-        word.string = NSAttributedString(string: "更換", attributes: [
+        word.string = NSAttributedString(string: String(localized: "更換"), attributes: [
             .font: NSFont.systemFont(ofSize: 13, weight: .semibold), .foregroundColor: NSColor.white,
         ])
         word.alignmentMode = .center
         word.contentsScale = 2
         veil.addSublayer(word)
-        toolTip = "更換封面"
-        setAccessibilityLabel("更換封面")
+        toolTip = String(localized: "更換封面")
+        setAccessibilityLabel(String(localized: "更換封面"))
     }
 
     required init?(coder: NSCoder) { fatalError() }

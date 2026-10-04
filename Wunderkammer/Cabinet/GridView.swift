@@ -172,11 +172,11 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
 
     /// What can be done right here, in 收藏.
     static let tips = [
-        "按 R 隨機重看一件",
-        "在搜尋框問問題，例如：我收過哪些書？",
-        "選一件，按 ⌘I 看它和什麼有關",
-        "捏合或 ⌘ 加捲動來放大縮小",
-        "空白鍵預覽，Return 用原本的 app 打開",
+        String(localized: "按 R 隨機重看一件"),
+        String(localized: "在搜尋框問問題，例如：我收過哪些書？"),
+        String(localized: "選一件，按 ⌘I 看它和什麼有關"),
+        String(localized: "捏合或 ⌘ 加捲動來放大縮小"),
+        String(localized: "空白鍵預覽，Return 用原本的 app 打開"),
     ]
 
     private func renderHeading() {
@@ -746,7 +746,7 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
     /// The tiles are layers, invisible to VoiceOver: describe the visible ones.
     override func isAccessibilityElement() -> Bool { false }
     override func accessibilityRole() -> NSAccessibility.Role? { .list }
-    override func accessibilityLabel() -> String? { "收藏" }
+    override func accessibilityLabel() -> String? { String(localized: "收藏") }
 
     override func accessibilityChildren() -> [Any]? {
         guard let clip = superview else { return [] }

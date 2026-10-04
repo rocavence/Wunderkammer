@@ -88,32 +88,32 @@ final class Trail {
     /// A few words for the arrow into a step: "相似", "搜尋「receive」", "Wong Kar-Wai".
     static func short(_ via: Via) -> String {
         switch via {
-        case .browse: "瀏覽"
-        case .search(let q): "搜尋「\(q)」"
-        case .similar: "相似"
-        case .related: "相關"
-        case .random: "隨機"
-        case .mentions(let name): "提到 \(name)"
+        case .browse: String(localized: "瀏覽")
+        case .search(let q): String(localized: "搜尋「\(q)」")
+        case .similar: String(localized: "相似")
+        case .related: String(localized: "相關")
+        case .random: String(localized: "隨機")
+        case .mentions(let name): String(localized: "提到 \(name)")
         case .site(let domain): domain
-        case .theme(let t): "主題 \(t)"
+        case .theme(let t): String(localized: "主題 \(t)")
         case .relation(_, let label): label
-        case .ask(let q): "問「\(q.prefix(16))」"
+        case .ask(let q): String(localized: "問「\(String(q.prefix(16)))」")
         }
     }
 
     /// "上次是從搜尋「receive」來的".
     static func describe(_ via: Via, title: (UUID) -> String?) -> String {
         switch via {
-        case .browse: "上次是瀏覽時看到的"
-        case .search(let q): "上次是從搜尋「\(q)」來的"
-        case .similar(let id): "上次是從「\(title(id) ?? "另一件收藏")」的相似收藏來的"
-        case .related(let id): "上次是從「\(title(id) ?? "另一件收藏")」的相關收藏來的"
-        case .random: "上次是隨機遇到的"
-        case .mentions(let name): "上次是從提到「\(name)」的收藏來的"
-        case .site(let domain): "上次是從 \(domain) 的收藏來的"
-        case .theme(let t): "上次是從主題「\(t)」來的"
-        case .relation(let id, let label): "上次是從「\(title(id) ?? "另一件收藏")」經由 \(label) 來的"
-        case .ask(let q): "上次是從問題「\(q)」來的"
+        case .browse: String(localized: "上次是瀏覽時看到的")
+        case .search(let q): String(localized: "上次是從搜尋「\(q)」來的")
+        case .similar(let id): String(localized: "上次是從「\(title(id) ?? String(localized: "另一件收藏"))」的相似收藏來的")
+        case .related(let id): String(localized: "上次是從「\(title(id) ?? String(localized: "另一件收藏"))」的相關收藏來的")
+        case .random: String(localized: "上次是隨機遇到的")
+        case .mentions(let name): String(localized: "上次是從提到「\(name)」的收藏來的")
+        case .site(let domain): String(localized: "上次是從 \(domain) 的收藏來的")
+        case .theme(let t): String(localized: "上次是從主題「\(t)」來的")
+        case .relation(let id, let label): String(localized: "上次是從「\(title(id) ?? String(localized: "另一件收藏"))」經由 \(label) 來的")
+        case .ask(let q): String(localized: "上次是從問題「\(q)」來的")
         }
     }
 }

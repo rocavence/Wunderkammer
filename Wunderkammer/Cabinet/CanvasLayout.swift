@@ -114,22 +114,25 @@ enum CanvasLayout {
             let labels = links.filter { inside.contains($0.a) }.map(\.label)
             // A shared person or city names a pile better than a mention.
             let title = Dictionary(grouping: labels, by: { $0 }).max { a, b in
-                (a.key.hasPrefix("提到 ") ? 0 : 1, a.value.count) < (b.key.hasPrefix("提到 ") ? 0 : 1, b.value.count)
-            }.map { $0.key.hasPrefix("提到 ") ? String($0.key.dropFirst(3)) : $0.key } ?? "相關"
+                (Relation.mentioned(in: a.key) == nil ? 1 : 0, a.value.count) < (Relation.mentioned(in: b.key) == nil ? 1 : 0, b.value.count)
+            }.map { Relation.mentioned(in: $0.key) ?? $0.key } ?? String(localized: "相關")
             piles.append((title, ids))
         }
         piles.sort { $0.ids.count > $1.ids.count }
-        if !rest.isEmpty { piles.append(("其他", items.map(\.id).filter(Set(rest).contains))) }
+        if !rest.isEmpty { piles.append((otherPile, items.map(\.id).filter(Set(rest).contains))) }
         return piles
     }
 
+    /// The last pile, of what nothing connects.
+    static let otherPile = String(localized: "其他")
+
     static func kindTitle(_ kind: Item.Kind) -> String {
         switch kind {
-        case .image: "其他圖片"
-        case .video, .audio: "影片與聲音"
-        case .pdf, .file: "文件與檔案"
-        case .web: "網頁"
-        case .text: "文字"
+        case .image: String(localized: "其他圖片")
+        case .video, .audio: String(localized: "影片與聲音")
+        case .pdf, .file: String(localized: "文件與檔案")
+        case .web: String(localized: "網頁")
+        case .text: String(localized: "文字")
         }
     }
 }

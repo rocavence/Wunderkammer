@@ -7,7 +7,7 @@ import Quartz
 enum Space: Int, CaseIterable {
     case cabinet, wander, map
 
-    var title: String { ["收藏", "漫遊", "地圖"][rawValue] }
+    var title: String { [String(localized: "收藏"), String(localized: "漫遊"), String(localized: "地圖")][rawValue] }
     var layouts: [ViewMode] {
         switch self {
         case .cabinet: [.grid, .masonry, .timeline]
@@ -20,7 +20,7 @@ enum Space: Int, CaseIterable {
 enum ViewMode: Int, CaseIterable {
     case grid, masonry, timeline, canvas, infinity, graph
 
-    var title: String { ["格狀", "瀑布", "時間軸", "畫布", "無限牆", "圖譜"][rawValue] }
+    var title: String { [String(localized: "格狀"), String(localized: "瀑布"), String(localized: "時間軸"), String(localized: "畫布"), String(localized: "無限牆"), String(localized: "圖譜")][rawValue] }
     var icon: Reicon { [.grid, .kanban, .calendar, .layers, .infinite, .nodes][rawValue] }
     var space: Space {
         switch self {
@@ -62,7 +62,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private(set) var preview: PreviewView!
     /// Spaces, search and 資訊, across the top of the content.
     private let topBar = TopBar(titles: Space.allCases.map(\.title),
-                                tips: Space.allCases.map { "\($0.title)（⌘\($0.rawValue + 1)）" })
+                                tips: Space.allCases.map { String(localized: "\($0.title)（⌘\($0.rawValue + 1)）") })
     private var sidebarItem: NSSplitViewItem!
     private var splitController: NSSplitViewController!
     /// The layouts of the current space (格狀/瀑布/時間軸, 畫布/圖譜); hidden when there's one.
@@ -319,9 +319,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
                 parts.append(Trail.short(step.via))
                 let name = self.library.item(step.item)?.displayTitle ?? ""
                 // Shortened inside the 《》, and saying so.
-                parts.append(i == path.count - 1 ? "這件" : "《\(name.count > 18 ? name.prefix(17) + "…" : name)》")
+                parts.append(i == path.count - 1 ? String(localized: "這件") : "《\(name.count > 18 ? name.prefix(17) + "…" : name)》")
             }
-            return "怎麼來的：" + parts.joined(separator: " → ")
+            return String(localized: "怎麼來的：") + parts.joined(separator: " → ")
         }
         NotificationCenter.default.addObserver(forName: Understanding.didProgress, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.updateTitle() }
@@ -345,6 +345,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         inspectorItem.minimumThickness = 260
         inspectorItem.maximumThickness = 340
         inspectorItem.isCollapsed = true
+        inspectorItem.titlebarSeparatorStyle = .none
         split.addSplitViewItem(inspectorItem)
 
         window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1280, height: 820),
@@ -469,17 +470,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private func buildStatusItem() {
         if let old = statusItem { NSStatusBar.system.removeStatusItem(old) }
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        item.button?.toolTip = "Wunderkammer：把東西拖到這裡就收進珍奇櫃"
+        item.button?.toolTip = String(localized: "Wunderkammer：把東西拖到這裡就收進珍奇櫃")
         if let button = item.button { statusDrop.attach(to: button) }
         statusDrop.onDrop = { [weak self] pasteboard in self?.capture.collectDrop(pasteboard) ?? false }
         let menu = NSMenu()
-        Self.show(CaptureController.captureShortcut, on: menu.addItem(withTitle: "收藏剪貼簿或目前頁面", action: #selector(captureNow), keyEquivalent: ""))
-        Self.show(CaptureController.screenshotShortcut, on: menu.addItem(withTitle: "截圖收藏", action: #selector(captureScreenshot), keyEquivalent: ""))
+        Self.show(CaptureController.captureShortcut, on: menu.addItem(withTitle: String(localized: "收藏剪貼簿或目前頁面"), action: #selector(captureNow), keyEquivalent: ""))
+        Self.show(CaptureController.screenshotShortcut, on: menu.addItem(withTitle: String(localized: "截圖收藏"), action: #selector(captureScreenshot), keyEquivalent: ""))
         menu.addItem(.separator())
-        menu.addItem(withTitle: "隨機一件", action: #selector(randomFromStatus), keyEquivalent: "")
-        menu.addItem(withTitle: "打開珍奇櫃", action: #selector(showCabinet), keyEquivalent: "")
+        menu.addItem(withTitle: String(localized: "隨機一件"), action: #selector(randomFromStatus), keyEquivalent: "")
+        menu.addItem(withTitle: String(localized: "打開珍奇櫃"), action: #selector(showCabinet), keyEquivalent: "")
         menu.addItem(.separator())
-        menu.addItem(withTitle: "結束 Wunderkammer", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
+        menu.addItem(withTitle: String(localized: "結束 Wunderkammer"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
         for i in menu.items where i.action != #selector(NSApplication.terminate(_:)) { i.target = self }
         item.menu = menu
         statusItem = item
@@ -545,29 +546,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private func updateTitle() {
         switch scope.base {
         case .all: window.title = cabinets.current.name
-        case .board(let id): window.title = library.collection(id)?.name ?? "釘選版"
+        case .board(let id): window.title = library.collection(id)?.name ?? String(localized: "釘選版")
         case .kind(let k): window.title = k.title
-        case .onThisDay: window.title = "過去的今天"
-        case .forgotten: window.title = "被遺忘的"
-        case .similar(let id): window.title = "與「\(library.item(id)?.displayTitle.prefix(20) ?? "")」相似"
+        case .onThisDay: window.title = String(localized: "過去的今天")
+        case .forgotten: window.title = String(localized: "被遺忘的")
+        case .similar(let id): window.title = String(localized: "與「\(String(library.item(id)?.displayTitle.prefix(20) ?? ""))」相似")
         case .subject(let label): window.title = Subjects.title(label)
         case .color(let name): window.title = Colours.title(name)
-        case .mentions(let name): window.title = "提到「\(name)」"
+        case .mentions(let name): window.title = String(localized: "提到「\(name)」")
         case .site(let domain): window.title = domain
-        case .trail: window.title = "足跡"
-        case .answer: window.title = "回答"
+        case .trail: window.title = String(localized: "足跡")
+        case .answer: window.title = String(localized: "回答")
         }
         let count = library.items(for: scope).count
         let learning = understanding?.pending ?? 0
-        window.subtitle = (scope.isSearching ? "找到 \(count) 件" : "\(count) 件") + (learning > 0 ? " · 正在理解 \(learning) 件" : "")
+        window.subtitle = (scope.isSearching ? String(localized: "找到 \(count) 件") : String(localized: "\(count) 件")) + (learning > 0 ? String(localized: " · 正在理解 \(learning) 件") : "")
         // The cabinet says it large; the titlebar stays quiet.
         let today = library.items(for: scope).filter { Calendar.current.isDateInToday($0.dateAdded) }.count
-        var detail = [scope.isSearching ? "找到 \(count) 件" : "\(count) 件"]
-        if !scope.isSearching, today > 0, today < count { detail.append("今天新增 \(today) 件") }
-        if learning > 0 { detail.append("正在理解 \(learning) 件") }
+        var detail = [scope.isSearching ? String(localized: "找到 \(count) 件") : String(localized: "\(count) 件")]
+        if !scope.isSearching, today > 0, today < count { detail.append(String(localized: "今天新增 \(today) 件")) }
+        if learning > 0 { detail.append(String(localized: "正在理解 \(learning) 件")) }
         // Where this view sits (格式, 分類, 主題…) leads the line under the title, its icon beside it.
-        let kicker = scope.isSearching ? ("搜尋", Reicon.search) : SidebarViewController.kicker(for: scope.base)
-        grid?.heading = GridView.Heading(title: scope.isSearching ? "「\(scope.search)」" : window.title,
+        let kicker = scope.isSearching ? (String(localized: "搜尋"), Reicon.search) : SidebarViewController.kicker(for: scope.base)
+        grid?.heading = GridView.Heading(title: scope.isSearching ? String(localized: "「\(scope.search)」") : window.title,
                                          detail: ([kicker?.0].compactMap { $0 } + detail).joined(separator: " · "),
                                          icon: kicker?.1)
         // Tips need something to try them on: none for the first few pieces.
@@ -631,21 +632,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     /// Away while there's nothing to arrange (足跡, an empty cabinet).
     private func updateViewBar() {
         let zoom: [ViewBar.Tool] = [
-            .init(icon: .searchZoomOut, tip: "縮小（⌘-）") { [weak self] in self?.zoomOut() },
-            .init(icon: .searchZoomIn, tip: "放大（⌘=）") { [weak self] in self?.zoomIn() },
+            .init(icon: .searchZoomOut, tip: String(localized: "縮小（⌘-）")) { [weak self] in self?.zoomOut() },
+            .init(icon: .searchZoomIn, tip: String(localized: "放大（⌘=）")) { [weak self] in self?.zoomIn() },
         ]
         var tools: [[ViewBar.Tool]]
         switch mode {
         case .canvas:
             tools = [
-                [.init(icon: .sparkles, tip: "依主題分堆") { [weak self] in self?.canvas.clusterByTheme(nil) },
-                 .init(icon: .link, tip: "依關聯分堆", enabled: canvas.hasRelations) { [weak self] in self?.canvas.clusterByRelation(nil) },
-                 .init(icon: .grid2, tip: "整理成整齊的排列") { [weak self] in self?.canvas.arrange(nil) }],
-                [.init(icon: .maximize, tip: "顯示全部") { [weak self] in self?.canvas.fit(animated: true) }] + zoom,
-                [.init(icon: .restart, tip: "重設擺放…", destructive: true) { [weak self] in self?.canvas.resetArrangement(nil) }],
+                [.init(icon: .sparkles, tip: String(localized: "依主題分堆")) { [weak self] in self?.canvas.clusterByTheme(nil) },
+                 .init(icon: .link, tip: String(localized: "依關聯分堆"), enabled: canvas.hasRelations) { [weak self] in self?.canvas.clusterByRelation(nil) },
+                 .init(icon: .grid2, tip: String(localized: "整理成整齊的排列")) { [weak self] in self?.canvas.arrange(nil) }],
+                [.init(icon: .maximize, tip: String(localized: "顯示全部")) { [weak self] in self?.canvas.fit(animated: true) }] + zoom,
+                [.init(icon: .restart, tip: String(localized: "重設擺放…"), destructive: true) { [weak self] in self?.canvas.resetArrangement(nil) }],
             ]
         case .graph:
-            tools = [[.init(icon: .maximize, tip: "顯示全部") { [weak self] in self?.graphView.showAll() }] + zoom]
+            tools = [[.init(icon: .maximize, tip: String(localized: "顯示全部")) { [weak self] in self?.graphView.showAll() }] + zoom]
         default:
             tools = [zoom]
         }
@@ -706,8 +707,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
             }
         }
         let hint: String? = switch item.kind {
-        case .web: [item.domain, "按 Return 在瀏覽器打開"].compactMap { $0 }.joined(separator: " · ")
-        case .text where item.url != nil: [item.domain, "按 Return 打開來源"].compactMap { $0 }.joined(separator: " · ")
+        case .web: [item.domain, String(localized: "按 Return 在瀏覽器打開")].compactMap { $0 }.joined(separator: " · ")
+        case .text where item.url != nil: [item.domain, String(localized: "按 Return 打開來源")].compactMap { $0 }.joined(separator: " · ")
         default: nil
         }
         preview.open(id, from: currentSurface, caption: caption ?? hint)
@@ -747,7 +748,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         if mode == .graph { setMode(.grid) }
         if scope.isSearching { clearSearch() }
         currentSurface.reveal(pick.id)
-        let caption = Rediscovery.ageLine(pick) + " · R 再抽一件 · Esc 關閉"
+        let caption = Rediscovery.ageLine(pick) + String(localized: " · R 再抽一件 · Esc 關閉")
         pendingVia = .random
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
             MainActor.assumeIsolated { self?.openPreview(pick.id, caption: caption) }
@@ -951,11 +952,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
                 let answer = try await asker.ask(question, within: 30)
                 (text, ids) = (answer.text, answer.items.map(\.id))
             } catch Asker.Failure.refused {
-                (text, ids) = ("這個問題 Apple Intelligence 不回答，換個問法試試。", nil)
+                (text, ids) = (String(localized: "這個問題 Apple Intelligence 不回答，換個問法試試。"), nil)
             } catch Asker.Failure.tooSlow {
-                (text, ids) = ("想太久了，沒有得到回答。換個說法再問一次試試。", nil)
+                (text, ids) = (String(localized: "想太久了，沒有得到回答。換個說法再問一次試試。"), nil)
             } catch {
-                (text, ids) = ("沒辦法回答：\(error.localizedDescription)", nil)
+                (text, ids) = (String(localized: "沒辦法回答：\(error.localizedDescription)"), nil)
             }
             guard let self, !Task.isCancelled else { return }
             self.askTask = nil
@@ -1018,6 +1019,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     }
 
     func toggleInspectorForTest() { toggleInspector() }
+    var inspectorViewForTest: NSView? { inspector.view.superview }
 
     // MARK: Accent
 
@@ -1090,61 +1092,61 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
 
         let appItem = NSMenuItem()
         let appMenu = NSMenu()
-        appMenu.addItem(withTitle: "關於 Wunderkammer", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
+        appMenu.addItem(withTitle: String(localized: "關於 Wunderkammer"), action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
         appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "設定…", action: #selector(showSettings), keyEquivalent: ",").target = self
+        appMenu.addItem(withTitle: String(localized: "設定…"), action: #selector(showSettings), keyEquivalent: ",").target = self
         appMenu.addItem(.separator())
-        let services = NSMenuItem(title: "服務", action: nil, keyEquivalent: "")
+        let services = NSMenuItem(title: String(localized: "服務"), action: nil, keyEquivalent: "")
         services.submenu = NSMenu()
         NSApp.servicesMenu = services.submenu
         appMenu.addItem(services)
         appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "隱藏 Wunderkammer", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
-        appMenu.addItem(withTitle: "結束 Wunderkammer", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        appMenu.addItem(withTitle: String(localized: "隱藏 Wunderkammer"), action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
+        appMenu.addItem(withTitle: String(localized: "結束 Wunderkammer"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         appItem.submenu = appMenu
         main.addItem(appItem)
 
         let fileItem = NSMenuItem()
-        let fileMenu = NSMenu(title: "檔案")
-        let captureItem = fileMenu.addItem(withTitle: "收藏剪貼簿或目前頁面", action: #selector(captureNow), keyEquivalent: "")
+        let fileMenu = NSMenu(title: String(localized: "檔案"))
+        let captureItem = fileMenu.addItem(withTitle: String(localized: "收藏剪貼簿或目前頁面"), action: #selector(captureNow), keyEquivalent: "")
         captureItem.target = self
         Self.show(CaptureController.captureShortcut, on: captureItem)
-        let shot = fileMenu.addItem(withTitle: "截圖收藏", action: #selector(captureScreenshot), keyEquivalent: "")
+        let shot = fileMenu.addItem(withTitle: String(localized: "截圖收藏"), action: #selector(captureScreenshot), keyEquivalent: "")
         shot.target = self
         Self.show(CaptureController.screenshotShortcut, on: shot)
-        fileMenu.addItem(withTitle: "加入檔案…", action: #selector(importFiles), keyEquivalent: "o").target = self
-        fileMenu.addItem(withTitle: "從 Atlas 匯入", action: #selector(importAtlas), keyEquivalent: "").target = self
+        fileMenu.addItem(withTitle: String(localized: "加入檔案…"), action: #selector(importFiles), keyEquivalent: "o").target = self
+        fileMenu.addItem(withTitle: String(localized: "從 Atlas 匯入"), action: #selector(importAtlas), keyEquivalent: "").target = self
         fileMenu.addItem(.separator())
-        fileMenu.addItem(withTitle: "新增釘選版", action: #selector(newBoard), keyEquivalent: "n").target = self
+        fileMenu.addItem(withTitle: String(localized: "新增釘選版"), action: #selector(newBoard), keyEquivalent: "n").target = self
         fileMenu.addItem(.separator())
-        fileMenu.addItem(withTitle: "在 Finder 顯示珍奇櫃的資料", action: #selector(revealLibrary), keyEquivalent: "").target = self
-        fileMenu.addItem(withTitle: "關閉視窗", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
+        fileMenu.addItem(withTitle: String(localized: "在 Finder 顯示珍奇櫃的資料"), action: #selector(revealLibrary), keyEquivalent: "").target = self
+        fileMenu.addItem(withTitle: String(localized: "關閉視窗"), action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
         fileItem.submenu = fileMenu
         main.addItem(fileItem)
 
         let editItem = NSMenuItem()
-        let editMenu = NSMenu(title: "編輯")
-        editMenu.addItem(withTitle: "還原", action: Selector(("undo:")), keyEquivalent: "z")
-        editMenu.addItem(withTitle: "重做", action: Selector(("redo:")), keyEquivalent: "Z")
+        let editMenu = NSMenu(title: String(localized: "編輯"))
+        editMenu.addItem(withTitle: String(localized: "還原"), action: Selector(("undo:")), keyEquivalent: "z")
+        editMenu.addItem(withTitle: String(localized: "重做"), action: Selector(("redo:")), keyEquivalent: "Z")
         editMenu.addItem(.separator())
-        editMenu.addItem(withTitle: "剪下", action: #selector(NSText.cut(_:)), keyEquivalent: "x")
-        editMenu.addItem(withTitle: "拷貝", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
-        editMenu.addItem(withTitle: "貼上", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
-        editMenu.addItem(withTitle: "全選", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+        editMenu.addItem(withTitle: String(localized: "剪下"), action: #selector(NSText.cut(_:)), keyEquivalent: "x")
+        editMenu.addItem(withTitle: String(localized: "拷貝"), action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        editMenu.addItem(withTitle: String(localized: "貼上"), action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+        editMenu.addItem(withTitle: String(localized: "全選"), action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
         editMenu.addItem(.separator())
-        let remove = editMenu.addItem(withTitle: "移除", action: #selector(GridView.delete(_:)), keyEquivalent: "\u{8}")
+        let remove = editMenu.addItem(withTitle: String(localized: "移除"), action: #selector(GridView.delete(_:)), keyEquivalent: "\u{8}")
         remove.keyEquivalentModifierMask = [.command]
         editMenu.addItem(.separator())
-        editMenu.addItem(withTitle: "搜尋", action: #selector(focusSearch), keyEquivalent: "k").target = self
-        editMenu.addItem(withTitle: "啟用中文描述搜尋…", action: #selector(enableChineseDescriptions), keyEquivalent: "").target = self
-        editMenu.addItem(withTitle: "搜尋", action: #selector(focusSearch), keyEquivalent: "f").target = self
+        editMenu.addItem(withTitle: String(localized: "搜尋"), action: #selector(focusSearch), keyEquivalent: "k").target = self
+        editMenu.addItem(withTitle: String(localized: "啟用中文描述搜尋…"), action: #selector(enableChineseDescriptions), keyEquivalent: "").target = self
+        editMenu.addItem(withTitle: String(localized: "搜尋"), action: #selector(focusSearch), keyEquivalent: "f").target = self
         editMenu.items.last?.isAlternate = false
         editMenu.items.last?.isHidden = true
         editItem.submenu = editMenu
         main.addItem(editItem)
 
         let viewItem = NSMenuItem()
-        let viewMenu = NSMenu(title: "顯示方式")
+        let viewMenu = NSMenu(title: String(localized: "顯示方式"))
         // ⌘1–3 the spaces; ⌥⌘ and a number the layouts within them.
         for s in Space.allCases {
             let item = viewMenu.addItem(withTitle: s.title, action: #selector(spaceFromMenu(_:)), keyEquivalent: "\(s.rawValue + 1)")
@@ -1153,32 +1155,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         }
         viewMenu.addItem(.separator())
         for (i, m) in [ViewMode.grid, .masonry, .timeline, .canvas, .graph].enumerated() {
-            let item = viewMenu.addItem(withTitle: "\(m.space.title)：\(m.title)", action: #selector(modeFromMenu(_:)), keyEquivalent: "\(i + 1)")
+            let item = viewMenu.addItem(withTitle: String(localized: "\(m.space.title)：\(m.title)"), action: #selector(modeFromMenu(_:)), keyEquivalent: "\(i + 1)")
             item.keyEquivalentModifierMask = [.command, .option]
             item.tag = m.rawValue
             item.target = self
         }
         viewMenu.addItem(.separator())
-        viewMenu.addItem(withTitle: "放大", action: #selector(zoomIn), keyEquivalent: "=").target = self
-        viewMenu.addItem(withTitle: "縮小", action: #selector(zoomOut), keyEquivalent: "-").target = self
-        viewMenu.addItem(withTitle: "整理畫布", action: #selector(CanvasView.arrange(_:)), keyEquivalent: "")
-        viewMenu.addItem(withTitle: "畫布依主題分堆", action: #selector(CanvasView.clusterByTheme(_:)), keyEquivalent: "")
-        viewMenu.addItem(withTitle: "重設地圖擺放…", action: #selector(CanvasView.resetArrangement(_:)), keyEquivalent: "")
+        viewMenu.addItem(withTitle: String(localized: "放大"), action: #selector(zoomIn), keyEquivalent: "=").target = self
+        viewMenu.addItem(withTitle: String(localized: "縮小"), action: #selector(zoomOut), keyEquivalent: "-").target = self
+        viewMenu.addItem(withTitle: String(localized: "整理畫布"), action: #selector(CanvasView.arrange(_:)), keyEquivalent: "")
+        viewMenu.addItem(withTitle: String(localized: "畫布依主題分堆"), action: #selector(CanvasView.clusterByTheme(_:)), keyEquivalent: "")
+        viewMenu.addItem(withTitle: String(localized: "重設地圖擺放…"), action: #selector(CanvasView.resetArrangement(_:)), keyEquivalent: "")
         viewMenu.addItem(.separator())
-        viewMenu.addItem(withTitle: "隨機一件", action: #selector(randomFromMenu), keyEquivalent: "r").keyEquivalentModifierMask = [.command, .option]
+        viewMenu.addItem(withTitle: String(localized: "隨機一件"), action: #selector(randomFromMenu), keyEquivalent: "r").keyEquivalentModifierMask = [.command, .option]
         viewMenu.items.last?.target = self
-        viewMenu.addItem(withTitle: "資訊", action: #selector(toggleInspector), keyEquivalent: "i").target = self
-        viewMenu.addItem(withTitle: "顯示或隱藏側欄", action: #selector(NSSplitViewController.toggleSidebar(_:)), keyEquivalent: "s")
+        viewMenu.addItem(withTitle: String(localized: "資訊"), action: #selector(toggleInspector), keyEquivalent: "i").target = self
+        viewMenu.addItem(withTitle: String(localized: "顯示或隱藏側欄"), action: #selector(NSSplitViewController.toggleSidebar(_:)), keyEquivalent: "s")
             .keyEquivalentModifierMask = [.command, .control]
-        viewMenu.addItem(withTitle: "進入全螢幕", action: #selector(NSWindow.toggleFullScreen(_:)), keyEquivalent: "f")
+        viewMenu.addItem(withTitle: String(localized: "進入全螢幕"), action: #selector(NSWindow.toggleFullScreen(_:)), keyEquivalent: "f")
             .keyEquivalentModifierMask = [.command, .control]
         viewItem.submenu = viewMenu
         main.addItem(viewItem)
 
         let windowItem = NSMenuItem()
-        let windowMenu = NSMenu(title: "視窗")
-        windowMenu.addItem(withTitle: "縮到最小", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
-        windowMenu.addItem(withTitle: "珍奇櫃", action: #selector(showCabinet), keyEquivalent: "0").target = self
+        let windowMenu = NSMenu(title: String(localized: "視窗"))
+        windowMenu.addItem(withTitle: String(localized: "縮到最小"), action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
+        windowMenu.addItem(withTitle: String(localized: "珍奇櫃"), action: #selector(showCabinet), keyEquivalent: "0").target = self
         windowItem.submenu = windowMenu
         NSApp.windowsMenu = windowMenu
         main.addItem(windowItem)

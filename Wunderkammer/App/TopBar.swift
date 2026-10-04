@@ -32,11 +32,11 @@ final class TopBar: NSView {
         searchButton.image = Icon.optical(.search, size: 18)
         searchButton.isBordered = false
         searchButton.contentTintColor = .secondaryLabelColor
-        searchButton.toolTip = "搜尋或提問（⌘K）"
-        searchButton.setAccessibilityLabel("搜尋")
+        searchButton.toolTip = String(localized: "搜尋或提問（⌘K）")
+        searchButton.setAccessibilityLabel(String(localized: "搜尋"))
         searchButton.target = self
         searchButton.action = #selector(searchTapped)
-        searchField.placeholderString = "搜尋或提問"
+        searchField.placeholderString = String(localized: "搜尋或提問")
         searchField.isBezeled = false
         searchField.drawsBackground = false
         searchField.focusRingType = .none
@@ -48,8 +48,8 @@ final class TopBar: NSView {
         let infoButton = NSButton(image: Icon.optical(.infoCircle, size: 18), target: self, action: #selector(infoTapped))
         infoButton.isBordered = false
         infoButton.contentTintColor = .secondaryLabelColor
-        infoButton.toolTip = "資訊（⌘I）"
-        infoButton.setAccessibilityLabel("資訊")
+        infoButton.toolTip = String(localized: "資訊（⌘I）")
+        infoButton.setAccessibilityLabel(String(localized: "資訊"))
 
         for v in [searchButton, searchField] as [NSView] {
             v.translatesAutoresizingMaskIntoConstraints = false
@@ -60,8 +60,8 @@ final class TopBar: NSView {
         let side = NSButton(image: Icon.optical(.sidebar, size: 18), target: self, action: #selector(sidebarTapped))
         side.isBordered = false
         side.contentTintColor = .secondaryLabelColor
-        side.toolTip = "顯示或隱藏側欄（⌃⌘S）"
-        side.setAccessibilityLabel("側欄")
+        side.toolTip = String(localized: "顯示或隱藏側欄（⌃⌘S）")
+        side.setAccessibilityLabel(String(localized: "側欄"))
         side.translatesAutoresizingMaskIntoConstraints = false
         sidebarButton.addSubview(side)
         for v in [spaces, searchCapsule, info, sidebarButton] as [NSView] {
@@ -246,7 +246,8 @@ final class SpaceSwitch: NSView {
     private let glass = Glass(cornerRadius: TopBar.height / 2)
     private let pill = CALayer()
     private var labels: [NSButton] = []
-    private static let segment: CGFloat = 72
+    /// Wide enough for the longest name in this language ("Collection" needs more than 收藏).
+    private var segment: CGFloat = 72
     private static let inset: CGFloat = 3
 
     var selectedSegment = 0 {
@@ -255,6 +256,9 @@ final class SpaceSwitch: NSView {
 
     init(titles: [String], tips: [String]) {
         super.init(frame: .zero)
+        let font = NSFont.systemFont(ofSize: 13.5, weight: .semibold)
+        let widest = titles.map { ($0 as NSString).size(withAttributes: [.font: font]).width }.max() ?? 0
+        segment = max(72, ceil(widest) + 32)
         glass.translatesAutoresizingMaskIntoConstraints = false
         addSubview(glass)
         glass.wantsLayer = true
@@ -263,7 +267,7 @@ final class SpaceSwitch: NSView {
         var constraints = [
             glass.topAnchor.constraint(equalTo: topAnchor), glass.bottomAnchor.constraint(equalTo: bottomAnchor),
             glass.leadingAnchor.constraint(equalTo: leadingAnchor), glass.trailingAnchor.constraint(equalTo: trailingAnchor),
-            widthAnchor.constraint(equalToConstant: Self.segment * CGFloat(titles.count) + Self.inset * 2),
+            widthAnchor.constraint(equalToConstant: segment * CGFloat(titles.count) + Self.inset * 2),
         ]
         for (i, title) in titles.enumerated() {
             let b = NSButton(title: title, target: self, action: #selector(picked(_:)))
@@ -274,8 +278,8 @@ final class SpaceSwitch: NSView {
             glass.addSubview(b)
             labels.append(b)
             constraints += [
-                b.leadingAnchor.constraint(equalTo: glass.leadingAnchor, constant: Self.inset + CGFloat(i) * Self.segment),
-                b.widthAnchor.constraint(equalToConstant: Self.segment),
+                b.leadingAnchor.constraint(equalTo: glass.leadingAnchor, constant: Self.inset + CGFloat(i) * segment),
+                b.widthAnchor.constraint(equalToConstant: segment),
                 b.topAnchor.constraint(equalTo: glass.topAnchor, constant: Self.inset),
                 b.bottomAnchor.constraint(equalTo: glass.bottomAnchor, constant: -Self.inset),
             ]
@@ -311,7 +315,7 @@ final class SpaceSwitch: NSView {
 
     private func place(animated: Bool) {
         let h = TopBar.height - Self.inset * 2
-        let frame = CGRect(x: Self.inset + CGFloat(selectedSegment) * Self.segment, y: Self.inset, width: Self.segment, height: h)
+        let frame = CGRect(x: Self.inset + CGFloat(selectedSegment) * segment, y: Self.inset, width: segment, height: h)
         CATransaction.begin()
         CATransaction.setDisableActions(!animated)
         CATransaction.setAnimationDuration(0.25)
@@ -400,7 +404,7 @@ final class DropOverlay: NSView {
     }
 
     func show(_ on: Bool, into name: String) {
-        if on { label.stringValue = "放開就收進「\(name)」"; isHidden = false }
+        if on { label.stringValue = String(localized: "放開就收進「\(name)」"); isHidden = false }
         NSAnimationContext.runAnimationGroup({ ctx in
             ctx.duration = 0.15
             animator().alphaValue = on ? 1 : 0

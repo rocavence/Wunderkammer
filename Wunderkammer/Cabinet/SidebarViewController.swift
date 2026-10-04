@@ -13,7 +13,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     /// The 珍奇櫃 card at the top: the window for switching, adding and removing 珍奇櫃.
     var onManageCabinets: (() -> Void)?
     /// Which 珍奇櫃 is open, shown on the card at the top.
-    var cabinetName = "珍奇櫃" { didSet { if cabinetName != oldValue { reload() } } }
+    var cabinetName = String(localized: "珍奇櫃") { didSet { if cabinetName != oldValue { reload() } } }
     var cabinetID: UUID? { didSet { if cabinetID != oldValue { coverIDs = [] ; reload() } } }
     private let header = CabinetHeader()
     /// A picture chosen as the open 珍奇櫃's cover; else its newest pieces.
@@ -72,7 +72,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
 
         let add = NSButton(image: Icon.image(.plus), target: self, action: #selector(newBoard(_:)))
         add.isBordered = false
-        add.toolTip = "新增釘選版"
+        add.toolTip = String(localized: "新增釘選版")
         add.contentTintColor = .secondaryLabelColor
 
         header.target = self
@@ -150,17 +150,17 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     static func kicker(for base: Scope.Base) -> (label: String, icon: Reicon)? {
         switch base {
         case .all: nil
-        case .kind(let k): (fileKinds.contains(k) ? "格式" : "分類", kindIcons[k] ?? .file)
-        case .subject(let label): ("主題", themeIcon(label))
-        case .color: ("顏色", .palette)
-        case .board: ("釘選版", .layers)
-        case .onThisDay: ("漫遊", .calendarDay)
-        case .forgotten: ("漫遊", .history)
-        case .trail: ("漫遊", .routing)
-        case .site: ("網站", .globe)
-        case .mentions: ("名字", .people)
-        case .similar: ("相似", .image)
-        case .answer: ("回答", .sparkles)
+        case .kind(let k): (fileKinds.contains(k) ? String(localized: "格式") : String(localized: "分類"), kindIcons[k] ?? .file)
+        case .subject(let label): (String(localized: "主題"), themeIcon(label))
+        case .color: (String(localized: "顏色"), .palette)
+        case .board: (String(localized: "釘選版"), .layers)
+        case .onThisDay: (String(localized: "漫遊"), .calendarDay)
+        case .forgotten: (String(localized: "漫遊"), .history)
+        case .trail: (String(localized: "漫遊"), .routing)
+        case .site: (String(localized: "網站"), .globe)
+        case .mentions: (String(localized: "名字"), .people)
+        case .similar: (String(localized: "相似"), .image)
+        case .answer: (String(localized: "回答"), .sparkles)
         }
     }
 
@@ -213,13 +213,13 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         switch space {
         case .wander:
             // Ways into the wall: everything, what time brings back, where you've been.
-            r = [.view(.all, title: "全部", icon: .grid, count: library.items.count),
-                 .view(.onThisDay, title: "過去的今天", icon: .calendarDay, count: nil),
-                 .view(.forgotten, title: "被遺忘的", icon: .history, count: nil),
-                 .view(.trail, title: "足跡", icon: .routing, count: nil),
+            r = [.view(.all, title: String(localized: "全部"), icon: .grid, count: library.items.count),
+                 .view(.onThisDay, title: String(localized: "過去的今天"), icon: .calendarDay, count: nil),
+                 .view(.forgotten, title: String(localized: "被遺忘的"), icon: .history, count: nil),
+                 .view(.trail, title: String(localized: "足跡"), icon: .routing, count: nil),
                  .random] + themeRows + colourRows
         case .cabinet, .map:
-            r = [.view(.all, title: "全部", icon: .grid, count: library.items.count)]
+            r = [.view(.all, title: String(localized: "全部"), icon: .grid, count: library.items.count)]
             // What it is as a file, then what it's about (a book, a film…), side by side.
             let kinds: [Row] = Self.fileKinds.compactMap { k in
                 let n = count(k)
@@ -294,7 +294,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         switch rows[row] {
         case .header(let title):
-            let label = NSTextField(labelWithString: title)
+            let label = NSTextField(labelWithString: Self.sectionTitle(title))
             label.font = .systemFont(ofSize: 11, weight: .semibold)
             label.textColor = .secondaryLabelColor
             let row = NSView()
@@ -316,7 +316,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
                 chevron.trailingAnchor.constraint(equalTo: row.trailingAnchor, constant: -Self.countInset),
                 chevron.centerYAnchor.constraint(equalTo: label.centerYAnchor),
             ])
-            row.toolTip = isFolded(title) ? "展開\(title)" : "收起\(title)"
+            row.toolTip = isFolded(title) ? String(localized: "展開\(Self.sectionTitle(title))") : String(localized: "收起\(Self.sectionTitle(title))")
             return row
         case .view(let base, let title, let icon, let count):
             let c = cell(title: title, icon: icon, count: count)
@@ -327,7 +327,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             }
             return c
         case .random:
-            return cell(title: "隨機一件", icon: .shuffle, count: nil, hint: "R")
+            return cell(title: String(localized: "隨機一件"), icon: .shuffle, count: nil, hint: "R")
         case .board(let b):
             let cell = cell(title: b.name, icon: .layers, count: b.itemIDs.count)
             cell.textField?.delegate = self
@@ -393,6 +393,18 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     /// Sections that can grow long fold away; the rest are short enough to stay open.
     static let foldable: Set<String> = ["顏色", "主題"]
 
+    /// Section ids stay Chinese (fold state is keyed by them); only the shown title is localized.
+    static func sectionTitle(_ id: String) -> String {
+        switch id {
+        case "格式": String(localized: "格式")
+        case "分類": String(localized: "分類")
+        case "主題": String(localized: "主題")
+        case "顏色": String(localized: "顏色")
+        case "釘選版": String(localized: "釘選版")
+        default: id
+        }
+    }
+
     /// Folded until opened: they're long.
     func isFolded(_ section: String) -> Bool {
         UserDefaults.standard.object(forKey: "sidebar.folded.v2.\(section)") as? Bool ?? true
@@ -446,7 +458,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         if let cell = table.view(atColumn: 0, row: h, makeIfNecessary: false),
            let chevron = cell.subviews.compactMap({ $0 as? NSImageView }).first {
             chevron.image = Self.chevron(folded: after == 0)
-            cell.toolTip = after == 0 ? "展開\(section)" : "收起\(section)"
+            cell.toolTip = after == 0 ? String(localized: "展開\(Self.sectionTitle(section))") : String(localized: "收起\(Self.sectionTitle(section))")
         }
         rows = new
         NSAnimationContext.runAnimationGroup { ctx in
@@ -489,7 +501,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
 
     @objc func newBoard(_ sender: Any?) {
         let n = library.collections.count + 1
-        let b = library.createCollection(named: "釘選版 \(n)")
+        let b = library.createCollection(named: String(localized: "釘選版 \(n)"))
         select(.board(b.id))
         if let row = rows.firstIndex(where: { if case .board(let x) = $0 { return x.id == b.id }; return false }) {
             startRename(row: row)
@@ -520,12 +532,12 @@ extension SidebarViewController: NSMenuDelegate {
         menu.removeAllItems()
         let row = table.clickedRow
         guard let b = board(at: row) else {
-            menu.addItem(ClosureMenuItem("新增釘選版") { [weak self] in self?.newBoard(nil) })
+            menu.addItem(ClosureMenuItem(String(localized: "新增釘選版")) { [weak self] in self?.newBoard(nil) })
             return
         }
-        menu.addItem(ClosureMenuItem("重新命名") { [weak self] in self?.startRename(row: row) })
+        menu.addItem(ClosureMenuItem(String(localized: "重新命名")) { [weak self] in self?.startRename(row: row) })
         menu.addItem(.separator())
-        menu.addItem(ClosureMenuItem("刪除釘選版「\(b.name)」") { [weak self] in
+        menu.addItem(ClosureMenuItem(String(localized: "刪除釘選版「\(b.name)」")) { [weak self] in
             self?.library.deleteCollection(b.id)
         })
     }
@@ -578,7 +590,7 @@ final class CabinetHeader: NSControl {
             chevron.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
             chevron.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
-        toolTip = "切換、新增、改名或刪除珍奇櫃"
+        toolTip = String(localized: "切換、新增、改名或刪除珍奇櫃")
         setAccessibilityElement(true)
         setAccessibilityRole(.button)
         updateFill()
@@ -588,8 +600,8 @@ final class CabinetHeader: NSControl {
 
     func set(name text: String, count: Int) {
         name.stringValue = text
-        detail.stringValue = "\(count) 件收藏"
-        setAccessibilityLabel("珍奇櫃：\(text)，\(count) 件收藏。按一下切換或管理")
+        detail.stringValue = String(localized: "\(count) 件收藏")
+        setAccessibilityLabel(String(localized: "珍奇櫃：\(text)，\(count) 件收藏。按一下切換或管理"))
     }
 
     private func updateFill() {

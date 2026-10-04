@@ -137,12 +137,12 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
 
         var title: String {
             switch self {
-            case .book: "書"
-            case .movie: "電影"
-            case .show: "影集"
-            case .music: "音樂"
-            case .product: "商品"
-            case .place: "地點"
+            case .book: String(localized: "書")
+            case .movie: String(localized: "電影")
+            case .show: String(localized: "影集")
+            case .music: String(localized: "音樂")
+            case .product: String(localized: "商品")
+            case .place: String(localized: "地點")
             }
         }
     }
@@ -153,12 +153,12 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
 
             var title: String {
                 switch self {
-                case .author: "作者"
-                case .director: "導演"
-                case .artist: "演出者"
-                case .creator: "創作者"
-                case .brand: "品牌"
-                case .actor: "演員"
+                case .author: String(localized: "作者")
+                case .director: String(localized: "導演")
+                case .artist: String(localized: "演出者")
+                case .creator: String(localized: "創作者")
+                case .brand: String(localized: "品牌")
+                case .actor: String(localized: "演員")
                 }
             }
         }

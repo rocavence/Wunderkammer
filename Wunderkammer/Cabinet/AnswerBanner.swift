@@ -33,10 +33,10 @@ final class AnswerBanner: NSVisualEffectView {
         spinner.isDisplayedWhenStopped = false
         close.image = Icon.image(.x)
         close.isBordered = false
-        close.toolTip = "關閉回答"
+        close.toolTip = String(localized: "關閉回答")
         close.target = self
         close.action = #selector(closeTapped)
-        close.setAccessibilityLabel("關閉回答")
+        close.setAccessibilityLabel(String(localized: "關閉回答"))
 
         for v in [question, answer, spinner, close] as [NSView] {
             v.translatesAutoresizingMaskIntoConstraints = false
@@ -65,8 +65,8 @@ final class AnswerBanner: NSVisualEffectView {
     var answerText: String { answer.stringValue }
 
     func thinking(about q: String) {
-        question.stringValue = "問：\(q)"
-        answer.stringValue = "      正在看你的收藏…"
+        question.stringValue = String(localized: "問：\(q)")
+        answer.stringValue = "      " + String(localized: "正在看你的收藏…")
         answer.textColor = .secondaryLabelColor
         spinner.startAnimation(nil)
     }

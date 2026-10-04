@@ -60,16 +60,16 @@ struct Scope: Equatable, Sendable {
 
         var title: String {
             switch self {
-            case .images: "圖片"
-            case .web: "網頁"
-            case .text: "文字"
-            case .media: "影片與聲音"
-            case .documents: "文件與檔案"
-            case .books: "書"
-            case .films: "電影與影集"
-            case .music: "音樂"
-            case .products: "商品"
-            case .places: "地點"
+            case .images: String(localized: "圖片")
+            case .web: String(localized: "網頁")
+            case .text: String(localized: "文字")
+            case .media: String(localized: "影片與聲音")
+            case .documents: String(localized: "文件與檔案")
+            case .books: String(localized: "書")
+            case .films: String(localized: "電影與影集")
+            case .music: String(localized: "音樂")
+            case .products: String(localized: "商品")
+            case .places: String(localized: "地點")
             }
         }
     }

@@ -35,7 +35,10 @@ final class InspectorViewController: NSViewController {
         document.addSubview(stack)
         let scroll = NSScrollView()
         scroll.documentView = document
-        scroll.drawsBackground = false
+        // The window's own colour: the strip the title bar leaves above the
+        // inspector is the same, so no band shows there.
+        scroll.drawsBackground = true
+        scroll.backgroundColor = .windowBackgroundColor
         scroll.hasVerticalScroller = true
         scroll.autohidesScrollers = true
         document.translatesAutoresizingMaskIntoConstraints = false
@@ -65,7 +68,7 @@ final class InspectorViewController: NSViewController {
             // Centered and calm, saying what will appear here.
             let icon = NSImageView(image: Icon.image(.infoCircle, size: 28))
             icon.contentTintColor = .tertiaryLabelColor
-            let hint = label("選一件收藏\n這裡會顯示系統替它記下的一切：\n它是什麼、從哪來、和什麼有關", size: 12.5, color: .secondaryLabelColor)
+            let hint = label(String(localized: "選一件收藏\n這裡會顯示系統替它記下的一切：\n它是什麼、從哪來、和什麼有關"), size: 12.5, color: .secondaryLabelColor)
             hint.alignment = .center
             let empty = NSStackView(views: [icon, hint])
             empty.orientation = .vertical
@@ -114,22 +117,22 @@ final class InspectorViewController: NSViewController {
         let actions = NSStackView()
         actions.spacing = 6
         if library.openURL(item) != nil {
-            actions.addArrangedSubview(button("打開", icon: .arrowUpRight) { [weak self] in
+            actions.addArrangedSubview(button(String(localized: "打開"), icon: .arrowUpRight) { [weak self] in
                 guard let self, let url = self.library.openURL(item) else { return }
                 self.library.markViewed(item.id)
                 NSWorkspace.shared.open(url)
             })
         }
         if let page = library.archiveURL(item) {
-            actions.addArrangedSubview(button("看快照", icon: .fileText) { NSWorkspace.shared.open(page) })
+            actions.addArrangedSubview(button(String(localized: "看快照"), icon: .fileText) { NSWorkspace.shared.open(page) })
         }
         if let file = library.originalURL(item), item.storedFilename == nil {
-            actions.addArrangedSubview(button("在 Finder 顯示", icon: .file) {
+            actions.addArrangedSubview(button(String(localized: "在 Finder 顯示"), icon: .file) {
                 NSWorkspace.shared.activateFileViewerSelecting([file])
             })
         }
         if item.storedFilename == nil, item.filePath != nil, library.originalURL(item) != nil {
-            actions.addArrangedSubview(button("複製到珍奇櫃", icon: .copy) { [weak self] in
+            actions.addArrangedSubview(button(String(localized: "複製到珍奇櫃"), icon: .copy) { [weak self] in
                 guard let self else { return }
                 Task {
                     await self.library.copyIntoLibrary([item.id])
@@ -138,7 +141,7 @@ final class InspectorViewController: NSViewController {
             })
         }
         if let url = item.url, actions.arrangedSubviews.count < 3 {
-            actions.addArrangedSubview(button("拷貝連結", icon: .link) {
+            actions.addArrangedSubview(button(String(localized: "拷貝連結"), icon: .link) {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(url, forType: .string)
             })
@@ -155,7 +158,7 @@ final class InspectorViewController: NSViewController {
         // How it relates to other kinds of things: the same person, a mention, the same city.
         let relations = CrossMedia.relations(of: item, in: library.items).prefix(8)
         if !relations.isEmpty {
-            section("關聯")
+            section(String(localized: "關聯"))
             let rows = NSStackView()
             rows.orientation = .vertical
             rows.alignment = .leading
@@ -171,15 +174,15 @@ final class InspectorViewController: NSViewController {
         }
 
         // The rest of what the system noted (kind and site are in the line above).
-        let facts = Self.facts(item, library: library).filter { $0.0 != "類型" && $0.0 != "來源" }
+        let facts = Self.facts(item, library: library).filter { $0.0 != Self.kindTitle && $0.0 != Self.sourceTitle }
         if !facts.isEmpty {
-            section("資訊")
+            section(String(localized: "資訊"))
             for (key, value) in facts {
                 // Colours as colours.
-                if key == "顏色", let names = item.colors { stack.addArrangedSubview(swatches(Array(names.prefix(3)))); continue }
+                if key == Self.colorTitle, let names = item.colors { stack.addArrangedSubview(swatches(Array(names.prefix(3)))); continue }
                 let r = row(key, value)
                 // The full path where it's shortened.
-                if key.hasSuffix("位置"), let path = item.filePath { r.toolTip = (path as NSString).abbreviatingWithTildeInPath }
+                if key == Self.locationTitle || key == Self.originalLocationTitle, let path = item.filePath { r.toolTip = (path as NSString).abbreviatingWithTildeInPath }
                 stack.addArrangedSubview(r)
             }
         }
@@ -189,7 +192,7 @@ final class InspectorViewController: NSViewController {
         if let domain = item.domain { links.append((domain, .site(domain))) }
         let connected = links.filter { library.items(for: Scope(base: $0.1)).count > 1 }
         if !connected.isEmpty {
-            section("也出現在")
+            section(String(localized: "也出現在"))
             let rows = NSStackView()
             rows.orientation = .vertical
             rows.alignment = .leading
@@ -202,20 +205,20 @@ final class InspectorViewController: NSViewController {
         }
 
         if let text = item.ocrText, !text.isEmpty {
-            section("圖中的文字")
+            section(String(localized: "圖中的文字"))
             let body = label(String(text.prefix(600)), size: 12, color: .secondaryLabelColor)
             body.maximumNumberOfLines = 8
             stack.addArrangedSubview(body)
         }
         if let labels = item.labels, !labels.isEmpty {
-            section("系統看到的")
+            section(String(localized: "系統看到的"))
             let tags = label(labels.prefix(8).map(Subjects.title).joined(separator: "  ·  "), size: 12, color: .secondaryLabelColor)
             tags.maximumNumberOfLines = 3
             stack.addArrangedSubview(tags)
         }
 
         if let related = related?(item), !related.isEmpty {
-            section("相關的收藏")
+            section(String(localized: "相關的收藏"))
             let columns = 3
             let side: CGFloat = 76
             let grid = NSGridView(numberOfColumns: columns, rows: 0)
@@ -250,7 +253,7 @@ final class InspectorViewController: NSViewController {
     ]
 
     private func swatches(_ names: [String]) -> NSView {
-        let k = label("顏色", size: 11, color: .secondaryLabelColor)
+        let k = label(Self.colorTitle, size: 11, color: .secondaryLabelColor)
         k.translatesAutoresizingMaskIntoConstraints = false
         k.widthAnchor.constraint(equalToConstant: 56).isActive = true
         let dots = NSStackView()
@@ -295,22 +298,28 @@ final class InspectorViewController: NSViewController {
     }
 
     /// Stored as keys; shown in Chinese.
-    static let sourceNames = ["Browser": "瀏覽器", "Dock": "Dock 圖示", "Screenshot": "截圖"]
-    static let colorNames = ["black": "黑", "white": "白", "gray": "灰", "grey": "灰", "red": "紅", "orange": "橙",
-                             "yellow": "黃", "green": "綠", "blue": "藍", "purple": "紫", "pink": "粉紅", "brown": "棕",
-                             "beige": "米", "teal": "青", "cyan": "青", "gold": "金", "silver": "銀"]
+    static let sourceNames = ["Browser": String(localized: "瀏覽器"), "Dock": String(localized: "Dock 圖示"), "Screenshot": String(localized: "截圖")]
+    static let colorNames = ["black": String(localized: "黑"), "white": String(localized: "白"), "gray": String(localized: "灰"), "grey": String(localized: "灰"), "red": String(localized: "紅"), "orange": String(localized: "橙"),
+                             "yellow": String(localized: "黃"), "green": String(localized: "綠"), "blue": String(localized: "藍"), "purple": String(localized: "紫"), "pink": String(localized: "粉紅"), "brown": String(localized: "棕"),
+                             "beige": String(localized: "米"), "teal": String(localized: "青"), "cyan": String(localized: "青"), "gold": String(localized: "金"), "silver": String(localized: "銀")]
+
+    static let kindTitle = String(localized: "類型")
+    static let sourceTitle = String(localized: "來源")
+    static let colorTitle = String(localized: "顏色")
+    static let locationTitle = String(localized: "位置")
+    static let originalLocationTitle = String(localized: "原始位置")
 
     static func kindName(_ item: Item) -> String {
-        let names: [Item.Kind: String] = [.image: "圖片", .video: "影片", .audio: "聲音", .pdf: "PDF", .web: "網頁", .text: "文字", .file: "檔案"]
+        let names: [Item.Kind: String] = [.image: String(localized: "圖片"), .video: String(localized: "影片"), .audio: String(localized: "聲音"), .pdf: "PDF", .web: String(localized: "網頁"), .text: String(localized: "文字"), .file: String(localized: "檔案")]
         return item.thing?.title ?? names[item.kind] ?? ""
     }
 
     /// The facts worth showing for this kind, in reading order.
     static func facts(_ item: Item, library: Library) -> [(String, String)] {
         var f: [(String, String)] = []
-        let kindName: [Item.Kind: String] = [.image: "圖片", .video: "影片", .audio: "聲音", .pdf: "PDF", .web: "網頁", .text: "文字", .file: "檔案"]
-        f.append(("類型", item.thing?.title ?? kindName[item.kind] ?? item.kind.rawValue))
-        if let domain = item.domain { f.append(("來源", domain)) }
+        let kindName: [Item.Kind: String] = [.image: String(localized: "圖片"), .video: String(localized: "影片"), .audio: String(localized: "聲音"), .pdf: "PDF", .web: String(localized: "網頁"), .text: String(localized: "文字"), .file: String(localized: "檔案")]
+        f.append((kindTitle, item.thing?.title ?? kindName[item.kind] ?? item.kind.rawValue))
+        if let domain = item.domain { f.append((sourceTitle, domain)) }
         if let credits = item.credits, !credits.isEmpty {
             // One line per role, in the order the page gave them.
             var roles: [Item.Credit.Role] = []
@@ -318,59 +327,68 @@ final class InspectorViewController: NSViewController {
             for role in roles {
                 // The leads; the rest counted.
                 let names = credits.filter { $0.role == role }.map(\.name)
-                let shown = names.prefix(4).joined(separator: "、")
-                f.append((role.title, names.count > 4 ? "\(shown) 等 \(names.count) 位" : shown))
+                let shown = names.prefix(4).joined(separator: String(localized: "、"))
+                f.append((role.title, names.count > 4 ? String(localized: "\(shown) 等 \(names.count) 位") : shown))
             }
         } else if let creator = item.creator {
-            f.append((item.kind == .audio ? "演出者" : "作者", creator))
+            f.append((item.kind == .audio ? String(localized: "演出者") : String(localized: "作者"), creator))
         }
-        if let released = item.released { f.append(("發行", Self.released(released))) }
-        if item.kind == .image || item.kind == .video { f.append(("尺寸", "\(item.pixelWidth) × \(item.pixelHeight)")) }
-        if let d = item.duration { f.append(("長度", Self.duration(d))) }
-        if let p = item.pageCount { f.append(("頁數", "\(p) 頁")) }
-        if let size = item.fileSize, size > 0 { f.append(("大小", ByteCountFormatter.string(fromByteCount: size, countStyle: .file))) }
-        if !item.originalFilename.isEmpty, item.kind != .web { f.append(("檔名", item.originalFilename)) }
+        if let released = item.released { f.append((String(localized: "發行"), Self.released(released))) }
+        if item.kind == .image || item.kind == .video { f.append((String(localized: "尺寸"), "\(item.pixelWidth) × \(item.pixelHeight)")) }
+        if let d = item.duration { f.append((String(localized: "長度"), Self.duration(d))) }
+        if let p = item.pageCount { f.append((String(localized: "頁數"), String(localized: "\(p) 頁"))) }
+        if let size = item.fileSize, size > 0 { f.append((String(localized: "大小"), ByteCountFormatter.string(fromByteCount: size, countStyle: .file))) }
+        if !item.originalFilename.isEmpty, item.kind != .web { f.append((String(localized: "檔名"), item.originalFilename)) }
         if let path = item.filePath {
             if item.storedFilename != nil {
-                f.append(("位置", "珍奇櫃裡有一份複本"))
-                f.append(("原始位置", Self.shortPath(path)))
+                f.append((locationTitle, String(localized: "珍奇櫃裡有一份複本")))
+                f.append((originalLocationTitle, Self.shortPath(path)))
             } else {
-                f.append(("位置", library.originalURL(item) == nil ? "找不到原始檔" : Self.shortPath(path)))
+                f.append((locationTitle, library.originalURL(item) == nil ? String(localized: "找不到原始檔") : Self.shortPath(path)))
             }
         }
         if item.kind == .web {
             let saved = item.archivedAt.map { Self.date.string(from: $0) }
-            f.append(("頁面快照", item.archiveFilename != nil ? "\(saved ?? "") 保存" : item.archivedAt == nil ? "保存中…" : "這個網站不讓保存"))
+            f.append((String(localized: "頁面快照"), item.archiveFilename != nil ? String(localized: "\(saved ?? "") 保存") : item.archivedAt == nil ? String(localized: "保存中…") : String(localized: "這個網站不讓保存")))
         }
-        f.append(("收藏於", Self.dateTime.string(from: item.dateAdded)))
-        if let created = item.createdDate { f.append(("建立於", Self.date.string(from: created))) }
-        if let app = item.sourceApp { f.append(("從", Self.sourceNames[app] ?? app)) }
-        if item.viewCount > 0 { f.append(("看過", "\(item.viewCount) 次")) }
+        f.append((String(localized: "收藏於"), Self.dateTime.string(from: item.dateAdded)))
+        if let created = item.createdDate { f.append((String(localized: "建立於"), Self.date.string(from: created))) }
+        if let app = item.sourceApp { f.append((String(localized: "從"), Self.sourceNames[app] ?? app)) }
+        if item.viewCount > 0 { f.append((String(localized: "看過"), String(localized: "\(item.viewCount) 次"))) }
         if let colors = item.colors, !colors.isEmpty {
-            f.append(("顏色", colors.prefix(3).map { Self.colorNames[$0] ?? $0 }.joined(separator: "、")))
+            f.append((colorTitle, colors.prefix(3).map { Self.colorNames[$0] ?? $0 }.joined(separator: String(localized: "、"))))
         }
         return f
     }
 
-    private static let dateTime: DateFormatter = {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "zh_Hant_TW")
-        f.dateFormat = "y 年 M 月 d 日 HH:mm"
-        return f
-    }()
+    private static let dateTime = formatter(chinese: "y 年 M 月 d 日 HH:mm", template: "yMMMd jm")
+    private static let date = formatter(chinese: "y 年 M 月 d 日", template: "yMMMd")
 
-    private static let date: DateFormatter = {
+    nonisolated private static var showsChinese: Bool {
+        Bundle.main.preferredLocalizations.first?.hasPrefix("zh") == true
+    }
+
+    nonisolated private static func formatter(chinese: String, template: String) -> DateFormatter {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "zh_Hant_TW")
-        f.dateFormat = "y 年 M 月 d 日"
+        f.locale = .current
+        if showsChinese { f.dateFormat = chinese } else { f.setLocalizedDateFormatFromTemplate(template) }
         return f
-    }()
+    }
 
     /// "2021-10-22" → 2021 年 10 月 22 日; "2021-10" → 2021 年 10 月; "2021" → 2021 年.
     nonisolated static func released(_ s: String) -> String {
         let parts = s.split(separator: "-").compactMap { Int($0) }
-        let units = ["年", "月", "日"]
-        return zip(parts, units).map { "\($0) \($1)" }.joined(separator: " ")
+        guard !showsChinese else {
+            let units = ["年", "月", "日"]
+            return zip(parts, units).map { "\($0) \($1)" }.joined(separator: " ")
+        }
+        guard let year = parts.first,
+              let day = Calendar(identifier: .gregorian).date(from: DateComponents(year: year, month: parts.count > 1 ? parts[1] : 1, day: parts.count > 2 ? parts[2] : 1))
+        else { return s }
+        let f = DateFormatter()
+        f.locale = .current
+        f.setLocalizedDateFormatFromTemplate(["y", "yMMM", "yMMMd"][min(parts.count, 3) - 1])
+        return f.string(from: day)
     }
 
     static func duration(_ seconds: Double) -> String {

@@ -75,9 +75,10 @@ struct CabinetLayout {
             while end < aspects.count, calendar.startOfDay(for: dates[safe: end] ?? now) == day { end += 1 }
             let title = Self.title(for: day, calendar: calendar, now: now)
             let date = Self.shortDate(day, calendar: calendar, now: now)
-            let count = "\(end - start) 件"
+            let count = String(localized: "\(end - start) 件")
+            let dated = (calendar.dateComponents([.day], from: day, to: calendar.startOfDay(for: now)).day ?? 0) >= 7
             y += start == 0 ? 2 : headerGap
-            headers.append(Header(title: title, detail: title.contains("月") ? count : "\(date) · \(count)",
+            headers.append(Header(title: title, detail: dated ? count : "\(date) · \(count)",
                                   frame: CGRect(x: inset, y: y, width: width - inset * 2, height: headerHeight)))
             y += headerHeight
             let section = JustifiedLayout(width: width, rowHeight: size, spacing: spacing, inset: inset)
@@ -94,27 +95,32 @@ struct CabinetLayout {
     /// 今天、昨天、本週的星期幾，今年的「10 月 3 日」，更早的加上年份。
     /// "10 月 2 日", with the year only when it isn't this one.
     static func shortDate(_ day: Date, calendar: Calendar, now: Date) -> String {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "zh_Hant_TW")
-        f.calendar = calendar
-        f.dateFormat = calendar.isDate(day, equalTo: now, toGranularity: .year) ? "M 月 d 日" : "y 年 M 月 d 日"
-        return f.string(from: day)
+        let thisYear = calendar.isDate(day, equalTo: now, toGranularity: .year)
+        return formatter(thisYear ? "M 月 d 日" : "y 年 M 月 d 日", template: thisYear ? "MMMd" : "yMMMd", calendar: calendar).string(from: day)
     }
 
     static func title(for day: Date, calendar: Calendar, now: Date) -> String {
         let today = calendar.startOfDay(for: now)
         let days = calendar.dateComponents([.day], from: day, to: today).day ?? 0
-        if days == 0 { return "今天" }
-        if days == 1 { return "昨天" }
+        if days == 0 { return String(localized: "今天") }
+        if days == 1 { return String(localized: "昨天") }
+        if days < 7 { return formatter("EEEE", template: "EEEE", calendar: calendar).string(from: day) }
+        let thisYear = calendar.isDate(day, equalTo: today, toGranularity: .year)
+        return formatter(thisYear ? "M 月 d 日 EEEE" : "y 年 M 月 d 日", template: thisYear ? "MMMdEEEE" : "yMMMd",
+                         calendar: calendar).string(from: day)
+    }
+
+    /// Chinese keeps the app's spaced dates ("3 月 8 日"); every other language gets its native form.
+    private static func formatter(_ chinese: String, template: String, calendar: Calendar) -> DateFormatter {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "zh_Hant_TW")
+        f.locale = .current
         f.calendar = calendar
-        if days < 7 {
-            f.dateFormat = "EEEE"
-            return f.string(from: day)
+        if Locale.current.language.languageCode == .chinese {
+            f.dateFormat = chinese
+        } else {
+            f.setLocalizedDateFormatFromTemplate(template)
         }
-        f.dateFormat = calendar.isDate(day, equalTo: today, toGranularity: .year) ? "M 月 d 日 EEEE" : "y 年 M 月 d 日"
-        return f.string(from: day)
+        return f
     }
 }
 

@@ -308,7 +308,7 @@ final class TilePool {
         // The site is in the hover caption: on every page tile it was just noise.
         case .web: return nil
         case .video, .audio: return item.duration.map(InspectorViewController.duration)
-        case .pdf: return item.pageCount.map { "PDF · \($0) 頁" } ?? "PDF"
+        case .pdf: return item.pageCount.map { String(localized: "PDF · \($0) 頁") } ?? "PDF"
         case .file: return (item.originalFilename as NSString).pathExtension.uppercased().nilIfEmpty
         case .image: return item.fileType == "com.compuserve.gif" ? "GIF" : nil
         case .text: return nil

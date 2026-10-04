@@ -192,11 +192,11 @@ final class GraphView: NSView {
         }
         let text = NSMutableAttributedString()
         let font = NSFont.systemFont(ofSize: 11.5)
-        for (name, kind) in [("主題", CultureGraph.Kind.theme), ("名字", .name), ("網站", .site)] {
+        for (name, kind) in [(String(localized: "主題"), CultureGraph.Kind.theme), (String(localized: "名字"), .name), (String(localized: "網站"), .site)] {
             text.append(NSAttributedString(string: "●", attributes: [.font: font, .foregroundColor: color(kind)]))
             text.append(NSAttributedString(string: " \(name)    ", attributes: [.font: font, .foregroundColor: NSColor.secondaryLabelColor]))
         }
-        text.append(NSAttributedString(string: "整個珍奇櫃的關係，線越粗共有的收藏越多", attributes: [.font: font, .foregroundColor: NSColor.tertiaryLabelColor]))
+        text.append(NSAttributedString(string: String(localized: "整個珍奇櫃的關係，線越粗共有的收藏越多"), attributes: [.font: font, .foregroundColor: NSColor.tertiaryLabelColor]))
         legend.attributedStringValue = text
         legend.isHidden = graph.nodes.isEmpty
     }
@@ -392,7 +392,7 @@ final class GraphView: NSView {
 
     override func draw(_ dirtyRect: NSRect) {
         guard graph.nodes.isEmpty else { return }
-        let text = "收藏還不夠多，系統還看不出關聯\n收得越多，主題、名字與網站之間的線就會慢慢長出來" as NSString
+        let text = String(localized: "收藏還不夠多，系統還看不出關聯\n收得越多，主題、名字與網站之間的線就會慢慢長出來") as NSString
         let style = NSMutableParagraphStyle()
         style.alignment = .center
         style.lineSpacing = 6

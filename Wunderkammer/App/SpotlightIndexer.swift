@@ -60,7 +60,7 @@ final class SpotlightIndexer {
     private func searchable(_ item: Item) -> CSSearchableItem {
         let attributes = CSSearchableItemAttributeSet(contentType: .content)
         // Text curiosities are their content: name them by kind and source instead.
-        attributes.title = item.kind == .text ? "文字收藏" + (item.domain.map { "（\($0)）" } ?? "") : item.displayTitle
+        attributes.title = item.kind == .text ? (item.domain.map { String(localized: "文字收藏（\($0)）") } ?? String(localized: "文字收藏")) : item.displayTitle
         attributes.contentDescription = item.domain
         attributes.keywords = (item.labels ?? []).map(Subjects.title) + (item.colors ?? [])
         // A text card is a picture of the text itself: no thumbnail for those.

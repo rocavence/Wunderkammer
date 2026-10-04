@@ -21,7 +21,7 @@ enum TranslationSetup {
     private struct SetupView: View {
         let close: () -> Void
         @State private var configuration: TranslationSession.Configuration?
-        @State private var message = "下載「中文（繁體）→ 英文」的翻譯語言後，就能用中文描述搜尋，例如「坐在餐桌前的貓」。翻譯在這台 Mac 上完成。"
+        @State private var message = String(localized: "下載「中文（繁體）→ 英文」的翻譯語言後，就能用中文描述搜尋，例如「坐在餐桌前的貓」。翻譯在這台 Mac 上完成。")
 
         var body: some View {
             VStack(alignment: .leading, spacing: 14) {
@@ -42,7 +42,7 @@ enum TranslationSetup {
                     try await s.prepareTranslation()
                     close()
                 } catch {
-                    message = "沒有完成下載。也可以到「系統設定 → 一般 → 語言與地區 → 翻譯語言」下載。"
+                    message = String(localized: "沒有完成下載。也可以到「系統設定 → 一般 → 語言與地區 → 翻譯語言」下載。")
                 }
             }
         }

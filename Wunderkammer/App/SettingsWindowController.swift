@@ -47,7 +47,7 @@ final class SettingsWindowController: NSWindowController {
     private let scroll = NSScrollView()
 
     convenience init() {
-        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 780, height: 520),
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 820, height: 520),
                               styleMask: [.titled, .closable, .fullSizeContentView], backing: .buffered, defer: false)
         window.title = String(localized: "設定")
         window.titleVisibility = .hidden
@@ -107,7 +107,7 @@ final class SettingsWindowController: NSWindowController {
             left.topAnchor.constraint(equalTo: root.topAnchor),
             left.bottomAnchor.constraint(equalTo: root.bottomAnchor),
             left.leadingAnchor.constraint(equalTo: root.leadingAnchor),
-            left.widthAnchor.constraint(equalToConstant: 200),
+            left.widthAnchor.constraint(equalToConstant: 220),
             title.topAnchor.constraint(equalTo: left.topAnchor, constant: 52),
             title.leadingAnchor.constraint(equalTo: left.leadingAnchor, constant: 22),
             sidebar.topAnchor.constraint(equalTo: title.bottomAnchor, constant: 18),
@@ -394,7 +394,10 @@ private final class Swatch: NSView {
             addSubview(v)
         }
         NSLayoutConstraint.activate([
-            widthAnchor.constraint(equalToConstant: 40),
+            // As wide as its name needs ("Ultramarine" more than 群青).
+            widthAnchor.constraint(greaterThanOrEqualToConstant: 40),
+            name.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor),
+            name.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor),
             ring.topAnchor.constraint(equalTo: topAnchor),
             ring.centerXAnchor.constraint(equalTo: centerXAnchor),
             ring.widthAnchor.constraint(equalToConstant: 34),
@@ -527,7 +530,7 @@ final class ShortcutField: NSButton {
         guard monitor == nil else { return }
         Self.active?.cancel()
         Self.active = self
-        title = "按下組合鍵…"
+        title = String(localized: "按下組合鍵…")
         onRecording?(true)
         monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             // Only keystrokes aimed at Settings; everything else passes through.

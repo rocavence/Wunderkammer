@@ -8,7 +8,7 @@ final class TrailView: NSScrollView {
 
     private let library: Library
     private let stack = NSStackView()
-    private let empty = NSTextField(labelWithString: "還沒有足跡\n打開的每一件收藏，都會依序留在這裡")
+    private let empty = NSTextField(labelWithString: String(localized: "還沒有足跡\n打開的每一件收藏，都會依序留在這裡"))
 
     init(library: Library) {
         self.library = library
@@ -59,7 +59,6 @@ final class TrailView: NSScrollView {
 
     private static let time: DateFormatter = {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "zh_Hant_TW")
         f.doesRelativeDateFormatting = true
         f.dateStyle = .medium
         f.timeStyle = .short
@@ -68,7 +67,7 @@ final class TrailView: NSScrollView {
 
     private func header(_ visit: [Trail.Step]) -> NSView {
         let count = Set(visit.map(\.item)).count
-        let label = NSTextField(labelWithString: "\(Self.time.string(from: visit[0].date)) · \(count) 件")
+        let label = NSTextField(labelWithString: String(localized: "\(Self.time.string(from: visit[0].date)) · \(count) 件"))
         label.font = .systemFont(ofSize: 12, weight: .medium)
         label.textColor = .secondaryLabelColor
         return label

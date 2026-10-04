@@ -37,9 +37,16 @@ def load_names() -> list[str]:
     return [l for l in lines if l and not l.startswith("#")]
 
 
-def to_svg(code: str) -> str:
+# 線條版加粗：每一筆外面再描一圈，1.5 的線約變成 2.2
+BOLDEN = 0.7
+
+
+def to_svg(code: str, bold: bool = False) -> str:
     # CoreSVG 不支援 currentColor；template image 只看 alpha，顏色固定黑色即可
     code = code.replace("currentColor", "#000000")
+    if bold:
+        code = (f'<g stroke="#000000" stroke-width="{BOLDEN}" stroke-linejoin="round" '
+                f'stroke-linecap="round">{code}</g>')
     return (
         '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" '
         f'viewBox="0 0 24 24" fill="none">{code}</svg>\n'
@@ -82,7 +89,7 @@ def main() -> int:
                 return 1
             imageset = CATALOG / f"{name}.{suffix}.imageset"
             imageset.mkdir()
-            (imageset / f"{name}.{suffix}.svg").write_text(to_svg(weights[weight]["code"]))
+            (imageset / f"{name}.{suffix}.svg").write_text(to_svg(weights[weight]["code"], bold=suffix == "outline"))
             write_json(imageset / "Contents.json", {
                 "images": [{"filename": f"{name}.{suffix}.svg", "idiom": "universal"}],
                 "info": {"author": "xcode", "version": 1},

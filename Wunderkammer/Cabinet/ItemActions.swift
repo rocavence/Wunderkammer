@@ -33,53 +33,53 @@ enum ItemActions {
             undo?.registerUndo(withTarget: library) { lib in
                 MainActor.assumeIsolated { lib.add(ids, to: board) }
             }
-            undo?.setActionName(ids.count == 1 ? "從釘選版移除" : "從釘選版移除 \(ids.count) 件")
+            undo?.setActionName(ids.count == 1 ? String(localized: "從釘選版移除") : String(localized: "從釘選版移除 \(ids.count) 件"))
             return
         }
         guard let removal = library.delete(Set(ids)) else { return }
         undo?.registerUndo(withTarget: library) { lib in
             MainActor.assumeIsolated { lib.restore(removal) }
         }
-        undo?.setActionName(ids.count == 1 ? "移除收藏" : "移除 \(ids.count) 件收藏")
+        undo?.setActionName(ids.count == 1 ? String(localized: "移除收藏") : String(localized: "移除 \(ids.count) 件收藏"))
     }
 
     static func menu(for ids: [UUID], board: UUID?, library: Library, window: NSWindow?,
                      open: @escaping () -> Void, similar: (() -> Void)? = nil) -> NSMenu {
         let menu = NSMenu()
-        menu.addItem(ClosureMenuItem("打開預覽") { open() })
+        menu.addItem(ClosureMenuItem(String(localized: "打開預覽")) { open() })
         if let similar, ids.count == 1 {
-            menu.addItem(ClosureMenuItem("找相似的") { similar() })
+            menu.addItem(ClosureMenuItem(String(localized: "找相似的")) { similar() })
         }
 
-        let addTo = NSMenuItem(title: "加入釘選版", action: nil, keyEquivalent: "")
+        let addTo = NSMenuItem(title: String(localized: "加入釘選版"), action: nil, keyEquivalent: "")
         let sub = NSMenu()
         for b in library.collections where b.id != board {
             sub.addItem(ClosureMenuItem(b.name) { library.add(ids, to: b.id) })
         }
         if !library.collections.isEmpty { sub.addItem(.separator()) }
-        sub.addItem(ClosureMenuItem("新增釘選版…") {
-            if let name = promptName(title: "新釘選版的名稱", initial: "未命名釘選版", window: window) {
+        sub.addItem(ClosureMenuItem(String(localized: "新增釘選版…")) {
+            if let name = promptName(title: String(localized: "新釘選版的名稱"), initial: String(localized: "未命名釘選版"), window: window) {
                 library.createCollection(named: name, with: ids)
             }
         })
         addTo.submenu = sub
         menu.addItem(addTo)
 
-        menu.addItem(ClosureMenuItem("在 Finder 中顯示") {
+        menu.addItem(ClosureMenuItem(String(localized: "在 Finder 中顯示")) {
             let urls = ids.compactMap(library.item).compactMap(library.originalURL)
             NSWorkspace.shared.activateFileViewerSelecting(urls)
         })
         let items = ids.compactMap(library.item)
         if let page = items.first.flatMap(library.archiveURL), ids.count == 1 {
-            menu.addItem(ClosureMenuItem("打開頁面快照") { NSWorkspace.shared.open(page) })
+            menu.addItem(ClosureMenuItem(String(localized: "打開頁面快照")) { NSWorkspace.shared.open(page) })
         }
         // Only referenced files whose original is still there can be copied.
         let copyable = items.filter { $0.storedFilename == nil && $0.filePath != nil && library.originalURL($0) != nil }.map(\.id)
         if !copyable.isEmpty {
-            menu.addItem(ClosureMenuItem("複製一份到珍奇櫃") { Task { await library.copyIntoLibrary(copyable) } })
+            menu.addItem(ClosureMenuItem(String(localized: "複製一份到珍奇櫃")) { Task { await library.copyIntoLibrary(copyable) } })
         }
         menu.addItem(.separator())
-        let title = board == nil ? "移除" : "從釘選版移除"
+        let title = board == nil ? String(localized: "移除") : String(localized: "從釘選版移除")
         menu.addItem(ClosureMenuItem(title) { delete(ids, board: board, library: library, window: window) })
         return menu
     }
@@ -90,8 +90,8 @@ enum ItemActions {
         let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 240, height: 24))
         field.stringValue = initial
         alert.accessoryView = field
-        alert.addButton(withTitle: "好")
-        alert.addButton(withTitle: "取消")
+        alert.addButton(withTitle: String(localized: "好"))
+        alert.addButton(withTitle: String(localized: "取消"))
         alert.window.initialFirstResponder = field
         guard alert.runModal() == .alertFirstButtonReturn else { return nil }
         let name = field.stringValue.trimmingCharacters(in: .whitespaces)

@@ -42,7 +42,7 @@ final class Cabinets {
             }
             currentID = stored.entries.contains { $0.id == stored.current } ? stored.current : stored.entries[0].id
         } else {
-            let first = Entry(id: UUID(), name: "珍奇櫃", folder: "")
+            let first = Entry(id: UUID(), name: String(localized: "珍奇櫃"), folder: "")
             entries = [first]
             currentID = first.id
             save()
@@ -170,7 +170,7 @@ final class Cabinets {
 
     private static func clean(_ name: String) -> String {
         let t = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        return t.isEmpty ? "未命名珍奇櫃" : String(t.prefix(40))
+        return t.isEmpty ? String(localized: "未命名珍奇櫃") : String(t.prefix(40))
     }
 
     private func save() {
