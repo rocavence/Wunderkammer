@@ -100,6 +100,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             if !on { SpotlightIndexer.clear() }
         }
         s.semanticReady = { [weak self] in self?.understanding.semantic != nil }
+        s.onEnableChinese = { [weak self] in self?.enableChineseDescriptions() }
         return s
     }()
 

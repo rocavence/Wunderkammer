@@ -12,8 +12,11 @@ final class SettingsWindowController: NSWindowController {
     var onSpotlightChanged: ((Bool) -> Void)?
     var semanticReady: () -> Bool = { false }
 
+    /// Opens the system's Chinese → English language download (AppDelegate).
+    var onEnableChinese: (() -> Void)?
+
     convenience init() {
-        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 440, height: 280), styleMask: [.titled, .closable],
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 540, height: 520), styleMask: [.titled, .closable],
                               backing: .buffered, defer: false)
         window.title = "設定"
         self.init(window: window)
@@ -31,6 +34,7 @@ final class SettingsWindowController: NSWindowController {
         if !SelfTest.isEnabled { NSApp.activate() }
     }
 
+    /// Grouped like System Settings: what each thing does, then its control.
     private func build() {
         let capture = ShortcutField(key: CaptureController.captureKey, current: CaptureController.captureShortcut,
                                     fallback: CaptureController.defaultCaptureShortcut)
@@ -40,48 +44,123 @@ final class SettingsWindowController: NSWindowController {
             f.onChange = { [weak self] in self?.onShortcutsChanged?() }
             f.onRecording = { [weak self] r in self?.onRecording?(r) }
         }
-        let spotlight = NSButton(checkboxWithTitle: "在 Spotlight 顯示收藏（只有標題、網站與主題）", target: self, action: #selector(toggleSpotlight(_:)))
+        let spotlight = NSSwitch()
         spotlight.state = Self.spotlightEnabled ? .on : .off
-        let semantic = NSTextField(wrappingLabelWithString: semanticReady()
-            ? "語意搜尋：已安裝本機模型。"
-            : "語意搜尋：尚未安裝本機模型。執行 scripts/models/fetch-mobileclip.sh 後重新打開 Wunderkammer。")
-        semantic.textColor = .secondaryLabelColor
-        semantic.font = .systemFont(ofSize: 12)
+        spotlight.target = self
+        spotlight.action = #selector(toggleSpotlight(_:))
+        spotlight.setAccessibilityLabel("在 Spotlight 顯示收藏")
 
-        let grid = NSGridView(views: [
-            [label("收藏剪貼簿或目前頁面"), capture],
-            [label("截圖收藏"), shot],
-            [NSGridCell.emptyContentView, hint("點一下欄位，再按下新的組合鍵。Esc 取消，Delete 還原預設。")],
-            [NSGridCell.emptyContentView, spotlight],
-            [NSGridCell.emptyContentView, semantic],
+        var asking = false
+        if #available(macOS 26.0, *) { asking = Asker.isAvailable }
+        let chinese = NSButton(title: "下載…", target: self, action: #selector(enableChinese))
+        chinese.bezelStyle = .rounded
+        chinese.controlSize = .small
+
+        let stack = NSStackView()
+        stack.orientation = .vertical
+        stack.alignment = .leading
+        stack.spacing = 8
+        stack.edgeInsets = NSEdgeInsets(top: 24, left: 24, bottom: 24, right: 24)
+        func group(_ title: String, _ rows: [NSView], note: String? = nil) {
+            let header = NSTextField(labelWithString: title)
+            header.font = .systemFont(ofSize: 13, weight: .semibold)
+            stack.addArrangedSubview(header)
+            let box = card(rows)
+            stack.addArrangedSubview(box)
+            box.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: -48).isActive = true
+            if let note {
+                let n = NSTextField(wrappingLabelWithString: note)
+                n.font = .systemFont(ofSize: 11)
+                n.textColor = .secondaryLabelColor
+                stack.addArrangedSubview(n)
+                n.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: -60).isActive = true
+            }
+            if let last = stack.arrangedSubviews.last { stack.setCustomSpacing(22, after: last) }
+        }
+        group("收藏", [
+            row("收藏剪貼簿或目前頁面", "剛複製的東西優先；沒有的話，收瀏覽器正在看的頁面", capture),
+            row("截圖收藏", "選範圍或視窗，截好直接收進來", shot),
+        ], note: "點一下快捷鍵，再按下新的組合鍵。Esc 取消，Delete 還原預設。")
+        group("搜尋與理解", [
+            row("用描述找圖", "例如「a cat at a dinner table」，用本機的 MobileCLIP 模型",
+                status(semanticReady(), ready: "已安裝", missing: "未安裝")),
+            row("對收藏提問", "在搜尋框輸入問句後按 Return，或對 Siri 說 Ask Wunderkammer",
+                status(asking, ready: "Apple Intelligence 可用", missing: "需要 Apple Intelligence")),
+            row("中文描述", "用中文描述找圖，需要系統的中文 → 英文翻譯語言", chinese),
         ])
-        grid.column(at: 0).xPlacement = .trailing
-        grid.rowSpacing = 12
-        grid.columnSpacing = 12
-        grid.translatesAutoresizingMaskIntoConstraints = false
+        group("隱私", [
+            row("在 Spotlight 顯示收藏", "只放標題、網站與主題，不放文字內容", spotlight),
+        ], note: "圖中文字、物件、相似度與名字的辨識，都在這台 Mac 上完成，不會上傳任何內容。")
+
+        stack.translatesAutoresizingMaskIntoConstraints = false
         let content = NSView()
-        content.addSubview(grid)
+        content.addSubview(stack)
         NSLayoutConstraint.activate([
-            grid.topAnchor.constraint(equalTo: content.topAnchor, constant: 24),
-            grid.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 24),
-            grid.trailingAnchor.constraint(lessThanOrEqualTo: content.trailingAnchor, constant: -24),
-            grid.bottomAnchor.constraint(lessThanOrEqualTo: content.bottomAnchor, constant: -24),
-            semantic.widthAnchor.constraint(lessThanOrEqualToConstant: 260),
+            stack.topAnchor.constraint(equalTo: content.topAnchor),
+            stack.leadingAnchor.constraint(equalTo: content.leadingAnchor),
+            stack.trailingAnchor.constraint(equalTo: content.trailingAnchor),
+            stack.bottomAnchor.constraint(lessThanOrEqualTo: content.bottomAnchor),
+            content.widthAnchor.constraint(equalToConstant: 540),
         ])
         window?.contentView = content
+        window?.setContentSize(content.fittingSize)
     }
 
-    private func label(_ s: String) -> NSTextField { NSTextField(labelWithString: s) }
+    /// One setting: its name and what it does on the left, the control on the right.
+    private func row(_ title: String, _ detail: String, _ control: NSView) -> NSView {
+        let name = NSTextField(labelWithString: title)
+        name.font = .systemFont(ofSize: 13)
+        let about = NSTextField(wrappingLabelWithString: detail)
+        about.font = .systemFont(ofSize: 11)
+        about.textColor = .secondaryLabelColor
+        let text = NSStackView(views: [name, about])
+        text.orientation = .vertical
+        text.alignment = .leading
+        text.spacing = 2
+        // Text from the left, the control against the right edge.
+        let row = NSStackView()
+        row.addView(text, in: .leading)
+        row.addView(control, in: .trailing)
+        row.alignment = .centerY
+        row.spacing = 16
+        row.edgeInsets = NSEdgeInsets(top: 10, left: 14, bottom: 10, right: 14)
+        text.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        text.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        control.setContentHuggingPriority(.required, for: .horizontal)
+        return row
+    }
 
-    private func hint(_ s: String) -> NSTextField {
-        let t = NSTextField(wrappingLabelWithString: s)
-        t.font = .systemFont(ofSize: 11)
-        t.textColor = .tertiaryLabelColor
-        t.preferredMaxLayoutWidth = 260
+    /// Rows on a rounded card, a hairline between them.
+    private func card(_ rows: [NSView]) -> NSView {
+        let box = NSStackView()
+        box.orientation = .vertical
+        box.spacing = 0
+        box.wantsLayer = true
+        box.layer?.cornerRadius = 10
+        box.layer?.backgroundColor = NSColor.quaternarySystemFill.cgColor
+        for (i, r) in rows.enumerated() {
+            if i > 0 {
+                let line = NSBox()
+                line.boxType = .separator
+                box.addArrangedSubview(line)
+                line.widthAnchor.constraint(equalTo: box.widthAnchor, constant: -28).isActive = true
+            }
+            box.addArrangedSubview(r)
+            r.widthAnchor.constraint(equalTo: box.widthAnchor).isActive = true
+        }
+        return box
+    }
+
+    private func status(_ ok: Bool, ready: String, missing: String) -> NSView {
+        let t = NSTextField(labelWithString: (ok ? "● " : "○ ") + (ok ? ready : missing))
+        t.font = .systemFont(ofSize: 12)
+        t.textColor = ok ? .systemGreen : .secondaryLabelColor
         return t
     }
 
-    @objc private func toggleSpotlight(_ sender: NSButton) {
+    @objc private func enableChinese() { onEnableChinese?() }
+
+    @objc private func toggleSpotlight(_ sender: NSSwitch) {
         UserDefaults.standard.set(sender.state == .on, forKey: Self.spotlightKey)
         onSpotlightChanged?(sender.state == .on)
     }
