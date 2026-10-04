@@ -228,6 +228,9 @@ final class SelfTest {
             }
             check(toast.panel?.isVisible == true && toast.panel?.isKeyWindow == false, "toast shows without taking focus")
             return finish()
+        case "ask":
+            await askCheck()
+            return finish()
         case "structured":
             await structuredCheck()
             return finish()
@@ -498,6 +501,32 @@ final class SelfTest {
         check(settled < 0.5 && allVisible && !ui.preview.isOpen,
               "after closing every tile is home and visible (\(String(format: "%.1f", settled))pt)")
         shot("02f-ripple-closed")
+    }
+
+    /// Questions to Apple's on-device model about the cabinet (needs Apple Intelligence).
+    private func askCheck() async {
+        let questions: [(String, [String])] = [
+            ("我收過哪些王家衛的電影？", ["In the Mood for Love", "Chungking Express"]),
+            ("有哪些勒瑰恩的書？", ["The Dispossessed"]),
+            ("最近收的音樂是誰的？", ["Mordechai"]),
+            ("有沒有跟咖啡有關的東西？", ["Stagg EKG Electric Kettle"]),
+            ("我有收過恐龍嗎？", []),
+        ]
+        for (i, (q, expected)) in questions.enumerated() {
+            let t = CACurrentMediaTime()
+            ui.ask(q)
+            var waited = 0.0
+            while ui.isAsking, waited < 60 { await wait(0.25); waited += 0.25 }
+            let shown = ui.grid.shownItems.map(\.displayTitle)
+            log(String(format: "Q%d %.1fs %@ → %@ | %@", i + 1, CACurrentMediaTime() - t, q, ui.answerText,
+                       shown.prefix(6).joined(separator: "、")))
+            if expected.isEmpty {
+                check(!ui.answerText.isEmpty, "answers a question with nothing to find")
+            } else {
+                check(expected.allSatisfy { e in shown.contains { $0.contains(e) } }, "\(q) shows \(expected.joined(separator: "、"))")
+            }
+            shot("ask-\(i + 1)")
+        }
     }
 
     /// Real pages (network): what they are, who made them, and the same
@@ -903,5 +932,8 @@ protocol SelfTestUI: AnyObject {
     func search(_ text: String)
     func showRandom()
     func toggleInspectorForTest()
+    func ask(_ question: String)
+    var isAsking: Bool { get }
+    var answerText: String { get }
     func showSettingsForTest() -> NSWindow?
 }

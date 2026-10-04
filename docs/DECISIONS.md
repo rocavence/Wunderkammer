@@ -201,3 +201,23 @@ Atlas 的偵錯說明文字寫明舊版（1.6.7）的參數：質量 1.89、剛�
 同時修正：啟動 app 的那個連結會在 `applicationDidFinishLaunching` 之前送到，原本處理器還沒裝好就被丟掉。現在在 `applicationWillFinishLaunching` 就裝好，收到的連結先排隊，收藏功能就緒後再處理。
 
 修改位置：`AppDelegate.applicationWillFinishLaunching`、`handleLink`、`forward`。
+
+## D29 對收藏提問用 Apple 的本機模型
+
+在搜尋框輸入問句（問號結尾，或含「哪、什麼、有沒有、嗎」等）後按 Return，就是提問；一般字詞照舊是搜尋。
+
+流程分兩次呼叫本機模型（Foundation Models，Apple Intelligence）：
+
+1. 把問題轉成搜尋：關鍵字、問的是哪一類（書、電影、音樂……）、時間範圍。
+2. 用 app 自己的搜尋（文字與語意）找出最多 20 件，各用一行描述交給模型，模型只根據這些回答。
+
+幾個從實測學到的做法：
+
+* 模型產生的英文名字不可靠（王家衛曾被寫成 Wang Ka-wei、Wang Jiawei）。問題限定類別或時間時，同類的收藏都交給模型，由它自己認出 Wong Kar-Wai。
+* 回答用一般文字，不用結構化格式：結構化輸出偶爾會一直生成到被截斷，變成解析失敗。
+* 「回答提到哪些收藏」由程式判斷：回答裡出現的標題，或出現的作者、導演、演出者名字（品牌不算）。
+* 上限 300 個 token、30 秒逾時。
+
+實測（5 題，各跑 3 次）：多數 1.5–2.6 秒回答，15 次中 13 次完全正確；模型偶爾答得含糊，或在「沒有」的回答中順帶提到不相關的收藏。
+
+需要 macOS 26 與 Apple Intelligence；沒有時，問句照常當搜尋處理。修改位置：`Model/Asker.swift`、`Cabinet/AnswerBanner.swift`、`AppDelegate.ask`。

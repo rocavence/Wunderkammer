@@ -40,6 +40,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private(set) var mode = ViewMode.grid
     private(set) var scope = Scope()
     private var capture: CaptureController!
+    private let answerBanner = AnswerBanner()
+    /// An Asker on systems that have Apple's on-device model.
+    private var askerBox: AnyObject?
+    private var askTask: Task<Void, Never>?
+    /// The automatic top inset, while the answer banner adds to it.
+    private var bannerBaseInset: CGFloat?
     /// wunderkammer:// links that arrived before capture was ready.
     private var pendingLinks: [URL] = []
     /// Another copy of the app already has this library open: hand everything to it.
@@ -160,6 +166,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             v.autoresizingMask = [.width, .height]
             content.addSubview(v)
         }
+        answerBanner.isHidden = true
+        answerBanner.translatesAutoresizingMaskIntoConstraints = false
+        answerBanner.onClose = { [weak self] in self?.closeAnswer() }
+        content.addSubview(answerBanner, positioned: .below, relativeTo: preview)
+        NSLayoutConstraint.activate([
+            answerBanner.topAnchor.constraint(equalTo: content.safeAreaLayoutGuide.topAnchor, constant: 8),
+            answerBanner.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 14),
+            answerBanner.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -14),
+        ])
         let contentVC = NSViewController()
         contentVC.view = content
 
@@ -338,6 +353,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     // MARK: State
 
     private func show(base: Scope.Base) {
+        if case .answer = base {} else if !answerBanner.isHidden { hideAnswerBanner() }
         scope = Scope(base: base, search: "")
         searchItem?.searchField.stringValue = ""
         if !SelfTest.isEnabled { UserDefaults.standard.set(scope.board?.uuidString, forKey: Self.boardKey) }
@@ -361,6 +377,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         case .mentions(let name): window.title = "提到「\(name)」"
         case .site(let domain): window.title = domain
         case .trail: window.title = "足跡"
+        case .answer: window.title = "回答"
         }
         let count = library.items(for: scope).count
         let learning = understanding?.pending ?? 0
@@ -558,6 +575,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     }
 
     func control(_ control: NSControl, textView: NSTextView, doCommandBy selector: Selector) -> Bool {
+        // A question and Return: ask the cabinet instead of searching it.
+        if selector == #selector(NSResponder.insertNewline(_:)), canAsk, Self.isQuestion(control.stringValue) {
+            ask(control.stringValue)
+            return true
+        }
         // From the search field, ↓ or Return moves into the results.
         if selector == #selector(NSResponder.moveDown(_:)) || selector == #selector(NSResponder.insertNewline(_:)) {
             focusCurrent()
@@ -570,6 +592,103 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             return true
         }
         return false
+    }
+
+    // MARK: Asking (US-211)
+
+    var isAsking: Bool { askTask != nil }
+    var answerText: String {
+        if #available(macOS 26.0, *), let plan = (askerBox as? Asker)?.lastPlan { return answerBanner.answerText + " ⟨\(plan)⟩" }
+        return answerBanner.answerText
+    }
+
+    private var canAsk: Bool {
+        if #available(macOS 26.0, *) { return Asker.isAvailable }
+        return false
+    }
+
+    /// Ends in a question mark, or reads like a question.
+    nonisolated static func isQuestion(_ text: String) -> Bool {
+        let t = text.trimmingCharacters(in: .whitespaces).lowercased()
+        guard t.count >= 4 else { return false }
+        if t.hasSuffix("?") || t.hasSuffix("？") { return true }
+        if ["什麼", "哪", "誰", "幾", "嗎", "呢", "有沒有", "多少", "為什麼", "怎麼", "是否"].contains(where: t.contains) { return true }
+        return ["what ", "which ", "who ", "when ", "why ", "how ", "where ", "did i ", "do i ", "have i "].contains { t.hasPrefix($0) }
+    }
+
+    func ask(_ question: String) {
+        guard #available(macOS 26.0, *) else { return }
+        let asker = (askerBox as? Asker) ?? {
+            let a = Asker(library: library) { [weak self] english, pool in await self?.looksLike(english, in: pool) ?? [] }
+            askerBox = a
+            return a
+        }()
+        askTask?.cancel()
+        answerBanner.thinking(about: question)
+        showAnswerBanner()
+        askTask = Task { [weak self] in
+            let text: String, ids: [UUID]?
+            do {
+                let answer = try await asker.ask(question, within: 30)
+                (text, ids) = (answer.text, answer.items.map(\.id))
+            } catch Asker.Failure.refused {
+                (text, ids) = ("這個問題 Apple Intelligence 不回答，換個問法試試。", nil)
+            } catch Asker.Failure.tooSlow {
+                (text, ids) = ("想太久了，沒有得到回答。換個說法再問一次試試。", nil)
+            } catch {
+                (text, ids) = ("沒辦法回答：\(error.localizedDescription)", nil)
+            }
+            guard let self, !Task.isCancelled else { return }
+            self.askTask = nil
+            if let ids {
+                self.searchItem?.searchField.stringValue = ""
+                if self.mode.cabinetStyle == nil { self.setMode(.grid) }
+                self.show(base: .answer(ids))
+            }
+            self.answerBanner.show(answer: text, failed: ids == nil)
+            self.updateBannerInset()
+        }
+    }
+
+    /// What looks like an English description (MobileCLIP), if installed.
+    private func looksLike(_ english: String, in pool: [Item]) async -> [UUID] {
+        guard let semantic = understanding.semantic else { return [] }
+        let vector = await Task.detached { semantic.embed(text: english) }.value
+        return vector.map { understanding.semanticMatches($0, in: pool) } ?? []
+    }
+
+    private func showAnswerBanner() {
+        answerBanner.isHidden = false
+        updateBannerInset()
+    }
+
+    private func hideAnswerBanner() {
+        askTask?.cancel()
+        answerBanner.isHidden = true
+        updateBannerInset()
+    }
+
+    private func closeAnswer() {
+        hideAnswerBanner()
+        if case .answer = scope.base { sidebar.select(.all) }
+        focusCurrent()
+    }
+
+    /// The cabinet starts below the banner while it's up.
+    private func updateBannerInset() {
+        if answerBanner.isHidden {
+            if bannerBaseInset != nil {
+                bannerBaseInset = nil
+                scroll.automaticallyAdjustsContentInsets = true
+            }
+            return
+        }
+        answerBanner.superview?.layoutSubtreeIfNeeded()
+        let base = bannerBaseInset ?? scroll.contentView.contentInsets.top
+        bannerBaseInset = base
+        scroll.automaticallyAdjustsContentInsets = false
+        scroll.contentInsets = NSEdgeInsets(top: base + answerBanner.frame.height + 16, left: 0, bottom: 0, right: 0)
+        scroll.contentView.scroll(to: NSPoint(x: 0, y: -scroll.contentView.contentInsets.top))
     }
 
     // MARK: Inspector (⌘I)
@@ -609,7 +728,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             return item
         case Self.searchID:
             let item = NSSearchToolbarItem(itemIdentifier: id)
-            item.searchField.placeholderString = "搜尋：紅色的椅子、2025、網站…"
+            item.searchField.placeholderString = "搜尋，或問一個問題：我收過哪些書？"
             item.searchField.delegate = self
             item.preferredWidthForSearchField = 260
             item.toolTip = "搜尋（⌘K）"

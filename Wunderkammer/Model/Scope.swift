@@ -20,6 +20,8 @@ struct Scope: Equatable, Sendable {
         case site(String)
         /// Recently looked at, newest first.
         case trail
+        /// What an answer to a question was about, in the answer's order.
+        case answer([UUID])
     }
 
     /// Auto collections by what things are: the kind of file, or what a page
@@ -95,6 +97,7 @@ struct Scope: Equatable, Sendable {
         case .mentions(let name): "mentions:\(name)"
         case .site(let domain): "site:\(domain)"
         case .trail: "trail"
+        case .answer: "answer"
         }
     }
 }
@@ -116,6 +119,7 @@ extension Library {
             result = items.filter { $0.entities?.contains { Search.normalize($0.name) == key } == true }
         case .site(let domain): result = items.filter { $0.domain == domain }
         case .trail: result = (recentlyViewed?() ?? []).compactMap(item)
+        case .answer(let ids): result = ids.compactMap(item)
         }
         if scope.isSearching {
             let pool = result
