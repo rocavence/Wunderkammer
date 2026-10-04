@@ -254,6 +254,9 @@ final class SelfTest {
                 }
             }
             return finish()
+        case "cabinets":
+            await cabinetsCheck()
+            return finish()
         case "spaces":
             await spacesCheck()
             return finish()
@@ -308,7 +311,8 @@ final class SelfTest {
         shot("02c-grid-zoomed-in")
 
         // Ripple: opening pushes neighbours away, closing springs them back.
-        await rippleCheck(grid, item: all[7].id)
+        // A picture (videos and documents open in Quick Look, with no ripple), whatever the library holds.
+        await rippleCheck(grid, item: (all.dropFirst(5).first { $0.kind == .image } ?? all[7]).id)
 
         // 3. Select all.
         grid.selectAll(nil)
@@ -551,6 +555,41 @@ final class SelfTest {
         check(settled < 0.5 && allVisible && !ui.preview.isOpen,
               "after closing every tile is home and visible (\(String(format: "%.1f", settled))pt)")
         shot("02f-ripple-closed")
+    }
+
+    /// Several 珍奇室, each its own library: switch, collect, switch back.
+    private func cabinetsCheck() async {
+        let home = ui.currentCabinet
+        let before = library.items.count
+        let other = ui.createCabinetForTest("旅行的珍奇室")
+        ui.switchCabinet(to: other)
+        await wait(0.8)
+        check(library.items.isEmpty && ui.grid.shownItems.isEmpty, "a new 珍奇室 starts empty")
+        check(window.title == "旅行的珍奇室", "its name is the title (\(window.title))")
+        shot("cabinet-new")
+        _ = await library.capture([.text("京都的苔寺，雨後最好看。", origin: nil)])
+        await wait(0.6)
+        check(library.items.count == 1, "collecting goes into the open 珍奇室")
+        ui.switchCabinet(to: home)
+        await wait(0.8)
+        check(library.items.count == before && !library.items.contains { $0.text?.contains("苔寺") == true },
+              "back home: everything as it was (\(library.items.count) of \(before))")
+        shot("cabinet-home")
+        ui.switchCabinet(to: other)
+        await wait(0.6)
+        check(library.items.count == 1 && library.items.first?.text?.contains("苔寺") == true, "the other 珍奇室 kept its things")
+        check(ui.cabinetNames.contains("旅行的珍奇室"), "it's in the list")
+        ui.switchCabinet(to: home)
+        await wait(0.4)
+        // The window from the button beside 珍奇室.
+        ui.manageCabinets()
+        await wait(0.6)
+        shot("cabinet-panel")
+        ui.closeCabinetsForTest()
+        await wait(0.3)
+        check(!ui.canDeleteCabinet(home) && ui.canDeleteCabinet(other), "the original stays; another can be removed")
+        ui.deleteCabinetForTest(other)
+        check(!ui.cabinetNames.contains("旅行的珍奇室"), "removed from the list")
     }
 
     /// Three spaces, each remembering its layout; the sidebar follows.
@@ -1194,6 +1233,14 @@ protocol SelfTestUI: AnyObject {
     func toggleInspectorForTest()
     func ask(_ question: String)
     func openForTest(_ id: UUID)
+    func switchCabinet(to id: UUID)
+    func createCabinetForTest(_ name: String) -> UUID
+    func manageCabinets()
+    func closeCabinetsForTest()
+    func canDeleteCabinet(_ id: UUID) -> Bool
+    func deleteCabinetForTest(_ id: UUID)
+    var currentCabinet: UUID { get }
+    var cabinetNames: [String] { get }
     func answerForIntent(_ question: String) async -> String
     func searchForIntent(_ query: String) -> Int
     func randomForIntent() -> String?

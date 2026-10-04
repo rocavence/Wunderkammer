@@ -44,8 +44,10 @@ enum ViewMode: Int, CaseIterable {
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSSearchFieldDelegate, SelfTestUI {
     private var window: NSWindow!
-    private let library = Library(root: ProcessInfo.processInfo.environment["WK_LIBRARY_ROOT"].map { URL(fileURLWithPath: $0) }
+    /// The 珍奇室 on this Mac; the library is whichever one is open.
+    private let cabinets = Cabinets(base: ProcessInfo.processInfo.environment["WK_LIBRARY_ROOT"].map { URL(fileURLWithPath: $0) }
         ?? Library.defaultRoot)
+    private lazy var library = Library(root: cabinets.root(of: cabinets.current))
     private let thumbnailer = Thumbnailer()
     private(set) var sidebar: SidebarViewController!
     private var inspector: InspectorViewController!
@@ -232,6 +234,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         sidebar = SidebarViewController(library: library)
         sidebar.onSelect = { [weak self] base in self?.show(base: base) }
         sidebar.onRandom = { [weak self] in self?.showRandom() }
+        sidebar.onManageCabinets = { [weak self] in self?.manageCabinets() }
+        sidebar.cabinetName = cabinets.current.name
         inspector = InspectorViewController(library: library)
         inspector.onSelectRelated = { [weak self] id in
             guard let self else { return }
@@ -457,7 +461,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
 
     private func updateTitle() {
         switch scope.base {
-        case .all: window.title = "珍奇室"
+        case .all: window.title = cabinets.current.name
         case .board(let id): window.title = library.collection(id)?.name ?? "Board"
         case .kind(let k): window.title = k.title
         case .onThisDay: window.title = "過去的今天"
@@ -482,6 +486,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         infinity?.heading = window.title
         // A cabinet with nothing in it yet gets its welcome instead of empty views.
         emptyCabinet?.isHidden = !library.items.isEmpty
+        emptyCabinet?.name = cabinets.current.name
     }
 
     func setMode(_ new: ViewMode) {
@@ -1095,6 +1100,53 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     @objc private func captureNow() { Task { await capture.captureNow() } }
     @objc private func captureScreenshot() { Task { await capture.captureScreenshot() } }
     @objc private func newBoard() { sidebar.newBoard(nil) }
+
+    // MARK: Cabinets (珍奇室)
+
+    private var cabinetsPanel: CabinetsPanel?
+
+    /// The window for switching, adding, renaming and removing 珍奇室 (a sheet).
+    func manageCabinets() {
+        let panel = CabinetsPanel(cabinets: cabinets, count: { [weak self] entry in self?.itemCount(of: entry) ?? 0 })
+        panel.onSwitch = { [weak self] id in self?.switchCabinet(to: id) }
+        panel.onChange = { [weak self] in self?.cabinetsChanged() }
+        cabinetsPanel = panel
+        panel.present(on: window)
+    }
+
+    /// How many things a 珍奇室 holds (the open one from memory, others from disk).
+    private func itemCount(of entry: Cabinets.Entry) -> Int {
+        if entry.id == cabinets.currentID { return library.items.count }
+        return Library.storedCount(at: cabinets.root(of: entry))
+    }
+
+    /// Opens another cabinet in place: the same window, its own things.
+    func switchCabinet(to id: UUID) {
+        guard id != cabinets.currentID, let entry = cabinets.entries.first(where: { $0.id == id }) else { return }
+        if preview.isOpen { preview.dismissImmediately() }
+        hideAnswerBanner()
+        trail.save()
+        cabinets.select(id)
+        library.open(root: cabinets.root(of: entry))
+        trail = Trail(root: library.root)
+        understanding.libraryChanged()
+        searchItem?.searchField.stringValue = ""
+        sidebar.select(.all)
+        cabinetsChanged()
+    }
+
+    private func cabinetsChanged() {
+        sidebar.cabinetName = cabinets.current.name
+        updateTitle()
+    }
+
+    // Tests switch cabinets the way the menu does.
+    var cabinetNames: [String] { cabinets.entries.map(\.name) }
+    func createCabinetForTest(_ name: String) -> UUID { cabinets.create(named: name).id }
+    var currentCabinet: UUID { cabinets.currentID }
+    func closeCabinetsForTest() { cabinetsPanel?.closeForTest() }
+    func canDeleteCabinet(_ id: UUID) -> Bool { cabinets.canDelete(id) }
+    func deleteCabinetForTest(_ id: UUID) { cabinets.delete(id); cabinetsChanged() }
 
     @objc private func importFiles() {
         let panel = NSOpenPanel()

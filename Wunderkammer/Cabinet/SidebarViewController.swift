@@ -10,6 +10,10 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     private let table = NSTableView()
     var onSelect: ((Scope.Base) -> Void)?
     var onRandom: (() -> Void)?
+    /// The button beside the first row: the window for switching, adding and removing 珍奇室.
+    var onManageCabinets: (() -> Void)?
+    /// Which 珍奇室 is open: the first row's name.
+    var cabinetName = "珍奇室" { didSet { if cabinetName != oldValue { reload() } } }
 
     /// The sidebar follows the space: filters for 收藏 and 地圖, ways in for 漫遊.
     var space: Space = .cabinet {
@@ -123,13 +127,13 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         switch space {
         case .wander:
             // Ways into the wall: everything, what time brings back, where you've been.
-            r = [.view(.all, title: "珍奇室", icon: .cabinet, count: library.items.count),
+            r = [.view(.all, title: cabinetName, icon: .cabinet, count: library.items.count),
                  .view(.onThisDay, title: "過去的今天", icon: .calendarDay, count: nil),
                  .view(.forgotten, title: "被遺忘的", icon: .history, count: nil),
                  .view(.trail, title: "足跡", icon: .routing, count: nil),
                  .random] + themeRows
         case .cabinet, .map:
-            r = [.view(.all, title: "珍奇室", icon: .cabinet, count: library.items.count)]
+            r = [.view(.all, title: cabinetName, icon: .cabinet, count: library.items.count)]
             // What it is as a file, then what it's about (a book, a film…), side by side.
             let kinds: [Row] = Self.fileKinds.compactMap { k in
                 let n = count(k)
@@ -218,8 +222,10 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             label.font = .systemFont(ofSize: 11, weight: .semibold)
             label.textColor = .secondaryLabelColor
             return label
-        case .view(_, let title, let icon, let count):
-            return cell(title: title, icon: icon, count: count)
+        case .view(let base, let title, let icon, let count):
+            let c = cell(title: title, icon: icon, count: count)
+            if base == .all { addCabinetsButton(to: c) }
+            return c
         case .random:
             return cell(title: "隨機一件", icon: .shuffle, count: nil, hint: "R")
         case .board(let b):
@@ -294,6 +300,30 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             library.renameCollection(b.id, to: name)
         }
     }
+
+    /// ⇅ after the count on the first row: clicking the name shows everything,
+    /// clicking this opens the 珍奇室 window.
+    private func addCabinetsButton(to cell: NSTableCellView) {
+        let b = NSButton(image: Icon.image(.chevronExpandY, size: 13), target: self, action: #selector(manageCabinets))
+        b.isBordered = false
+        b.contentTintColor = .secondaryLabelColor
+        b.toolTip = "切換、新增或刪除珍奇室"
+        b.setAccessibilityLabel("管理珍奇室")
+        b.translatesAutoresizingMaskIntoConstraints = false
+        cell.addSubview(b)
+        // The count moves left to make room.
+        if let badge = cell.subviews.compactMap({ $0 as? NSTextField }).last {
+            for c in cell.constraints where c.firstItem === badge && c.firstAttribute == .trailing { c.isActive = false }
+            badge.trailingAnchor.constraint(equalTo: b.leadingAnchor, constant: -6).isActive = true
+        }
+        NSLayoutConstraint.activate([
+            b.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -2),
+            b.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
+            b.widthAnchor.constraint(equalToConstant: 18),
+        ])
+    }
+
+    @objc private func manageCabinets() { onManageCabinets?() }
 
     @objc func newBoard(_ sender: Any?) {
         let n = library.collections.count + 1

@@ -140,11 +140,11 @@ enum Analyzer {
 final class Understanding {
     private let library: Library
     private var running = false
-    private let printsDir: URL
+    private var printsDir: URL
     private var prints: [UUID: VNFeaturePrintObservation] = [:]
     /// Meaning vectors (MobileCLIP), when the models are installed.
     let semantic: SemanticIndex?
-    private let embeddingsDir: URL
+    private var embeddingsDir: URL
     /// Vectors in memory, keyed like their files: "<id>-v<representation version>",
     /// so a new representation (a page's preview arriving) gets a new vector.
     private var embeddings: [String: [Float]] = [:]
@@ -170,6 +170,18 @@ final class Understanding {
     }
 
     var pending: Int { library.items.filter { !$0.analyzed }.count }
+
+    /// The library opened another cabinet: its own fingerprints and embeddings.
+    func libraryChanged() {
+        printsDir = library.root.appendingPathComponent("featureprints")
+        embeddingsDir = library.root.appendingPathComponent("embeddings")
+        for dir in [printsDir, embeddingsDir] { try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true) }
+        prints = [:]
+        embeddings = [:]
+        unembeddable = []
+        embeddingFiles = Set((try? FileManager.default.contentsOfDirectory(atPath: embeddingsDir.path)) ?? [])
+        start()
+    }
 
     private static func embeddingKey(_ item: Item) -> String { "\(item.id.uuidString)-v\(item.representationVersion)" }
 

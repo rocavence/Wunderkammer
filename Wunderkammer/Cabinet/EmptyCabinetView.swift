@@ -34,11 +34,16 @@ final class EmptyCabinetView: NSView {
         Typography.display(size) ?? .systemFont(ofSize: size)
     }
 
+    /// The open 珍奇室's name, as its welcome.
+    var name = "珍奇室" { didSet { titleField.stringValue = name } }
+    private let titleField = NSTextField(labelWithString: "珍奇室")
+
     private func build() {
         let icon = NSImageView(image: Icon.image(.cabinet, weight: .outline, size: 56))
         icon.contentTintColor = .tertiaryLabelColor
 
-        let title = NSTextField(labelWithString: "珍奇室")
+        let title = titleField
+        title.stringValue = name
         title.font = serif(34)
         let tagline = NSTextField(labelWithString: "Collect without organizing.")
         tagline.font = serif(16)

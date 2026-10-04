@@ -38,11 +38,11 @@ final class Library {
     /// Canvas key for the whole cabinet, which isn't a real board.
     nonisolated static let allKey = "all"
 
-    let root: URL
-    let originalsDir: URL
-    let thumbnailsDir: URL
+    private(set) var root: URL
+    private(set) var originalsDir: URL
+    private(set) var thumbnailsDir: URL
     /// Saved copies of web pages.
-    let archivesDir: URL
+    private(set) var archivesDir: URL
     private(set) var items: [Item] = []
     private(set) var collections: [Board] = []
     private var canvases: [String: [CanvasGroup]] = [:]
@@ -67,6 +67,37 @@ final class Library {
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         }
         load()
+    }
+
+    /// How many things the library at `root` holds, without opening it.
+    static func storedCount(at root: URL) -> Int {
+        struct Count: Decodable { var items: [Skip] }
+        struct Skip: Decodable {}
+        guard let data = try? Data(contentsOf: root.appendingPathComponent("library.json")),
+              let c = try? JSONDecoder().decode(Count.self, from: data) else { return 0 }
+        return c.items.count
+    }
+
+    /// Another cabinet: this one is saved as it is, then everything is read
+    /// from `newRoot`. Views follow through didChange.
+    func open(root newRoot: URL) {
+        guard newRoot.standardizedFileURL != root.standardizedFileURL else { return }
+        save()
+        items = []
+        collections = []
+        canvases = [:]
+        canvasLinks = [:]
+        loadFailed = false
+        root = newRoot
+        originalsDir = newRoot.appendingPathComponent("originals")
+        thumbnailsDir = newRoot.appendingPathComponent("thumbnails")
+        archivesDir = newRoot.appendingPathComponent("archives")
+        for dir in [originalsDir, thumbnailsDir, archivesDir] {
+            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        }
+        load()
+        reindex()
+        NotificationCenter.default.post(name: Self.didChange, object: self)
     }
 
     private var jsonURL: URL { root.appendingPathComponent("library.json") }

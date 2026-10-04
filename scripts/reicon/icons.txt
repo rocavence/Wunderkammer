@@ -39,6 +39,7 @@ image-mountain
 coffee
 kanban
 routing
+chevron-expand-y
 
 # 動作
 search

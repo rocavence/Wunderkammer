@@ -37,6 +37,7 @@ enum Reicon: String, CaseIterable, Sendable {
     case coffee = "coffee"
     case kanban = "kanban"
     case routing = "routing"
+    case chevronExpandY = "chevron-expand-y"
     case search = "search"
     case plus = "plus"
     case trash = "trash"
