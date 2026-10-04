@@ -261,8 +261,16 @@ final class SpaceSwitch: NSView {
         segment = max(72, ceil(widest) + 32)
         glass.translatesAutoresizingMaskIntoConstraints = false
         addSubview(glass)
-        glass.wantsLayer = true
-        glass.layer?.addSublayer(pill)
+        // On its own view above the glass: inside it, the blur smeared the pill.
+        let pillHost = NSView()
+        pillHost.wantsLayer = true
+        pillHost.layer?.addSublayer(pill)
+        pillHost.translatesAutoresizingMaskIntoConstraints = false
+        glass.addSubview(pillHost)
+        NSLayoutConstraint.activate([
+            pillHost.topAnchor.constraint(equalTo: glass.topAnchor), pillHost.bottomAnchor.constraint(equalTo: glass.bottomAnchor),
+            pillHost.leadingAnchor.constraint(equalTo: glass.leadingAnchor), pillHost.trailingAnchor.constraint(equalTo: glass.trailingAnchor),
+        ])
         pill.cornerRadius = (TopBar.height - Self.inset * 2) / 2
         var constraints = [
             glass.topAnchor.constraint(equalTo: topAnchor), glass.bottomAnchor.constraint(equalTo: bottomAnchor),
