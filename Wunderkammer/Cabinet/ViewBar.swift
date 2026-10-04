@@ -4,7 +4,7 @@ import AppKit
 /// space has, then what can be done to the view in front of you. Each button
 /// names itself in a bubble above the bar as soon as the pointer is on it.
 @MainActor
-final class ViewBar: NSVisualEffectView {
+final class ViewBar: NSView {
     struct Tool {
         var icon: Reicon
         var tip: String
@@ -21,13 +21,10 @@ final class ViewBar: NSVisualEffectView {
 
     init() {
         super.init(frame: .zero)
-        material = .popover
-        blendingMode = .withinWindow
-        state = .active
-        wantsLayer = true
-        layer?.cornerRadius = 18
-        layer?.masksToBounds = true
-        layer?.borderWidth = 0.5
+        let glass = Glass(cornerRadius: 18)
+        glass.frame = bounds
+        glass.autoresizingMask = [.width, .height]
+        addSubview(glass)
         stack.orientation = .horizontal
         stack.spacing = 4
         stack.edgeInsets = NSEdgeInsets(top: 0, left: 7, bottom: 0, right: 7)
@@ -40,19 +37,9 @@ final class ViewBar: NSVisualEffectView {
             stack.bottomAnchor.constraint(equalTo: bottomAnchor),
             heightAnchor.constraint(equalToConstant: 54),
         ])
-        updateBorder()
     }
 
     required init?(coder: NSCoder) { fatalError() }
-
-    override func viewDidChangeEffectiveAppearance() {
-        super.viewDidChangeEffectiveAppearance()
-        updateBorder()
-    }
-
-    private func updateBorder() {
-        layer?.borderColor = resolved(.separatorColor)
-    }
 
     override var isHidden: Bool {
         didSet { if isHidden { bubble.hide() } }

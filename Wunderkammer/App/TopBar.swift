@@ -92,24 +92,8 @@ final class TopBar: NSView {
 
     required init?(coder: NSCoder) { fatalError() }
 
-    /// A round-ended pane of frosted glass, like the view bar at the foot.
-    private static func capsule() -> NSVisualEffectView {
-        let v = NSVisualEffectView()
-        v.material = .popover
-        v.blendingMode = .withinWindow
-        v.state = .active
-        v.wantsLayer = true
-        v.layer?.cornerRadius = height / 2
-        v.layer?.masksToBounds = true
-        v.layer?.borderWidth = 0.5
-        v.layer?.borderColor = NSColor.separatorColor.cgColor
-        return v
-    }
-
-    override func viewDidChangeEffectiveAppearance() {
-        super.viewDidChangeEffectiveAppearance()
-        for v in subviews { v.layer?.borderColor = resolved(.separatorColor) }
-    }
+    /// A round-ended piece of glass, like the view bar at the foot.
+    private static func capsule() -> Glass { Glass(cornerRadius: height / 2) }
 
     /// Clicks on the empty parts of the bar fall through to what's below.
     override func hitTest(_ point: NSPoint) -> NSView? {
@@ -181,5 +165,49 @@ final class EdgeReveal: NSView {
         watched = view
         watchArea = area
         onLeave = leave
+    }
+}
+
+/// The light glass every floating bar wears: what's behind shows through,
+/// softly blurred, held by a hairline. The same over the wall, the grid or
+/// the map.
+@MainActor
+final class Glass: NSView {
+    private let blur = NSVisualEffectView()
+
+    init(cornerRadius: CGFloat) {
+        super.init(frame: .zero)
+        wantsLayer = true
+        layer?.cornerRadius = cornerRadius
+        layer?.masksToBounds = true
+        layer?.borderWidth = 0.5
+        blur.material = .hudWindow
+        blur.blendingMode = .withinWindow
+        blur.state = .active
+        // Mostly clear: a veil, not a pane.
+        blur.alphaValue = 0.45
+        blur.frame = bounds
+        blur.autoresizingMask = [.width, .height]
+        addSubview(blur)
+        updateColors()
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateColors()
+    }
+
+    private func updateColors() {
+        layer?.backgroundColor = resolved(NSColor.windowBackgroundColor.withAlphaComponent(0.18))
+        layer?.borderColor = resolved(NSColor.labelColor.withAlphaComponent(0.14))
+    }
+
+    /// Only what's on the glass takes clicks; the glass itself does too, so
+    /// a click between buttons doesn't fall into the view behind.
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        let hit = super.hitTest(point)
+        return hit === blur ? self : hit
     }
 }
