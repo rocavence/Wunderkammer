@@ -28,8 +28,8 @@ final class InspectorViewController: NSViewController {
     override func loadView() {
         stack.orientation = .vertical
         stack.alignment = .leading
-        stack.spacing = 10
-        stack.edgeInsets = NSEdgeInsets(top: 56, left: 18, bottom: 24, right: 18)
+        stack.spacing = 6
+        stack.edgeInsets = NSEdgeInsets(top: 60, left: 18, bottom: 32, right: 18)
         stack.translatesAutoresizingMaskIntoConstraints = false
         let document = FlippedView()
         document.addSubview(stack)
@@ -71,91 +71,35 @@ final class InspectorViewController: NSViewController {
             let picture = NSImageView(image: image)
             picture.imageScaling = .scaleProportionallyUpOrDown
             picture.wantsLayer = true
-            picture.layer?.cornerRadius = 6
+            picture.layer?.cornerRadius = 10
             picture.layer?.masksToBounds = true
+            picture.layer?.borderWidth = 0.5
+            picture.layer?.borderColor = NSColor.separatorColor.cgColor
             picture.translatesAutoresizingMaskIntoConstraints = false
             let ratio = CGFloat(item.pixelHeight) / CGFloat(max(item.pixelWidth, 1))
             stack.addArrangedSubview(picture)
             NSLayoutConstraint.activate([
                 picture.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: -36),
-                picture.heightAnchor.constraint(equalTo: picture.widthAnchor, multiplier: min(max(ratio, 0.3), 1.6)),
+                picture.heightAnchor.constraint(equalTo: picture.widthAnchor, multiplier: min(max(ratio, 0.3), 1.4)),
             ])
+            stack.setCustomSpacing(16, after: picture)
         }
 
-        let title = label(item.displayTitle, size: 18, serif: true)
+        // What it is, where it's from, when: one quiet line under the name.
+        let title = label(item.displayTitle, size: 22, serif: true)
         title.maximumNumberOfLines = 4
         stack.addArrangedSubview(title)
-        stack.setCustomSpacing(4, after: title)
-        stack.addArrangedSubview(label(Rediscovery.ageLine(item), size: 11, color: .secondaryLabelColor))
-        if let arrived = arrival?(item) {
-            let line = label(arrived, size: 11, color: .tertiaryLabelColor)
-            line.maximumNumberOfLines = 3
-            stack.addArrangedSubview(line)
-        }
+        stack.setCustomSpacing(6, after: title)
+        let about = [Self.kindName(item), item.domain, item.released.map { String($0.prefix(4)) }, Rediscovery.ageLine(item)]
+            .compactMap { $0 }.filter { !$0.isEmpty }
+        let line = label(about.joined(separator: " · "), size: 12, color: .secondaryLabelColor)
+        line.maximumNumberOfLines = 2
+        stack.addArrangedSubview(line)
+        stack.setCustomSpacing(14, after: line)
 
-        stack.addArrangedSubview(divider())
-        for (key, value) in Self.facts(item, library: library) {
-            stack.addArrangedSubview(row(key, value))
-        }
-
-        if let text = item.ocrText, !text.isEmpty {
-            stack.addArrangedSubview(divider())
-            stack.addArrangedSubview(label("圖中的文字", size: 11, color: .tertiaryLabelColor))
-            let body = label(String(text.prefix(600)), size: 12, color: .secondaryLabelColor)
-            body.maximumNumberOfLines = 8
-            stack.addArrangedSubview(body)
-        }
-        // How it relates to other kinds of things: the same person, a mention, the same city.
-        let relations = CrossMedia.relations(of: item, in: library.items).prefix(8)
-        if !relations.isEmpty {
-            stack.addArrangedSubview(label("關聯", size: 11, color: .tertiaryLabelColor))
-            let rows = NSStackView()
-            rows.orientation = .vertical
-            rows.alignment = .leading
-            rows.spacing = 2
-            for r in relations {
-                guard let other = library.item(r.other) else { continue }
-                let title = String((CrossMedia.name(of: other) ?? other.displayTitle).prefix(40))
-                let b = ClosureButton(title: r.sentence(title: title, kindName: Self.kindName(other))) { [weak self] in
-                    self?.onFollowRelation?(other.id, r.label)
-                }
-                b.isBordered = false
-                b.contentTintColor = .controlAccentColor
-                b.font = .systemFont(ofSize: 12)
-                b.lineBreakMode = .byTruncatingTail
-                rows.addArrangedSubview(b)
-            }
-            stack.addArrangedSubview(rows)
-        }
-        // Connections: each name and the site lead to everything else they appear in.
-        var links: [(String, Scope.Base)] = (item.entities ?? []).prefix(8).map { ($0.name, .mentions($0.name)) }
-        if let domain = item.domain { links.append((domain, .site(domain))) }
-        let connected = links.filter { library.items(for: Scope(base: $0.1)).count > 1 }
-        if !connected.isEmpty {
-            stack.addArrangedSubview(label("連到其他收藏", size: 11, color: .tertiaryLabelColor))
-            let row = NSStackView()
-            row.orientation = .vertical
-            row.alignment = .leading
-            row.spacing = 2
-            for (title, base) in connected {
-                let n = library.items(for: Scope(base: base)).count
-                let b = ClosureButton(title: "\(title)  \(n)") { [weak self] in self?.onOpenView?(base) }
-                b.isBordered = false
-                b.contentTintColor = .controlAccentColor
-                b.font = .systemFont(ofSize: 12)
-                row.addArrangedSubview(b)
-            }
-            stack.addArrangedSubview(row)
-        }
-        if let labels = item.labels, !labels.isEmpty {
-            stack.addArrangedSubview(label("系統看到的", size: 11, color: .tertiaryLabelColor))
-            let tags = label(labels.prefix(8).map(Subjects.title).joined(separator: "  ·  "), size: 12, color: .secondaryLabelColor)
-            tags.maximumNumberOfLines = 3
-            stack.addArrangedSubview(tags)
-        }
-
+        // What you can do with it, right away.
         let actions = NSStackView()
-        actions.spacing = 8
+        actions.spacing = 6
         if library.openURL(item) != nil {
             actions.addArrangedSubview(button("打開", icon: .arrowUpRight) { [weak self] in
                 guard let self, let url = self.library.openURL(item) else { return }
@@ -163,13 +107,13 @@ final class InspectorViewController: NSViewController {
                 NSWorkspace.shared.open(url)
             })
         }
+        if let page = library.archiveURL(item) {
+            actions.addArrangedSubview(button("看快照", icon: .fileText) { NSWorkspace.shared.open(page) })
+        }
         if let file = library.originalURL(item), item.storedFilename == nil {
             actions.addArrangedSubview(button("在 Finder 顯示", icon: .file) {
                 NSWorkspace.shared.activateFileViewerSelecting([file])
             })
-        }
-        if let page = library.archiveURL(item) {
-            actions.addArrangedSubview(button("看快照", icon: .fileText) { NSWorkspace.shared.open(page) })
         }
         if item.storedFilename == nil, item.filePath != nil, library.originalURL(item) != nil {
             actions.addArrangedSubview(button("複製到圖庫", icon: .copy) { [weak self] in
@@ -180,36 +124,128 @@ final class InspectorViewController: NSViewController {
                 }
             })
         }
-        if let url = item.url {
+        if let url = item.url, actions.arrangedSubviews.count < 3 {
             actions.addArrangedSubview(button("拷貝連結", icon: .link) {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(url, forType: .string)
             })
         }
-        if !actions.arrangedSubviews.isEmpty {
-            stack.addArrangedSubview(divider())
-            stack.addArrangedSubview(actions)
+        if !actions.arrangedSubviews.isEmpty { stack.addArrangedSubview(actions) }
+
+        if let arrived = arrival?(item) {
+            let way = label(arrived, size: 11, color: .tertiaryLabelColor)
+            way.maximumNumberOfLines = 3
+            stack.addArrangedSubview(way)
+        }
+
+        // How it relates to other kinds of things: the same person, a mention, the same city.
+        let relations = CrossMedia.relations(of: item, in: library.items).prefix(8)
+        if !relations.isEmpty {
+            section("關聯")
+            let rows = NSStackView()
+            rows.orientation = .vertical
+            rows.alignment = .leading
+            rows.spacing = 4
+            for r in relations {
+                guard let other = library.item(r.other) else { continue }
+                let title = String((CrossMedia.name(of: other) ?? other.displayTitle).prefix(40))
+                rows.addArrangedSubview(link(r.sentence(title: title, kindName: Self.kindName(other))) { [weak self] in
+                    self?.onFollowRelation?(other.id, r.label)
+                })
+            }
+            stack.addArrangedSubview(rows)
+        }
+
+        // The rest of what the system noted (kind and site are in the line above).
+        let facts = Self.facts(item, library: library).filter { $0.0 != "類型" && $0.0 != "來源" }
+        if !facts.isEmpty {
+            section("資訊")
+            for (key, value) in facts { stack.addArrangedSubview(row(key, value)) }
+        }
+
+        // Names and the site lead to everything else they appear in.
+        var links: [(String, Scope.Base)] = (item.entities ?? []).prefix(8).map { ($0.name, .mentions($0.name)) }
+        if let domain = item.domain { links.append((domain, .site(domain))) }
+        let connected = links.filter { library.items(for: Scope(base: $0.1)).count > 1 }
+        if !connected.isEmpty {
+            section("也出現在")
+            let rows = NSStackView()
+            rows.orientation = .vertical
+            rows.alignment = .leading
+            rows.spacing = 4
+            for (title, base) in connected {
+                let n = library.items(for: Scope(base: base)).count
+                rows.addArrangedSubview(link("\(title)  \(n)") { [weak self] in self?.onOpenView?(base) })
+            }
+            stack.addArrangedSubview(rows)
+        }
+
+        if let text = item.ocrText, !text.isEmpty {
+            section("圖中的文字")
+            let body = label(String(text.prefix(600)), size: 12, color: .secondaryLabelColor)
+            body.maximumNumberOfLines = 8
+            stack.addArrangedSubview(body)
+        }
+        if let labels = item.labels, !labels.isEmpty {
+            section("系統看到的")
+            let tags = label(labels.prefix(8).map(Subjects.title).joined(separator: "  ·  "), size: 12, color: .secondaryLabelColor)
+            tags.maximumNumberOfLines = 3
+            stack.addArrangedSubview(tags)
         }
 
         if let related = related?(item), !related.isEmpty {
-            stack.addArrangedSubview(divider())
-            stack.addArrangedSubview(label("相關的收藏", size: 11, color: .tertiaryLabelColor))
-            let grid = NSStackView()
-            grid.spacing = 6
-            for r in related.prefix(4) {
+            section("相關的收藏")
+            let columns = 3
+            let side: CGFloat = 76
+            let grid = NSGridView(numberOfColumns: columns, rows: 0)
+            grid.rowSpacing = 6
+            grid.columnSpacing = 6
+            var row: [NSView] = []
+            for r in related.prefix(6) {
                 guard let image = NSImage(contentsOf: library.thumbnailURL(r)) else { continue }
                 let b = ClosureButton(image: image) { [weak self] in self?.onSelectRelated?(r.id) }
                 b.imageScaling = .scaleProportionallyUpOrDown
                 b.isBordered = false
                 b.toolTip = r.displayTitle
+                b.setAccessibilityLabel(r.displayTitle)
+                b.wantsLayer = true
+                b.layer?.cornerRadius = 6
+                b.layer?.masksToBounds = true
                 b.translatesAutoresizingMaskIntoConstraints = false
-                b.widthAnchor.constraint(equalToConstant: 56).isActive = true
-                b.heightAnchor.constraint(equalToConstant: 56).isActive = true
-                grid.addArrangedSubview(b)
+                b.widthAnchor.constraint(equalToConstant: side).isActive = true
+                b.heightAnchor.constraint(equalToConstant: side).isActive = true
+                row.append(b)
+                if row.count == columns { grid.addRow(with: row); row = [] }
             }
+            if !row.isEmpty { grid.addRow(with: row + Array(repeating: NSView(), count: columns - row.count)) }
             stack.addArrangedSubview(grid)
         }
     }
+
+    /// A section starts with a little air above its name.
+    private func section(_ title: String) {
+        if let last = stack.arrangedSubviews.last { stack.setCustomSpacing(26, after: last) }
+        let header = label(title, size: 11, color: .tertiaryLabelColor)
+        header.font = .systemFont(ofSize: 11, weight: .semibold)
+        stack.addArrangedSubview(header)
+        stack.setCustomSpacing(8, after: header)
+    }
+
+    private func link(_ title: String, _ action: @escaping @MainActor () -> Void) -> NSButton {
+        let b = ClosureButton(title: title, action: action)
+        b.isBordered = false
+        b.contentTintColor = .controlAccentColor
+        b.font = .systemFont(ofSize: 12.5)
+        b.lineBreakMode = .byTruncatingTail
+        b.alignment = .left
+        return b
+    }
+
+    /// Stored as keys; shown in Chinese.
+    static let sourceNames = ["Browser": "瀏覽器", "Dock": "Dock 圖示", "Screenshot": "截圖"]
+    static let colorNames = ["black": "黑", "white": "白", "gray": "灰", "grey": "灰", "red": "紅", "orange": "橙",
+                             "yellow": "黃", "green": "綠", "blue": "藍", "purple": "紫", "pink": "粉紅", "brown": "棕",
+                             "beige": "米", "teal": "青", "cyan": "青", "gold": "金", "silver": "銀"]
 
     static func kindName(_ item: Item) -> String {
         let names: [Item.Kind: String] = [.image: "圖片", .video: "影片", .audio: "聲音", .pdf: "PDF", .web: "網頁", .text: "文字", .file: "檔案"]
@@ -227,7 +263,10 @@ final class InspectorViewController: NSViewController {
             var roles: [Item.Credit.Role] = []
             for c in credits where !roles.contains(c.role) { roles.append(c.role) }
             for role in roles {
-                f.append((role.title, credits.filter { $0.role == role }.map(\.name).joined(separator: "、")))
+                // The leads; the rest counted.
+                let names = credits.filter { $0.role == role }.map(\.name)
+                let shown = names.prefix(4).joined(separator: "、")
+                f.append((role.title, names.count > 4 ? "\(shown) 等 \(names.count) 位" : shown))
             }
         } else if let creator = item.creator {
             f.append((item.kind == .audio ? "演出者" : "作者", creator))
@@ -252,9 +291,11 @@ final class InspectorViewController: NSViewController {
         }
         f.append(("收藏於", Self.dateTime.string(from: item.dateAdded)))
         if let created = item.createdDate { f.append(("建立於", Self.date.string(from: created))) }
-        if let app = item.sourceApp { f.append(("從", app)) }
+        if let app = item.sourceApp { f.append(("從", Self.sourceNames[app] ?? app)) }
         if item.viewCount > 0 { f.append(("看過", "\(item.viewCount) 次")) }
-        if let colors = item.colors, !colors.isEmpty { f.append(("顏色", colors.prefix(3).joined(separator: "、"))) }
+        if let colors = item.colors, !colors.isEmpty {
+            f.append(("顏色", colors.prefix(3).map { Self.colorNames[$0] ?? $0 }.joined(separator: "、")))
+        }
         return f
     }
 
@@ -302,19 +343,11 @@ final class InspectorViewController: NSViewController {
         let v = label(value, size: 12, color: .labelColor)
         v.maximumNumberOfLines = 3
         k.translatesAutoresizingMaskIntoConstraints = false
-        k.widthAnchor.constraint(equalToConstant: 52).isActive = true
+        k.widthAnchor.constraint(equalToConstant: 56).isActive = true
         let r = NSStackView(views: [k, v])
         r.alignment = .firstBaseline
-        r.spacing = 8
+        r.spacing = 10
         return r
-    }
-
-    private func divider() -> NSView {
-        let box = NSBox()
-        box.boxType = .separator
-        box.translatesAutoresizingMaskIntoConstraints = false
-        box.widthAnchor.constraint(equalToConstant: 244).isActive = true
-        return box
     }
 
     private func button(_ title: String, icon: Reicon, _ action: @escaping @MainActor () -> Void) -> NSButton {

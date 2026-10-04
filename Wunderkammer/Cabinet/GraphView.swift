@@ -101,8 +101,10 @@ final class GraphView: NSView {
         let xs = graph.nodes.map(\.position.x), ys = graph.nodes.map(\.position.y)
         let content = CGRect(x: xs.min()! - 120, y: ys.min()! - 120, width: xs.max()! - xs.min()! + 240, height: ys.max()! - ys.min()! + 240)
         let top = window.map { $0.frame.height - $0.contentLayoutRect.height } ?? 0
-        zoom = min(1.2, max(0.2, min(bounds.width / content.width, (bounds.height - top) / content.height)))
-        offset = CGPoint(x: content.midX - bounds.width / zoom / 2, y: content.midY - (bounds.height + top) / zoom / 2)
+        // Room at the foot for the legend.
+        let legendRoom: CGFloat = 44
+        zoom = min(1.2, max(0.2, min(bounds.width / content.width, (bounds.height - top - legendRoom) / content.height)))
+        offset = CGPoint(x: content.midX - bounds.width / zoom / 2, y: content.midY - (bounds.height + top - legendRoom) / zoom / 2)
         render()
     }
 
@@ -114,14 +116,44 @@ final class GraphView: NSView {
 
     private func color(_ kind: CultureGraph.Kind) -> NSColor {
         switch kind {
-        case .theme: .controlAccentColor
+        // Three kinds, three colours that can't be mistaken (the accent may be orange too).
+        case .theme: .systemIndigo
         case .name: .systemOrange
-        case .site: .secondaryLabelColor
+        case .site: .systemGray
         }
+    }
+
+    /// The dozen biggest nodes keep their names when zoomed out.
+    private var labelledWhenFar: Set<String> {
+        Set(graph.nodes.sorted { $0.items.count > $1.items.count }.prefix(12).map(\.id))
+    }
+
+    private let legend = NSTextField(labelWithString: "")
+
+    /// What the colours mean, and that the map covers the whole cabinet.
+    private func renderLegend() {
+        if legend.superview == nil {
+            legend.translatesAutoresizingMaskIntoConstraints = false
+            addSubview(legend)
+            NSLayoutConstraint.activate([
+                legend.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
+                legend.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16),
+            ])
+        }
+        let text = NSMutableAttributedString()
+        let font = NSFont.systemFont(ofSize: 11.5)
+        for (name, kind) in [("主題", CultureGraph.Kind.theme), ("名字", .name), ("網站", .site)] {
+            text.append(NSAttributedString(string: "●", attributes: [.font: font, .foregroundColor: color(kind)]))
+            text.append(NSAttributedString(string: " \(name)    ", attributes: [.font: font, .foregroundColor: NSColor.secondaryLabelColor]))
+        }
+        text.append(NSAttributedString(string: "整個珍奇室的關係，線越粗共有的收藏越多", attributes: [.font: font, .foregroundColor: NSColor.tertiaryLabelColor]))
+        legend.attributedStringValue = text
+        legend.isHidden = graph.nodes.isEmpty
     }
 
     private func render() {
         guard let root = layer, !isHiddenOrHasHiddenAncestor else { return }
+        renderLegend()
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         layer?.backgroundColor = resolved(.windowBackgroundColor)
@@ -142,6 +174,28 @@ final class GraphView: NSView {
             edgesLayer.addSublayer(line)
         }
 
+        // Labels go biggest node first; one that would land on another label or
+        // circle stays hidden rather than overprint.
+        let circles = graph.nodes.map { n -> (String, CGRect) in
+            let r = radius(n) * zoom, c = toScreen(n.position)
+            return (n.id, CGRect(x: c.x - r, y: c.y - r, width: r * 2, height: r * 2))
+        }
+        var placed: [CGRect] = []
+        var clear: Set<String> = []
+        let labelSize = min(max(13 * zoom, 10), 18)
+        for node in graph.nodes.sorted(by: { $0.items.count > $1.items.count }) {
+            let r = radius(node) * zoom, c = toScreen(node.position)
+            let text = "\(node.title)  \(node.items.count)" as NSString
+            let serif = NSFont.systemFont(ofSize: labelSize).fontDescriptor.withDesign(.serif)
+                .flatMap { NSFont(descriptor: $0, size: labelSize) } ?? .systemFont(ofSize: labelSize)
+            let width = text.size(withAttributes: [.font: serif]).width + 12
+            let rect = CGRect(x: c.x - width / 2, y: c.y + r + 4, width: width, height: labelSize * 1.5)
+            guard !placed.contains(where: { $0.intersects(rect) }),
+                  !circles.contains(where: { $0.0 != node.id && $0.1.intersects(rect) }) else { continue }
+            placed.append(rect)
+            clear.insert(node.id)
+        }
+
         for node in graph.nodes {
             let r = radius(node) * zoom
             let c = toScreen(node.position)
@@ -158,7 +212,8 @@ final class GraphView: NSView {
                 .foregroundColor: NSColor(cgColor: resolved(.labelColor)) ?? NSColor.labelColor,
             ])
             layers.label.frame = CGRect(x: c.x - 120, y: c.y + r + 4, width: 240, height: size * 1.5)
-            layers.label.isHidden = zoom < 0.3
+            // Zoomed out, only the biggest are named; closer in, all of them.
+            layers.label.isHidden = zoom < 0.15 || (zoom < 0.6 && !labelledWhenFar.contains(node.id)) || !clear.contains(node.id)
         }
         CATransaction.commit()
     }
