@@ -65,22 +65,41 @@ final class PreviewView: NSView {
         fade(dim, to: 1, duration: 0.35)
         glideFrame(imageLayer, to: fitRect(for: items[i]), duration: ItemSpring.open)
         loadFull(items[i])
-        setCaption(text)
+        setCaption(for: items[i], note: text)
     }
 
-    private func setCaption(_ text: String?) {
+    /// Under the picture: its name, then what it is and when it was collected
+    /// (or a note, like how long ago a random pick was collected).
+    private func setCaption(for item: Item, note: String? = nil) {
         withoutAnimation {
             caption.contentsScale = window?.backingScaleFactor ?? 2
-            let size: CGFloat = 15
+            caption.isWrapped = true
+            let size: CGFloat = 17
             let serif = NSFont.systemFont(ofSize: size).fontDescriptor.withDesign(.serif).flatMap { NSFont(descriptor: $0, size: size) }
-            caption.string = NSAttributedString(string: text ?? "", attributes: [
+            let style = NSMutableParagraphStyle()
+            style.alignment = .center
+            style.lineBreakMode = .byTruncatingTail
+            style.paragraphSpacing = 4
+            let about = [InspectorViewController.kindName(item), item.domain, item.released.map { String($0.prefix(4)) },
+                         note ?? Rediscovery.ageLine(item)].compactMap { $0 }.filter { !$0.isEmpty }
+            // A note's title is its first words, already on the card.
+            let text = NSMutableAttributedString(string: item.kind == .text ? "" : item.displayTitle + "\n", attributes: [
                 .font: serif ?? NSFont.systemFont(ofSize: size),
-                .foregroundColor: NSColor(cgColor: resolved(.secondaryLabelColor)) ?? NSColor.secondaryLabelColor,
+                .foregroundColor: NSColor(cgColor: resolved(.labelColor)) ?? NSColor.labelColor, .paragraphStyle: style,
             ])
-            caption.frame = CGRect(x: 0, y: bounds.maxY - 34, width: bounds.width, height: 24)
+            text.append(NSAttributedString(string: about.joined(separator: " · "), attributes: [
+                .font: NSFont.systemFont(ofSize: 12),
+                .foregroundColor: NSColor(cgColor: resolved(.secondaryLabelColor)) ?? NSColor.secondaryLabelColor, .paragraphStyle: style,
+            ]))
+            caption.string = text
+            caption.frame = captionFrame
         }
-        fade(caption, to: text == nil ? 0 : 1, duration: 0.5)
+        fade(caption, to: 1, duration: 0.5)
     }
+
+    private var captionFrame: CGRect { CGRect(x: 40, y: bounds.maxY - Self.captionRoom + 14, width: bounds.width - 80, height: 48) }
+    /// Space kept under the picture for the caption.
+    private static let captionRoom: CGFloat = 76
 
     /// Gone without the fly-back (another preview is about to open).
     func dismissImmediately() {
@@ -131,8 +150,8 @@ final class PreviewView: NSView {
     private func show(_ next: Int) {
         guard items.indices.contains(next) else { return }
         index = next
-        setCaption(nil)
         let item = items[next]
+        setCaption(for: item)
         withoutAnimation {
             imageLayer.contents = surface?.currentImage(for: item.id)
                 ?? thumbnailer.cached(library.thumbnailURL(item), maxPixel: Library.thumbnailSize)
@@ -159,7 +178,8 @@ final class PreviewView: NSView {
     }
 
     private func fitRect(for item: Item) -> NSRect {
-        let area = bounds.insetBy(dx: 40, dy: 40)
+        var area = bounds.insetBy(dx: 40, dy: 40)
+        area.size.height -= Self.captionRoom - 40
         let aspect = CGFloat(item.pixelWidth) / max(CGFloat(item.pixelHeight), 1)
         var size = NSSize(width: area.width, height: area.width / aspect)
         if size.height > area.height { size = NSSize(width: area.height * aspect, height: area.height) }
@@ -181,7 +201,7 @@ final class PreviewView: NSView {
         withoutAnimation {
             dim.frame = bounds
             imageLayer.frame = fitRect(for: items[index])
-            caption.frame = CGRect(x: 0, y: bounds.maxY - 34, width: bounds.width, height: 24)
+            caption.frame = captionFrame
         }
     }
 
