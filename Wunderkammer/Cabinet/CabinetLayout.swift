@@ -15,10 +15,15 @@ struct CabinetLayout {
     /// Atlas: 14 pt between tiles and at the edges.
     var spacing: CGFloat = 14
     var inset: CGFloat = 14
-    var headerHeight: CGFloat = 52
+    /// A day's heading row, and the air above it (more than below, so the
+    /// heading belongs to the pictures it names).
+    var headerHeight: CGFloat = 44
+    var headerGap: CGFloat = 30
 
     struct Header: Equatable {
         var title: String
+        /// The date itself when the title is relative (昨天, 星期五), and how many.
+        var detail: String = ""
         var frame: CGRect
     }
 
@@ -61,27 +66,41 @@ struct CabinetLayout {
     private func timeline(_ aspects: [CGFloat], dates: [Date], calendar: Calendar, now: Date) -> Result {
         var frames = [CGRect](repeating: .zero, count: aspects.count)
         var headers: [Header] = []
+        // y: the bottom of what's laid out so far.
         var y: CGFloat = 0
         var start = 0
         while start < aspects.count {
             let day = calendar.startOfDay(for: dates[safe: start] ?? now)
             var end = start + 1
             while end < aspects.count, calendar.startOfDay(for: dates[safe: end] ?? now) == day { end += 1 }
-            headers.append(Header(title: Self.title(for: day, calendar: calendar, now: now),
-                                  frame: CGRect(x: inset, y: y + inset, width: width - inset * 2, height: headerHeight - inset - 8)))
+            let title = Self.title(for: day, calendar: calendar, now: now)
+            let date = Self.shortDate(day, calendar: calendar, now: now)
+            let count = "\(end - start) 件"
+            y += start == 0 ? 2 : headerGap
+            headers.append(Header(title: title, detail: title.contains("月") ? count : "\(date) · \(count)",
+                                  frame: CGRect(x: inset, y: y, width: width - inset * 2, height: headerHeight)))
             y += headerHeight
             let section = JustifiedLayout(width: width, rowHeight: size, spacing: spacing, inset: inset)
                 .layout(aspects: Array(aspects[start..<end]))
             for (i, f) in section.frames.enumerated() {
-                frames[start + i] = f.offsetBy(dx: 0, dy: y - inset)
+                frames[start + i] = f.offsetBy(dx: 0, dy: y + 4 - inset)
             }
-            y += section.height - inset
+            y = section.frames.reduce(y) { max($0, $1.maxY + y + 4 - inset) }
             start = end
         }
         return Result(frames: frames, headers: headers, height: aspects.isEmpty ? 0 : y + inset)
     }
 
     /// 今天、昨天、本週的星期幾，今年的「10 月 3 日」，更早的加上年份。
+    /// "10 月 2 日", with the year only when it isn't this one.
+    static func shortDate(_ day: Date, calendar: Calendar, now: Date) -> String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "zh_Hant_TW")
+        f.calendar = calendar
+        f.dateFormat = calendar.isDate(day, equalTo: now, toGranularity: .year) ? "M 月 d 日" : "y 年 M 月 d 日"
+        return f.string(from: day)
+    }
+
     static func title(for day: Date, calendar: Calendar, now: Date) -> String {
         let today = calendar.startOfDay(for: now)
         let days = calendar.dateComponents([.day], from: day, to: today).day ?? 0

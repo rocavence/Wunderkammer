@@ -552,8 +552,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         if layouts.count < 2, let index {
             toolbar.removeItem(at: index)
         } else if layouts.count >= 2, index == nil,
-                  let next = toolbar.items.firstIndex(where: { $0.itemIdentifier == Self.randomID || $0.itemIdentifier == Self.searchID }) {
-            // Back in its one place: after the spaces, before 隨機 and search.
+                  let next = toolbar.items.firstIndex(where: { $0.itemIdentifier == Self.searchID }) {
+            // Back in its one place: after the spaces, before search.
             toolbar.insertItem(withItemIdentifier: Self.layoutID, at: next)
         }
     }
@@ -908,12 +908,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
 
     private static let spaceID = NSToolbarItem.Identifier("space")
     private static let layoutID = NSToolbarItem.Identifier("layout")
-    private static let randomID = NSToolbarItem.Identifier("random")
     private static let searchID = NSToolbarItem.Identifier("search")
     private static let inspectorID = NSToolbarItem.Identifier("inspector")
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        [.toggleSidebar, .sidebarTrackingSeparator, .flexibleSpace, Self.spaceID, .flexibleSpace, Self.layoutID, Self.randomID,
+        [.toggleSidebar, .sidebarTrackingSeparator, .flexibleSpace, Self.spaceID, .flexibleSpace, Self.layoutID,
          Self.searchID, .inspectorTrackingSeparator, Self.inspectorID]
     }
 
@@ -955,15 +954,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             item.preferredWidthForSearchField = 170
             item.toolTip = "搜尋（⌘K）"
             searchItem = item
-            return item
-        case Self.randomID:
-            // Rediscovery is the point: one click away, not only a shortcut.
-            let item = NSToolbarItem(itemIdentifier: id)
-            item.image = Icon.image(.shuffle, size: 17)
-            item.label = "隨機一件"
-            item.toolTip = "隨機一件（R）"
-            item.target = self
-            item.action = #selector(randomFromMenu)
             return item
         case Self.inspectorID:
             let item = NSToolbarItem(itemIdentifier: id)

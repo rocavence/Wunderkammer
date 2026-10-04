@@ -25,7 +25,7 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
         didSet { if style != oldValue { relayout(animated: true, anchor: nil) } }
     }
     private(set) var headers: [CabinetLayout.Header] = []
-    private var headerLayers: [Int: CATextLayer] = [:]
+    private var headerLayers: [Int: HeadingBand] = [:]
     private var spatial = SpatialIndex()
     private(set) var items: [Item] = []
     private(set) var frames: [CGRect] = []
@@ -76,7 +76,7 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
 
     /// The heading pinned at the top right now (tests).
     var pinnedHeading: String? {
-        headerLayers.values.first { $0.backgroundColor != nil }.flatMap { ($0.string as? NSAttributedString)?.string }
+        headerLayers.values.first(where: \.isPinned)?.title
     }
 
     private func appearanceChanged() {
@@ -284,45 +284,38 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
         updateHeaders(in: visible, animated: animated)
     }
 
-    /// Timeline headings: serif dates above each day.
+    /// Timeline headings: a row per day, the date in serif with how many
+    /// beside it. The current day's row stays at the top, on a solid band that
+    /// fades into the pictures, until the next day's pushes it up.
     private func updateHeaders(in visible: CGRect, animated: Bool) {
         guard let root = layer else { return }
         var keep = Set<Int>()
         CATransaction.begin()
         CATransaction.setDisableActions(!animated)
         CATransaction.setAnimationDuration(TilePool.animation)
-        // The current day's heading stays at the top until the next one pushes it up.
         let top = (superview?.bounds.minY ?? 0) + ((superview as? NSClipView)?.contentInsets.top ?? 0)
+        let colors = HeadingBand.Colors(text: resolved(.labelColor), detail: resolved(.secondaryLabelColor),
+                                        band: resolved(.windowBackgroundColor))
         for (i, h) in headers.enumerated() {
-            var frame = h.frame
+            // The band spans the whole width; the words keep the grid's margins.
+            var frame = CGRect(x: 0, y: h.frame.minY, width: bounds.width, height: h.frame.height)
             var pinned = false
-            if frame.minY < top + 6 {
+            if frame.minY < top {
                 let next = headers[safe: i + 1]?.frame.minY ?? .greatestFiniteMagnitude
                 guard next > top else { continue }
-                frame.origin.y = min(top + 6, next - frame.height - 12)
+                frame.origin.y = min(top, next - frame.height)
                 pinned = true
             }
             guard frame.intersects(visible) else { continue }
             keep.insert(i)
-            let layer = headerLayers[i] ?? {
-                let t = CATextLayer()
-                t.contentsScale = window?.backingScaleFactor ?? 2
-                t.alignmentMode = .left
-                t.truncationMode = .end
-                root.addSublayer(t)
-                headerLayers[i] = t
-                return t
+            let band = headerLayers[i] ?? {
+                let b = HeadingBand(scale: window?.backingScaleFactor ?? 2)
+                root.addSublayer(b)
+                headerLayers[i] = b
+                return b
             }()
-            let serif = Typography.display(20)
-            layer.string = NSAttributedString(string: h.title, attributes: [
-                .font: serif ?? NSFont.systemFont(ofSize: 20), .foregroundColor: NSColor(cgColor: resolved(.labelColor)) ?? NSColor.labelColor,
-            ])
-            layer.frame = frame
-            layer.opacity = 1
-            // A pinned heading sits over the pictures: give it a quiet backing.
-            layer.backgroundColor = pinned ? resolved(NSColor.windowBackgroundColor.withAlphaComponent(0.88)) : nil
-            layer.cornerRadius = 6
-            layer.zPosition = 20
+            band.frame = frame
+            band.show(title: h.title, detail: h.detail, inset: h.frame.minX, pinned: pinned, colors: colors)
         }
         for (i, layer) in headerLayers where !keep.contains(i) {
             layer.removeFromSuperlayer()
@@ -808,4 +801,58 @@ func importPasteboard(_ pasteboard: NSPasteboard, library: Library, board: UUID?
     guard !sources.isEmpty else { return false }
     Task { await library.capture(sources, into: board) }
     return true
+}
+
+/// One day's heading row in the timeline.
+@MainActor
+private final class HeadingBand: CALayer {
+    struct Colors {
+        var text, detail, band: CGColor
+    }
+
+    private let titleLayer = CATextLayer()
+    private let detailLayer = CATextLayer()
+    /// Under a pinned band: the pictures fade in rather than being cut off.
+    private let fade = CAGradientLayer()
+    private(set) var title = ""
+    private(set) var isPinned = false
+
+    init(scale: CGFloat) {
+        super.init()
+        zPosition = 20
+        for t in [titleLayer, detailLayer] {
+            t.contentsScale = scale
+            t.truncationMode = .end
+            addSublayer(t)
+        }
+        fade.startPoint = CGPoint(x: 0.5, y: 0)
+        fade.endPoint = CGPoint(x: 0.5, y: 1)
+        addSublayer(fade)
+    }
+
+    override init(layer: Any) { super.init(layer: layer) }
+    required init?(coder: NSCoder) { fatalError() }
+
+    func show(title: String, detail: String, inset: CGFloat, pinned: Bool, colors: Colors) {
+        self.title = title
+        isPinned = pinned
+        let serif = Typography.display(20) ?? .systemFont(ofSize: 20)
+        let small = NSFont.systemFont(ofSize: 12.5)
+        let titleText = NSAttributedString(string: title, attributes: [.font: serif, .foregroundColor: NSColor(cgColor: colors.text) ?? .labelColor])
+        titleLayer.string = titleText
+        detailLayer.string = NSAttributedString(string: detail, attributes: [.font: small, .foregroundColor: NSColor(cgColor: colors.detail) ?? .secondaryLabelColor])
+        // The serif's line, centred in the row; the detail shares its baseline.
+        let lineHeight = ceil(serif.ascender - serif.descender + serif.leading)
+        let titleWidth = ceil(titleText.size().width) + 2
+        let titleY = (bounds.height - lineHeight) / 2
+        titleLayer.frame = CGRect(x: inset + 2, y: titleY, width: min(titleWidth, bounds.width - inset * 2), height: lineHeight)
+        let baseline = titleY + serif.ascender
+        let detailHeight = ceil(small.ascender - small.descender) + 2
+        detailLayer.frame = CGRect(x: titleLayer.frame.maxX + 10, y: baseline - small.ascender - 1,
+                                   width: max(bounds.width - inset - titleLayer.frame.maxX - 10, 0), height: detailHeight)
+        backgroundColor = pinned ? colors.band : nil
+        fade.isHidden = !pinned
+        fade.frame = CGRect(x: 0, y: bounds.height, width: bounds.width, height: 18)
+        fade.colors = [colors.band, colors.band.copy(alpha: 0)!]
+    }
 }
