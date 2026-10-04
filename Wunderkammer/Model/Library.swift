@@ -555,6 +555,31 @@ final class Library {
         }
     }
 
+    /// Text cards drawn before Chinese got its own serif and the source line
+    /// grew legible are drawn again, once.
+    func redrawTextCards() {
+        let key = "textCards.v2"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        UserDefaults.standard.set(true, forKey: key)
+        let context = context
+        for item in items where item.kind == .text {
+            guard let text = item.text else { continue }
+            let source = item.url.flatMap { URL(string: $0)?.host() } ?? (item.originalFilename.isEmpty ? nil : item.originalFilename)
+            let version = item.representationVersion + 1
+            let id = item.id
+            Task {
+                let image = await Task.detached { CardRenderer.text(text, source: source) }.value
+                guard let image else { return }
+                await Task.detached { Representer.writeThumbnail(image, id, context, version: version) }.value
+                self.update(id) {
+                    $0.representationVersion = version
+                    $0.pixelWidth = image.width
+                    $0.pixelHeight = image.height
+                }
+            }
+        }
+    }
+
     /// Pages collected before cookie notices were cleared off their pictures
     /// get their picture and saved copy once more, once.
     func redoWebPictures() {

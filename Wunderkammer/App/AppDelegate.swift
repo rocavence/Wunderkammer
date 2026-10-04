@@ -156,6 +156,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             Task { await library.refreshWebData() }
             library.shrinkArchives()
             library.redoWebPictures()
+            library.redrawTextCards()
         }
         try? FileManager.default.removeItem(at: Self.textPreviewDir)
         grid = GridView(library: library, thumbnailer: thumbnailer)

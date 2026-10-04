@@ -27,9 +27,11 @@ enum CardRenderer {
             let inset = rect.insetBy(dx: 36, dy: 34)
             var footer: CGFloat = 0
             if let source, !source.isEmpty {
-                footer = 26
-                drawText(ctx, label(source.uppercased(), size: 9, color: muted, tracking: 1.2),
-                         in: CGRect(x: inset.minX, y: inset.maxY - 12, width: inset.width, height: 14))
+                // Large enough to read once the card is a tile.
+                footer = 34
+                let site = source.hasPrefix("www.") ? String(source.dropFirst(4)) : source
+                drawText(ctx, label(site, size: 13, color: muted, tracking: 0.2),
+                         in: CGRect(x: inset.minX, y: inset.maxY - 17, width: inset.width, height: 18))
             }
             let fontSize: CGFloat = short ? max(20, 30 - CGFloat(body.count) / 12) : 14
             let clipped = String(body.prefix(short ? 140 : 900))
@@ -173,9 +175,18 @@ enum CardRenderer {
         }
     }
 
+    /// New York for Latin; Chinese in Songti TC, whose punctuation sits right.
+    /// (Left to the system, CJK falls back to a font with gaps around ，。)
     private static func serif(_ s: String, size: CGFloat, color: CGColor = ink, lineHeight: CGFloat) -> NSAttributedString {
+        let ideographs = s.unicodeScalars.filter { $0.properties.isIdeographic }.count
+        let letters = max(s.unicodeScalars.filter { $0.properties.isAlphabetic }.count, 1)
+        if Double(ideographs) / Double(letters) > 0.3, let song = NSFont(name: "STSongti-TC-Regular", size: size) {
+            return attributed(s, font: song, color: color, lineHeight: lineHeight + 0.15)
+        }
         let base = NSFont.systemFont(ofSize: size, weight: .regular)
-        let font = base.fontDescriptor.withDesign(.serif).flatMap { NSFont(descriptor: $0, size: size) } ?? base
+        var descriptor = base.fontDescriptor.withDesign(.serif) ?? base.fontDescriptor
+        descriptor = descriptor.addingAttributes([.cascadeList: [NSFontDescriptor(name: "STSongti-TC-Regular", size: size)]])
+        let font = NSFont(descriptor: descriptor, size: size) ?? base
         return attributed(s, font: font, color: color, lineHeight: lineHeight)
     }
 

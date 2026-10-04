@@ -232,6 +232,16 @@ final class SelfTest {
         case "relations":
             await relationsCheck()
             return finish()
+        case "cards":
+            // Text cards as they're drawn now, for looking at.
+            let samples = [("收藏的本質不是擁有，而是記得自己曾經為什麼停下腳步。", "en.wikipedia.org"),
+                           ("Light is the left hand of darkness, and darkness the right hand of light. — 勒瑰恩", "www.goodreads.com")]
+            for (i, (text, source)) in samples.enumerated() {
+                if let image = CardRenderer.text(text, source: source), let dir = Self.outputDir {
+                    Thumbnailer.writeJPEG(image, to: dir.appendingPathComponent("card-\(i).jpg"))
+                }
+            }
+            return finish()
         case "overlay":
             // Cookie notices are cleared off page pictures (network).
             if let kettle = library.items.first(where: { $0.url?.contains("fellowproducts.com/products/stagg") == true }) {
