@@ -823,7 +823,11 @@ final class SelfTest {
             shot("heading-colour")
             // 顏色 folds away and opens again (left as it was found).
             let open = ui.sidebar.rowCount
+            let width = ui.sidebar.view.frame.width
             ui.sidebar.toggleFold("顏色")
+            await wait(0.4)
+            check(ui.sidebar.view.frame.width == width, "opening a section doesn't change the sidebar's width")
+            shot("sidebar-colours-toggled")
             let folded = ui.sidebar.rowCount
             ui.sidebar.toggleFold("顏色")
             check(folded != open && ui.sidebar.rowCount == open, "顏色 folds and unfolds (\(open) → \(folded) → \(ui.sidebar.rowCount) rows)")

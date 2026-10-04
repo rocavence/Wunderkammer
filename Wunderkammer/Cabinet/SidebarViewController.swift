@@ -64,6 +64,9 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         scroll.drawsBackground = false
         scroll.hasVerticalScroller = true
         scroll.autohidesScrollers = true
+        // Overlaid, never taking width: a section opening doesn't nudge the rows.
+        scroll.scrollerStyle = .overlay
+        scroll.hasHorizontalScroller = false
         // The card above already clears the title bar.
         scroll.automaticallyAdjustsContentInsets = false
 
@@ -179,6 +182,19 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
 
     private func reload() {
         updateHeader()
+        rows = buildRows()
+        table.reloadData()
+        if case .board(let id) = selected, library.collection(id) == nil {
+            select(.all)
+        } else if case .kind(let k) = selected, space != .wander,
+                  !rows.contains(where: { if case .view(.kind(k), _, _, _) = $0 { return true }; return false }) {
+            select(.all)
+        } else {
+            selectRow(for: selected)
+        }
+    }
+
+    private func buildRows() -> [Row] {
         var r: [Row] = []
         // Every theme two or more pieces share: the more ways in, the better.
         let subjects = Subjects.discover(in: library.items, limit: .max, minimum: 2)
@@ -201,7 +217,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
                  .view(.onThisDay, title: "過去的今天", icon: .calendarDay, count: nil),
                  .view(.forgotten, title: "被遺忘的", icon: .history, count: nil),
                  .view(.trail, title: "足跡", icon: .routing, count: nil),
-                 .random] + colourRows + themeRows
+                 .random] + themeRows + colourRows
         case .cabinet, .map:
             r = [.view(.all, title: "全部", icon: .grid, count: library.items.count)]
             // What it is as a file, then what it's about (a book, a film…), side by side.
@@ -216,21 +232,12 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             // Only worth a section when the cabinet holds more than one kind of thing.
             if kinds.count > 1 { r += [.header("格式")] + kinds }
             if !works.isEmpty { r += [.header("分類")] + works }
-            r += colourRows + themeRows
+            r += themeRows + colourRows
             if !library.collections.isEmpty {
                 r += [.header("Boards")] + library.collections.map { .board($0) }
             }
         }
-        rows = r
-        table.reloadData()
-        if case .board(let id) = selected, library.collection(id) == nil {
-            select(.all)
-        } else if case .kind(let k) = selected, space != .wander,
-                  !rows.contains(where: { if case .view(.kind(k), _, _, _) = $0 { return true }; return false }) {
-            select(.all)
-        } else {
-            selectRow(for: selected)
-        }
+        return r
     }
 
     func select(_ base: Scope.Base) {
@@ -302,7 +309,8 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
                 row.addSubview(v)
             }
             NSLayoutConstraint.activate([
-                label.leadingAnchor.constraint(equalTo: row.leadingAnchor),
+                // In line with the plain headers (格式, 分類), which the cell insets a little.
+                label.leadingAnchor.constraint(equalTo: row.leadingAnchor, constant: 2),
                 label.centerYAnchor.constraint(equalTo: row.centerYAnchor),
                 chevron.trailingAnchor.constraint(equalTo: row.trailingAnchor, constant: -6),
                 chevron.centerYAnchor.constraint(equalTo: row.centerYAnchor),
@@ -375,16 +383,48 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     /// Sections that can grow long fold away; the rest are short enough to stay open.
     static let foldable: Set<String> = ["顏色", "主題"]
 
+    /// Folded until opened: they're long.
     func isFolded(_ section: String) -> Bool {
-        UserDefaults.standard.bool(forKey: "sidebar.folded.\(section)")
+        UserDefaults.standard.object(forKey: "sidebar.folded.v2.\(section)") as? Bool ?? true
     }
 
     /// How many rows the sidebar shows (tests).
     var rowCount: Int { rows.count }
 
+    /// As in Zen: the section's rows slide in under its header or slide away,
+    /// the rest stays put; the chevron turns with them.
     func toggleFold(_ section: String) {
-        UserDefaults.standard.set(!isFolded(section), forKey: "sidebar.folded.\(section)")
-        reload()
+        UserDefaults.standard.set(!isFolded(section), forKey: "sidebar.folded.v2.\(section)")
+        guard let h = rows.firstIndex(where: { if case .header(section) = $0 { return true }; return false }) else { return reload() }
+        let old = rows
+        let new = buildRows()
+        // The section's own rows: those after its header up to the next header.
+        func body(_ list: [Row], from header: Int) -> Int {
+            var n = 0
+            for row in list.dropFirst(header + 1) {
+                if case .header = row { break }
+                n += 1
+            }
+            return n
+        }
+        let before = body(old, from: h), after = body(new, from: h)
+        guard new.count - after == old.count - before else { return reload() }
+        if let cell = table.view(atColumn: 0, row: h, makeIfNecessary: false),
+           let chevron = cell.subviews.compactMap({ $0 as? NSImageView }).first {
+            NSAnimationContext.runAnimationGroup { ctx in
+                ctx.duration = 0.2
+                chevron.animator().frameCenterRotation = after == 0 ? 90 : 0
+            }
+        }
+        rows = new
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.22
+            table.beginUpdates()
+            if before > 0 { table.removeRows(at: IndexSet(h + 1 ..< h + 1 + before), withAnimation: [.slideUp, .effectFade]) }
+            if after > 0 { table.insertRows(at: IndexSet(h + 1 ..< h + 1 + after), withAnimation: [.slideDown, .effectFade]) }
+            table.endUpdates()
+        }
+        selectRow(for: selected)
     }
 
     // MARK: Rename
