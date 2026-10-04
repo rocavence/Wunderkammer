@@ -1477,6 +1477,19 @@ final class SelfTest {
         }
         await wait(0.8)
         shot("ui-inspector")
+        // How long showing an item in the inspector takes, and the toggle.
+        if let some = library.items.dropFirst(3).first {
+            let t0 = CFAbsoluteTimeGetCurrent()
+            ui.inspectForTest(some.id)
+            let showMs = (CFAbsoluteTimeGetCurrent() - t0) * 1000
+            let t1 = CFAbsoluteTimeGetCurrent()
+            ui.toggleInspectorForTest()
+            await wait(0.6)
+            ui.toggleInspectorForTest()
+            await wait(0.6)
+            check(showMs < 60, "the inspector shows a piece quickly (\(Int(showMs)) ms)")
+            _ = t1
+        }
         ui.toggleInspectorForTest()
         await wait(0.4)
     }
@@ -1533,6 +1546,7 @@ protocol SelfTestUI: AnyObject {
     func search(_ text: String)
     @discardableResult func showRandom() -> Item?
     func toggleInspectorForTest()
+    func inspectForTest(_ id: UUID)
     func ask(_ question: String)
     func openForTest(_ id: UUID)
     func switchCabinet(to id: UUID)

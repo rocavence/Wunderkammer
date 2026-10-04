@@ -184,7 +184,7 @@ final class PreviewView: NSView {
 
     private func fitRect(for item: Item) -> NSRect {
         // Below the toolbar, above the caption.
-        let top = max(40, safeAreaInsets.top + 20)
+        let top = TopBar.chrome
         var area = NSRect(x: 40, y: top, width: bounds.width - 80, height: bounds.height - top - Self.captionRoom)
         let aspect = CGFloat(item.pixelWidth) / max(CGFloat(item.pixelHeight), 1)
         var size = NSSize(width: area.width, height: area.width / aspect)

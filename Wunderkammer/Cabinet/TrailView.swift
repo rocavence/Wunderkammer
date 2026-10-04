@@ -16,6 +16,8 @@ final class TrailView: NSScrollView {
         hasVerticalScroller = true
         autohidesScrollers = true
         drawsBackground = false
+        automaticallyAdjustsContentInsets = false
+        contentInsets = NSEdgeInsets(top: TopBar.chrome, left: 0, bottom: 0, right: 0)
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = 28

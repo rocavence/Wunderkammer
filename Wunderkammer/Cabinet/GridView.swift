@@ -141,9 +141,16 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
         needsDisplay = true
     }
 
+    /// The next width change springs the pieces to their places (a panel
+    /// opening beside it), rather than jumping (a window being dragged).
+    var animateNextWidthChange = false
+
     private func relayoutIfWidthChanged() {
         guard let clip = superview else { return }
-        if clip.bounds.width != layoutWidth { relayout(animated: false, anchor: nil) }
+        if clip.bounds.width != layoutWidth {
+            relayout(animated: animateNextWidthChange, anchor: nil)
+            animateNextWidthChange = false
+        }
     }
 
     /// `anchor`: a point in this view's coordinates that should stay over the

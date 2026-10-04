@@ -23,6 +23,8 @@ final class TopBar: NSView {
     static let height: CGFloat = 36
     /// From the window's top edge to the bar: below the traffic lights' own row.
     static let top: CGFloat = 38
+    /// Everything above the content: the lights' row, the bar, a little air.
+    static let chrome: CGFloat = top + height + 10
 
     init(titles: [String], tips: [String]) {
         spaces = SpaceSwitch(titles: titles, tips: tips)
@@ -347,16 +349,6 @@ class PassThroughView: NSView {
     }
 }
 
-/// The title bar's strip the top bar lives in: each time it's laid out, the
-/// bar is placed over the content again (the content may have moved).
-final class BarStrip: PassThroughView {
-    var onLayout: (() -> Void)?
-
-    override func layout() {
-        super.layout()
-        onLayout?()
-    }
-}
 
 /// Over the content while something is dragged in from outside: a dashed
 /// frame and where it will go, so letting go is never a guess.
@@ -419,5 +411,26 @@ final class DropOverlay: NSView {
         }, completionHandler: { [weak self] in
             if !on { self?.isHidden = true }
         })
+    }
+}
+
+/// A view filled with the window's background colour, kept right in light and dark.
+@MainActor
+final class SolidView: NSView {
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        wantsLayer = true
+        updateColor()
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateColor()
+    }
+
+    private func updateColor() {
+        layer?.backgroundColor = resolved(.windowBackgroundColor)
     }
 }

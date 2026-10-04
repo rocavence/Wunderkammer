@@ -174,6 +174,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         scroll.hasVerticalScroller = true
         scroll.autohidesScrollers = true
         scroll.drawsBackground = false
+        // Room for the bar above, set by hand: the title bar no longer says how tall it is.
+        scroll.automaticallyAdjustsContentInsets = false
+        scroll.contentInsets = NSEdgeInsets(top: TopBar.chrome, left: 0, bottom: 0, right: 0)
 
         canvas = CanvasView(library: library, thumbnailer: thumbnailer)
         infinity = InfinityView(library: library, thumbnailer: thumbnailer)
@@ -198,7 +201,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         preview.onActivate = { [weak self] id in self?.openExternally(id) }
         preview.onRandom = { [weak self] in self?.showRandom() }
 
-        let content = NSView()
+        // A solid ground under everything, the grid's own colour: the window's
+        // background is tinted by the desktop and would show as a band above.
+        let content = SolidView()
         emptyCabinet = EmptyCabinetView(frame: .zero)
         emptyCabinet.onImportAtlas = { [weak self] in self?.importAtlas() }
         emptyCabinet.onDrop = { [weak self] pb in
@@ -221,11 +226,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         answerBanner.translatesAutoresizingMaskIntoConstraints = false
         answerBanner.onClose = { [weak self] in self?.closeAnswer() }
         content.addSubview(answerBanner, positioned: .below, relativeTo: preview)
+        topBar.translatesAutoresizingMaskIntoConstraints = false
+        content.addSubview(topBar, positioned: .below, relativeTo: preview)
+        NSLayoutConstraint.activate([
+            topBar.topAnchor.constraint(equalTo: content.topAnchor, constant: TopBar.top),
+            topBar.leadingAnchor.constraint(equalTo: content.leadingAnchor),
+            topBar.trailingAnchor.constraint(equalTo: content.trailingAnchor),
+        ])
         dropOverlay.translatesAutoresizingMaskIntoConstraints = false
         content.addSubview(dropOverlay, positioned: .below, relativeTo: preview)
         NSLayoutConstraint.activate([
             // Below the top bar, over the content only.
-            dropOverlay.topAnchor.constraint(equalTo: content.safeAreaLayoutGuide.topAnchor),
+            dropOverlay.topAnchor.constraint(equalTo: content.topAnchor, constant: TopBar.chrome),
             dropOverlay.leadingAnchor.constraint(equalTo: content.leadingAnchor),
             dropOverlay.trailingAnchor.constraint(equalTo: content.trailingAnchor),
             dropOverlay.bottomAnchor.constraint(equalTo: content.bottomAnchor),
@@ -272,7 +284,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
             viewBar.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -18),
         ])
         NSLayoutConstraint.activate([
-            answerBanner.topAnchor.constraint(equalTo: content.safeAreaLayoutGuide.topAnchor, constant: 8),
+            answerBanner.topAnchor.constraint(equalTo: content.topAnchor, constant: TopBar.chrome + 8),
             answerBanner.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 14),
             answerBanner.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -14),
         ])
@@ -360,39 +372,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         window.titlebarAppearsTransparent = true
         // The cabinet carries its own large title (GridView.heading).
         window.titleVisibility = .hidden
-        window.toolbarStyle = .unified
-        // No line where the title bar ends: the bar and the content share one ground.
+        // No toolbar and nothing in the title bar: it draws no ground of its
+        // own, so the bar (in the content) and the cabinet are one colour.
+        // The traffic lights keep the title bar's row to themselves.
         window.titlebarSeparatorStyle = .none
-        // The traffic lights keep a row of their own where AppKit puts them;
-        // below it, a strip as tall as the bar of our own, which sits there.
-        // The bar lives in that strip, part of the title bar, so its clicks
-        // reach it; it spans the content, between the sidebar and the inspector.
-        let room = NSTitlebarAccessoryViewController()
-        let lightsRow = window.frame.height - window.contentLayoutRect.height
-        let below = TopBar.top + TopBar.height + 10 - lightsRow
-        let strip = BarStrip(frame: NSRect(x: 0, y: 0, width: window.frame.width, height: below))
-        topBar.translatesAutoresizingMaskIntoConstraints = true
-        strip.addSubview(topBar)
-        barOffset = TopBar.top - lightsRow
-        strip.onLayout = { [weak self] in self?.alignTopBar() }
-        room.view = strip
-        room.layoutAttribute = .bottom
-        room.fullScreenMinHeight = below
-        // Content scrolling up under the bar fades out softly: no hard line
-        // where the title bar ends and the cabinet begins.
-        if #available(macOS 26.1, *) { room.preferredScrollEdgeEffectStyle = .soft }
-        window.addTitlebarAccessoryViewController(room)
-        DispatchQueue.main.async { [weak self] in MainActor.assumeIsolated { self?.alignTopBar() } }
-        NotificationCenter.default.addObserver(forName: NSWindow.didResizeNotification, object: window, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.topBar.superview?.needsLayout = true }
-        }
-        NotificationCenter.default.addObserver(forName: NSSplitView.didResizeSubviewsNotification, object: split.splitView,
-                                               queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated {
-                self?.alignTopBar()
-                self?.topBar.superview?.needsLayout = true
-            }
-        }
         window.setFrameAutosaveName("Main")
         if window.frame.origin == .zero { window.center() }
         // Quick Look looks for its controller up the responder chain.
@@ -1023,15 +1006,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     // MARK: Inspector (⌘I)
 
     @objc private func toggleInspector() {
-        NSAnimationContext.runAnimationGroup({ _ in
-            inspectorItem.animator().isCollapsed.toggle()
-        }, completionHandler: { [weak self] in
-            // The bar follows the content's final width, not a frame mid-slide.
-            MainActor.assumeIsolated { self?.alignTopBar() }
-        })
+        // At once, not slid: sliding reflowed the whole cabinet beside it on
+        // every frame. The pieces then spring to their new places in one go.
+        grid.animateNextWidthChange = mode.cabinetStyle != nil
+        inspectorItem.isCollapsed.toggle()
     }
 
     func toggleInspectorForTest() { toggleInspector() }
+    func inspectForTest(_ id: UUID) { inspector.show(id) }
     var inspectorViewForTest: NSView? { inspector.view.superview }
 
     // MARK: Accent
@@ -1055,18 +1037,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
 
     /// The middle of the window: what the bar spans.
     private var contentArea: NSView?
-    /// From the top of the title bar's strip to the bar.
-    private var barOffset: CGFloat = 0
-
-    /// The bar over the content only, from its left edge to its right, wherever
-    /// AppKit has started the title bar's strip.
-    private func alignTopBar() {
-        guard let strip = topBar.superview, let content = contentArea, strip.window != nil else { return }
-        let area = strip.convert(content.convert(content.bounds, to: nil), from: nil)
-        let y = strip.isFlipped ? barOffset : strip.bounds.height - barOffset - TopBar.height
-        let frame = NSRect(x: area.minX, y: y, width: area.width, height: TopBar.height)
-        if topBar.frame != frame { topBar.frame = frame }
-    }
 
     @objc private func toggleSidebarFromButton() {
         sidebarPeeking = false

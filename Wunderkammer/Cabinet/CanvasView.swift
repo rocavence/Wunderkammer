@@ -342,7 +342,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
     /// Space under the transparent titlebar/toolbar.
     private var topInset: CGFloat {
         guard let window else { return 0 }
-        return window.frame.height - window.contentLayoutRect.height
+        return TopBar.chrome
     }
 
     private func zoom(by factor: CGFloat, around p: NSPoint) {

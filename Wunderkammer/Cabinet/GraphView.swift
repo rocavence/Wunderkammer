@@ -150,7 +150,7 @@ final class GraphView: NSView {
         let xs = graph.nodes.map(\.position.x), ys = graph.nodes.map(\.position.y)
         let content = CGRect(x: xs.min()! - 120, y: ys.min()! - 120, width: xs.max()! - xs.min()! + 240, height: ys.max()! - ys.min()! + 240)
         // Room at the top for the legend, at the foot for the view bar.
-        let top = (window.map { $0.frame.height - $0.contentLayoutRect.height } ?? 0) + 36
+        let top = TopBar.chrome + 36
         let legendRoom: CGFloat = 90
         zoom = min(1.2, max(0.2, min(bounds.width / content.width, (bounds.height - top - legendRoom) / content.height)))
         offset = CGPoint(x: content.midX - bounds.width / zoom / 2, y: content.midY - (bounds.height + top - legendRoom) / zoom / 2)
@@ -187,7 +187,7 @@ final class GraphView: NSView {
             NSLayoutConstraint.activate([
                 legend.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
                 // At the top, clear of the view bar and its names.
-                legend.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 14),
+                legend.topAnchor.constraint(equalTo: topAnchor, constant: TopBar.chrome + 6),
             ])
         }
         let text = NSMutableAttributedString()

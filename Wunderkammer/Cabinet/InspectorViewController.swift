@@ -65,19 +65,40 @@ final class InspectorViewController: NSViewController {
             scroll.bottomAnchor.constraint(equalTo: card.bottomAnchor),
         ])
         view = column
+        // The cabinet changes often while it's being understood: redraw only
+        // when the piece on show has changed, at most once per moment.
         NotificationCenter.default.addObserver(forName: Library.didChange, object: library, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.refresh() }
+            MainActor.assumeIsolated { self?.refreshSoon() }
         }
         show(nil)
     }
 
     func show(_ id: UUID?) {
+        guard id != itemID || shown == nil else { return }
         itemID = id
         refresh()
     }
 
+    /// What was drawn last: the same piece, unchanged, isn't drawn again.
+    private var shown: Item?
+    private var refreshPending = false
+
+    private func refreshSoon() {
+        guard !refreshPending else { return }
+        refreshPending = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                self.refreshPending = false
+                let now = self.itemID.flatMap(self.library.item)
+                if now != self.shown || (now == nil) != (self.shown == nil) { self.refresh() }
+            }
+        }
+    }
+
     private func refresh() {
         guard isViewLoaded else { return }
+        shown = itemID.flatMap(library.item)
         stack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         guard let id = itemID, let item = library.item(id) else {
             // Centered and calm, saying what will appear here.
