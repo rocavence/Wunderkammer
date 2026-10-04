@@ -162,13 +162,13 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
     /// One quiet suggestion at the right of the title: what else the cabinet can do.
     var tip = "" { didSet { if tip != oldValue { renderHeading() } } }
 
+    /// What can be done right here, in 收藏.
     static let tips = [
-        "試試：按 R 隨機重看一件",
+        "按 R 隨機重看一件",
         "在搜尋框問問題，例如：我收過哪些書？",
-        "漫遊會自己慢慢漂移，按空白鍵暫停",
         "選一件，按 ⌘I 看它和什麼有關",
-        "地圖的畫布上按右鍵：依關聯分堆",
-        "足跡記得你怎麼從一件走到另一件",
+        "捏合或 ⌘ 加捲動來放大縮小",
+        "空白鍵預覽，Return 用原本的 app 打開",
     ]
 
     private func renderHeading() {

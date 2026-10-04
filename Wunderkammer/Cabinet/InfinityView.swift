@@ -109,8 +109,9 @@ final class InfinityView: NSView, ItemSurface {
         withoutAnimation {
             topShade.colors = [bg.copy(alpha: 0.9)!, bg.copy(alpha: 0)!]
             topShade.frame = CGRect(x: 0, y: 0, width: bounds.width, height: 120)
-            bottomShade.colors = [bg.copy(alpha: 0)!, bg.copy(alpha: 0.85)!]
-            bottomShade.frame = CGRect(x: 0, y: bounds.height - 140, width: bounds.width, height: 140)
+            bottomShade.colors = [bg.copy(alpha: 0)!, bg.copy(alpha: 0.7)!, bg.copy(alpha: 0.95)!]
+            bottomShade.locations = [0, 0.55, 1]
+            bottomShade.frame = CGRect(x: 0, y: bounds.height - 190, width: bounds.width, height: 190)
         }
         let size: CGFloat = 24
         titleLabel.font = NSFont.systemFont(ofSize: size).fontDescriptor.withDesign(.serif)
@@ -118,6 +119,11 @@ final class InfinityView: NSView, ItemSurface {
         titleLabel.stringValue = heading
         titleLabel.textColor = .labelColor
         hintLabel.textColor = .secondaryLabelColor
+        // Whatever picture is behind them, the words stay readable.
+        let shadow = NSShadow()
+        shadow.shadowColor = NSColor.black.withAlphaComponent(0.6)
+        shadow.shadowBlurRadius = 8
+        for t in [titleLabel, hintLabel] { t.shadow = shadow }
     }
 
     /// The how-to shows when you arrive and fades once you start moving.

@@ -242,7 +242,14 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
 
     @objc func clusterByRelation(_ sender: Any?) {
         let items = order.compactMap(library.item)
-        let clusters = CanvasLayout.relationClusters(items, links: relationLinks)
+        var clusters = CanvasLayout.relationClusters(items, links: relationLinks)
+        // What nothing connects is still sorted, by theme, rather than one big 其他.
+        if let rest = clusters.last, rest.title == "其他" {
+            clusters.removeLast()
+            let leftover = Set(rest.ids)
+            clusters += CanvasLayout.clusters(items.filter { leftover.contains($0.id) },
+                                              subjects: Subjects.discover(in: library.items, limit: 12))
+        }
         groups = clusters.map { CanvasGroup(id: UUID(), x: 0, y: 0, itemIDs: $0.ids, title: $0.title) }
         layoutGroups()
         arrange(nil)

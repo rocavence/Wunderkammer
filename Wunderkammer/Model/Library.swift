@@ -558,7 +558,7 @@ final class Library {
     /// Text cards drawn before Chinese got its own serif and the source line
     /// grew legible are drawn again, once.
     func redrawTextCards() {
-        let key = "textCards.v2"
+        let key = "textCards.v3"
         guard !UserDefaults.standard.bool(forKey: key) else { return }
         UserDefaults.standard.set(true, forKey: key)
         let context = context

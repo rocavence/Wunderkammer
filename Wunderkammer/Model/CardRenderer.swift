@@ -21,7 +21,14 @@ enum CardRenderer {
     static func text(_ text: String, source: String?) -> CGImage? {
         let body = text.trimmingCharacters(in: .whitespacesAndNewlines)
         let short = body.count < 140
-        let size = short ? CGSize(width: 480, height: 360) : CGSize(width: 420, height: 525)
+        var size = short ? CGSize(width: 480, height: 360) : CGSize(width: 420, height: 525)
+        if short {
+            // As tall as the words need (within reason), not a fixed sheet of empty paper.
+            let fontSize: CGFloat = max(20, 30 - CGFloat(body.count) / 12)
+            let words = serif(body, size: fontSize, lineHeight: 1.25)
+            let height = words.boundingRect(with: CGSize(width: 480 - 72, height: 1000), options: [.usesLineFragmentOrigin]).height
+            size.height = min(360, max(220, ceil(height) + 34 * 2 + (source == nil ? 0 : 34) + 24))
+        }
         return draw(size) { ctx, rect in
             fill(ctx, rect, paper)
             let inset = rect.insetBy(dx: 36, dy: 34)

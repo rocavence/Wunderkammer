@@ -29,7 +29,7 @@ final class InspectorViewController: NSViewController {
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = 6
-        stack.edgeInsets = NSEdgeInsets(top: 60, left: 18, bottom: 32, right: 18)
+        stack.edgeInsets = NSEdgeInsets(top: 54, left: 18, bottom: 32, right: 18)
         stack.translatesAutoresizingMaskIntoConstraints = false
         let document = FlippedView()
         document.addSubview(stack)
@@ -80,7 +80,8 @@ final class InspectorViewController: NSViewController {
             stack.addArrangedSubview(picture)
             NSLayoutConstraint.activate([
                 picture.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: -36),
-                picture.heightAnchor.constraint(equalTo: picture.widthAnchor, multiplier: min(max(ratio, 0.3), 1.4)),
+                // Never taller than wide: a tall page would push everything else out of sight.
+                picture.heightAnchor.constraint(equalTo: picture.widthAnchor, multiplier: min(max(ratio, 0.3), 1.0)),
             ])
             stack.setCustomSpacing(16, after: picture)
         }
@@ -160,7 +161,11 @@ final class InspectorViewController: NSViewController {
         let facts = Self.facts(item, library: library).filter { $0.0 != "類型" && $0.0 != "來源" }
         if !facts.isEmpty {
             section("資訊")
-            for (key, value) in facts { stack.addArrangedSubview(row(key, value)) }
+            for (key, value) in facts {
+                // Colours as colours.
+                if key == "顏色", let names = item.colors { stack.addArrangedSubview(swatches(Array(names.prefix(3)))); continue }
+                stack.addArrangedSubview(row(key, value))
+            }
         }
 
         // Names and the site lead to everything else they appear in.
@@ -222,6 +227,37 @@ final class InspectorViewController: NSViewController {
         }
     }
 
+    static let swatchColors: [String: NSColor] = [
+        "black": .black, "white": .white, "gray": .systemGray, "red": .systemRed, "orange": .systemOrange,
+        "yellow": .systemYellow, "green": .systemGreen, "blue": .systemBlue, "purple": .systemPurple,
+        "pink": .systemPink, "brown": .systemBrown,
+    ]
+
+    private func swatches(_ names: [String]) -> NSView {
+        let k = label("顏色", size: 11, color: .secondaryLabelColor)
+        k.translatesAutoresizingMaskIntoConstraints = false
+        k.widthAnchor.constraint(equalToConstant: 56).isActive = true
+        let dots = NSStackView()
+        dots.spacing = 6
+        for name in names {
+            let dot = NSView()
+            dot.wantsLayer = true
+            dot.layer?.backgroundColor = (Self.swatchColors[name] ?? .gray).cgColor
+            dot.layer?.cornerRadius = 7
+            dot.layer?.borderWidth = 0.5
+            dot.layer?.borderColor = NSColor.separatorColor.cgColor
+            dot.translatesAutoresizingMaskIntoConstraints = false
+            dot.widthAnchor.constraint(equalToConstant: 14).isActive = true
+            dot.heightAnchor.constraint(equalToConstant: 14).isActive = true
+            dot.toolTip = Self.colorNames[name] ?? name
+            dot.setAccessibilityLabel(Self.colorNames[name] ?? name)
+            dots.addArrangedSubview(dot)
+        }
+        let r = NSStackView(views: [k, dots])
+        r.spacing = 10
+        return r
+    }
+
     /// A section starts with a little air above its name.
     private func section(_ title: String) {
         if let last = stack.arrangedSubviews.last { stack.setCustomSpacing(26, after: last) }
@@ -234,8 +270,8 @@ final class InspectorViewController: NSViewController {
     private func link(_ title: String, _ action: @escaping @MainActor () -> Void) -> NSButton {
         let b = ClosureButton(title: title, action: action)
         b.isBordered = false
-        // Links look like links; the accent colour is for selection.
-        b.contentTintColor = .linkColor
+        // One accent for the whole app: what's selected, and where you can go.
+        b.contentTintColor = .controlAccentColor
         b.font = .systemFont(ofSize: 12.5)
         b.lineBreakMode = .byTruncatingTail
         b.alignment = .left
@@ -340,7 +376,7 @@ final class InspectorViewController: NSViewController {
     }
 
     private func row(_ key: String, _ value: String) -> NSView {
-        let k = label(key, size: 11, color: .tertiaryLabelColor)
+        let k = label(key, size: 11, color: .secondaryLabelColor)
         let v = label(value, size: 12, color: .labelColor)
         v.maximumNumberOfLines = 3
         k.translatesAutoresizingMaskIntoConstraints = false

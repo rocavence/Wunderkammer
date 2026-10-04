@@ -65,6 +65,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private(set) var scope = Scope()
     private var capture: CaptureController!
     private let answerBanner = AnswerBanner()
+    private let edgeFade = EdgeFade()
     private var trailView: TrailView!
     /// The question the cabinet is showing the answer to, for the trail.
     private var lastQuestion = ""
@@ -211,6 +212,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         answerBanner.isHidden = true
         answerBanner.translatesAutoresizingMaskIntoConstraints = false
         answerBanner.onClose = { [weak self] in self?.closeAnswer() }
+        edgeFade.translatesAutoresizingMaskIntoConstraints = false
+        content.addSubview(edgeFade, positioned: .below, relativeTo: preview)
+        NSLayoutConstraint.activate([
+            edgeFade.topAnchor.constraint(equalTo: content.topAnchor),
+            edgeFade.leadingAnchor.constraint(equalTo: content.leadingAnchor),
+            edgeFade.trailingAnchor.constraint(equalTo: content.trailingAnchor),
+            edgeFade.bottomAnchor.constraint(equalTo: content.safeAreaLayoutGuide.topAnchor, constant: 22),
+        ])
         content.addSubview(answerBanner, positioned: .below, relativeTo: preview)
         NSLayoutConstraint.activate([
             answerBanner.topAnchor.constraint(equalTo: content.safeAreaLayoutGuide.topAnchor, constant: 8),
@@ -467,6 +476,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         if !scope.isSearching, today > 0, today < count { detail.append("今天新增 \(today) 件") }
         if learning > 0 { detail.append("正在理解 \(learning) 件") }
         grid?.heading = (scope.isSearching ? "「\(scope.search)」" : window.title, detail.joined(separator: " · "))
+        grid?.tip = scope.isSearching ? "" : GridView.tips[tipIndex]
         infinity?.heading = scope.base == .all ? "整個珍奇室" : window.title
         // A cabinet with nothing in it yet gets its welcome instead of empty views.
         emptyCabinet?.isHidden = !library.items.isEmpty
@@ -488,6 +498,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         canvas.isHidden = new != .canvas
         infinity.isHidden = new != .infinity
         graphView.isHidden = new != .graph
+        // The wall has edges of its own.
+        edgeFade.isHidden = new == .infinity
         updateTrailView()
         focusCurrent()
     }

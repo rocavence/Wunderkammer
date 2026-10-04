@@ -201,17 +201,25 @@ final class GraphView: NSView {
             let c = toScreen(node.position)
             let layers = nodeLayers[node.id] ?? makeNode(node, in: root)
             layers.circle.frame = CGRect(x: c.x - r, y: c.y - r, width: r * 2, height: r * 2)
-            layers.circle.cornerRadius = r
+            // Shape tells the kind too, not colour alone: sites are rounded squares.
+            let corner = node.kind == .site ? r * 0.32 : r
+            layers.circle.cornerRadius = corner
             layers.ring.frame = layers.circle.frame
-            layers.ring.path = CGPath(ellipseIn: CGRect(x: 0, y: 0, width: r * 2, height: r * 2), transform: nil)
+            layers.ring.path = CGPath(roundedRect: CGRect(x: 0, y: 0, width: r * 2, height: r * 2),
+                                      cornerWidth: corner, cornerHeight: corner, transform: nil)
             layers.ring.lineWidth = max(2, 3 * zoom)
             let size = min(max(13 * zoom, 10), 18)
             let serif = NSFont.systemFont(ofSize: size).fontDescriptor.withDesign(.serif).flatMap { NSFont(descriptor: $0, size: size) }
-            layers.label.string = NSAttributedString(string: "\(node.title)  \(node.items.count)", attributes: [
+            let text = NSAttributedString(string: "\(node.title)  \(node.items.count)", attributes: [
                 .font: serif ?? NSFont.systemFont(ofSize: size),
                 .foregroundColor: NSColor(cgColor: resolved(.labelColor)) ?? NSColor.labelColor,
             ])
-            layers.label.frame = CGRect(x: c.x - 120, y: c.y + r + 4, width: 240, height: size * 1.5)
+            layers.label.string = text
+            // A backing just the size of the words, so lines passing under don't cut through them.
+            let w = ceil(text.size().width) + 12
+            layers.label.frame = CGRect(x: c.x - w / 2, y: c.y + r + 4, width: w, height: size * 1.5)
+            layers.label.backgroundColor = resolved(.windowBackgroundColor).copy(alpha: 0.78)
+            layers.label.cornerRadius = 4
             // Zoomed out, only the biggest are named; closer in, all of them.
             layers.label.isHidden = zoom < 0.15 || (zoom < 0.6 && !labelledWhenFar.contains(node.id)) || !clear.contains(node.id)
         }
