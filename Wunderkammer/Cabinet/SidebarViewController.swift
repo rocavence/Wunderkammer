@@ -123,7 +123,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         switch space {
         case .wander:
             // Ways into the wall: everything, what time brings back, where you've been.
-            r = [.view(.all, title: "珍奇室", icon: .infinite, count: library.items.count),
+            r = [.view(.all, title: "珍奇室", icon: .cabinet, count: library.items.count),
                  .view(.onThisDay, title: "過去的今天", icon: .calendarDay, count: nil),
                  .view(.forgotten, title: "被遺忘的", icon: .history, count: nil),
                  .view(.trail, title: "足跡", icon: .routing, count: nil),
@@ -216,7 +216,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         case .header(let title):
             let label = NSTextField(labelWithString: title)
             label.font = .systemFont(ofSize: 11, weight: .semibold)
-            label.textColor = .tertiaryLabelColor
+            label.textColor = .secondaryLabelColor
             return label
         case .view(_, let title, let icon, let count):
             return cell(title: title, icon: icon, count: count)

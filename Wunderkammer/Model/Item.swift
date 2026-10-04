@@ -196,10 +196,25 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
 
     /// What to call it: a title if known, else the file name, else the site.
     var displayTitle: String {
-        if let title, !title.isEmpty { return title }
+        if let title, !title.isEmpty { return kind == .web ? Self.withoutSiteName(title, domain: domain) : title }
         if kind == .text, let text { return String(text.prefix(80)) }
         if !originalFilename.isEmpty { return (originalFilename as NSString).deletingPathExtension }
         return domain ?? url ?? "Untitled"
+    }
+
+    /// "Cabinet of curiosities - Wikipedia" → "Cabinet of curiosities": the
+    /// site's name after a dash or bar is dropped when it's the site we're on.
+    static func withoutSiteName(_ title: String, domain: String?) -> String {
+        guard let domain = domain?.lowercased() else { return title }
+        for separator in [" - ", " – ", " — ", " | "] {
+            guard let r = title.range(of: separator, options: .backwards) else { continue }
+            let head = title[..<r.lowerBound].trimmingCharacters(in: .whitespaces)
+            let site = title[r.upperBound...].lowercased().filter { $0.isLetter || $0.isNumber }
+            if head.count >= 2, site.count >= 3, domain.filter({ $0.isLetter || $0.isNumber }).contains(site.prefix(12)) {
+                return head
+            }
+        }
+        return title
     }
 
     /// Whether the original is a picture we can show at full resolution.

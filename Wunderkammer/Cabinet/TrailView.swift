@@ -108,7 +108,26 @@ final class TrailView: NSScrollView {
             scroller.heightAnchor.constraint(equalToConstant: 132),
         ])
         scroller.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        return scroller
+        // The row fades at the right edge: there's more if you scroll. Both in a
+        // plain container (a scroll view keeps its own subviews in order).
+        let container = NSView()
+        let fade = EdgeFade()
+        fade.towardsRight = true
+        for v in [scroller, fade] as [NSView] {
+            v.translatesAutoresizingMaskIntoConstraints = false
+            container.addSubview(v)
+        }
+        NSLayoutConstraint.activate([
+            scroller.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            scroller.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            scroller.topAnchor.constraint(equalTo: container.topAnchor),
+            scroller.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            fade.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            fade.topAnchor.constraint(equalTo: container.topAnchor),
+            fade.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            fade.widthAnchor.constraint(equalToConstant: 56),
+        ])
+        return container
     }
 
     private func arrow(_ text: String) -> NSView {

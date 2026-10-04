@@ -146,7 +146,8 @@ final class InspectorViewController: NSViewController {
         if !actions.arrangedSubviews.isEmpty { stack.addArrangedSubview(actions) }
 
         if let arrived = arrival?(item) {
-            let way = label(arrived, size: 11, color: .tertiaryLabelColor)
+            // Breaks only between steps, never inside a word.
+            let way = label(Self.unbreakable(arrived), size: 11, color: .secondaryLabelColor)
             way.maximumNumberOfLines = 3
             stack.addArrangedSubview(way)
         }
@@ -176,7 +177,10 @@ final class InspectorViewController: NSViewController {
             for (key, value) in facts {
                 // Colours as colours.
                 if key == "顏色", let names = item.colors { stack.addArrangedSubview(swatches(Array(names.prefix(3)))); continue }
-                stack.addArrangedSubview(row(key, value))
+                let r = row(key, value)
+                // The full path where it's shortened.
+                if key.hasSuffix("位置"), let path = item.filePath { r.toolTip = (path as NSString).abbreviatingWithTildeInPath }
+                stack.addArrangedSubview(r)
             }
         }
 
@@ -273,7 +277,7 @@ final class InspectorViewController: NSViewController {
     /// A section starts with a little air above its name.
     private func section(_ title: String) {
         if let last = stack.arrangedSubviews.last { stack.setCustomSpacing(26, after: last) }
-        let header = label(title, size: 11, color: .tertiaryLabelColor)
+        let header = label(title, size: 11, color: .secondaryLabelColor)
         header.font = .systemFont(ofSize: 11, weight: .semibold)
         stack.addArrangedSubview(header)
         stack.setCustomSpacing(8, after: header)
@@ -329,9 +333,9 @@ final class InspectorViewController: NSViewController {
         if let path = item.filePath {
             if item.storedFilename != nil {
                 f.append(("位置", "圖庫裡有一份複本"))
-                f.append(("原始位置", (path as NSString).abbreviatingWithTildeInPath))
+                f.append(("原始位置", Self.shortPath(path)))
             } else {
-                f.append(("位置", library.originalURL(item) == nil ? "找不到原始檔" : (path as NSString).abbreviatingWithTildeInPath))
+                f.append(("位置", library.originalURL(item) == nil ? "找不到原始檔" : Self.shortPath(path)))
             }
         }
         if item.kind == .web {
@@ -385,6 +389,21 @@ final class InspectorViewController: NSViewController {
         l.isSelectable = true
         l.preferredMaxLayoutWidth = 240
         return l
+    }
+
+    /// Word joiners inside each step; the spaces around → stay breakable.
+    static func unbreakable(_ s: String) -> String {
+        s.components(separatedBy: " → ").map { step in
+            step.map(String.init).joined(separator: "\u{2060}")
+        }.joined(separator: " → ")
+    }
+
+    /// "~/Documents/Wunderkammer 範例/曼德博集合.mp4" → "~/…/曼德博集合.mp4".
+    static func shortPath(_ path: String) -> String {
+        let p = (path as NSString).abbreviatingWithTildeInPath
+        let parts = p.split(separator: "/", omittingEmptySubsequences: false)
+        guard parts.count > 3 else { return p }
+        return "\(parts[0])/…/\(parts.last!)"
     }
 
     private func row(_ key: String, _ value: String) -> NSView {

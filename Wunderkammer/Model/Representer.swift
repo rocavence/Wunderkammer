@@ -224,11 +224,22 @@ enum Representer {
         if known.contains(hash) { return .duplicate(hash) }
         let domain = url.host().map { $0.hasPrefix("www.") ? String($0.dropFirst(4)) : $0 } ?? url.absoluteString
         // A card right away; the page's own preview replaces it once fetched.
-        var item = representation(.web, CardRenderer.web(title: title ?? domain, domain: domain, description: nil, favicon: nil),
+        // Until the page's own title arrives, the address says more than the domain twice.
+        let placeholder = title ?? Self.titleFromAddress(url) ?? domain
+        var item = representation(.web, CardRenderer.web(title: placeholder, domain: domain, description: nil, favicon: nil),
                                   name: "", hash: hash, context)
         item.url = url.absoluteString
         item.title = title
         return .new(item)
+    }
+
+    /// ".../wiki/Cabinet_of_curiosities" → "Cabinet of curiosities".
+    static func titleFromAddress(_ url: URL) -> String? {
+        let last = url.lastPathComponent.removingPercentEncoding ?? url.lastPathComponent
+        let words = (last as NSString).deletingPathExtension.replacingOccurrences(of: "_", with: " ").replacingOccurrences(of: "-", with: " ")
+            .trimmingCharacters(in: .whitespaces)
+        guard words.count >= 3, words != "/", words.rangeOfCharacter(from: .letters) != nil, Int(words) == nil else { return nil }
+        return words.prefix(1).uppercased() + words.dropFirst()
     }
 
     private static func textItem(_ text: String, origin: URL?, _ context: Context, _ known: Set<String>) -> Outcome? {

@@ -195,7 +195,7 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
             tipStyle.alignment = .right
             tipLayer.string = NSAttributedString(string: tip, attributes: [
                 .font: NSFont.systemFont(ofSize: 12), .paragraphStyle: tipStyle,
-                .foregroundColor: NSColor(cgColor: resolved(.tertiaryLabelColor)) ?? .tertiaryLabelColor,
+                .foregroundColor: NSColor(cgColor: resolved(.secondaryLabelColor)) ?? .secondaryLabelColor,
             ])
             tipLayer.alignmentMode = .right
             tipLayer.frame = CGRect(x: bounds.width / 2, y: 50, width: max(bounds.width / 2 - inset - 2, 0), height: 18)

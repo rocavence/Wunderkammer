@@ -98,6 +98,23 @@ struct RediscoveryTests {
     }
 }
 
+struct TitleTests {
+    @Test func siteNamesComeOffPageTitles() {
+        #expect(Item.withoutSiteName("Cabinet of curiosities - Wikipedia", domain: "en.wikipedia.org") == "Cabinet of curiosities")
+        #expect(Item.withoutSiteName("Stagg EKG | Fellow", domain: "fellowproducts.com") == "Stagg EKG")
+        // A dash that's part of the title stays.
+        #expect(Item.withoutSiteName("Star Wars - Episode IV", domain: "starwars.com") == "Star Wars - Episode IV")
+        #expect(Representer.titleFromAddress(URL(string: "https://en.wikipedia.org/wiki/Cabinet_of_curiosities")!) == "Cabinet of curiosities")
+        #expect(Representer.titleFromAddress(URL(string: "https://example.com/")!) == nil)
+    }
+
+    @MainActor @Test func pathsAndProvenance() {
+        #expect(InspectorViewController.shortPath("/Users/a/Documents/Samples/clip.mp4").hasSuffix("/…/clip.mp4"))
+        #expect(!InspectorViewController.unbreakable("搜尋「x」 → 這件").contains("搜\u{2060}尋 →\u{2060}"))
+        #expect(InspectorViewController.unbreakable("隨機 → 這件").contains(" → "))
+    }
+}
+
 struct SearchReasonTests {
     private func item(_ build: (inout Item) -> Void) -> Item {
         var i = Item(kind: .image, originalFilename: "", pixelWidth: 1, pixelHeight: 1, contentHash: UUID().uuidString)

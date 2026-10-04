@@ -920,6 +920,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
                 control.setWidth(64, forSegment: s.rawValue)
             }
             control.segmentStyle = .automatic
+            control.selectedSegmentBezelColor = .controlAccentColor
             spaceControl = control
             let item = NSToolbarItem(itemIdentifier: id)
             item.view = control
@@ -939,7 +940,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             let item = NSSearchToolbarItem(itemIdentifier: id)
             item.searchField.placeholderString = "搜尋或提問"
             item.searchField.delegate = self
-            item.preferredWidthForSearchField = 200
+            item.preferredWidthForSearchField = 170
             item.toolTip = "搜尋（⌘K）"
             searchItem = item
             return item

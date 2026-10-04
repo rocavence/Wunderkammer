@@ -7,7 +7,7 @@ enum CanvasLayout {
     static let rowHeight: CGFloat = 160
     static let spacing: CGFloat = 8
     /// Minimum empty space kept between piles.
-    static let gap: CGFloat = 56
+    static let gap: CGFloat = 80
 
     /// Packs a pile into a roughly 4:3 block. Frames are relative to the pile's top-left.
     static func pack(_ aspects: [CGFloat]) -> (frames: [CGRect], size: CGSize) {
