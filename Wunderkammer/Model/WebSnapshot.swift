@@ -77,6 +77,7 @@ final class WebSnapshot: NSObject, WKNavigationDelegate {
         _ = try? await snap.view.callAsyncJavaScript("window.scrollTo(0, document.body.scrollHeight)", contentWorld: .page)
         try? await Task.sleep(for: .milliseconds(900))
         _ = try? await snap.view.callAsyncJavaScript("window.scrollTo(0, 0)", contentWorld: .page)
+        _ = try? await snap.view.callAsyncJavaScript(clearOverlays, contentWorld: .page)
         try? await Task.sleep(for: .milliseconds(300))
         // The page's main content when it marks one, rather than menus first.
         let text = (try? await snap.view.callAsyncJavaScript("""
@@ -135,7 +136,36 @@ final class WebSnapshot: NSObject, WKNavigationDelegate {
         MainActor.assumeIsolated { didLoad(false); finish(nil) }
     }
 
+    /// Cookie and consent notices pinned over the page aren't the page: gone
+    /// before the picture or the saved copy is taken. Only overlays (fixed,
+    /// sticky or dialogs) that talk about cookies, consent or privacy.
+    static let clearOverlays = """
+        const words = /cookie|consent|gdpr|onetrust|didomi|cookiebot|truste|osano|privacy|同意|隱私|クッキー/i;
+        let removed = 0;
+        for (const el of Array.from(document.querySelectorAll('body *'))) {
+            if (!el.isConnected) continue;
+            const cs = getComputedStyle(el);
+            const overlay = cs.position === 'fixed' || cs.position === 'sticky'
+                || el.getAttribute('role') === 'dialog' || el.getAttribute('aria-modal') === 'true';
+            if (!overlay) continue;
+            const named = words.test((el.id || '') + ' ' + (typeof el.className === 'string' ? el.className : ''));
+            const text = (el.innerText || '').slice(0, 2000);
+            if (named || words.test(text)) { el.remove(); removed++; }
+        }
+        document.documentElement.style.overflow = '';
+        if (document.body) document.body.style.overflow = '';
+        return removed;
+        """
+
     private func snapshot() {
+        Task { @MainActor in
+            _ = try? await view.callAsyncJavaScript(Self.clearOverlays, contentWorld: .page)
+            try? await Task.sleep(for: .milliseconds(150))
+            takePicture()
+        }
+    }
+
+    private func takePicture() {
         let config = WKSnapshotConfiguration()
         config.rect = view.bounds
         // Points; ×2 on Retina gives the 1,200 px every representation gets.

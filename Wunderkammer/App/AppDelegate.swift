@@ -154,6 +154,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             library.archiveMissing()
             Task { await library.refreshWebData() }
             library.shrinkArchives()
+            library.redoWebPictures()
         }
         try? FileManager.default.removeItem(at: Self.textPreviewDir)
         grid = GridView(library: library, thumbnailer: thumbnailer)
@@ -279,6 +280,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         window.isReleasedWhenClosed = false
         window.setContentSize(NSSize(width: 1280, height: 820))
         window.titlebarAppearsTransparent = true
+        // The cabinet carries its own large title (GridView.heading).
+        window.titleVisibility = .hidden
         window.toolbarStyle = .unified
         let toolbar = NSToolbar(identifier: "main")
         toolbar.delegate = self
@@ -447,6 +450,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         let count = library.items(for: scope).count
         let learning = understanding?.pending ?? 0
         window.subtitle = (scope.isSearching ? "找到 \(count) 件" : "\(count) 件") + (learning > 0 ? " · 正在理解 \(learning) 件" : "")
+        // The cabinet says it large; the titlebar stays quiet.
+        let today = library.items(for: scope).filter { Calendar.current.isDateInToday($0.dateAdded) }.count
+        var detail = [scope.isSearching ? "找到 \(count) 件" : "\(count) 件"]
+        if !scope.isSearching, today > 0, today < count { detail.append("今天新增 \(today) 件") }
+        if learning > 0 { detail.append("正在理解 \(learning) 件") }
+        grid?.heading = (scope.isSearching ? "「\(scope.search)」" : window.title, detail.joined(separator: " · "))
         // A cabinet with nothing in it yet gets its welcome instead of empty views.
         emptyCabinet?.isHidden = !library.items.isEmpty
     }

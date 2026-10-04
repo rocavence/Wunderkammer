@@ -67,6 +67,7 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
         layer?.backgroundColor = resolved(.windowBackgroundColor)
         pool.refreshColors()
         appearanceChanged()
+        renderHeading()
     }
     override var acceptsFirstResponder: Bool { true }
     /// Clicking into an inactive window selects/drags right away.
@@ -147,6 +148,39 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
 
     /// `anchor`: a point in this view's coordinates that should stay over the
     /// same spot of the same image after the relayout (cursor during zoom).
+    // MARK: Title
+
+    /// The view's name, large, at the top of the cabinet; scrolls away with it.
+    var heading: (title: String, detail: String) = ("", "") {
+        didSet { if heading != oldValue { renderHeading() } }
+    }
+    static let headingHeight: CGFloat = 78
+    private let titleLayer = CATextLayer()
+    private let detailLayer = CATextLayer()
+
+    private func renderHeading() {
+        guard let root = layer else { return }
+        withoutAnimation {
+            for t in [titleLayer, detailLayer] where t.superlayer == nil {
+                t.contentsScale = window?.backingScaleFactor ?? 2
+                t.truncationMode = .end
+                root.addSublayer(t)
+            }
+            let size: CGFloat = 30
+            let serif = NSFont.systemFont(ofSize: size, weight: .regular).fontDescriptor.withDesign(.serif)
+                .flatMap { NSFont(descriptor: $0, size: size) } ?? .systemFont(ofSize: size)
+            titleLayer.string = NSAttributedString(string: heading.title, attributes: [
+                .font: serif, .foregroundColor: NSColor(cgColor: resolved(.labelColor)) ?? .labelColor, .kern: 0.2,
+            ])
+            detailLayer.string = NSAttributedString(string: heading.detail, attributes: [
+                .font: NSFont.systemFont(ofSize: 12.5), .foregroundColor: NSColor(cgColor: resolved(.secondaryLabelColor)) ?? .secondaryLabelColor,
+            ])
+            let inset = CabinetLayout(style: style, width: 0, size: 0).inset
+            titleLayer.frame = CGRect(x: inset + 2, y: 10, width: max(bounds.width - inset * 2, 0), height: 40)
+            detailLayer.frame = CGRect(x: inset + 3, y: 50, width: max(bounds.width - inset * 2, 0), height: 18)
+        }
+    }
+
     private func relayout(animated: Bool, anchor: NSPoint?) {
         guard let clip = superview as? NSClipView else { return }
         isRelayingOut = true
@@ -166,10 +200,13 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
         let size = style == .masonry ? rowHeight * 1.15 : rowHeight
         let result = CabinetLayout(style: style, width: layoutWidth, size: size)
             .layout(aspects: items.map(\.aspect), dates: items.map(\.dateAdded))
-        frames = result.frames
-        headers = result.headers
+        // Everything sits below the title.
+        let top = Self.headingHeight
+        frames = result.frames.map { $0.offsetBy(dx: 0, dy: top) }
+        headers = result.headers.map { var h = $0; h.frame = h.frame.offsetBy(dx: 0, dy: top); return h }
         spatial = SpatialIndex(frames)
-        setFrameSize(NSSize(width: layoutWidth, height: max(result.height, clip.bounds.height - clip.contentInsets.top)))
+        setFrameSize(NSSize(width: layoutWidth, height: max(result.height + top, clip.bounds.height - clip.contentInsets.top)))
+        renderHeading()
 
         if let i = anchorIndex, frames.indices.contains(i) {
             let f = frames[i]
@@ -623,15 +660,25 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
                 caption.opacity = 0
                 root.addSublayer(caption)
             }
-            let h: CGFloat = 46
+            let h: CGFloat = 60
             caption.frame = CGRect(x: f.minX, y: f.maxY - h, width: f.width, height: h)
             caption.sublayers?.first { $0.name == "shade" }?.frame = caption.bounds
             if let text = caption.sublayers?.first(where: { $0.name == "text" }) as? CATextLayer {
                 text.contentsScale = window?.backingScaleFactor ?? 2
-                text.string = NSAttributedString(string: items[i].displayTitle, attributes: [
-                    .font: NSFont.systemFont(ofSize: 12, weight: .medium), .foregroundColor: NSColor.white,
+                // The title, then what it is and where it's from: 電影 · letterboxd.com · 1999.
+                let item = items[i]
+                let about = [item.thing?.title, item.domain, item.released.map { String($0.prefix(4)) }].compactMap { $0 }
+                let line = NSMutableAttributedString(string: item.displayTitle, attributes: [
+                    .font: NSFont.systemFont(ofSize: 12.5, weight: .semibold), .foregroundColor: NSColor.white,
                 ])
-                text.frame = CGRect(x: 10, y: h - 22, width: f.width - 20, height: 16)
+                if !about.isEmpty {
+                    line.append(NSAttributedString(string: "\n" + about.joined(separator: " · "), attributes: [
+                        .font: NSFont.systemFont(ofSize: 11), .foregroundColor: NSColor(white: 1, alpha: 0.72),
+                    ]))
+                }
+                text.isWrapped = true
+                text.string = line
+                text.frame = CGRect(x: 10, y: about.isEmpty ? h - 22 : h - 38, width: f.width - 20, height: about.isEmpty ? 16 : 32)
             }
         }
         CATransaction.begin()

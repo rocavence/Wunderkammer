@@ -255,7 +255,8 @@ final class TilePool {
     /// What a tile is, when the picture doesn't say: a site, a duration, pages.
     static func badgeText(_ item: Item) -> String? {
         switch item.kind {
-        case .web: return item.domain
+        // The site is in the hover caption: on every page tile it was just noise.
+        case .web: return nil
         case .video, .audio: return item.duration.map(InspectorViewController.duration)
         case .pdf: return item.pageCount.map { "PDF · \($0) 頁" } ?? "PDF"
         case .file: return (item.originalFilename as NSString).pathExtension.uppercased().nilIfEmpty

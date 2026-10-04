@@ -555,6 +555,19 @@ final class Library {
         }
     }
 
+    /// Pages collected before cookie notices were cleared off their pictures
+    /// get their picture and saved copy once more, once.
+    func redoWebPictures() {
+        let key = "webPictures.v2"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        UserDefaults.standard.set(true, forKey: key)
+        let ids = items.filter { $0.kind == .web }.map(\.id)
+        for id in ids {
+            update(id, notify: false) { $0.archiveFilename = nil; $0.archivedAt = nil }
+            enrichWeb(id)
+        }
+    }
+
     /// Pictures in a saved page are kept at screen quality, the text as text:
     /// macOS's own "Reduce File Size" (20 MB → 4 MB on an image-heavy page).
     nonisolated static func shrink(_ file: URL) {

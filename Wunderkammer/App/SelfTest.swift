@@ -232,6 +232,18 @@ final class SelfTest {
         case "relations":
             await relationsCheck()
             return finish()
+        case "overlay":
+            // Cookie notices are cleared off page pictures (network).
+            if let kettle = library.items.first(where: { $0.url?.contains("fellowproducts.com/products/stagg") == true }) {
+                let before = kettle.representationVersion
+                library.enrichWeb(kettle.id)
+                for _ in 0..<80 where (library.item(kettle.id)?.representationVersion ?? 0) == before { await wait(0.25) }
+                check((library.item(kettle.id)?.representationVersion ?? 0) > before, "the page picture is taken again")
+                if let url = library.item(kettle.id).map(library.thumbnailURL) {
+                    try? FileManager.default.copyItem(at: url, to: Self.outputDir!.appendingPathComponent("overlay-kettle.jpg"))
+                }
+            }
+            return finish()
         case "spaces":
             await spacesCheck()
             return finish()
