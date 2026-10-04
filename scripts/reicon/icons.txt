@@ -22,6 +22,11 @@ history
 shuffle
 sparkles
 clapperboard
+book
+film
+vinyl
+shopping-bag
+map-point
 
 # 動作
 search

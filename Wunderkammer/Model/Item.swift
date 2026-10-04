@@ -44,6 +44,12 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
     var createdDate: Date?
     var creator: String?
     var pageCount: Int?
+    /// What a web page is about, from its structured data: a book, a film…
+    var thing: Thing?
+    /// Who made it, with their role: author, director, artist…
+    var credits: [Credit]?
+    /// As the page gives it: "2021-10-22", "2021-10" or "2021".
+    var released: String?
 
     // Understanding (filled in the background)
     var ocrText: String?
@@ -98,6 +104,10 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
         createdDate = try c.decodeIfPresent(Date.self, forKey: .createdDate)
         creator = try c.decodeIfPresent(String.self, forKey: .creator)
         pageCount = try c.decodeIfPresent(Int.self, forKey: .pageCount)
+        // Unknown values from a newer version are dropped, not fatal.
+        thing = try? c.decodeIfPresent(Thing.self, forKey: .thing)
+        credits = try? c.decodeIfPresent([Credit].self, forKey: .credits)
+        released = try c.decodeIfPresent(String.self, forKey: .released)
         ocrText = try c.decodeIfPresent(String.self, forKey: .ocrText)
         labels = try c.decodeIfPresent([String].self, forKey: .labels)
         colors = try c.decodeIfPresent([String].self, forKey: .colors)
@@ -105,6 +115,50 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
         analysisVersion = try c.decodeIfPresent(Int.self, forKey: .analysisVersion) ?? 0
         viewCount = try c.decodeIfPresent(Int.self, forKey: .viewCount) ?? 0
         lastViewed = try c.decodeIfPresent(Date.self, forKey: .lastViewed)
+    }
+
+    enum Thing: String, Codable, CaseIterable, Sendable {
+        case book, movie, show, music, product, place
+
+        var title: String {
+            switch self {
+            case .book: "書"
+            case .movie: "電影"
+            case .show: "影集"
+            case .music: "音樂"
+            case .product: "商品"
+            case .place: "地點"
+            }
+        }
+    }
+
+    struct Credit: Codable, Hashable, Sendable {
+        enum Role: String, Codable, Sendable {
+            case author, director, artist, creator, brand
+
+            var title: String {
+                switch self {
+                case .author: "作者"
+                case .director: "導演"
+                case .artist: "演出者"
+                case .creator: "創作者"
+                case .brand: "品牌"
+                }
+            }
+        }
+        var role: Role
+        var name: String
+    }
+
+    /// The names the system found plus the people credited, once each:
+    /// credited people link, search and graph like any other name.
+    static func merging(_ entities: [Entity], credits: [Credit]?) -> [Entity] {
+        var out = entities
+        var seen = Set(entities.map { Search.normalize($0.name) })
+        for c in credits ?? [] where c.role != .brand && seen.insert(Search.normalize(c.name)).inserted {
+            out.append(Entity(kind: .person, name: c.name))
+        }
+        return out
     }
 
     struct Entity: Codable, Hashable, Sendable {

@@ -177,9 +177,19 @@ final class InspectorViewController: NSViewController {
     static func facts(_ item: Item, library: Library) -> [(String, String)] {
         var f: [(String, String)] = []
         let kindName: [Item.Kind: String] = [.image: "圖片", .video: "影片", .audio: "聲音", .pdf: "PDF", .web: "網頁", .text: "文字", .file: "檔案"]
-        f.append(("類型", kindName[item.kind] ?? item.kind.rawValue))
+        f.append(("類型", item.thing?.title ?? kindName[item.kind] ?? item.kind.rawValue))
         if let domain = item.domain { f.append(("來源", domain)) }
-        if let creator = item.creator { f.append((item.kind == .audio ? "演出者" : "作者", creator)) }
+        if let credits = item.credits, !credits.isEmpty {
+            // One line per role, in the order the page gave them.
+            var roles: [Item.Credit.Role] = []
+            for c in credits where !roles.contains(c.role) { roles.append(c.role) }
+            for role in roles {
+                f.append((role.title, credits.filter { $0.role == role }.map(\.name).joined(separator: "、")))
+            }
+        } else if let creator = item.creator {
+            f.append((item.kind == .audio ? "演出者" : "作者", creator))
+        }
+        if let released = item.released { f.append(("發行", Self.released(released))) }
         if item.kind == .image || item.kind == .video { f.append(("尺寸", "\(item.pixelWidth) × \(item.pixelHeight)")) }
         if let d = item.duration { f.append(("長度", Self.duration(d))) }
         if let p = item.pageCount { f.append(("頁數", "\(p) 頁")) }
@@ -209,6 +219,13 @@ final class InspectorViewController: NSViewController {
         f.dateFormat = "y 年 M 月 d 日"
         return f
     }()
+
+    /// "2021-10-22" → 2021 年 10 月 22 日; "2021-10" → 2021 年 10 月; "2021" → 2021 年.
+    nonisolated static func released(_ s: String) -> String {
+        let parts = s.split(separator: "-").compactMap { Int($0) }
+        let units = ["年", "月", "日"]
+        return zip(parts, units).map { "\($0) \($1)" }.joined(separator: " ")
+    }
 
     static func duration(_ seconds: Double) -> String {
         let s = Int(seconds.rounded())

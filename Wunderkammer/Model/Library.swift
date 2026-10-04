@@ -479,7 +479,11 @@ final class Library {
                 $0.title = $0.title ?? meta.title
                 if meta.title != nil, $0.title == $0.domain { $0.title = meta.title }
                 $0.text = meta.description ?? $0.text
-                $0.creator = meta.author ?? meta.siteName ?? $0.creator
+                $0.creator = meta.credits.first(where: { $0.role != .brand })?.name ?? meta.author ?? meta.siteName ?? $0.creator
+                $0.thing = meta.thing ?? $0.thing
+                if !meta.credits.isEmpty { $0.credits = meta.credits }
+                $0.released = meta.released ?? $0.released
+                $0.entities = Item.merging($0.entities ?? [], credits: $0.credits)
                 $0.createdDate = meta.published ?? $0.createdDate
                 if let finalPicture {
                     $0.pixelWidth = finalPicture.width

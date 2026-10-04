@@ -2,7 +2,8 @@ import Foundation
 import ImageIO
 
 /// What a web page says about itself: <title>, Open Graph and Twitter cards,
-/// favicon. Fetched after capture so capturing a URL is instant.
+/// structured data (what it is and who made it), favicon. Fetched after
+/// capture so capturing a URL is instant.
 struct WebMetadata: Sendable {
     var title: String?
     var description: String?
@@ -11,6 +12,10 @@ struct WebMetadata: Sendable {
     var published: Date?
     var imageURL: URL?
     var iconURL: URL?
+    /// A book, a film, an album… when the page says so.
+    var thing: Item.Thing?
+    var credits: [Item.Credit] = []
+    var released: String?
     /// If the URL itself is an image (someone copied an image link).
     var isImage = false
 
@@ -55,7 +60,98 @@ struct WebMetadata: Sendable {
             if best == nil || size > best!.1 { best = (u, size) }
         }
         meta.iconURL = best?.0 ?? URL(string: "/favicon.ico", relativeTo: base)?.absoluteURL
+        structured(html, tags: tags, into: &meta)
         return meta
+    }
+
+    // MARK: Structured data
+
+    private static let things: [String: Item.Thing] = [
+        "book": .book, "movie": .movie, "tvseries": .show, "tvseason": .show, "tvepisode": .show,
+        "musicalbum": .music, "musicrecording": .music, "musicplaylist": .music, "product": .product,
+        "place": .place, "localbusiness": .place, "restaurant": .place, "touristattraction": .place,
+        "museum": .place, "landmarksorhistoricalbuildings": .place, "hotel": .place, "cafeorcoffeeshop": .place,
+    ]
+    private static let ogThings: [String: Item.Thing] = [
+        "book": .book, "books.book": .book, "video.movie": .movie, "video.tv_show": .show, "video.episode": .show,
+        "music.song": .music, "music.album": .music, "music.playlist": .music, "product": .product,
+        "og:product": .product, "product.item": .product, "place": .place, "restaurant.restaurant": .place,
+    ]
+
+    /// JSON-LD (schema.org) first, Open Graph types as the fallback: what the
+    /// page is about, who made it, when it came out.
+    static func structured(_ html: String, tags: [String: String], into meta: inout WebMetadata) {
+        let scripts = matches(#"<script[^>]*application/ld\+json[^>]*>[\s\S]*?</script>"#, in: html)
+        var objects: [[String: Any]] = []
+        for script in scripts {
+            guard let start = script.firstIndex(of: ">"), let end = script.range(of: "</script>", options: .backwards) else { continue }
+            // Only the JSON itself: some sites wrap it in /* <![CDATA[ */ … /* ]]> */.
+            let inner = script[script.index(after: start)..<end.lowerBound]
+                .replacingOccurrences(of: "<![CDATA[", with: "").replacingOccurrences(of: "]]>", with: "")
+            guard let open = inner.firstIndex(where: { $0 == "{" || $0 == "[" }),
+                  let close = inner.lastIndex(where: { $0 == "}" || $0 == "]" }), open < close else { continue }
+            let body = String(inner[open...close])
+            guard let json = try? JSONSerialization.jsonObject(with: Data(body.utf8)) else { continue }
+            objects += flatten(json)
+        }
+        if let (object, thing) = objects.lazy.compactMap({ o in types(o).lazy.compactMap { things[$0] }.first.map { (o, $0) } }).first {
+            meta.thing = thing
+            if let name = (object["name"] as? String).flatMap({ clean(decode($0)) }) { meta.title = name }
+            let roles: [(String, Item.Credit.Role)] = thing == .music
+                ? [("byArtist", .artist), ("author", .artist), ("creator", .creator)]
+                : [("author", .author), ("director", .director), ("byArtist", .artist), ("creator", .creator), ("brand", .brand)]
+            for (key, role) in roles {
+                for name in names(object[key]) where !meta.credits.contains(where: { $0.name == name }) {
+                    meta.credits.append(Item.Credit(role: role, name: name))
+                }
+            }
+            // dateCreated last: on some sites it's when their record was made.
+            let event = ((object["releasedEvent"] as? [[String: Any]])?.first ?? object["releasedEvent"] as? [String: Any])?["startDate"]
+            meta.released = [object["datePublished"], object["releaseDate"], event, object["startDate"], object["dateCreated"]]
+                .lazy.compactMap { ($0 as? String).flatMap(day) }.first
+        } else if let type = tags["og:type"]?.lowercased(), let thing = ogThings[type] {
+            meta.thing = thing
+            let roles: [(String, Item.Credit.Role)] = [("book:author", .author), ("video:director", .director),
+                                                       ("music:musician", .artist), ("product:brand", .brand)]
+            for (key, role) in roles {
+                // These are often profile URLs, not names.
+                if let name = tags[key].flatMap(clean), !name.contains("://") {
+                    meta.credits.append(Item.Credit(role: role, name: name))
+                }
+            }
+            meta.released = ["book:release_date", "music:release_date", "video:release_date"]
+                .lazy.compactMap { tags[$0].flatMap(day) }.first
+        }
+        if meta.credits.isEmpty, let author = meta.author, meta.thing != nil, !author.contains("://") {
+            meta.credits = [Item.Credit(role: meta.thing == .music ? .artist : .author, name: author)]
+        }
+    }
+
+    /// Top-level objects, arrays and @graph lists, all as plain objects.
+    private static func flatten(_ json: Any) -> [[String: Any]] {
+        if let list = json as? [Any] { return list.flatMap(flatten) }
+        guard let o = json as? [String: Any] else { return [] }
+        return [o] + ((o["@graph"] as? [Any])?.flatMap(flatten) ?? [])
+    }
+
+    private static func types(_ o: [String: Any]) -> [String] {
+        let t = o["@type"]
+        return ((t as? [String]) ?? (t as? String).map { [$0] } ?? []).map { $0.lowercased() }
+    }
+
+    /// "Name", {"name": "Name"} or a list of either.
+    private static func names(_ value: Any?) -> [String] {
+        if let list = value as? [Any] { return list.flatMap(names) }
+        let raw = (value as? String) ?? ((value as? [String: Any])?["name"] as? String)
+        guard let name = raw.flatMap({ clean(decode($0)) }), !name.contains("://") else { return [] }
+        return [name]
+    }
+
+    /// The date part of "2021-10-22T00:00:00Z", "2021-10" or "2021".
+    private static func day(_ s: String) -> String? {
+        let t = s.trimmingCharacters(in: .whitespaces)
+        guard let m = firstMatch(#"^(\d{4}(?:-\d{2}(?:-\d{2})?)?)"#, in: t) else { return nil }
+        return m
     }
 
     /// Pages can point og:image anywhere; only ever fetch web addresses.

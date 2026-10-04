@@ -228,6 +228,9 @@ final class SelfTest {
             }
             check(toast.panel?.isVisible == true && toast.panel?.isKeyWindow == false, "toast shows without taking focus")
             return finish()
+        case "structured":
+            await structuredCheck()
+            return finish()
         case "share":
             // Picks up whatever the Share extension left in the App Group inbox.
             let before = library.items.count
@@ -495,6 +498,42 @@ final class SelfTest {
         check(settled < 0.5 && allVisible && !ui.preview.isOpen,
               "after closing every tile is home and visible (\(String(format: "%.1f", settled))pt)")
         shot("02f-ripple-closed")
+    }
+
+    /// Real pages (network): what they are, who made them, and the same
+    /// director linking two sites' pages about one film.
+    private func structuredCheck() async {
+        let pages = [
+            "https://letterboxd.com/film/the-matrix/",
+            "https://letterboxd.com/film/bound/",
+            "https://www.goodreads.com/book/show/18423.The_Left_Hand_of_Darkness",
+            "https://www.themoviedb.org/movie/603-the-matrix",
+        ]
+        var ids: [UUID] = []
+        for page in pages { ids += await library.capture([.web(URL(string: page)!, title: nil)]) }
+        for _ in 0..<60 where ids.contains(where: { library.item($0)?.thing == nil }) { await wait(0.5) }
+        for id in ids {
+            guard let item = library.item(id) else { continue }
+            let credits = (item.credits ?? []).map { "\($0.role.title) \($0.name)" }.joined(separator: "、")
+            log("\(item.domain ?? "?"): \(item.thing?.title ?? "–") | \(item.displayTitle) | \(credits) | \(item.released ?? "–")")
+        }
+        let films = ids.prefix(2).compactMap(library.item)
+        check(films.count == 2 && films.allSatisfy { $0.thing == .movie }, "film pages are films")
+        check(films.allSatisfy { $0.credits?.contains { $0.role == .director && $0.name == "Lana Wachowski" } == true },
+              "both films credit the director")
+        let book = ids.count > 2 ? library.item(ids[2]) : nil
+        check(book?.thing == .book && book?.credits?.first?.role == .author, "book page is a book with its author (\(book?.creator ?? "–"))")
+        let sameDirector = library.items(for: Scope(base: .mentions("Lana Wachowski"))).map(\.id)
+        check(Set(ids.prefix(2)).isSubset(of: sameDirector), "the director's name links her two films (\(sameDirector.count))")
+        let tmdb = ids.count > 3 ? library.item(ids[3]) : nil
+        check(tmdb?.thing == .movie && tmdb?.released == "1999-03-31", "a film page without credits still has its release (\(tmdb?.released ?? "–"))")
+        ui.sidebar.select(.kind(.films))
+        await wait(0.6)
+        shot("structured-films")
+        ui.toggleInspectorForTest()
+        if let first = ids.first { ui.grid.reveal(first) }
+        await wait(0.8)
+        shot("structured-inspector")
     }
 
     /// Every kind of source becomes a curiosity with a sensible look; a web

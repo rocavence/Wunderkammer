@@ -227,7 +227,7 @@ final class Understanding {
                 $0.ocrText = result.ocrText ?? $0.ocrText
                 $0.labels = result.labels
                 $0.colors = result.colors
-                $0.entities = result.entities
+                $0.entities = Item.merging(result.entities, credits: $0.credits)
                 $0.analysisVersion = Analyzer.version
             }
             done += 1

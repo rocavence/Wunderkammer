@@ -22,9 +22,11 @@ struct Scope: Equatable, Sendable {
         case trail
     }
 
-    /// Auto collections by what things are.
+    /// Auto collections by what things are: the kind of file, or what a page
+    /// is about (a book, a film…).
     enum KindView: String, CaseIterable, Sendable {
         case images, web, text, media, documents
+        case books, films, music, products, places
 
         var kinds: Set<Item.Kind> {
             switch self {
@@ -33,7 +35,23 @@ struct Scope: Equatable, Sendable {
             case .text: [.text]
             case .media: [.video, .audio]
             case .documents: [.pdf, .file]
+            case .books, .films, .music, .products, .places: []
             }
+        }
+
+        var things: Set<Item.Thing> {
+            switch self {
+            case .books: [.book]
+            case .films: [.movie, .show]
+            case .music: [.music]
+            case .products: [.product]
+            case .places: [.place]
+            default: []
+            }
+        }
+
+        func contains(_ item: Item) -> Bool {
+            kinds.contains(item.kind) || item.thing.map(things.contains) == true
         }
 
         var title: String {
@@ -43,6 +61,11 @@ struct Scope: Equatable, Sendable {
             case .text: "文字"
             case .media: "影片與聲音"
             case .documents: "文件與檔案"
+            case .books: "書"
+            case .films: "電影與影集"
+            case .music: "音樂"
+            case .products: "商品"
+            case .places: "地點"
             }
         }
     }
@@ -83,7 +106,7 @@ extension Library {
         switch scope.base {
         case .all: result = items
         case .board(let id): result = items(in: id)
-        case .kind(let k): result = items.filter { k.kinds.contains($0.kind) }
+        case .kind(let k): result = items.filter(k.contains)
         case .onThisDay: result = Rediscovery.onThisDay(items, now: now)
         case .forgotten: result = Rediscovery.forgotten(items, now: now)
         case .similar(let id): result = (item(id).map { [$0] } ?? []) + (similarity?(id) ?? [])

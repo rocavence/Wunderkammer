@@ -177,3 +177,16 @@ Atlas 的偵錯說明文字寫明舊版（1.6.7）的參數：質量 1.89、剛�
 無限牆的拖曳也調整：改用跟螢幕同步的更新（ProMotion 120 Hz）、慣性減速與更新率無關（每毫秒保留 0.998）、只用放開前 100 ms 的移動算甩動速度、預先載入範圍擴大到 0.4 個畫面。
 
 修改位置：`TilePool.swift` 的 `ItemSpring`、`scatter`、`gather`；`InfinityView.swift` 的 `tick`、`mouseUp`。
+
+## D27 從網頁的結構化資料認出書、電影、音樂與作者
+
+網頁收進來後，除了標題與預覽圖，也讀 schema.org 的 JSON-LD；沒有的話改讀 Open Graph 的 `og:type`。從中取得三件事：這頁在講什麼（書、電影、影集、音樂、商品、地點）、誰做的（作者、導演、演出者、創作者、品牌）、何時發行。
+
+* 作者、導演、演出者會併入「名字」，所以搜尋、相關的收藏、文化圖譜不必另外處理，就能把同一個人的作品串起來。品牌不算人名，不併入。
+* 側欄「系統整理」依此長出「書」「電影與影集」「音樂」「商品」「地點」，有東西時才出現。
+* 發行日期依序取 `datePublished`、`releaseDate`、`releasedEvent`，最後才用 `dateCreated`：TMDB 的 `dateCreated` 是他們建立資料的時間，不是上映日。
+* Open Graph 的作者欄位常是個人頁網址，遇到網址就略過。
+
+已知限制：IMDb 擋程式抓取；Spotify、Apple Music、博客來的頁面不提供結構化資料，只會是一般網頁。已經收進來的網頁不會回頭補抓。
+
+修改位置：`WebMetadata.structured`、`Item.thing` / `credits` / `released`、`Scope.KindView`。

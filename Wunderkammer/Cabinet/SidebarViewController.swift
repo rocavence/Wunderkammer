@@ -82,13 +82,13 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
 
     private static let kindIcons: [Scope.KindView: Reicon] = [
         .images: .image, .web: .globe, .text: .text, .media: .clapperboard, .documents: .fileText,
+        .books: .book, .films: .film, .music: .vinyl, .products: .shoppingBag, .places: .mapPoint,
     ]
 
     private func reload() {
         var r: [Row] = [.view(.all, title: "珍奇室", icon: .cabinet, count: library.items.count)]
-        let byKind = Dictionary(grouping: library.items, by: \.kind).mapValues(\.count)
         let kinds = Scope.KindView.allCases.compactMap { k -> Row? in
-            let n = k.kinds.reduce(0) { $0 + (byKind[$1] ?? 0) }
+            let n = library.items.reduce(0) { $0 + (k.contains($1) ? 1 : 0) }
             return n > 0 ? .view(.kind(k), title: k.title, icon: Self.kindIcons[k]!, count: n) : nil
         }
         // Only worth a section when the cabinet holds more than one kind of thing.
