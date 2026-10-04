@@ -69,10 +69,17 @@ final class TopBar: NSView {
             addSubview(v)
         }
         fieldWidth = searchField.widthAnchor.constraint(equalToConstant: 0)
+        // Short of room, the spaces give up the middle first, then the field narrows;
+        // nothing ever overlaps.
+        fieldWidth.priority = NSLayoutConstraint.Priority(700)
+        let centred = spaces.centerXAnchor.constraint(equalTo: centerXAnchor)
+        centred.priority = NSLayoutConstraint.Priority(650)
         sidebarLeading = sidebarButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16)
         NSLayoutConstraint.activate([
             heightAnchor.constraint(equalToConstant: Self.height),
-            spaces.centerXAnchor.constraint(equalTo: centerXAnchor),
+            centred,
+            spaces.leadingAnchor.constraint(greaterThanOrEqualTo: sidebarButton.trailingAnchor, constant: 12),
+            spaces.trailingAnchor.constraint(lessThanOrEqualTo: searchCapsule.leadingAnchor, constant: -12),
             spaces.centerYAnchor.constraint(equalTo: centerYAnchor),
             spaces.heightAnchor.constraint(equalToConstant: Self.height),
             sidebarLeading,
@@ -123,6 +130,13 @@ final class TopBar: NSView {
             searchField.animator().alphaValue = open ? 1 : 0
             layoutSubtreeIfNeeded()
         }
+    }
+
+    /// Whether any two of the bar's controls touch (tests).
+    var controlsOverlap: Bool {
+        let frames = [sidebarButton, spaces, searchCapsule].map(\.frame) + subviews.filter { $0 is Glass && $0 !== searchCapsule && $0 !== sidebarButton }.map(\.frame)
+        for i in frames.indices { for j in frames.indices where j > i && frames[i].intersects(frames[j]) { return true } }
+        return false
     }
 
     @objc private func searchTapped() { onSearchOpen?() }
@@ -313,9 +327,20 @@ final class SpaceSwitch: NSView {
 }
 
 /// Space whose empty parts take no clicks: they go to whatever is under it.
-final class PassThroughView: NSView {
+class PassThroughView: NSView {
     override func hitTest(_ point: NSPoint) -> NSView? {
         let hit = super.hitTest(point)
         return hit === self ? nil : hit
+    }
+}
+
+/// The title bar's strip the top bar lives in: each time it's laid out, the
+/// bar is placed over the content again (the content may have moved).
+final class BarStrip: PassThroughView {
+    var onLayout: (() -> Void)?
+
+    override func layout() {
+        super.layout()
+        onLayout?()
     }
 }

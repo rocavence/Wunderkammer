@@ -228,7 +228,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
             edgeFade.trailingAnchor.constraint(equalTo: content.trailingAnchor),
             edgeFade.heightAnchor.constraint(equalToConstant: 120),
         ])
-        topBar.translatesAutoresizingMaskIntoConstraints = false
         topBar.searchField.delegate = self
         topBar.onSpace = { [weak self] i in
             guard let self else { return }
@@ -337,6 +336,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         window.contentViewController = split
         window.isReleasedWhenClosed = false
         window.setContentSize(NSSize(width: 1280, height: 820))
+        // Small enough to sit beside another window, never so small the bar's
+        // controls run into each other.
+        window.contentMinSize = NSSize(width: 760, height: 500)
         window.titlebarAppearsTransparent = true
         // The cabinet carries its own large title (GridView.heading).
         window.titleVisibility = .hidden
@@ -348,21 +350,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         let room = NSTitlebarAccessoryViewController()
         let lightsRow = window.frame.height - window.contentLayoutRect.height
         let below = TopBar.top + TopBar.height + 10 - lightsRow
-        let strip = PassThroughView(frame: NSRect(x: 0, y: 0, width: window.frame.width, height: below))
+        let strip = BarStrip(frame: NSRect(x: 0, y: 0, width: window.frame.width, height: below))
+        topBar.translatesAutoresizingMaskIntoConstraints = true
         strip.addSubview(topBar)
-        barLeading = topBar.leadingAnchor.constraint(equalTo: strip.leadingAnchor)
-        barTrailing = topBar.trailingAnchor.constraint(equalTo: strip.trailingAnchor)
-        NSLayoutConstraint.activate([
-            topBar.topAnchor.constraint(equalTo: strip.topAnchor, constant: TopBar.top - lightsRow),
-            barLeading, barTrailing,
-        ])
+        barOffset = TopBar.top - lightsRow
+        strip.onLayout = { [weak self] in self?.alignTopBar() }
         room.view = strip
         room.layoutAttribute = .bottom
         room.fullScreenMinHeight = below
         window.addTitlebarAccessoryViewController(room)
         DispatchQueue.main.async { [weak self] in MainActor.assumeIsolated { self?.alignTopBar() } }
         NotificationCenter.default.addObserver(forName: NSWindow.didResizeNotification, object: window, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.alignTopBar() }
+            MainActor.assumeIsolated { self?.topBar.superview?.needsLayout = true }
         }
         NotificationCenter.default.addObserver(forName: NSSplitView.didResizeSubviewsNotification, object: split.splitView,
                                                queue: .main) { [weak self] _ in
@@ -1001,17 +1000,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
 
     /// The middle of the window: what the bar spans.
     private var contentArea: NSView?
-    private var barLeading: NSLayoutConstraint!
-    private var barTrailing: NSLayoutConstraint!
+    /// From the top of the title bar's strip to the bar.
+    private var barOffset: CGFloat = 0
 
     /// The bar over the content only, from its left edge to its right, wherever
     /// AppKit has started the title bar's strip.
     private func alignTopBar() {
         guard let strip = topBar.superview, let content = contentArea, strip.window != nil else { return }
-        let area = content.convert(content.bounds, to: nil)
-        let stripRect = strip.convert(strip.bounds, to: nil)
-        barLeading.constant = area.minX - stripRect.minX
-        barTrailing.constant = area.maxX - stripRect.maxX
+        let area = strip.convert(content.convert(content.bounds, to: nil), from: nil)
+        let y = strip.isFlipped ? barOffset : strip.bounds.height - barOffset - TopBar.height
+        let frame = NSRect(x: area.minX, y: y, width: area.width, height: TopBar.height)
+        if topBar.frame != frame { topBar.frame = frame }
     }
 
     @objc private func toggleSidebarFromButton() {
@@ -1252,6 +1251,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     func openSearchForTest() { focusSearch() }
     var spacesControlForTest: NSView { topBar.spaces }
     var contentAreaForTest: NSView? { contentArea }
+    var topBarOverlapsForTest: Bool { topBar.layoutSubtreeIfNeeded(); return topBar.controlsOverlap }
     var sidebarToggleForTest: NSView { topBar.sidebarButton }
     var isSidebarCollapsed: Bool { sidebarItem.isCollapsed }
     func flipCabinetForTest() { cabinetsPanel?.flipForTest(cabinets.currentID) }

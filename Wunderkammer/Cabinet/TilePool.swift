@@ -222,6 +222,7 @@ final class TilePool {
             for (key, tile) in tiles {
                 tile.backgroundColor = colors(.quaternaryLabelColor)
                 tile.borderColor = colors(.controlAccentColor)
+                tile.sublayers?.first { $0.name == "edge" }?.borderColor = colors(NSColor.labelColor.withAlphaComponent(0.12))
                 if let item = tileItem[key] { updateSurface(tile, item: item) }
             }
         }
@@ -357,6 +358,16 @@ final class TilePool {
         tile.backgroundColor = colors(.quaternaryLabelColor)
         tile.borderColor = colors(.controlAccentColor)
         tile.minificationFilter = .trilinear
+        // A hairline round every tile: white pages don't melt into a light window.
+        let edge = CALayer()
+        edge.name = "edge"
+        edge.borderWidth = 0.5
+        edge.cornerRadius = cornerRadius
+        edge.cornerCurve = .continuous
+        edge.borderColor = colors(NSColor.labelColor.withAlphaComponent(0.12))
+        edge.autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
+        edge.zPosition = 30
+        tile.addSublayer(edge)
         return tile
     }
 

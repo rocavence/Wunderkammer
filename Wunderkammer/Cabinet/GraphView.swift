@@ -84,6 +84,7 @@ final class GraphView: NSView {
         let side = max(520, CGFloat(g.nodes.count).squareRoot() * 360)
         g.layout(size: CGSize(width: side * 1.4, height: side))
         graph = g
+        separate()
         // Nodes that are still there keep their layers (no flicker).
         let ids = Set(g.nodes.map(\.id))
         for (id, l) in nodeLayers where !ids.contains(id) {
@@ -98,13 +99,42 @@ final class GraphView: NSView {
         24 + CGFloat(node.items.count).squareRoot() * 12
     }
 
+    /// The layout pulls closely linked nodes into a knot; this pushes any two
+    /// apart until they clear each other with room for a name between.
+    private func separate() {
+        let n = graph.nodes.count
+        guard n > 1 else { return }
+        for _ in 0..<120 {
+            var moved = false
+            for i in 0..<n {
+                for j in (i + 1)..<n {
+                    let a = graph.nodes[i].position, b = graph.nodes[j].position
+                    var dx = b.x - a.x, dy = b.y - a.y
+                    var d = (dx * dx + dy * dy).squareRoot()
+                    if d < 0.01 { dx = 1; dy = 0; d = 1 }
+                    let need = 0.6 * (radius(graph.nodes[i]) + radius(graph.nodes[j])) + 34
+                    guard d < need else { continue }
+                    let push = (need - d) / 2
+                    graph.nodes[i].position.x -= dx / d * push
+                    graph.nodes[i].position.y -= dy / d * push
+                    graph.nodes[j].position.x += dx / d * push
+                    graph.nodes[j].position.y += dy / d * push
+                    moved = true
+                }
+            }
+            if !moved { break }
+        }
+    }
+
     // Zoom as in Obsidian: closer in, the map spreads out far more than its
     // nodes grow, so there's room for every name; lines stay fine, words stay
     // a readable size, and the smaller nodes' names fade in as you come near.
 
-    /// A node's radius on screen: it grows with the square root of the zoom.
+    /// A node's radius on screen: closer in it grows with the square root of
+    /// the zoom; further out it shrinks with the map, so the whole graph never
+    /// piles its nodes on one another.
     private func screenRadius(_ node: CultureGraph.Node) -> CGFloat {
-        radius(node) * 0.6 * zoom.squareRoot()
+        radius(node) * 0.6 * (zoom < 1 ? zoom : zoom.squareRoot())
     }
 
     /// How visible the names of the smaller nodes are at this zoom: none far
@@ -190,9 +220,9 @@ final class GraphView: NSView {
             line.path = path
             line.fillColor = nil
             // More shared, thicker and brighter: the legend's promise, visible.
-            let strength = min(1, 0.25 + CGFloat(weight - 1) * 0.15)
+            let strength = min(0.5, 0.14 + CGFloat(weight - 1) * 0.09)
             line.strokeColor = resolved(NSColor.labelColor).copy(alpha: strength)
-            line.lineWidth = min(max(0.8, (1 + CGFloat(weight - 1) * 1.1) * pow(zoom, 0.3) * 0.9), 6)
+            line.lineWidth = min(max(0.8, (1 + CGFloat(weight - 1) * 0.5) * pow(zoom, 0.3) * 0.9), 4)
             edgesLayer.addSublayer(line)
         }
 

@@ -752,7 +752,9 @@ final class SelfTest {
         check(canvas.debugOffset != offsetBefore || canvas.debugZoom != zoomBefore, "the view changed around the pointer")
         // A tap, no drag: the preview, as before.
         // One clear of the bar at the foot.
-        if let picture = library.items.first(where: { $0.kind == .image && (canvas.rectInWindow(for: $0.id)?.midY ?? 0) > 140 }),
+        // Clear of both bars: the view bar below, the top bar above.
+        let clearBand = 140...(window.contentLayoutRect.height - 20)
+        if let picture = library.items.first(where: { $0.kind == .image && clearBand.contains(canvas.rectInWindow(for: $0.id)?.midY ?? 0) }),
            let p = center(of: picture.id, in: canvas) {
             click(canvas, p)
             keyEvent(.keyDown, 49, " ")
@@ -783,6 +785,16 @@ final class SelfTest {
             let a = area.convert(area.bounds, to: nil), b = spaces.convert(spaces.bounds, to: nil)
             check(abs(a.midX - b.midX) < 2, "the spaces sit in the middle of the content (\(Int(b.midX)) vs \(Int(a.midX)))")
         }
+        // At its smallest, with search open and the inspector out, nothing collides.
+        let roomy = window.frame
+        window.setContentSize(window.contentMinSize)
+        ui.openSearchForTest()
+        await wait(0.5)
+        check(!ui.topBarOverlapsForTest, "at the smallest size the bar's controls don't touch")
+        shot("topbar-narrow")
+        ui.leaveEmptySearchForTest()
+        window.setFrame(roomy, display: true)
+        await wait(0.4)
         let sideWidth = ui.sidebar.view.frame.width
         check((220...320).contains(sideWidth), "the sidebar starts at a fifth or so of the window (\(Int(sideWidth)) of \(Int(window.frame.width)))")
         // The sidebar's switch beside the lights, on the bar's line.
@@ -1510,6 +1522,7 @@ protocol SelfTestUI: AnyObject {
     func openSearchForTest()
     var spacesControlForTest: NSView { get }
     var contentAreaForTest: NSView? { get }
+    var topBarOverlapsForTest: Bool { get }
     var sidebarToggleForTest: NSView { get }
     var isSidebarCollapsed: Bool { get }
     func flipCabinetForTest()
