@@ -691,6 +691,15 @@ final class SelfTest {
             check(abs(d0.x - d1.x) < 1 && abs(d0.y - d1.y) < 1, "the pieces move together: nothing was dragged out of place")
         }
         check(!ui.preview.isOpen, "a space that panned doesn't open the preview")
+        // Scrolling zooms rather than moves.
+        let zoomBefore = canvas.debugZoom, offsetBefore = canvas.debugOffset
+        if let cg = CGEvent(scrollWheelEvent2Source: nil, units: .line, wheelCount: 1, wheel1: 3, wheel2: 0, wheel3: 0),
+           let e = NSEvent(cgEvent: cg) {
+            canvas.scrollWheel(with: e)
+        }
+        await wait(0.2)
+        check(canvas.debugZoom > zoomBefore * 1.05, "scrolling up zooms in (\(zoomBefore) → \(canvas.debugZoom))")
+        check(canvas.debugOffset != offsetBefore || canvas.debugZoom != zoomBefore, "the view changed around the pointer")
         // A tap, no drag: the preview, as before.
         if let picture = library.items.first(where: { $0.kind == .image && canvas.rectInWindow(for: $0.id) != nil }),
            let p = center(of: picture.id, in: canvas) {
@@ -719,7 +728,10 @@ final class SelfTest {
         ui.sidebar.select(.all)
         ui.setSpace(.map)
         await wait(0.8)
-        check(ui.mode == .canvas, "地圖 starts on the canvas")
+        // 地圖 opens on whichever layout was used last; the canvas, for what follows.
+        check(ui.mode == .canvas || ui.mode == .graph, "地圖 opens on a map layout (\(ui.mode))")
+        ui.setMode(.canvas)
+        await wait(0.6)
         await spacePanCheck()
         ui.setMode(.graph)
         await wait(0.8)

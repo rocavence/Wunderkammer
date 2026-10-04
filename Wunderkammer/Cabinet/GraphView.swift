@@ -310,15 +310,9 @@ final class GraphView: NSView {
         return super.resignFirstResponder()
     }
 
+    /// Scrolling zooms, as on the canvas; dragging moves around.
     override func scrollWheel(with event: NSEvent) {
-        if event.modifierFlags.contains(.command) {
-            zoom(by: 1 + event.scrollingDeltaY / 200, around: convert(event.locationInWindow, from: nil))
-            return
-        }
-        let k: CGFloat = event.hasPreciseScrollingDeltas ? 1 : 10
-        offset.x -= event.scrollingDeltaX * k / zoom
-        offset.y -= event.scrollingDeltaY * k / zoom
-        render()
+        zoom(by: CanvasView.zoomFactor(event), around: convert(event.locationInWindow, from: nil))
     }
 
     override func magnify(with event: NSEvent) {

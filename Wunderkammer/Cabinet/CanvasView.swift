@@ -314,16 +314,16 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         zoom(by: 1 + event.magnification, around: convert(event.locationInWindow, from: nil))
     }
 
+    /// Scrolling zooms, around the pointer, as on a map. Moving around is
+    /// space + drag, ⌥ + drag or the middle button.
     override func scrollWheel(with event: NSEvent) {
-        if event.modifierFlags.contains(.command) {
-            let delta = event.hasPreciseScrollingDeltas ? event.scrollingDeltaY / 200 : event.scrollingDeltaY / 20
-            zoom(by: 1 + delta, around: convert(event.locationInWindow, from: nil))
-            return
-        }
-        let k: CGFloat = event.hasPreciseScrollingDeltas ? 1 : 10
-        offset.x -= event.scrollingDeltaX * k / zoom
-        offset.y -= event.scrollingDeltaY * k / zoom
-        render(animated: false)
+        zoom(by: Self.zoomFactor(event), around: convert(event.locationInWindow, from: nil))
+    }
+
+    /// Up zooms in, down out; a wheel's notch counts for more than a trackpad's step.
+    static func zoomFactor(_ event: NSEvent) -> CGFloat {
+        let delta = event.hasPreciseScrollingDeltas ? event.scrollingDeltaY / 200 : event.scrollingDeltaY / 20
+        return min(max(1 + delta, 0.8), 1.25)
     }
 
     // MARK: Rendering
@@ -803,6 +803,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
     }
 
     var debugOffset: CGPoint { offset }
+    var debugZoom: CGFloat { zoom }
 
     @objc override func selectAll(_ sender: Any?) {
         selection.set(Set(order))
