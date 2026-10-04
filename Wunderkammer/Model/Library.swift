@@ -484,6 +484,7 @@ final class Library {
         // Even if the board went away during a long import, the items are saved above.
         if let collectionID, !ids.isEmpty { add(ids, to: collectionID) }
         for item in added where item.kind == .web { enrichWeb(item.id) }
+        if vaultDir != nil, !added.isEmpty { Task { await fillVault(added.map(\.id)) } }
         if !added.isEmpty { NotificationCenter.default.post(name: Self.didCapture, object: self, userInfo: ["ids": added.map(\.id)]) }
         return ids
     }
@@ -682,6 +683,54 @@ final class Library {
         }.map(\.id)
         guard !ids.isEmpty else { return }
         Task { for id in ids { await archive(id) } }
+    }
+
+    /// The open 珍奇櫃's own folder for files, when it keeps them.
+    var vaultDir: URL?
+
+    /// Every file that lives elsewhere gets a copy in the vault, under its own
+    /// name, and the item points at the copy from then on. Only `ids`, if given.
+    func fillVault(_ ids: [UUID]? = nil) async {
+        guard let vault = vaultDir else { return }
+        try? FileManager.default.createDirectory(at: vault, withIntermediateDirectories: true)
+        let only = ids.map(Set.init)
+        let inside = vault.standardizedFileURL.path + "/"
+        let outside = items.filter {
+            $0.storedFilename == nil && $0.filePath.map { !$0.hasPrefix(inside) } == true && (only?.contains($0.id) ?? true)
+        }
+        for item in outside {
+            guard vaultDir == vault, let source = originalURL(item) else { continue }
+            let target = await Task.detached { () -> URL? in
+                let target = Self.freeName(for: source.lastPathComponent, in: vault)
+                return (try? FileManager.default.copyItem(at: source, to: target)) != nil ? target : nil
+            }.value
+            guard let target else { continue }
+            update(item.id) {
+                $0.filePath = target.path
+                $0.fileBookmark = try? target.bookmarkData(options: [], includingResourceValuesForKeys: nil, relativeTo: nil)
+            }
+        }
+    }
+
+    /// "name.jpg", or "name 2.jpg" if that's taken, and so on.
+    nonisolated static func freeName(for name: String, in folder: URL) -> URL {
+        let base = (name as NSString).deletingPathExtension, ext = (name as NSString).pathExtension
+        var url = folder.appendingPathComponent(name)
+        var n = 2
+        while FileManager.default.fileExists(atPath: url.path) {
+            url = folder.appendingPathComponent(ext.isEmpty ? "\(base) \(n)" : "\(base) \(n).\(ext)")
+            n += 1
+        }
+        return url
+    }
+
+    /// How many of the library at `root` still point at files elsewhere.
+    static func storedReferencedCount(at root: URL) -> Int {
+        struct Stored: Decodable { var items: [Entry] }
+        struct Entry: Decodable { var filePath: String?; var storedFilename: String? }
+        guard let data = try? Data(contentsOf: root.appendingPathComponent("library.json")),
+              let s = try? JSONDecoder().decode(Stored.self, from: data) else { return 0 }
+        return s.items.filter { $0.filePath != nil && $0.storedFilename == nil }.count
     }
 
     /// Referenced files copied into the library, so they stay even if the

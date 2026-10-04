@@ -1141,7 +1141,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     /// The window for switching, adding, renaming and removing 珍奇櫃 (a sheet).
     func manageCabinets() {
         let panel = CabinetsPanel(cabinets: cabinets, count: { [weak self] entry in self?.itemCount(of: entry) ?? 0 },
-                                  covers: { [weak self] entry in self?.coverURLs(of: entry) ?? [] })
+                                  covers: { [weak self] entry in self?.coverURLs(of: entry) ?? [] },
+                                  referenced: { [weak self] entry in self?.referencedCount(of: entry) ?? 0 })
         panel.onSwitch = { [weak self] id in self?.switchCabinet(to: id) }
         panel.onChange = { [weak self] in self?.cabinetsChanged() }
         cabinetsPanel = panel
@@ -1149,6 +1150,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     }
 
     /// How many things a 珍奇櫃 holds (the open one from memory, others from disk).
+    /// Collected files that still live where they were found.
+    private func referencedCount(of entry: Cabinets.Entry) -> Int {
+        guard entry.id == cabinets.currentID else { return Library.storedReferencedCount(at: cabinets.root(of: entry)) }
+        return library.items.filter { $0.filePath != nil && $0.storedFilename == nil }.count
+    }
+
     private func itemCount(of entry: Cabinets.Entry) -> Int {
         if entry.id == cabinets.currentID { return library.items.count }
         return Library.storedCount(at: cabinets.root(of: entry))
@@ -1186,7 +1193,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private var watchedNow: (UUID, [URL])?
 
     /// The open 珍奇櫃's folders, watched; the same ones aren't restarted.
+    /// A 珍奇櫃 that keeps its files fills its vault instead.
     private func watchFolders() {
+        let vault = cabinets.vault(cabinets.currentID)
+        if library.vaultDir != vault {
+            library.vaultDir = vault
+            if vault != nil { Task { await library.fillVault() } }
+        }
         let folders = cabinets.watched(cabinets.currentID)
         if let now = watchedNow, now.0 == cabinets.currentID, now.1 == folders { return }
         watchedNow = (cabinets.currentID, folders)
@@ -1208,6 +1221,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     }
     func hoverViewBarForTest() -> String? { viewBar.hoverFirstForTest() }
     func openSearchForTest() { focusSearch() }
+    func flipCabinetForTest() { cabinetsPanel?.flipForTest(cabinets.currentID) }
+    func setVaultForTest(_ folder: URL?) {
+        if let folder { cabinets.setVault(folder, for: cabinets.currentID) } else { cabinets.clearVault(for: cabinets.currentID) }
+        cabinetsChanged()
+    }
     func leaveEmptySearchForTest() {
         guard let field = searchItem?.searchField else { return }
         field.stringValue = ""

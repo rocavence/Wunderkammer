@@ -12,6 +12,9 @@ final class Cabinets {
         var folder: String
         /// Folders whose files come in by themselves (and leave with them).
         var watched: [String]? = nil
+        /// Or else: a folder of its own that keeps a copy of every file
+        /// collected, under its own name. Never both.
+        var vault: String? = nil
     }
 
     static let maxWatched = 3
@@ -87,6 +90,7 @@ final class Cabinets {
 
     /// Up to three folders, none twice, none inside another or inside a library.
     func canWatch(_ folder: URL, in id: UUID) -> Bool {
+        guard vault(id) == nil else { return false }
         let path = folder.standardizedFileURL.path
         let mine = watched(id).map(\.path)
         guard mine.count < Self.maxWatched else { return false }
@@ -105,6 +109,25 @@ final class Cabinets {
     func unwatch(_ folder: URL, in id: UUID) {
         guard let i = entries.firstIndex(where: { $0.id == id }) else { return }
         entries[i].watched?.removeAll { $0 == folder.standardizedFileURL.path }
+        save()
+    }
+
+    func vault(_ id: UUID) -> URL? {
+        entries.first { $0.id == id }?.vault.map { URL(fileURLWithPath: $0, isDirectory: true) }
+    }
+
+    /// Keeps files in `folder` from now on; watching stops (the two don't mix).
+    func setVault(_ folder: URL, for id: UUID) {
+        guard let i = entries.firstIndex(where: { $0.id == id }) else { return }
+        entries[i].vault = folder.standardizedFileURL.path
+        entries[i].watched = nil
+        save()
+    }
+
+    /// Back to linking: files stay where they are. What's in the vault stays there.
+    func clearVault(for id: UUID) {
+        guard let i = entries.firstIndex(where: { $0.id == id }) else { return }
+        entries[i].vault = nil
         save()
     }
 

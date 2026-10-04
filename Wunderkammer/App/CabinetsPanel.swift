@@ -13,6 +13,9 @@ final class CabinetsPanel: NSObject {
     private let cabinets: Cabinets
     private let count: (Cabinets.Entry) -> Int
     private let covers: (Cabinets.Entry) -> [URL]
+    private let referenced: (Cabinets.Entry) -> Int
+    /// The card turned over to its settings.
+    private var flipped: UUID?
     private let sheet: NSWindow
     private let grid = FlippedView()
     private let scroll = NSScrollView()
@@ -24,14 +27,16 @@ final class CabinetsPanel: NSObject {
     private var maxHeight: CGFloat = .greatestFiniteMagnitude
 
     private static let columns = 3
-    private static let cardSize = CGSize(width: 216, height: 236)
+    private static let cardSize = CGSize(width: 216, height: 256)
     private static let gap: CGFloat = 18
     private static let margin: CGFloat = 32
 
-    init(cabinets: Cabinets, count: @escaping (Cabinets.Entry) -> Int, covers: @escaping (Cabinets.Entry) -> [URL]) {
+    init(cabinets: Cabinets, count: @escaping (Cabinets.Entry) -> Int, covers: @escaping (Cabinets.Entry) -> [URL],
+         referenced: @escaping (Cabinets.Entry) -> Int) {
         self.cabinets = cabinets
         self.count = count
         self.covers = covers
+        self.referenced = referenced
         let width = Self.margin * 2 + CGFloat(Self.columns) * Self.cardSize.width + CGFloat(Self.columns - 1) * Self.gap
         sheet = NSWindow(contentRect: NSRect(x: 0, y: 0, width: width, height: 520), styleMask: [.titled, .fullSizeContentView],
                          backing: .buffered, defer: false)
@@ -50,7 +55,7 @@ final class CabinetsPanel: NSObject {
     private func build() {
         let title = NSTextField(labelWithString: "珍奇櫃")
         title.font = Typography.display(26) ?? .systemFont(ofSize: 26)
-        let note = NSTextField(labelWithString: "每個珍奇櫃都有自己的收藏。點卡片打開，名字旁的按鈕可以監看資料夾、改名或刪除。")
+        let note = NSTextField(labelWithString: "每個珍奇櫃都有自己的收藏。點卡片打開，按編輯翻到背面設定名稱與檔案。")
         note.font = .systemFont(ofSize: 12.5)
         note.textColor = .secondaryLabelColor
         done.target = self
@@ -93,20 +98,46 @@ final class CabinetsPanel: NSObject {
     private func layoutCards() {
         cards.forEach { $0.removeFromSuperview() }
         cards = cabinets.entries.map { entry in
+            let watched = cabinets.watched(entry.id), vault = cabinets.vault(entry.id)
             let card = CabinetCard(name: entry.name, count: count(entry), isCurrent: entry.id == cabinets.currentID,
                                    isDefault: entry.folder.isEmpty, canDelete: cabinets.canDelete(entry.id),
                                    cover: CabinetCover.mosaic(covers(entry), seed: entry.id),
-                                   watching: cabinets.watched(entry.id).count)
+                                   watching: watched.count, vault: vault)
             card.onOpen = { [weak self] in self?.open(entry.id) }
-            card.onFolders = { [weak self] anchor in self?.showFolders(of: entry.id, at: anchor) }
-            card.onRename = { [weak self, weak card] in
+            card.onEdit = { [weak self, weak card] in
                 guard let self, let card else { return }
-                self.edit(card) { name in
-                    self.cabinets.rename(entry.id, to: name)
+                self.flipped = entry.id
+                card.turn(toBack: true, animated: true)
+            }
+            card.onDelete = { [weak self] in self?.delete(entry) }
+            let back = card.back
+            back.show(name: entry.name, folders: watched, vault: vault, maxFolders: Cabinets.maxWatched)
+            back.onDone = { [weak self, weak card] in
+                self?.flipped = nil
+                card?.turn(toBack: false, animated: true)
+            }
+            back.onRename = { [weak self] name in
+                guard let self else { return }
+                self.cabinets.rename(entry.id, to: name)
+                self.onChange?()
+                self.layoutCards()
+            }
+            back.onAddFolder = { [weak self] in self?.addFolder(to: entry.id) }
+            back.onRemoveFolder = { [weak self] folder in
+                guard let self else { return }
+                self.cabinets.unwatch(folder, in: entry.id)
+                self.layoutCards()
+                self.onChange?()
+            }
+            back.onKeepFiles = { [weak self] keep in
+                guard let self else { return }
+                if keep { self.chooseVault(for: entry) } else {
+                    self.cabinets.clearVault(for: entry.id)
+                    self.layoutCards()
                     self.onChange?()
                 }
             }
-            card.onDelete = { [weak self] in self?.delete(entry) }
+            if entry.id == flipped { card.turn(toBack: true, animated: false) }
             return card
         }
         if drafting {
@@ -171,42 +202,46 @@ final class CabinetsPanel: NSObject {
         }
     }
 
-    // MARK: Watched folders
+    // MARK: Files: linked folders, or a vault
 
-    /// The folders a 珍奇櫃 watches, each with its own way out, and a way to
-    /// add another while there's room.
-    private func showFolders(of id: UUID, at anchor: NSView) {
-        let folders = cabinets.watched(id)
-        let menu = NSMenu()
-        menu.autoenablesItems = false
-        let head = NSMenuItem(title: folders.isEmpty ? "放進資料夾的檔案會自動收進這個珍奇櫃" : "自動收進這些資料夾裡的檔案",
-                              action: nil, keyEquivalent: "")
-        head.isEnabled = false
-        menu.addItem(head)
-        for folder in folders {
-            let item = NSMenuItem(title: FileManager.default.displayName(atPath: folder.path), action: nil, keyEquivalent: "")
-            item.image = Icon.image(.folder, size: 14)
-            item.toolTip = folder.path
-            let sub = NSMenu()
-            sub.addItem(ClosureMenuItem("在 Finder 中顯示") { NSWorkspace.shared.activateFileViewerSelecting([folder]) })
-            sub.addItem(ClosureMenuItem("停止監看") { [weak self] in
-                guard let self else { return }
-                self.cabinets.unwatch(folder, in: id)
-                self.layoutCards()
+    /// Keeping files means a folder of the 珍奇櫃's own. Chosen first, then
+    /// asked: what gets copied, what stops being watched. No means nothing changes.
+    private func chooseVault(for entry: Cabinets.Entry) {
+        let open = NSOpenPanel()
+        open.canChooseDirectories = true
+        open.canChooseFiles = false
+        open.canCreateDirectories = true
+        open.allowsMultipleSelection = false
+        open.prompt = "用這個資料夾收檔案"
+        open.message = "「\(entry.name)」收進來的檔案，都會複製一份到這個資料夾，用原本的檔名存。"
+        open.beginSheetModal(for: sheet) { [weak self] response in
+            guard let self else { return }
+            guard response == .OK, let folder = open.url else { return self.layoutCards() }
+            // The open panel has to be gone before the question can show.
+            DispatchQueue.main.async { self.confirmVault(folder, for: entry) }
+        }
+    }
+
+    private func confirmVault(_ folder: URL, for entry: Cabinets.Entry) {
+        let files = referenced(entry), watched = cabinets.watched(entry.id).count
+        var lines: [String] = []
+        if files > 0 { lines.append("\(files) 件收藏的檔案會複製一份到「\(folder.lastPathComponent)」。") }
+        if watched > 0 { lines.append("連結的 \(watched) 個資料夾會停止監看，裡面的檔案不會被動到。") }
+        lines.append("之後收進來的檔案也都會存在這裡。")
+        let alert = NSAlert()
+        alert.messageText = "改成把檔案收進珍奇櫃？"
+        alert.informativeText = lines.joined(separator: "\n")
+        alert.addButton(withTitle: files > 0 ? "複製並改用" : "改用")
+        alert.addButton(withTitle: "取消")
+        alert.beginSheetModal(for: sheet) { [weak self] response in
+            guard let self else { return }
+            if response == .alertFirstButtonReturn {
+                self.cabinets.setVault(folder, for: entry.id)
                 self.onChange?()
-            })
-            item.submenu = sub
-            menu.addItem(item)
+            }
+            // Either way the card shows what's true now (cancel: as it was).
+            self.layoutCards()
         }
-        menu.addItem(.separator())
-        let full = folders.count >= Cabinets.maxWatched
-        let add = ClosureMenuItem(full ? "最多 \(Cabinets.maxWatched) 個資料夾" : "加入資料夾…") { [weak self] in
-            self?.addFolder(to: id)
-        }
-        add.image = Icon.image(.folderAdd, size: 14)
-        add.isEnabled = !full
-        menu.addItem(add)
-        menu.popUp(positioning: nil, at: NSPoint(x: 0, y: anchor.bounds.height + 4), in: anchor)
     }
 
     private func addFolder(to id: UUID) {
@@ -254,6 +289,11 @@ final class CabinetsPanel: NSObject {
     var isShown: Bool { sheet.isVisible }
     var windowNumber: Int { sheet.windowNumber }
     func closeForTest() { close() }
+    /// A card turned over to its settings, without the turn.
+    func flipForTest(_ id: UUID) {
+        flipped = id
+        layoutCards()
+    }
     /// The 新增 card clicked: the blank card waiting for a name.
     func beginAddForTest() { add() }
     /// Typing a name into the card being edited and pressing Return.
@@ -268,9 +308,11 @@ final class CabinetsPanel: NSObject {
 @MainActor
 private final class CabinetCard: NSView, NSTextFieldDelegate {
     var onOpen: (() -> Void)?
-    var onRename: (() -> Void)?
+    var onEdit: (() -> Void)?
     var onDelete: (() -> Void)?
-    var onFolders: ((NSView) -> Void)?
+    /// The settings on the other side.
+    let back = CabinetBack()
+    private var turning = false
 
     private let nameField = NSTextField()
     private let detail: NSTextField
@@ -279,10 +321,11 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
     private var finish: ((String?) -> Void)?
 
     init(name: String, count: Int, isCurrent: Bool, isDefault: Bool, canDelete: Bool, cover: CGImage?,
-         watching: Int = 0, isDraft: Bool = false) {
+         watching: Int = 0, vault: URL? = nil, isDraft: Bool = false) {
         self.originalName = name
         let held = count == 0 ? "還沒有收藏" : "\(count) 件收藏"
-        detail = NSTextField(labelWithString: isDraft ? "按 Return 建立，Esc 取消" : watching > 0 ? "\(held) · 監看 \(watching) 個資料夾" : held)
+        let files = vault.map { " · 收進「\($0.lastPathComponent)」" } ?? (watching > 0 ? " · 連結 \(watching) 個資料夾" : "")
+        detail = NSTextField(labelWithString: isDraft ? "按 Return 建立，Esc 取消" : held + files)
         super.init(frame: .zero)
         wantsLayer = true
         layer?.cornerRadius = 16
@@ -328,11 +371,7 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
         // 珍奇櫃 has no remove; the open one can't be removed while open.
         var tools: [NSView] = []
         if !isDraft {
-            let folders = CardTool(icon: .folder, tip: "自動收進資料夾的檔案", destructive: false) {}
-            folders.handler = { [weak self, weak folders] in if let folders { self?.onFolders?(folders) } }
-            if watching > 0 { folders.restingTint = .controlAccentColor }
-            tools.append(folders)
-            tools.append(CardTool(icon: .edit, tip: "改名", destructive: false) { [weak self] in self?.onRename?() })
+            tools.append(CardTool(icon: .edit, tip: "編輯：名稱與檔案", destructive: false) { [weak self] in self?.onEdit?() })
             if !isDefault {
                 let trash = CardTool(icon: .trash, tip: canDelete ? "刪除" : "要先打開別的珍奇櫃，才能刪除這個",
                                      destructive: true) { [weak self] in self?.onDelete?() }
@@ -374,18 +413,62 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
             setAccessibilityLabel("\(name)，\(count) 件收藏" + (isCurrent ? "，目前開著" : ""))
             menu = NSMenu()
             menu?.addItem(ClosureMenuItem("打開") { [weak self] in self?.onOpen?() })
-            menu?.addItem(ClosureMenuItem("改名…") { [weak self] in self?.onRename?() })
-            menu?.addItem(ClosureMenuItem("監看資料夾…") { [weak self] in
-                guard let self, let tool = self.subviews.compactMap({ $0 as? NSStackView }).last?.arrangedSubviews.first else { return }
-                self.onFolders?(tool)
-            })
+            menu?.addItem(ClosureMenuItem("編輯…") { [weak self] in self?.onEdit?() })
             if !isDefault {
                 let delete = ClosureMenuItem("刪除…") { [weak self] in self?.onDelete?() }
                 delete.isEnabled = canDelete
                 menu?.addItem(delete)
             }
             menu?.autoenablesItems = false
+            back.isHidden = true
+            back.frame = bounds
+            back.autoresizingMask = [.width, .height]
+            addSubview(back)
         }
+    }
+
+    // MARK: Turning over
+
+    /// Over to the settings and back: a quarter turn away, the other side
+    /// swapped in, a quarter turn home.
+    func turn(toBack: Bool, animated: Bool) {
+        guard back.isHidden == toBack, let layer, !turning else { return }
+        guard animated else { back.isHidden = !toBack; return }
+        turning = true
+        layer.removeAnimation(forKey: "grow")
+        let away = Self.rotation(.pi / 2, size: bounds.size), home = CATransform3DIdentity
+        let first = CABasicAnimation(keyPath: "transform")
+        first.fromValue = home
+        first.toValue = away
+        first.duration = 0.16
+        first.timingFunction = CAMediaTimingFunction(name: .easeIn)
+        CATransaction.begin()
+        CATransaction.setCompletionBlock { [weak self] in
+            guard let self, let layer = self.layer else { return }
+            self.back.isHidden = !toBack
+            let second = CABasicAnimation(keyPath: "transform")
+            second.fromValue = Self.rotation(-.pi / 2, size: self.bounds.size)
+            second.toValue = home
+            second.duration = 0.22
+            second.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            layer.transform = home
+            layer.add(second, forKey: "turn")
+            self.turning = false
+            if toBack { self.back.focusName() }
+        }
+        layer.transform = away
+        layer.add(first, forKey: "turn")
+        CATransaction.commit()
+    }
+
+    /// A turn about the card's vertical middle, with a little depth.
+    private static func rotation(_ angle: CGFloat, size: CGSize) -> CATransform3D {
+        var perspective = CATransform3DIdentity
+        perspective.m34 = -1 / 700
+        let toCentre = CATransform3DMakeTranslation(-size.width / 2, -size.height / 2, 0)
+        let turned = CATransform3DConcat(toCentre, CATransform3DMakeRotation(angle, 0, 1, 0))
+        return CATransform3DConcat(CATransform3DConcat(turned, perspective),
+                                   CATransform3DMakeTranslation(size.width / 2, size.height / 2, 0))
     }
 
     required init?(coder: NSCoder) { fatalError() }
@@ -469,8 +552,8 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
         addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
     }
 
-    override func mouseEntered(with event: NSEvent) { if !isEditing { lift(true) } }
-    override func mouseExited(with event: NSEvent) { lift(false) }
+    override func mouseEntered(with event: NSEvent) { if !isEditing, back.isHidden, !turning { lift(true) } }
+    override func mouseExited(with event: NSEvent) { if !turning { lift(false) } }
 
     /// Rises a little towards you, its shadow deepening.
     private func lift(_ up: Bool) {
@@ -497,7 +580,7 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
     }
 
     override func mouseUp(with event: NSEvent) {
-        guard !isEditing, bounds.contains(convert(event.locationInWindow, from: nil)) else { return }
+        guard !isEditing, back.isHidden, !turning, bounds.contains(convert(event.locationInWindow, from: nil)) else { return }
         onOpen?()
     }
 }
@@ -672,5 +755,187 @@ private final class AddCabinetCard: NSView {
 
     override func mouseUp(with event: NSEvent) {
         if bounds.contains(convert(event.locationInWindow, from: nil)) { onAdd?() }
+    }
+}
+
+/// The back of a 珍奇櫃's card: its name, and what happens to the files it
+/// collects. Either they stay where they are and up to three folders are
+/// linked, or the 珍奇櫃 keeps a copy of each in a folder of its own.
+@MainActor
+final class CabinetBack: NSView, NSTextFieldDelegate {
+    var onDone: (() -> Void)?
+    var onRename: ((String) -> Void)?
+    var onAddFolder: (() -> Void)?
+    var onRemoveFolder: ((URL) -> Void)?
+    /// true: keep files (choose a vault); false: back to linking.
+    var onKeepFiles: ((Bool) -> Void)?
+
+    private let nameField = NSTextField()
+    private let mode = NSSegmentedControl(labels: ["連結資料夾", "收進櫃子"], trackingMode: .selectOne, target: nil, action: nil)
+    private let list = NSStackView()
+    private var currentName = ""
+
+    init() {
+        super.init(frame: .zero)
+        wantsLayer = true
+        layer?.cornerRadius = 16
+
+        let title = NSTextField(labelWithString: "設定")
+        title.font = .systemFont(ofSize: 13, weight: .semibold)
+        let done = NSButton(title: "完成", target: self, action: #selector(doneTapped))
+        done.bezelStyle = .rounded
+        done.controlSize = .small
+        done.keyEquivalent = "\r"
+
+        nameField.font = .systemFont(ofSize: 13)
+        nameField.bezelStyle = .roundedBezel
+        nameField.placeholderString = "珍奇櫃的名字"
+        nameField.delegate = self
+        nameField.lineBreakMode = .byTruncatingTail
+        nameField.cell?.isScrollable = true
+
+        mode.controlSize = .small
+        mode.segmentDistribution = .fillEqually
+        mode.target = self
+        mode.action = #selector(modeChanged)
+
+        list.orientation = .vertical
+        list.alignment = .leading
+        list.spacing = 3
+
+        let views: [NSView] = [title, done, Self.caption("名稱"), nameField, Self.caption("收藏的檔案"), mode, list]
+        for v in views {
+            v.translatesAutoresizingMaskIntoConstraints = false
+            addSubview(v)
+        }
+        let nameCaption = views[2], filesCaption = views[4]
+        NSLayoutConstraint.activate([
+            title.topAnchor.constraint(equalTo: topAnchor, constant: 16),
+            title.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
+            done.centerYAnchor.constraint(equalTo: title.centerYAnchor),
+            done.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
+            nameCaption.topAnchor.constraint(equalTo: title.bottomAnchor, constant: 14),
+            nameCaption.leadingAnchor.constraint(equalTo: title.leadingAnchor),
+            nameField.topAnchor.constraint(equalTo: nameCaption.bottomAnchor, constant: 4),
+            nameField.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
+            nameField.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14),
+            filesCaption.topAnchor.constraint(equalTo: nameField.bottomAnchor, constant: 14),
+            filesCaption.leadingAnchor.constraint(equalTo: title.leadingAnchor),
+            mode.topAnchor.constraint(equalTo: filesCaption.bottomAnchor, constant: 5),
+            mode.leadingAnchor.constraint(equalTo: nameField.leadingAnchor),
+            mode.trailingAnchor.constraint(equalTo: nameField.trailingAnchor),
+            list.topAnchor.constraint(equalTo: mode.bottomAnchor, constant: 8),
+            list.leadingAnchor.constraint(equalTo: nameField.leadingAnchor),
+            list.trailingAnchor.constraint(equalTo: nameField.trailingAnchor),
+        ])
+        updateColors()
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override var isFlipped: Bool { true }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateColors()
+    }
+
+    /// Solid, so nothing of the front shows through.
+    private func updateColors() {
+        layer?.backgroundColor = resolved(.controlBackgroundColor)
+    }
+
+    // Clicks on the back stay on the back (the front would open the 珍奇櫃).
+    override func mouseDown(with event: NSEvent) {}
+    override func mouseUp(with event: NSEvent) {}
+
+    private static func caption(_ text: String) -> NSTextField {
+        let t = NSTextField(labelWithString: text)
+        t.font = .systemFont(ofSize: 11, weight: .medium)
+        t.textColor = .secondaryLabelColor
+        return t
+    }
+
+    func show(name: String, folders: [URL], vault: URL?, maxFolders: Int) {
+        currentName = name
+        nameField.stringValue = name
+        mode.selectedSegment = vault == nil ? 0 : 1
+        list.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        if let vault {
+            list.addArrangedSubview(row(vault, removable: false))
+            let reveal = Self.link("在 Finder 中顯示", icon: nil) { NSWorkspace.shared.activateFileViewerSelecting([vault]) }
+            list.addArrangedSubview(reveal)
+        } else {
+            if folders.isEmpty { list.addArrangedSubview(Self.note("檔案留在原處；連結的資料夾有新檔案會自動收進來。")) }
+            for f in folders { list.addArrangedSubview(row(f, removable: true)) }
+            if folders.count < maxFolders {
+                list.addArrangedSubview(Self.link("加入資料夾…", icon: .folderAdd) { [weak self] in self?.onAddFolder?() })
+            } else {
+                list.addArrangedSubview(Self.note("最多 \(maxFolders) 個資料夾"))
+            }
+        }
+    }
+
+    func focusName() {
+        window?.makeFirstResponder(nameField)
+    }
+
+    private func row(_ folder: URL, removable: Bool) -> NSView {
+        let icon = NSImageView(image: Icon.image(.folder, size: 13))
+        icon.contentTintColor = .secondaryLabelColor
+        let name = NSTextField(labelWithString: FileManager.default.displayName(atPath: folder.path))
+        name.font = .systemFont(ofSize: 12)
+        name.lineBreakMode = .byTruncatingMiddle
+        name.toolTip = folder.path
+        name.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        var views: [NSView] = [icon, name]
+        if removable {
+            let x = ClosureButton(image: Icon.image(.x, size: 11)) { [weak self] in self?.onRemoveFolder?(folder) }
+            x.isBordered = false
+            x.contentTintColor = .tertiaryLabelColor
+            x.toolTip = "不再連結這個資料夾"
+            views.append(x)
+        }
+        let row = NSStackView(views: views)
+        row.spacing = 5
+        row.setHuggingPriority(.defaultLow, for: .horizontal)
+        return row
+    }
+
+    private static func note(_ text: String) -> NSTextField {
+        let t = NSTextField(wrappingLabelWithString: text)
+        t.font = .systemFont(ofSize: 11)
+        t.textColor = .tertiaryLabelColor
+        t.preferredMaxLayoutWidth = 186
+        return t
+    }
+
+    private static func link(_ title: String, icon: Reicon?, action: @escaping @MainActor () -> Void) -> NSButton {
+        let b = ClosureButton(title: title, action: action)
+        b.isBordered = false
+        if let icon { b.image = Icon.image(icon, size: 13); b.imagePosition = .imageLeading }
+        b.font = .systemFont(ofSize: 12, weight: .medium)
+        b.contentTintColor = .controlAccentColor
+        return b
+    }
+
+    @objc private func modeChanged() {
+        onKeepFiles?(mode.selectedSegment == 1)
+    }
+
+    @objc private func doneTapped() {
+        commitName()
+        onDone?()
+    }
+
+    private func commitName() {
+        let name = nameField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty, name != currentName else { return }
+        currentName = name
+        onRename?(name)
+    }
+
+    func controlTextDidEndEditing(_ obj: Notification) {
+        commitName()
     }
 }

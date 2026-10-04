@@ -610,6 +610,29 @@ final class SelfTest {
         _ = picture("d.png", hue: 0.85)
         await wait(4)
         check(inFolder() == 2, "an unwatched folder is left alone")
+
+        // Keeping files instead: a vault of the 珍奇櫃's own, a copy of each file in it.
+        let vault = fm.temporaryDirectory.appendingPathComponent("wk-vault-\(UUID().uuidString)", isDirectory: true)
+        try? fm.createDirectory(at: vault, withIntermediateDirectories: true)
+        ui.setVaultForTest(vault)
+        check(!ui.watchFolderForTest(extra[0]), "a 珍奇櫃 that keeps files doesn't also link folders")
+        let loose = fm.temporaryDirectory.appendingPathComponent("wk-loose-\(UUID().uuidString).txt")
+        try? "苔寺的筆記".write(to: loose, atomically: true, encoding: .utf8)
+        let ids = await library.importFiles([loose])
+        for _ in 0..<40 where !(library.item(ids.first ?? UUID())?.filePath?.hasPrefix(vault.standardizedFileURL.path) ?? false) { await wait(0.25) }
+        let kept = ids.first.flatMap { library.item($0)?.filePath }
+        check(kept?.hasPrefix(vault.standardizedFileURL.path + "/") == true && kept.map { fm.fileExists(atPath: $0) } == true,
+              "a collected file is copied into the vault (\(kept ?? "nowhere"))")
+        check(fm.fileExists(atPath: loose.path), "the original stays where it was")
+        ui.manageCabinets()
+        await wait(0.6)
+        ui.flipCabinetForTest()
+        await wait(0.4)
+        shot("cabinet-back", windowNumber: ui.cabinetsWindowNumber)
+        ui.closeCabinetsForTest()
+        ui.setVaultForTest(nil)
+        try? fm.removeItem(at: vault)
+        try? fm.removeItem(at: loose)
         for f in extra + [dir] { try? fm.removeItem(at: f) }
     }
 
@@ -1414,6 +1437,8 @@ protocol SelfTestUI: AnyObject {
     func hoverViewBarForTest() -> String?
     var isSearchExpanded: Bool { get }
     func openSearchForTest()
+    func flipCabinetForTest()
+    func setVaultForTest(_ folder: URL?)
     func leaveEmptySearchForTest()
     var graphView: GraphView! { get }
     func canDeleteCabinet(_ id: UUID) -> Bool
