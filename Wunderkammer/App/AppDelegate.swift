@@ -123,7 +123,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         }
         // Copies and representations of items removed in an earlier session.
         library.purgeOrphans()
-        if !SelfTest.isEnabled { library.archiveMissing() }
+        if !SelfTest.isEnabled {
+            library.archiveMissing()
+            library.shrinkArchives()
+        }
         try? FileManager.default.removeItem(at: Self.textPreviewDir)
         grid = GridView(library: library, thumbnailer: thumbnailer)
         scroll = NSScrollView()

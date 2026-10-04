@@ -521,6 +521,8 @@ final class SelfTest {
                 item = ids.first.flatMap(library.item)
             }
             guard let id = item?.id else { check(false, "\(fragment) in the library"); continue }
+            // Saved afresh, even if the copied library had it already.
+            library.update(id, notify: false) { $0.archiveFilename = nil; $0.archivedAt = nil }
             let t = CACurrentMediaTime()
             await library.archive(id)
             let elapsed = CACurrentMediaTime() - t
@@ -531,6 +533,7 @@ final class SelfTest {
             log(String(format: "%@: %.1fs, %d KB, %d PDF page(s), %d chars of text", fragment, elapsed, size / 1024, pdfPages,
                        kept?.pageText?.count ?? 0))
             check(size > 20_000 && pdfPages >= 1, "\(fragment) saved as a PDF")
+            check(size < 5_000_000, "\(fragment) kept small (\(size / 1024) KB)")
             check(kept?.pageText?.contains(word) == true, "\(fragment) page text has \"\(word)\"")
         }
         // A page with next to nothing on it (or a block page) isn't kept.

@@ -1,5 +1,7 @@
 import AppKit
 import ImageIO
+import PDFKit
+import Quartz
 
 struct Board: Codable, Identifiable, Hashable {
     var id: UUID
@@ -517,13 +519,45 @@ final class Library {
         let dir = archivesDir
         let written = await Task.detached { () -> Bool in
             guard let saved else { return false }
-            return (try? saved.pdf.write(to: dir.appendingPathComponent(name), options: .atomic)) != nil
+            let file = dir.appendingPathComponent(name)
+            guard (try? saved.pdf.write(to: file, options: .atomic)) != nil else { return false }
+            Self.shrink(file)
+            return true
         }.value
         update(id, notify: false) {
             $0.archivedAt = Date()
             guard written else { return }
             $0.archiveFilename = name
             $0.pageText = saved?.text.map { String($0.prefix(4000)) }
+        }
+    }
+
+    /// Pictures in a saved page are kept at screen quality, the text as text:
+    /// macOS's own "Reduce File Size" (20 MB → 4 MB on an image-heavy page).
+    nonisolated static func shrink(_ file: URL) {
+        let size = (try? FileManager.default.attributesOfItem(atPath: file.path)[.size] as? Int) ?? 0
+        guard size > 1_000_000, let doc = PDFDocument(url: file),
+              let filter = QuartzFilter(url: URL(fileURLWithPath: "/System/Library/Filters/Reduce File Size.qfilter")) else { return }
+        let smaller = file.deletingLastPathComponent().appendingPathComponent(".shrinking-" + file.lastPathComponent)
+        guard doc.write(to: smaller, withOptions: [PDFDocumentWriteOption(rawValue: "QuartzFilter"): filter]),
+              let newSize = try? FileManager.default.attributesOfItem(atPath: smaller.path)[.size] as? Int,
+              newSize < size,
+              // The words survive (a character or two of whitespace may not).
+              Double(PDFDocument(url: smaller)?.string?.count ?? 0) >= Double(doc.string?.count ?? 0) * 0.98 else {
+            try? FileManager.default.removeItem(at: smaller)
+            return
+        }
+        _ = try? FileManager.default.replaceItemAt(file, withItemAt: smaller)
+    }
+
+    /// Pages saved before they were made smaller, once.
+    func shrinkArchives() {
+        let key = "archivesShrunk.v1"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        let files = items.compactMap(archiveURL)
+        Task.detached(priority: .utility) {
+            for file in files { Self.shrink(file) }
+            await MainActor.run { UserDefaults.standard.set(true, forKey: key) }
         }
     }
 
