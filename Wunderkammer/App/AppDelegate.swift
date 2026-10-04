@@ -261,7 +261,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             var parts: [String] = []
             for (i, step) in path.enumerated() {
                 parts.append(Trail.short(step.via))
-                parts.append(i == path.count - 1 ? "這件" : "《\(self.library.item(step.item)?.displayTitle.prefix(20) ?? "")》")
+                let name = self.library.item(step.item)?.displayTitle ?? ""
+                // Shortened inside the 《》, and saying so.
+                parts.append(i == path.count - 1 ? "這件" : "《\(name.count > 18 ? name.prefix(17) + "…" : name)》")
             }
             return "怎麼來的：" + parts.joined(separator: " → ")
         }

@@ -183,8 +183,9 @@ final class PreviewView: NSView {
     }
 
     private func fitRect(for item: Item) -> NSRect {
-        var area = bounds.insetBy(dx: 40, dy: 40)
-        area.size.height -= Self.captionRoom - 40
+        // Below the toolbar, above the caption.
+        let top = max(40, safeAreaInsets.top + 20)
+        var area = NSRect(x: 40, y: top, width: bounds.width - 80, height: bounds.height - top - Self.captionRoom)
         let aspect = CGFloat(item.pixelWidth) / max(CGFloat(item.pixelHeight), 1)
         var size = NSSize(width: area.width, height: area.width / aspect)
         if size.height > area.height { size = NSSize(width: area.height * aspect, height: area.height) }
