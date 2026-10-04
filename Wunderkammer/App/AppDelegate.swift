@@ -246,6 +246,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         sidebar.onManageCabinets = { [weak self] in self?.manageCabinets() }
         sidebar.cabinetName = cabinets.current.name
         sidebar.cabinetID = cabinets.currentID
+        sidebar.coverPicture = cabinets.coverURL(cabinets.currentID)
         watchFolders()
         inspector = InspectorViewController(library: library)
         inspector.onSelectRelated = { [weak self] id in
@@ -1191,6 +1192,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private func cabinetsChanged() {
         sidebar.cabinetName = cabinets.current.name
         sidebar.cabinetID = cabinets.currentID
+        sidebar.coverPicture = cabinets.coverURL(cabinets.currentID)
         updateTitle()
         watchFolders()
     }
@@ -1227,6 +1229,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     func hoverViewBarForTest() -> String? { viewBar.hoverFirstForTest() }
     func openSearchForTest() { focusSearch() }
     func flipCabinetForTest() { cabinetsPanel?.flipForTest(cabinets.currentID) }
+    func setCoverForTest(_ picture: URL?) -> Bool {
+        defer { cabinetsChanged() }
+        guard let picture else { cabinets.clearCover(for: cabinets.currentID); return true }
+        return cabinets.setCover(from: picture, for: cabinets.currentID)
+    }
     func setVaultForTest(_ folder: URL?) {
         if let folder { cabinets.setVault(folder, for: cabinets.currentID) } else { cabinets.clearVault(for: cabinets.currentID) }
         cabinetsChanged()

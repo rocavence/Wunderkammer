@@ -16,6 +16,8 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     var cabinetName = "珍奇櫃" { didSet { if cabinetName != oldValue { reload() } } }
     var cabinetID: UUID? { didSet { if cabinetID != oldValue { coverIDs = [] ; reload() } } }
     private let header = CabinetHeader()
+    /// A picture chosen as the open 珍奇櫃's cover; else its newest pieces.
+    var coverPicture: URL? { didSet { coverIDs = []; reload() } }
     /// The pieces the card's cover was last drawn from.
     private var coverIDs: [UUID] = []
 
@@ -168,8 +170,8 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         let ids = newest.map(\.id)
         if ids != coverIDs || header.cover == nil {
             coverIDs = ids
-            header.cover = CabinetCover.mosaic(newest.map(library.thumbnailURL), seed: cabinetID ?? UUID(),
-                                               size: CGSize(width: 72, height: 72))
+            header.cover = CabinetCover.mosaic(coverPicture.map { [$0] } ?? newest.map(library.thumbnailURL),
+                                               seed: cabinetID ?? UUID(), size: CGSize(width: 72, height: 72))
         }
         header.set(name: cabinetName, count: library.items.count)
     }

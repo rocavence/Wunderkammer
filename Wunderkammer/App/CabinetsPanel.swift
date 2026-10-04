@@ -106,7 +106,7 @@ final class CabinetsPanel: NSObject {
             let watched = cabinets.watched(entry.id), vault = cabinets.vault(entry.id)
             let card = CabinetCard(name: entry.name, count: count(entry), isCurrent: entry.id == cabinets.currentID,
                                    isDefault: entry.folder.isEmpty, canDelete: cabinets.canDelete(entry.id),
-                                   cover: CabinetCover.mosaic(covers(entry), seed: entry.id),
+                                   cover: cover(of: entry),
                                    watching: watched.count, vault: vault)
             card.onOpen = { [weak self] in self?.open(entry.id) }
             card.onEdit = { [weak self] in self?.openSettings(entry.id) }
@@ -205,11 +205,40 @@ final class CabinetsPanel: NSObject {
 
     private func refreshSettings() {
         guard let id = flipped, let entry = cabinets.entries.first(where: { $0.id == id }) else { return }
-        settings.show(name: entry.name, count: count(entry), cover: CabinetCover.mosaic(covers(entry), seed: entry.id),
+        settings.show(name: entry.name, count: count(entry), cover: cover(of: entry, size: CGSize(width: 152, height: 152)), customCover: cabinets.coverURL(id) != nil,
                       folders: cabinets.watched(id), vault: cabinets.vault(id), maxFolders: Cabinets.maxWatched)
     }
 
+    /// The chosen picture (filling the frame), else the newest pieces.
+    private func cover(of entry: Cabinets.Entry, size: CGSize = CGSize(width: 408, height: 312)) -> CGImage? {
+        CabinetCover.mosaic(cabinets.coverURL(entry.id).map { [$0] } ?? covers(entry), seed: entry.id, size: size)
+    }
+
+    private func chooseCover(for id: UUID) {
+        let open = NSOpenPanel()
+        open.allowedContentTypes = [.image]
+        open.allowsMultipleSelection = false
+        open.prompt = "用這張當封面"
+        open.beginSheetModal(for: sheet) { [weak self] response in
+            guard let self, response == .OK, let url = open.url else { return }
+            if self.cabinets.setCover(from: url, for: id) {
+                self.layoutCardsKeepingScroll()
+                self.onChange?()
+            }
+        }
+    }
+
     private func wireSettings() {
+        settings.onChooseCover = { [weak self] in
+            guard let self, let id = self.flipped else { return }
+            self.chooseCover(for: id)
+        }
+        settings.onResetCover = { [weak self] in
+            guard let self, let id = self.flipped else { return }
+            self.cabinets.clearCover(for: id)
+            self.layoutCardsKeepingScroll()
+            self.onChange?()
+        }
         scrim.onClick = { [weak self] in self?.closeSettings() }
         settings.onDone = { [weak self] in self?.closeSettings() }
         settings.onRename = { [weak self] name in
@@ -707,6 +736,7 @@ private final class CardTool: NSButton {
 
 /// The newest pieces of a 珍奇櫃 as one picture, for its card and the sidebar.
 enum CabinetCover {
+
     /// One fills it, two side by side, three as one large and two small, four
     /// as a square of four. None: a gradient of the 珍奇櫃's own colour.
     static func mosaic(_ urls: [URL], seed: UUID, size: CGSize = CGSize(width: 408, height: 312)) -> CGImage? {
@@ -857,6 +887,8 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
     var onRemoveFolder: ((URL) -> Void)?
     /// true: keep files (choose a vault); false: back to linking.
     var onKeepFiles: ((Bool) -> Void)?
+    var onChooseCover: (() -> Void)?
+    var onResetCover: (() -> Void)?
 
     static let width: CGFloat = 480
     private static let pad: CGFloat = 28
@@ -864,6 +896,7 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
     private let coverView = NSImageView()
     private let heading = NSTextField(labelWithString: "")
     private let subheading = NSTextField(labelWithString: "")
+    private let coverActions = NSStackView()
     private let nameField = NSTextField()
     private let linkTile = ChoiceTile(icon: .link, title: "連結資料夾", detail: "檔案留在原處。連結的資料夾裡有新檔案，會自動收進來。")
     private let keepTile = ChoiceTile(icon: .box, title: "收進櫃子", detail: "每個收進來的檔案，都複製一份到你選的資料夾。")
@@ -881,14 +914,15 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
         layer?.shadowOffset = CGSize(width: 0, height: -10)
 
         coverView.wantsLayer = true
-        coverView.layer?.cornerRadius = 12
+        coverView.layer?.cornerRadius = 14
         coverView.layer?.masksToBounds = true
         coverView.imageScaling = .scaleAxesIndependently
         heading.font = Typography.display(22, weight: .medium) ?? .systemFont(ofSize: 22, weight: .medium)
         heading.lineBreakMode = .byTruncatingTail
         subheading.font = .systemFont(ofSize: 12)
         subheading.textColor = .secondaryLabelColor
-        let titles = NSStackView(views: [heading, subheading])
+        coverActions.spacing = 12
+        let titles = NSStackView(views: [heading, subheading, coverActions])
         titles.orientation = .vertical
         titles.alignment = .leading
         titles.spacing = 2
@@ -939,8 +973,8 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
             body.leadingAnchor.constraint(equalTo: leadingAnchor),
             body.trailingAnchor.constraint(equalTo: trailingAnchor),
             body.bottomAnchor.constraint(equalTo: bottomAnchor),
-            coverView.widthAnchor.constraint(equalToConstant: 56),
-            coverView.heightAnchor.constraint(equalToConstant: 56),
+            coverView.widthAnchor.constraint(equalToConstant: 76),
+            coverView.heightAnchor.constraint(equalToConstant: 76),
             nameField.widthAnchor.constraint(equalToConstant: inner),
             tiles.widthAnchor.constraint(equalToConstant: inner),
             detail.widthAnchor.constraint(equalToConstant: inner),
@@ -975,7 +1009,10 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
         return t
     }
 
-    func show(name: String, count: Int, cover: CGImage?, folders: [URL], vault: URL?, maxFolders: Int) {
+    func show(name: String, count: Int, cover: CGImage?, customCover: Bool, folders: [URL], vault: URL?, maxFolders: Int) {
+        coverActions.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        coverActions.addArrangedSubview(Self.link("更換封面…") { [weak self] in self?.onChooseCover?() })
+        if customCover { coverActions.addArrangedSubview(Self.link("恢復自動") { [weak self] in self?.onResetCover?() }) }
         currentName = name
         heading.stringValue = name
         subheading.stringValue = count == 0 ? "還沒有收藏" : "\(count) 件收藏"
@@ -1037,6 +1074,14 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
         row.translatesAutoresizingMaskIntoConstraints = false
         row.widthAnchor.constraint(equalToConstant: Self.width - Self.pad * 2).isActive = true
         return row
+    }
+
+    private static func link(_ title: String, action: @escaping @MainActor () -> Void) -> NSButton {
+        let b = ClosureButton(title: title, action: action)
+        b.isBordered = false
+        b.font = .systemFont(ofSize: 12, weight: .medium)
+        b.contentTintColor = .controlAccentColor
+        return b
     }
 
     private static func note(_ text: String) -> NSTextField {

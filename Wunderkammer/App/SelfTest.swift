@@ -624,12 +624,15 @@ final class SelfTest {
         check(kept?.hasPrefix(vault.standardizedFileURL.path + "/") == true && kept.map { fm.fileExists(atPath: $0) } == true,
               "a collected file is copied into the vault (\(kept ?? "nowhere"))")
         check(fm.fileExists(atPath: loose.path), "the original stays where it was")
+        // A cover of its own.
+        check(ui.setCoverForTest(picture("cover.png", hue: 0.55)), "a picture can be the 珍奇櫃's cover")
         ui.manageCabinets()
         await wait(0.6)
         ui.flipCabinetForTest()
         await wait(1.2)
         shot("cabinet-back", windowNumber: ui.cabinetsWindowNumber)
         ui.closeCabinetsForTest()
+        _ = ui.setCoverForTest(nil)
         ui.setVaultForTest(nil)
         try? fm.removeItem(at: vault)
         try? fm.removeItem(at: loose)
@@ -1456,6 +1459,7 @@ protocol SelfTestUI: AnyObject {
     var isSearchExpanded: Bool { get }
     func openSearchForTest()
     func flipCabinetForTest()
+    func setCoverForTest(_ picture: URL?) -> Bool
     func setVaultForTest(_ folder: URL?)
     func leaveEmptySearchForTest()
     var graphView: GraphView! { get }

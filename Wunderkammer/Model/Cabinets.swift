@@ -1,4 +1,5 @@
 import Foundation
+import ImageIO
 
 /// The cabinets (珍奇櫃) on this Mac: each a library of its own, named by its
 /// owner and switched in a moment. The first one is the library that was
@@ -129,6 +130,36 @@ final class Cabinets {
         guard let i = entries.firstIndex(where: { $0.id == id }) else { return }
         entries[i].vault = nil
         save()
+    }
+
+    // MARK: Cover
+
+    /// A picture chosen for the 珍奇櫃, if any, kept in its own folder.
+    func coverURL(_ id: UUID) -> URL? {
+        guard let e = entries.first(where: { $0.id == id }) else { return nil }
+        let url = root(of: e).appendingPathComponent("cover.jpg")
+        return FileManager.default.fileExists(atPath: url.path) ? url : nil
+    }
+
+    /// Keeps a copy of the picture, no bigger than a cover needs.
+    @discardableResult
+    func setCover(from image: URL, for id: UUID) -> Bool {
+        guard let e = entries.first(where: { $0.id == id }),
+              let src = CGImageSourceCreateWithURL(image as CFURL, nil),
+              let picture = CGImageSourceCreateThumbnailAtIndex(src, 0, [
+                  kCGImageSourceCreateThumbnailFromImageAlways: true, kCGImageSourceCreateThumbnailWithTransform: true,
+                  kCGImageSourceThumbnailMaxPixelSize: 1000,
+              ] as CFDictionary) else { return false }
+        let url = root(of: e).appendingPathComponent("cover.jpg")
+        try? FileManager.default.createDirectory(at: root(of: e), withIntermediateDirectories: true)
+        guard let dest = CGImageDestinationCreateWithURL(url as CFURL, "public.jpeg" as CFString, 1, nil) else { return false }
+        CGImageDestinationAddImage(dest, picture, [kCGImageDestinationLossyCompressionQuality: 0.88] as CFDictionary)
+        return CGImageDestinationFinalize(dest)
+    }
+
+    /// Back to the cover made of the newest pieces.
+    func clearCover(for id: UUID) {
+        if let url = coverURL(id) { try? FileManager.default.removeItem(at: url) }
     }
 
     func select(_ id: UUID) {
