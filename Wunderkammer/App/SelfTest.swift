@@ -228,6 +228,9 @@ final class SelfTest {
             }
             check(toast.panel?.isVisible == true && toast.panel?.isKeyWindow == false, "toast shows without taking focus")
             return finish()
+        case "keep":
+            await keepCheck()
+            return finish()
         case "ask":
             await askCheck()
             return finish()
@@ -501,6 +504,62 @@ final class SelfTest {
         check(settled < 0.5 && allVisible && !ui.preview.isOpen,
               "after closing every tile is home and visible (\(String(format: "%.1f", settled))pt)")
         shot("02f-ripple-closed")
+    }
+
+    /// What's kept when the source is only a link or a path: pages are saved
+    /// as they were, referenced files can be copied in (network).
+    private func keepCheck() async {
+        let pages: [(String, String)] = [
+            ("letterboxd.com/film/the-matrix", "Keanu"),
+            ("themoviedb.org/tv/1396-breaking-bad", "Walter"),
+            ("wikipedia.org/wiki/Cabinet_of_curiosities", "Wunderkammer"),
+        ]
+        for (fragment, word) in pages {
+            var item = library.items.first { $0.kind == .web && $0.url?.contains(fragment) == true }
+            if item == nil {
+                let ids = await library.capture([.web(URL(string: "https://" + fragment.replacingOccurrences(of: "wikipedia.org", with: "en.wikipedia.org"))!, title: nil)])
+                item = ids.first.flatMap(library.item)
+            }
+            guard let id = item?.id else { check(false, "\(fragment) in the library"); continue }
+            let t = CACurrentMediaTime()
+            await library.archive(id)
+            let elapsed = CACurrentMediaTime() - t
+            let kept = library.item(id)
+            let url = kept.flatMap(library.archiveURL)
+            let size = url.flatMap { try? FileManager.default.attributesOfItem(atPath: $0.path)[.size] as? Int } ?? 0
+            let pdfPages = url.flatMap { CGPDFDocument($0 as CFURL)?.numberOfPages } ?? 0
+            log(String(format: "%@: %.1fs, %d KB, %d PDF page(s), %d chars of text", fragment, elapsed, size / 1024, pdfPages,
+                       kept?.pageText?.count ?? 0))
+            check(size > 20_000 && pdfPages >= 1, "\(fragment) saved as a PDF")
+            check(kept?.pageText?.contains(word) == true, "\(fragment) page text has \"\(word)\"")
+        }
+        // A page with next to nothing on it (or a block page) isn't kept.
+        // (An always-empty page: example.com has a real notice in six languages.)
+        let bare = await library.capture([.web(URL(string: "https://www.google.com/generate_204?wk=\(UUID().uuidString)")!, title: nil)])
+        if let id = bare.first {
+            await library.archive(id)
+            check(library.item(id)?.archiveFilename == nil && library.item(id)?.archivedAt != nil, "a near-empty page isn't kept as a snapshot")
+        }
+        // A word only in the page body, not the title or description.
+        let found = Search.run("Keanu", in: library.items).map(\.displayTitle)
+        check(found.contains { $0.contains("Matrix") }, "searching the page's own words finds it (\(found.prefix(3).joined(separator: "、")))")
+
+        // Copy a referenced file into the library.
+        if let video = library.items.first(where: { $0.kind == .video && $0.storedFilename == nil && library.originalURL($0) != nil }) {
+            await library.copyIntoLibrary([video.id])
+            let copy = library.item(video.id).flatMap(library.originalURL)
+            check(copy?.path.hasPrefix(library.originalsDir.path) == true && FileManager.default.fileExists(atPath: copy?.path ?? ""),
+                  "\(video.displayTitle) copied into the library")
+            check(library.item(video.id)?.filePath == video.filePath, "the original's path is kept")
+        } else {
+            log("SKIP no referenced video to copy")
+        }
+        if let matrix = library.items.first(where: { $0.url?.contains("letterboxd.com/film/the-matrix") == true }) {
+            ui.toggleInspectorForTest()
+            ui.grid.reveal(matrix.id)
+            await wait(0.8)
+            shot("keep-inspector")
+        }
     }
 
     /// Questions to Apple's on-device model about the cabinet (needs Apple Intelligence).

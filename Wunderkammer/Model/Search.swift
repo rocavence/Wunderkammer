@@ -95,6 +95,7 @@ enum Search {
             if item.labels?.contains(where: { Subjects.chinese[$0].map(normalize) == t }) == true { best = max(best, 2) }
             if kindWords[item.kind]?.contains(t) == true { best = max(best, 1.5) }
             if contains(item.text, t) || contains(item.ocrText, t) { best = max(best, 1.2) }
+            if contains(item.pageText, t) { best = max(best, 0.8) }
             if contains(item.url, t) || contains(item.sourceApp, t) { best = max(best, 1) }
         }
         return best

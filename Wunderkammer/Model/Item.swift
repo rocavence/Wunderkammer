@@ -50,6 +50,12 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
     var credits: [Credit]?
     /// As the page gives it: "2021-10-22", "2021-10" or "2021".
     var released: String?
+    /// A web page as it was when collected: the whole page as a PDF in archives/.
+    var archiveFilename: String?
+    /// The page's own words (the start of them), for search and questions.
+    var pageText: String?
+    /// When the page was saved, or tried to be (nil: not yet).
+    var archivedAt: Date?
 
     // Understanding (filled in the background)
     var ocrText: String?
@@ -108,6 +114,9 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
         thing = try? c.decodeIfPresent(Thing.self, forKey: .thing)
         credits = try? c.decodeIfPresent([Credit].self, forKey: .credits)
         released = try c.decodeIfPresent(String.self, forKey: .released)
+        archiveFilename = try c.decodeIfPresent(String.self, forKey: .archiveFilename)
+        pageText = try c.decodeIfPresent(String.self, forKey: .pageText)
+        archivedAt = try c.decodeIfPresent(Date.self, forKey: .archivedAt)
         ocrText = try c.decodeIfPresent(String.self, forKey: .ocrText)
         labels = try c.decodeIfPresent([String].self, forKey: .labels)
         colors = try c.decodeIfPresent([String].self, forKey: .colors)

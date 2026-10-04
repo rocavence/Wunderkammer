@@ -69,6 +69,15 @@ enum ItemActions {
             let urls = ids.compactMap(library.item).compactMap(library.originalURL)
             NSWorkspace.shared.activateFileViewerSelecting(urls)
         })
+        let items = ids.compactMap(library.item)
+        if let page = items.first.flatMap(library.archiveURL), ids.count == 1 {
+            menu.addItem(ClosureMenuItem("打開頁面快照") { NSWorkspace.shared.open(page) })
+        }
+        // Only referenced files whose original is still there can be copied.
+        let copyable = items.filter { $0.storedFilename == nil && $0.filePath != nil && library.originalURL($0) != nil }.map(\.id)
+        if !copyable.isEmpty {
+            menu.addItem(ClosureMenuItem("複製一份到圖庫") { Task { await library.copyIntoLibrary(copyable) } })
+        }
         menu.addItem(.separator())
         let title = board == nil ? "移除" : "從 board 移除"
         menu.addItem(ClosureMenuItem(title) { delete(ids, board: board, library: library, window: window) })

@@ -39,6 +39,8 @@ final class Library {
     let root: URL
     let originalsDir: URL
     let thumbnailsDir: URL
+    /// Saved copies of web pages.
+    let archivesDir: URL
     private(set) var items: [Item] = []
     private(set) var collections: [Board] = []
     private var canvases: [String: [CanvasGroup]] = [:]
@@ -58,7 +60,8 @@ final class Library {
         self.root = root
         originalsDir = root.appendingPathComponent("originals")
         thumbnailsDir = root.appendingPathComponent("thumbnails")
-        for dir in [originalsDir, thumbnailsDir] {
+        archivesDir = root.appendingPathComponent("archives")
+        for dir in [originalsDir, thumbnailsDir, archivesDir] {
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         }
         load()
@@ -298,6 +301,10 @@ final class Library {
         for file in (try? fm.contentsOfDirectory(atPath: originalsDir.path)) ?? [] where !keep.contains(file) {
             try? fm.removeItem(at: originalsDir.appendingPathComponent(file))
         }
+        let archives = Set(items.compactMap(\.archiveFilename))
+        for file in (try? fm.contentsOfDirectory(atPath: archivesDir.path)) ?? [] where !archives.contains(file) {
+            try? fm.removeItem(at: archivesDir.appendingPathComponent(file))
+        }
         let current = Set(items.map { thumbnailURL($0).lastPathComponent })
         for file in (try? fm.contentsOfDirectory(atPath: thumbnailsDir.path)) ?? [] where !current.contains(file) {
             // Old versions of a current item's representation, or removed items.
@@ -492,6 +499,54 @@ final class Library {
                     $0.analysisVersion = 0 // look again at the real picture
                 }
             }
+            await self.archive(id)
+        }
+    }
+
+    func archiveURL(_ item: Item) -> URL? {
+        item.archiveFilename.map { archivesDir.appendingPathComponent($0) }
+    }
+
+    /// Keeps the page as it is now (a PDF of all of it, and its words), so the
+    /// curiosity outlives the link.
+    func archive(_ id: UUID) async {
+        guard let item = item(id), item.kind == .web, item.archiveFilename == nil,
+              let url = item.url.flatMap(URL.init(string:)) else { return }
+        let saved = await WebSnapshot.archive(url)
+        let name = id.uuidString + ".pdf"
+        let dir = archivesDir
+        let written = await Task.detached { () -> Bool in
+            guard let saved else { return false }
+            return (try? saved.pdf.write(to: dir.appendingPathComponent(name), options: .atomic)) != nil
+        }.value
+        update(id, notify: false) {
+            $0.archivedAt = Date()
+            guard written else { return }
+            $0.archiveFilename = name
+            $0.pageText = saved?.text.map { String($0.prefix(4000)) }
+        }
+    }
+
+    /// Pages not kept yet, one at a time in the background: collected before
+    /// pages were kept, or a site that said no (tried again a day later).
+    func archiveMissing(now: Date = Date()) {
+        let ids = items.filter {
+            $0.kind == .web && $0.archiveFilename == nil && ($0.archivedAt.map { now.timeIntervalSince($0) > 86_400 } ?? true)
+        }.map(\.id)
+        guard !ids.isEmpty else { return }
+        Task { for id in ids { await archive(id) } }
+    }
+
+    /// Referenced files copied into the library, so they stay even if the
+    /// original is moved or deleted. The original's path is kept.
+    func copyIntoLibrary(_ ids: [UUID]) async {
+        for id in ids {
+            guard let item = item(id), item.storedFilename == nil, let source = originalURL(item) else { continue }
+            let ext = source.pathExtension
+            let name = ext.isEmpty ? id.uuidString : "\(id.uuidString).\(ext)"
+            let target = originalsDir.appendingPathComponent(name)
+            let copied = await Task.detached { (try? FileManager.default.copyItem(at: source, to: target)) != nil }.value
+            if copied { update(id) { $0.storedFilename = name } }
         }
     }
 

@@ -142,6 +142,18 @@ final class InspectorViewController: NSViewController {
                 NSWorkspace.shared.activateFileViewerSelecting([file])
             })
         }
+        if let page = library.archiveURL(item) {
+            actions.addArrangedSubview(button("看快照", icon: .fileText) { NSWorkspace.shared.open(page) })
+        }
+        if item.storedFilename == nil, item.filePath != nil, library.originalURL(item) != nil {
+            actions.addArrangedSubview(button("複製到圖庫", icon: .copy) { [weak self] in
+                guard let self else { return }
+                Task {
+                    await self.library.copyIntoLibrary([item.id])
+                    self.show(item.id)
+                }
+            })
+        }
         if let url = item.url {
             actions.addArrangedSubview(button("拷貝連結", icon: .link) {
                 NSPasteboard.general.clearContents()
@@ -196,7 +208,16 @@ final class InspectorViewController: NSViewController {
         if let size = item.fileSize, size > 0 { f.append(("大小", ByteCountFormatter.string(fromByteCount: size, countStyle: .file))) }
         if !item.originalFilename.isEmpty, item.kind != .web { f.append(("檔名", item.originalFilename)) }
         if let path = item.filePath {
-            f.append(("位置", library.originalURL(item) == nil ? "找不到原始檔" : (path as NSString).abbreviatingWithTildeInPath))
+            if item.storedFilename != nil {
+                f.append(("位置", "圖庫裡有一份複本"))
+                f.append(("原始位置", (path as NSString).abbreviatingWithTildeInPath))
+            } else {
+                f.append(("位置", library.originalURL(item) == nil ? "找不到原始檔" : (path as NSString).abbreviatingWithTildeInPath))
+            }
+        }
+        if item.kind == .web {
+            let saved = item.archivedAt.map { Self.date.string(from: $0) }
+            f.append(("頁面快照", item.archiveFilename != nil ? "\(saved ?? "") 保存" : item.archivedAt == nil ? "保存中…" : "這個網站不讓保存"))
         }
         f.append(("收藏於", Self.dateTime.string(from: item.dateAdded)))
         if let created = item.createdDate { f.append(("建立於", Self.date.string(from: created))) }
