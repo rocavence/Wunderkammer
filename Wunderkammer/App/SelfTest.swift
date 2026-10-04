@@ -769,6 +769,15 @@ final class SelfTest {
         ui.setMode(.masonry)
         await wait(0.5)
         shot("space-cabinet")
+        // A 格式 view says so, with its icon.
+        ui.sidebar.select(.kind(.images))
+        await wait(0.5)
+        check(ui.grid.heading.icon != nil && ui.grid.heading.detail.hasPrefix("格式"), "圖片 is headed as a 格式, with its icon (\(ui.grid.heading.detail))")
+        if let clip = ui.grid.superview as? NSClipView { clip.scroll(to: NSPoint(x: 0, y: -clip.contentInsets.top)) }
+        await wait(0.3)
+        shot("heading-kind")
+        ui.sidebar.select(.all)
+        await wait(0.3)
         check(ui.viewBarTipsForTest.starts(with: ["格狀", "瀑布", "時間軸"]), "收藏's layouts are in the bar below (\(ui.viewBarTipsForTest))")
         ui.setSpace(.wander)
         await wait(0.8)

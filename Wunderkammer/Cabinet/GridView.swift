@@ -151,11 +151,19 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
     // MARK: Title
 
     /// The view's name, large, at the top of the cabinet; scrolls away with it.
-    var heading: (title: String, detail: String) = ("", "") {
+    struct Heading: Equatable {
+        var title = ""
+        var detail = ""
+        /// The view's own icon, before the title (none for the whole cabinet).
+        var icon: Reicon?
+    }
+
+    var heading = Heading() {
         didSet { if heading != oldValue { renderHeading() } }
     }
     static let headingHeight: CGFloat = 78
     private let titleLayer = CATextLayer()
+    private let iconLayer = CALayer()
     private let detailLayer = CATextLayer()
     private let tipLayer = CATextLayer()
 
@@ -179,6 +187,10 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
                 t.truncationMode = .end
                 root.addSublayer(t)
             }
+            if iconLayer.superlayer == nil {
+                iconLayer.contentsGravity = .resizeAspect
+                root.addSublayer(iconLayer)
+            }
             let size: CGFloat = 30
             let serif = Typography.display(size) ?? .systemFont(ofSize: size)
             titleLayer.string = NSAttributedString(string: heading.title, attributes: [
@@ -188,7 +200,16 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
                 .font: NSFont.systemFont(ofSize: 12.5), .foregroundColor: NSColor(cgColor: resolved(.secondaryLabelColor)) ?? .secondaryLabelColor,
             ])
             let inset = CabinetLayout(style: style, width: 0, size: 0).inset
-            titleLayer.frame = CGRect(x: inset + 2, y: 10, width: max(bounds.width - inset * 2, 0), height: 40)
+            // The icon sits on the title's line, as tall as its capitals.
+            let iconSide: CGFloat = 26
+            let iconRoom: CGFloat = heading.icon == nil ? 0 : iconSide + 12
+            iconLayer.isHidden = heading.icon == nil
+            if let icon = heading.icon {
+                iconLayer.contents = Self.tinted(Icon.optical(icon, size: iconSide, fill: 0.92), color: resolved(.labelColor),
+                                                 scale: window?.backingScaleFactor ?? 2)
+                iconLayer.frame = CGRect(x: inset + 2, y: 10 + (40 - iconSide) / 2 + 1, width: iconSide, height: iconSide)
+            }
+            titleLayer.frame = CGRect(x: inset + 2 + iconRoom, y: 10, width: max(bounds.width - inset * 2 - iconRoom, 0), height: 40)
             detailLayer.frame = CGRect(x: inset + 3, y: 50, width: max(bounds.width - inset * 2, 0), height: 18)
             let tipStyle = NSMutableParagraphStyle()
             tipStyle.alignment = .right
@@ -199,6 +220,20 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
             tipLayer.alignmentMode = .right
             tipLayer.frame = CGRect(x: bounds.width / 2, y: 50, width: max(bounds.width / 2 - inset - 2, 0), height: 18)
         }
+    }
+
+    /// A template icon drawn in one colour, for a layer.
+    private static func tinted(_ image: NSImage, color: CGColor, scale: CGFloat) -> CGImage? {
+        let px = Int(image.size.width * scale)
+        guard let ctx = CGContext(data: nil, width: px, height: px, bitsPerComponent: 8, bytesPerRow: 0,
+                                  space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue),
+              let mask = image.cgImage(forProposedRect: nil, context: nil, hints: [.ctm: AffineTransform(scale: scale)]) else { return nil }
+        let r = CGRect(x: 0, y: 0, width: px, height: px)
+        ctx.draw(mask, in: r)
+        ctx.setBlendMode(.sourceIn)
+        ctx.setFillColor(color)
+        ctx.fill(r)
+        return ctx.makeImage()
     }
 
     private func relayout(animated: Bool, anchor: NSPoint?) {

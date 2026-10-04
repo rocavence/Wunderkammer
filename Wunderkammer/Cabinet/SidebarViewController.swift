@@ -126,6 +126,24 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         return families.first { $0.1.contains(label) }?.0 ?? .sparkles
     }
 
+    /// Which group a view belongs to and its icon, for the heading above it:
+    /// 格式 (what it is as a file), 分類 (what it's about), 主題…
+    static func kicker(for base: Scope.Base) -> (label: String, icon: Reicon)? {
+        switch base {
+        case .all: nil
+        case .kind(let k): (fileKinds.contains(k) ? "格式" : "分類", kindIcons[k] ?? .file)
+        case .subject(let label): ("主題", themeIcon(label))
+        case .board: ("Board", .layers)
+        case .onThisDay: ("漫遊", .calendarDay)
+        case .forgotten: ("漫遊", .history)
+        case .trail: ("漫遊", .routing)
+        case .site: ("網站", .globe)
+        case .mentions: ("名字", .people)
+        case .similar: ("相似", .image)
+        case .answer: ("回答", .sparkles)
+        }
+    }
+
     /// Kinds of file first; what a page is about (書, 電影…) sits under 網頁.
     private static let fileKinds: [Scope.KindView] = [.images, .web, .text, .media, .documents]
     private static let pageKinds: [Scope.KindView] = [.books, .films, .music, .products, .places]
@@ -171,8 +189,8 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
                 return n > 0 ? .view(.kind(k), title: k.title, icon: Self.kindIcons[k]!, count: n) : nil
             }
             // Only worth a section when the cabinet holds more than one kind of thing.
-            if kinds.count > 1 { r += [.header("類型")] + kinds }
-            if !works.isEmpty { r += [.header("作品")] + works }
+            if kinds.count > 1 { r += [.header("格式")] + kinds }
+            if !works.isEmpty { r += [.header("分類")] + works }
             r += themeRows
             if !library.collections.isEmpty {
                 r += [.header("Boards")] + library.collections.map { .board($0) }

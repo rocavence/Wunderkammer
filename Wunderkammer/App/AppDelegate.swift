@@ -492,7 +492,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         var detail = [scope.isSearching ? "找到 \(count) 件" : "\(count) 件"]
         if !scope.isSearching, today > 0, today < count { detail.append("今天新增 \(today) 件") }
         if learning > 0 { detail.append("正在理解 \(learning) 件") }
-        grid?.heading = (scope.isSearching ? "「\(scope.search)」" : window.title, detail.joined(separator: " · "))
+        // Where this view sits (格式, 分類, 主題…) leads the line under the title, its icon beside it.
+        let kicker = scope.isSearching ? ("搜尋", Reicon.search) : SidebarViewController.kicker(for: scope.base)
+        grid?.heading = GridView.Heading(title: scope.isSearching ? "「\(scope.search)」" : window.title,
+                                         detail: ([kicker?.0].compactMap { $0 } + detail).joined(separator: " · "),
+                                         icon: kicker?.1)
         grid?.tip = scope.isSearching ? "" : GridView.tips[tipIndex]
         infinity?.heading = window.title
         // A cabinet with nothing in it yet gets its welcome instead of empty views.
