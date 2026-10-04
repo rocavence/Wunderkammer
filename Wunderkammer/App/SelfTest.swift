@@ -213,6 +213,11 @@ final class SelfTest {
                 await wait(0.5)
                 check(grid.pinnedHeading == grid.headers[1].title, "current day's heading stays at the top (\(grid.pinnedHeading ?? "none"))")
                 shot("timeline-pinned")
+                if let close = window.standardWindowButton(.closeButton) {
+                    let lightY = close.convert(close.bounds, to: nil).midY
+                    let toggleY = ui.sidebarToggleForTest.convert(ui.sidebarToggleForTest.bounds, to: nil).midY
+                    check(abs(lightY - toggleY) < 2, "the lights stay level with the bar after scrolling (\(Int(lightY)) vs \(Int(toggleY)))")
+                }
             }
             return finish()
         case "toast":
@@ -774,6 +779,19 @@ final class SelfTest {
         await wait(0.5)
         check(ui.mode.space == .wander, "clicking 漫遊 in the top bar goes there (\(ui.mode))")
         shot("topbar")
+        let sideWidth = ui.sidebar.view.frame.width
+        check((220...320).contains(sideWidth), "the sidebar starts at a fifth or so of the window (\(Int(sideWidth)) of \(Int(window.frame.width)))")
+        // The sidebar's switch beside the lights, on the bar's line.
+        let toggle = ui.sidebarToggleForTest
+        let toggleY = toggle.convert(toggle.bounds, to: nil).midY, barY = spaces.convert(spaces.bounds, to: nil).midY
+        check(abs(toggleY - barY) < 2, "the sidebar switch sits on the bar's line (\(Int(toggleY)) vs \(Int(barY)))")
+        click(toggle, NSPoint(x: toggle.bounds.midX, y: toggle.bounds.midY))
+        await wait(0.6)
+        check(ui.isSidebarCollapsed, "it hides the sidebar")
+        shot("sidebar-hidden")
+        click(toggle, NSPoint(x: toggle.bounds.midX, y: toggle.bounds.midY))
+        await wait(0.6)
+        check(!ui.isSidebarCollapsed, "and brings it back")
         let buttons = [NSWindow.ButtonType.closeButton, .zoomButton].compactMap(window.standardWindowButton)
         if let close = buttons.first, let barRect = Optional(spaces.convert(spaces.bounds, to: nil)) {
             let lightY = close.convert(close.bounds, to: nil).midY
@@ -1476,6 +1494,8 @@ protocol SelfTestUI: AnyObject {
     var isSearchExpanded: Bool { get }
     func openSearchForTest()
     var spacesControlForTest: NSView { get }
+    var sidebarToggleForTest: NSView { get }
+    var isSidebarCollapsed: Bool { get }
     func flipCabinetForTest()
     func setCoverForTest(_ picture: URL?) -> Bool
     func setVaultForTest(_ folder: URL?)

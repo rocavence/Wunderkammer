@@ -40,9 +40,10 @@ final class EdgeFade: NSView {
             gradient.colors = [bg.copy(alpha: 0)!, bg.copy(alpha: 0.95)!]
             gradient.locations = [0, 1]
         } else {
-            // Solid where the toolbar's controls sit, then gone.
-            gradient.colors = [bg.copy(alpha: 1)!, bg.copy(alpha: 0.94)!, bg.copy(alpha: 0)!]
-            gradient.locations = [0, 0.62, 1]
+            // The wall's own top shade, for every view: the content shows
+            // through behind the bar, darkening into it.
+            gradient.colors = [bg.copy(alpha: 0.9)!, bg.copy(alpha: 0)!]
+            gradient.locations = [0, 1]
         }
         CATransaction.commit()
     }

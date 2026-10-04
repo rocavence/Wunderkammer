@@ -8,6 +8,10 @@ final class TopBar: NSView {
     var onSpace: ((Int) -> Void)?
     var onSearchOpen: (() -> Void)?
     var onInfo: (() -> Void)?
+    var onSidebar: (() -> Void)?
+    /// The sidebar's switch, at the bar's left end.
+    let sidebarButton = TopBar.capsule()
+    private var sidebarLeading: NSLayoutConstraint!
 
     let spaces: SpaceSwitch
     let searchField = NSSearchField()
@@ -53,16 +57,30 @@ final class TopBar: NSView {
         }
         infoButton.translatesAutoresizingMaskIntoConstraints = false
         info.addSubview(infoButton)
-        for v in [spaces, searchCapsule, info] as [NSView] {
+        let side = NSButton(image: Icon.optical(.sidebar, size: 18), target: self, action: #selector(sidebarTapped))
+        side.isBordered = false
+        side.contentTintColor = .secondaryLabelColor
+        side.toolTip = "顯示或隱藏側欄（⌃⌘S）"
+        side.setAccessibilityLabel("側欄")
+        side.translatesAutoresizingMaskIntoConstraints = false
+        sidebarButton.addSubview(side)
+        for v in [spaces, searchCapsule, info, sidebarButton] as [NSView] {
             v.translatesAutoresizingMaskIntoConstraints = false
             addSubview(v)
         }
         fieldWidth = searchField.widthAnchor.constraint(equalToConstant: 0)
+        sidebarLeading = sidebarButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16)
         NSLayoutConstraint.activate([
             heightAnchor.constraint(equalToConstant: Self.height),
             spaces.centerXAnchor.constraint(equalTo: centerXAnchor),
             spaces.centerYAnchor.constraint(equalTo: centerYAnchor),
             spaces.heightAnchor.constraint(equalToConstant: Self.height),
+            sidebarLeading,
+            sidebarButton.centerYAnchor.constraint(equalTo: centerYAnchor),
+            sidebarButton.widthAnchor.constraint(equalToConstant: Self.height),
+            sidebarButton.heightAnchor.constraint(equalToConstant: Self.height),
+            side.centerXAnchor.constraint(equalTo: sidebarButton.centerXAnchor),
+            side.centerYAnchor.constraint(equalTo: sidebarButton.centerYAnchor),
             info.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             info.centerYAnchor.constraint(equalTo: centerYAnchor),
             info.widthAnchor.constraint(equalToConstant: Self.height),
@@ -108,6 +126,12 @@ final class TopBar: NSView {
     }
 
     @objc private func searchTapped() { onSearchOpen?() }
+    @objc private func sidebarTapped() { onSidebar?() }
+
+    /// Room at the left for the traffic lights when the bar runs to the window's edge.
+    func clearLights(_ width: CGFloat) {
+        sidebarLeading.constant = width > 0 ? width : 16
+    }
     @objc private func infoTapped() { onInfo?() }
 }
 
@@ -176,8 +200,8 @@ final class Glass: NSView {
         blur.material = .hudWindow
         blur.blendingMode = .withinWindow
         blur.state = .active
-        // Mostly clear: a veil, not a pane.
-        blur.alphaValue = 0.45
+        // Frosted enough to read on anything, still light.
+        blur.alphaValue = 0.85
         blur.frame = bounds
         blur.autoresizingMask = [.width, .height]
         addSubview(blur)
@@ -192,7 +216,7 @@ final class Glass: NSView {
     }
 
     private func updateColors() {
-        layer?.backgroundColor = resolved(NSColor.windowBackgroundColor.withAlphaComponent(0.18))
+        layer?.backgroundColor = resolved(NSColor.windowBackgroundColor.withAlphaComponent(0.42))
         layer?.borderColor = resolved(NSColor.labelColor.withAlphaComponent(0.14))
     }
 
