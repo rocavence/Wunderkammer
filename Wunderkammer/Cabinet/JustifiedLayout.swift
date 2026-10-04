@@ -1,7 +1,7 @@
 import CoreGraphics
 
 /// Justified rows: every row fills the full width, images keep their aspect
-/// ratio, row heights hover around `rowHeight`. The last row isn't stretched.
+/// ratio, rows are `rowHeight` or a little taller. The last row isn't stretched.
 struct JustifiedLayout {
     var width: CGFloat
     var rowHeight: CGFloat
@@ -30,14 +30,22 @@ struct JustifiedLayout {
             y += height + spacing
         }
 
+        // Height that makes rowStart..<end exactly fill the width.
+        func fitHeight(_ end: Int, _ sum: CGFloat) -> CGFloat {
+            (usable - spacing * CGFloat(end - rowStart - 1)) / sum
+        }
         for i in aspects.indices {
+            // Like Atlas, rows only stretch up from the target: when this image
+            // would squeeze the row below it, the row ends just before it.
+            if i > rowStart, fitHeight(i + 1, aspectSum + aspects[i]) < rowHeight {
+                place(rowStart..<i, height: fitHeight(i, aspectSum))
+                rowStart = i
+                aspectSum = 0
+            }
             aspectSum += aspects[i]
-            let count = i - rowStart + 1
-            let gaps = spacing * CGFloat(count - 1)
-            // Height that makes this row exactly fill the width.
-            let fitHeight = (usable - gaps) / aspectSum
-            if fitHeight <= rowHeight {
-                place(rowStart..<(i + 1), height: fitHeight)
+            // A lone image wider than the row fills it on its own.
+            if i == rowStart, fitHeight(i + 1, aspectSum) < rowHeight {
+                place(i..<(i + 1), height: fitHeight(i + 1, aspectSum))
                 rowStart = i + 1
                 aspectSum = 0
             }

@@ -10,7 +10,19 @@ struct JustifiedLayoutTests {
         let firstRow = result.frames.filter { $0.minY == result.frames[0].minY }
         #expect(firstRow.count > 1)
         #expect(abs(firstRow.last!.maxX - 980) < 0.001)
-        #expect(firstRow.allSatisfy { $0.height <= 200 })
+        #expect(firstRow.allSatisfy { $0.height >= 200 })
+    }
+
+    /// Like Atlas: rows only stretch up from the target, never shrink below it,
+    /// except a lone image wider than the row.
+    @Test func rowsAreNeverShorterThanTheTarget() {
+        let aspects = (0..<200).map { CGFloat(1 + ($0 % 7)) / 3 }
+        let result = layout.layout(aspects: aspects)
+        for (frame, aspect) in zip(result.frames, aspects) where aspect * 200 <= 960 {
+            #expect(frame.height >= 200 - 0.001)
+        }
+        let panorama = layout.layout(aspects: [1, 8, 1])
+        #expect(abs(panorama.frames[1].width - 960) < 0.001)
     }
 
     @Test func keepsAspectRatio() {

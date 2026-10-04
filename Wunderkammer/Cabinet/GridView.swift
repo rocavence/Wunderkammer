@@ -29,7 +29,8 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
     private var spatial = SpatialIndex()
     private(set) var items: [Item] = []
     private(set) var frames: [CGRect] = []
-    private(set) var rowHeight: CGFloat = 220
+    /// Atlas sizes its grid around a 156 pt row.
+    private(set) var rowHeight: CGFloat = 156
     private(set) var selection = Selection()
 
     private var layoutWidth: CGFloat = 0
