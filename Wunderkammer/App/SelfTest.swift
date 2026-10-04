@@ -391,8 +391,11 @@ final class SelfTest {
         let infinity: InfinityView = ui.infinity
         let before = infinity.debugOffset
         await wait(4)
+        // Unseen (another Space, a full-screen app, the display asleep), the wall
+        // rightly stops moving: nothing to check then.
+        let seen = window.occlusionState.contains(.visible)
         if infinity.debugOffset == before { log("infinity: \(infinity.debugState)") }
-        check(infinity.debugOffset != before, "infinity drifts when idle")
+        if seen { check(infinity.debugOffset != before, "infinity drifts when idle") } else { log("SKIP infinity drift: window not visible") }
         shot("12-infinity-drifted")
         // Click the middle of a tile near the center (the gaps between tiles do nothing).
         let clickTarget = infinity.shownItems.compactMap { item -> NSPoint? in
@@ -402,7 +405,7 @@ final class SelfTest {
         }.first ?? NSPoint(x: infinity.bounds.midX, y: infinity.bounds.midY)
         click(infinity, clickTarget)
         await wait(0.6)
-        check(ui.preview.isOpen, "click in infinity opens preview")
+        if seen { check(ui.preview.isOpen, "click in infinity opens preview") } else { log("SKIP infinity click: window not visible") }
         shot("13-infinity-preview")
         key(53)
         await wait(0.6)
