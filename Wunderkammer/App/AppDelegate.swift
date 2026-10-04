@@ -394,6 +394,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         if SelfTest.isEnabled { window.orderFrontRegardless() } else { window.makeKeyAndOrderFront(nil) }
 
         buildMenu()
+        AppAppearance.apply(AppAppearance.saved)
+        NotificationCenter.default.addObserver(forName: Accent.didChange, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.accentChanged() }
+        }
 
         let defaults = UserDefaults.standard
         let savedBoard = defaults.string(forKey: Self.boardKey).flatMap(UUID.init(uuidString:))
@@ -1015,6 +1019,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
 
     func toggleInspectorForTest() { toggleInspector() }
 
+    // MARK: Accent
+
+    /// A new accent: every view that resolves its colours does so again.
+    private func accentChanged() {
+        func refresh(_ view: NSView) {
+            view.viewDidChangeEffectiveAppearance()
+            view.needsDisplay = true
+            view.subviews.forEach(refresh)
+        }
+        for window in NSApp.windows {
+            // From the frame view down, so the title bar's strip (the top bar) is included.
+            if let frame = window.contentView?.superview { refresh(frame) } else if let content = window.contentView { refresh(content) }
+        }
+        grid.reload(animated: false)
+        updateViewBar()
+    }
+
     // MARK: Window chrome
 
     /// The middle of the window: what the bar spans.
@@ -1274,6 +1295,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     var topBarOverlapsForTest: Bool { topBar.layoutSubtreeIfNeeded(); return topBar.controlsOverlap }
     var sidebarToggleForTest: NSView { topBar.sidebarButton }
     var isSidebarCollapsed: Bool { sidebarItem.isCollapsed }
+    func showSettingsTabForTest(_ tab: SettingsWindowController.Tab) { settings.showForTest(tab) }
     func flipCabinetForTest() { cabinetsPanel?.flipForTest(cabinets.currentID) }
     func collectDropForTest(_ pasteboard: NSPasteboard) -> Bool { capture.collectDrop(pasteboard) }
     func setCoverForTest(_ picture: URL?) -> Bool {

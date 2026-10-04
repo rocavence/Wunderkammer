@@ -549,8 +549,8 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
         let rect = NSRect(x: min(a.x, b.x), y: min(a.y, b.y), width: abs(a.x - b.x), height: abs(a.y - b.y))
         if marquee == nil {
             let m = CAShapeLayer()
-            m.fillColor = resolved(NSColor.controlAccentColor.withAlphaComponent(0.15))
-            m.strokeColor = resolved(.controlAccentColor)
+            m.fillColor = resolved(NSColor.accent.withAlphaComponent(0.15))
+            m.strokeColor = resolved(.accent)
             m.lineWidth = 1
             m.zPosition = 100
             layer?.addSublayer(m)

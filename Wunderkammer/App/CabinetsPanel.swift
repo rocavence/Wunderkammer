@@ -429,7 +429,7 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
         layer?.cornerRadius = 16
         layer?.backgroundColor = NSColor.controlBackgroundColor.withAlphaComponent(0.6).cgColor
         layer?.borderWidth = isCurrent || isDraft ? 2 : 0.5
-        layer?.borderColor = (isCurrent || isDraft ? NSColor.controlAccentColor : NSColor.separatorColor).cgColor
+        layer?.borderColor = (isCurrent || isDraft ? NSColor.accent : NSColor.separatorColor).cgColor
         layer?.shadowColor = NSColor.black.cgColor
         layer?.shadowOpacity = 0.18
         layer?.shadowRadius = 10
@@ -459,7 +459,7 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
 
         var views: [NSView] = [coverView, nameField, detail]
         var badges: [NSView] = []
-        if isCurrent { badges.append(Self.pill("目前", fill: .controlAccentColor, text: .white)) }
+        if isCurrent { badges.append(Self.pill("目前", fill: .accent, text: .white)) }
         if isDefault { badges.append(Self.pill("預設", fill: NSColor.black.withAlphaComponent(0.5), text: .white)) }
         let badgeRow = NSStackView(views: badges)
         badgeRow.spacing = 6
@@ -843,8 +843,8 @@ private final class AddCabinetCard: NSView {
     }
 
     override func mouseEntered(with event: NSEvent) {
-        layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.08).cgColor
-        outline.strokeColor = resolved(.controlAccentColor)
+        layer?.backgroundColor = NSColor.accent.withAlphaComponent(0.08).cgColor
+        outline.strokeColor = resolved(.accent)
     }
 
     override func mouseExited(with event: NSEvent) {
@@ -1081,7 +1081,7 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
         let b = ClosureButton(title: title, action: action)
         b.isBordered = false
         b.font = .systemFont(ofSize: 12, weight: .medium)
-        b.contentTintColor = .controlAccentColor
+        b.contentTintColor = .accent
         return b
     }
 
@@ -1196,10 +1196,10 @@ private final class ChoiceTile: NSView {
 
     private func updateLook() {
         layer?.borderWidth = isChosen ? 2 : 1
-        layer?.borderColor = resolved(isChosen ? .controlAccentColor : .separatorColor)
-        layer?.backgroundColor = resolved(isChosen ? NSColor.controlAccentColor.withAlphaComponent(0.08) : .clear)
-        icon.contentTintColor = isChosen ? .controlAccentColor : .secondaryLabelColor
-        tick.contentTintColor = .controlAccentColor
+        layer?.borderColor = resolved(isChosen ? .accent : .separatorColor)
+        layer?.backgroundColor = resolved(isChosen ? NSColor.accent.withAlphaComponent(0.08) : .clear)
+        icon.contentTintColor = isChosen ? .accent : .secondaryLabelColor
+        tick.contentTintColor = .accent
         tick.isHidden = !isChosen
         setAccessibilityValue(isChosen)
     }

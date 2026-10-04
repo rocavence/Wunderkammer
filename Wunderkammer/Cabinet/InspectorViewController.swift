@@ -287,7 +287,7 @@ final class InspectorViewController: NSViewController {
         let b = ClosureButton(title: title, action: action)
         b.isBordered = false
         // One accent for the whole app: what's selected, and where you can go.
-        b.contentTintColor = .controlAccentColor
+        b.contentTintColor = .accent
         b.font = .systemFont(ofSize: 12.5)
         b.lineBreakMode = .byTruncatingTail
         b.alignment = .left

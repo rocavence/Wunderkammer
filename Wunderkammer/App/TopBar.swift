@@ -297,13 +297,14 @@ final class SpaceSwitch: NSView {
         updateColors()
     }
 
+    /// The space you're in sits on the accent, its name in white.
     private func updateColors() {
-        pill.backgroundColor = resolved(NSColor.labelColor.withAlphaComponent(0.16))
+        pill.backgroundColor = resolved(.accent)
         for (i, b) in labels.enumerated() {
             let on = i == selectedSegment
             b.attributedTitle = NSAttributedString(string: b.title, attributes: [
                 .font: NSFont.systemFont(ofSize: 13.5, weight: on ? .semibold : .medium),
-                .foregroundColor: on ? NSColor.labelColor : NSColor.secondaryLabelColor,
+                .foregroundColor: on ? NSColor.white : NSColor.secondaryLabelColor,
             ])
         }
     }
@@ -391,10 +392,10 @@ final class DropOverlay: NSView {
     }
 
     private func updateColors() {
-        frameLayer.strokeColor = resolved(.controlAccentColor)
+        frameLayer.strokeColor = resolved(.accent)
         // A veil over the pictures so the words read, tinted with the accent.
         frameLayer.fillColor = resolved(NSColor.windowBackgroundColor.withAlphaComponent(0.86))
-        icon.contentTintColor = .controlAccentColor
+        icon.contentTintColor = .accent
         label.textColor = .labelColor
     }
 

@@ -194,6 +194,22 @@ final class SelfTest {
                 try? p.run()
                 p.waitUntilExit()
                 check(w.isVisible, "settings window shows")
+                // Each section, and an accent other than orange reaching the main window.
+                for (tab, name) in [(SettingsWindowController.Tab.collecting, "settings-collecting"), (.understanding, "settings-understanding"),
+                                    (.privacy, "settings-privacy"), (.about, "settings-about")] {
+                    ui.showSettingsTabForTest(tab)
+                    await wait(0.3)
+                    shot(name, windowNumber: w.windowNumber)
+                }
+                ui.showSettingsTabForTest(.general)
+                let was = Accent.current
+                Accent.apply(.ultramarine)
+                await wait(0.5)
+                shot("settings-accent", windowNumber: w.windowNumber)
+                check(NSColor.accent.usingColorSpace(.sRGB)?.blueComponent ?? 0 > 0.8, "the accent changes the app's accent colour")
+                w.orderOut(nil)
+                shot("accent-main")
+                Accent.apply(was)
             }
             return finish()
         case "timeline":
@@ -1540,6 +1556,7 @@ protocol SelfTestUI: AnyObject {
     var sidebarToggleForTest: NSView { get }
     var isSidebarCollapsed: Bool { get }
     func flipCabinetForTest()
+    func showSettingsTabForTest(_ tab: SettingsWindowController.Tab)
     func collectDropForTest(_ pasteboard: NSPasteboard) -> Bool
     func setCoverForTest(_ picture: URL?) -> Bool
     func setVaultForTest(_ folder: URL?)

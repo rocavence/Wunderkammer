@@ -440,8 +440,8 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         CATransaction.begin()
         CATransaction.setDisableActions(!animated)
         CATransaction.setAnimationDuration(TilePool.animation)
-        linesLayer.strokeColor = resolved(.controlAccentColor)
-        linesLayer.fillColor = resolved(.controlAccentColor)
+        linesLayer.strokeColor = resolved(.accent)
+        linesLayer.fillColor = resolved(.accent)
         linesLayer.frame = bounds
         linesLayer.path = path
         renderRelations()
@@ -463,7 +463,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
             path.addLine(to: b)
         }
         relationsLayer.frame = bounds
-        relationsLayer.strokeColor = resolved(.controlAccentColor).copy(alpha: 0.75)
+        relationsLayer.strokeColor = resolved(.accent).copy(alpha: 0.75)
         relationsLayer.path = path
         let labelled = zoom >= 0.45 && shown.count <= 60 ? shown : []
         while relationLabels.count < labelled.count {
@@ -707,8 +707,8 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         let rect = NSRect(x: min(a.x, b.x), y: min(a.y, b.y), width: abs(a.x - b.x), height: abs(a.y - b.y))
         if marqueeLayer == nil {
             let m = CAShapeLayer()
-            m.fillColor = resolved(NSColor.controlAccentColor.withAlphaComponent(0.15))
-            m.strokeColor = resolved(.controlAccentColor)
+            m.fillColor = resolved(NSColor.accent.withAlphaComponent(0.15))
+            m.strokeColor = resolved(.accent)
             m.lineWidth = 1
             m.zPosition = 100
             layer?.addSublayer(m)

@@ -221,7 +221,7 @@ final class TilePool {
         withoutAnimation {
             for (key, tile) in tiles {
                 tile.backgroundColor = colors(.quaternaryLabelColor)
-                tile.borderColor = colors(.controlAccentColor)
+                tile.borderColor = colors(.accent)
                 tile.sublayers?.first { $0.name == "edge" }?.borderColor = colors(NSColor.labelColor.withAlphaComponent(0.12))
                 if let item = tileItem[key] { updateSurface(tile, item: item) }
             }
@@ -356,7 +356,7 @@ final class TilePool {
         tile.cornerRadius = cornerRadius
         tile.cornerCurve = .continuous
         tile.backgroundColor = colors(.quaternaryLabelColor)
-        tile.borderColor = colors(.controlAccentColor)
+        tile.borderColor = colors(.accent)
         tile.minificationFilter = .trilinear
         // A hairline round every tile: white pages don't melt into a light window.
         let edge = CALayer()

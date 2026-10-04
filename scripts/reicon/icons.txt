@@ -60,6 +60,10 @@ share
 link
 box
 check
+setting
+shield
+language
+keyboard
 eye
 sidebar
 info-circle
