@@ -45,6 +45,7 @@ enum Reicon: String, CaseIterable, Sendable {
     case folder = "folder"
     case folderAdd = "folder-add"
     case chevronDown = "chevron-down"
+    case chevronRight = "chevron-right"
     case searchZoomIn = "search-zoom-in"
     case searchZoomOut = "search-zoom-out"
     case maximize = "maximize"

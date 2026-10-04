@@ -49,6 +49,7 @@ edit
 folder
 folder-add
 chevron-down
+chevron-right
 search-zoom-in
 search-zoom-out
 maximize

@@ -277,10 +277,9 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
 
     func numberOfRows(in tableView: NSTableView) -> Int { rows.count }
 
-    func tableView(_ tableView: NSTableView, isGroupRow row: Int) -> Bool {
-        if case .header = rows[row] { return true }
-        return false
-    }
+    /// Headers are ordinary rows (not group rows): laid out in the same frame
+    /// as the rows under them, so a header's arrow and the counts share one edge.
+    func tableView(_ tableView: NSTableView, isGroupRow row: Int) -> Bool { false }
 
     func tableView(_ tableView: NSTableView, shouldSelectRow row: Int) -> Bool {
         switch rows[row] {
@@ -298,22 +297,24 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             let label = NSTextField(labelWithString: title)
             label.font = .systemFont(ofSize: 11, weight: .semibold)
             label.textColor = .secondaryLabelColor
-            guard Self.foldable.contains(title) else { return label }
-            // Long sections fold: a chevron that turns, the header itself the switch.
-            let chevron = NSImageView(image: Icon.image(.chevronDown, size: 11))
-            chevron.contentTintColor = .tertiaryLabelColor
-            chevron.frameCenterRotation = isFolded(title) ? 90 : 0
             let row = NSView()
-            for v in [label, chevron] as [NSView] {
-                v.translatesAutoresizingMaskIntoConstraints = false
-                row.addSubview(v)
-            }
+            label.translatesAutoresizingMaskIntoConstraints = false
+            row.addSubview(label)
             NSLayoutConstraint.activate([
-                // In line with the plain headers (格式, 分類), which the cell insets a little.
-                label.leadingAnchor.constraint(equalTo: row.leadingAnchor, constant: 2),
-                label.centerYAnchor.constraint(equalTo: row.centerYAnchor),
-                chevron.trailingAnchor.constraint(equalTo: row.trailingAnchor, constant: -6),
-                chevron.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+                // A little left of the icons below, as sidebar headers sit.
+                label.leadingAnchor.constraint(equalTo: row.leadingAnchor, constant: Self.headerInset),
+                label.bottomAnchor.constraint(equalTo: row.bottomAnchor, constant: -4),
+            ])
+            guard Self.foldable.contains(title) else { return row }
+            // Long sections fold. The arrow, cropped to its strokes, ends where
+            // the counts end, pointing down open and right folded.
+            let chevron = NSImageView(image: Self.chevron(folded: isFolded(title)))
+            chevron.contentTintColor = .tertiaryLabelColor
+            chevron.translatesAutoresizingMaskIntoConstraints = false
+            row.addSubview(chevron)
+            NSLayoutConstraint.activate([
+                chevron.trailingAnchor.constraint(equalTo: row.trailingAnchor, constant: -Self.countInset),
+                chevron.centerYAnchor.constraint(equalTo: label.centerYAnchor),
             ])
             row.toolTip = isFolded(title) ? "展開\(title)" : "收起\(title)"
             return row
@@ -358,7 +359,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             text.leadingAnchor.constraint(equalTo: image.trailingAnchor, constant: 8),
             text.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
             badge.leadingAnchor.constraint(greaterThanOrEqualTo: text.trailingAnchor, constant: 6),
-            badge.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -6),
+            badge.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -Self.countInset),
             badge.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
         ])
         cell.imageView = image
@@ -380,12 +381,45 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
 
     // MARK: Folding
 
+    /// Headers start this far left of the rows' icons.
+    static let headerInset: CGFloat = -7
+    /// Counts (and fold arrows) end this far in from the row's right edge.
+    static let countInset: CGFloat = 6
+
+    static func chevron(folded: Bool) -> NSImage {
+        Icon.optical(folded ? .chevronRight : .chevronDown, size: 11, fill: 0.95)
+    }
+
     /// Sections that can grow long fold away; the rest are short enough to stay open.
     static let foldable: Set<String> = ["顏色", "主題"]
 
     /// Folded until opened: they're long.
     func isFolded(_ section: String) -> Bool {
         UserDefaults.standard.object(forKey: "sidebar.folded.v2.\(section)") as? Bool ?? true
+    }
+
+    /// Right edges, in the window, of a fold chevron and of a count (tests).
+    var chevronAndCountEdges: (chevron: CGFloat, count: CGFloat)? {
+        var chevron: CGFloat?, count: CGFloat?
+        for row in 0..<rows.count {
+            guard let cell = table.view(atColumn: 0, row: row, makeIfNecessary: false) else { continue }
+            switch rows[row] {
+            case .header(let t) where Self.foldable.contains(t):
+                if let c = cell.subviews.compactMap({ $0 as? NSImageView }).first, let img = c.image {
+                    // The drawn arrow, not the image view's box.
+                    let f = c.convert(c.bounds, to: nil)
+                    chevron = f.midX + img.size.width / 2
+                }
+            case .view(_, _, _, let n) where n != nil:
+                if let badge = (cell as? NSTableCellView)?.subviews.compactMap({ $0 as? NSTextField }).last {
+                    // Where the digits end: a label keeps 2 points of padding at its edge.
+                    count = badge.convert(badge.bounds, to: nil).maxX - 2
+                }
+            default: break
+            }
+        }
+        guard let chevron, let count else { return nil }
+        return (chevron, count)
     }
 
     /// How many rows the sidebar shows (tests).
@@ -411,10 +445,8 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         guard new.count - after == old.count - before else { return reload() }
         if let cell = table.view(atColumn: 0, row: h, makeIfNecessary: false),
            let chevron = cell.subviews.compactMap({ $0 as? NSImageView }).first {
-            NSAnimationContext.runAnimationGroup { ctx in
-                ctx.duration = 0.2
-                chevron.animator().frameCenterRotation = after == 0 ? 90 : 0
-            }
+            chevron.image = Self.chevron(folded: after == 0)
+            cell.toolTip = after == 0 ? "展開\(section)" : "收起\(section)"
         }
         rows = new
         NSAnimationContext.runAnimationGroup { ctx in
