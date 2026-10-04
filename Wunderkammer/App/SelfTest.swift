@@ -384,6 +384,7 @@ final class SelfTest {
         let infinity: InfinityView = ui.infinity
         let before = infinity.debugOffset
         await wait(4)
+        if infinity.debugOffset == before { log("infinity: \(infinity.debugState)") }
         check(infinity.debugOffset != before, "infinity drifts when idle")
         shot("12-infinity-drifted")
         // Click the middle of a tile near the center (the gaps between tiles do nothing).

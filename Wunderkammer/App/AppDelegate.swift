@@ -268,6 +268,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             if ProcessInfo.processInfo.environment["WK_APPEARANCE"] == "light" { NSApp.appearance = NSAppearance(named: .aqua) }
             window.setFrameAutosaveName("")
             window.setFrame(NSRect(x: 80, y: 80, width: 1280, height: 820), display: true)
+            // Covered by other windows, the cabinet rightly stops animating and
+            // clicks land elsewhere: keep the test window on top while it runs.
+            window.level = .floating
+            window.orderFrontRegardless()
             setMode(.grid)
             sidebar.select(board: nil)
             let test = SelfTest(window: window, library: library, ui: self)

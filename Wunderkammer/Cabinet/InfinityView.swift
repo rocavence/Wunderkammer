@@ -78,6 +78,9 @@ final class InfinityView: NSView, ItemSurface {
     }
 
     var debugOffset: CGPoint { offset }
+    var debugState: String {
+        "ticking \(timer != nil), visible \(window?.occlusionState.contains(.visible) ?? false), idle \(String(format: "%.1f", Date().timeIntervalSince(lastInteraction)))s, velocity \(velocity), scattered \(pool.isScattered)"
+    }
 
     // MARK: Model
 
