@@ -52,7 +52,7 @@ chevron-down
 search-zoom-in
 search-zoom-out
 maximize
-broom
+align-top
 restart
 trash
 share
