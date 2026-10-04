@@ -1231,7 +1231,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     }
     func hoverViewBarForTest() -> String? { viewBar.hoverFirstForTest() }
     func openSearchForTest() { focusSearch() }
-    var spacesControlForTest: NSSegmentedControl { topBar.spaces }
+    var spacesControlForTest: NSView { topBar.spaces }
     func flipCabinetForTest() { cabinetsPanel?.flipForTest(cabinets.currentID) }
     func setCoverForTest(_ picture: URL?) -> Bool {
         defer { cabinetsChanged() }

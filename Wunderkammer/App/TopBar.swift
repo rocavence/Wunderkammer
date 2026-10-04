@@ -9,7 +9,7 @@ final class TopBar: NSView {
     var onSearchOpen: (() -> Void)?
     var onInfo: (() -> Void)?
 
-    let spaces: NSSegmentedControl
+    let spaces: SpaceSwitch
     let searchField = NSSearchField()
     private let searchCapsule = TopBar.capsule()
     private let searchButton = NSButton()
@@ -21,17 +21,9 @@ final class TopBar: NSView {
     static let top: CGFloat = 16
 
     init(titles: [String], tips: [String]) {
-        spaces = NSSegmentedControl(labels: titles, trackingMode: .selectOne, target: nil, action: nil)
+        spaces = SpaceSwitch(titles: titles, tips: tips)
         super.init(frame: .zero)
-        spaces.target = self
-        spaces.action = #selector(spacePicked)
-        spaces.controlSize = .large
-        spaces.segmentStyle = .automatic
-        spaces.selectedSegmentBezelColor = .controlAccentColor
-        for (i, tip) in tips.enumerated() {
-            spaces.setToolTip(tip, forSegment: i)
-            spaces.setWidth(68, forSegment: i)
-        }
+        spaces.onPick = { [weak self] i in self?.onSpace?(i) }
 
         searchButton.image = Icon.optical(.search, size: 18)
         searchButton.isBordered = false
@@ -70,6 +62,7 @@ final class TopBar: NSView {
             heightAnchor.constraint(equalToConstant: Self.height),
             spaces.centerXAnchor.constraint(equalTo: centerXAnchor),
             spaces.centerYAnchor.constraint(equalTo: centerYAnchor),
+            spaces.heightAnchor.constraint(equalToConstant: Self.height),
             info.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             info.centerYAnchor.constraint(equalTo: centerYAnchor),
             info.widthAnchor.constraint(equalToConstant: Self.height),
@@ -114,7 +107,6 @@ final class TopBar: NSView {
         }
     }
 
-    @objc private func spacePicked() { onSpace?(spaces.selectedSegment) }
     @objc private func searchTapped() { onSearchOpen?() }
     @objc private func infoTapped() { onInfo?() }
 }
@@ -209,5 +201,93 @@ final class Glass: NSView {
     override func hitTest(_ point: NSPoint) -> NSView? {
         let hit = super.hitTest(point)
         return hit === blur ? self : hit
+    }
+}
+
+/// The three spaces on one piece of glass, as tall as the buttons beside it.
+/// The one you're in sits on a pill that slides across when you change.
+@MainActor
+final class SpaceSwitch: NSView {
+    var onPick: ((Int) -> Void)?
+    private let glass = Glass(cornerRadius: TopBar.height / 2)
+    private let pill = CALayer()
+    private var labels: [NSButton] = []
+    private static let segment: CGFloat = 72
+    private static let inset: CGFloat = 3
+
+    var selectedSegment = 0 {
+        didSet { if selectedSegment != oldValue { place(animated: window != nil) } }
+    }
+
+    init(titles: [String], tips: [String]) {
+        super.init(frame: .zero)
+        glass.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(glass)
+        glass.wantsLayer = true
+        glass.layer?.addSublayer(pill)
+        pill.cornerRadius = (TopBar.height - Self.inset * 2) / 2
+        var constraints = [
+            glass.topAnchor.constraint(equalTo: topAnchor), glass.bottomAnchor.constraint(equalTo: bottomAnchor),
+            glass.leadingAnchor.constraint(equalTo: leadingAnchor), glass.trailingAnchor.constraint(equalTo: trailingAnchor),
+            widthAnchor.constraint(equalToConstant: Self.segment * CGFloat(titles.count) + Self.inset * 2),
+        ]
+        for (i, title) in titles.enumerated() {
+            let b = NSButton(title: title, target: self, action: #selector(picked(_:)))
+            b.isBordered = false
+            b.tag = i
+            b.toolTip = tips[safe: i]
+            b.translatesAutoresizingMaskIntoConstraints = false
+            glass.addSubview(b)
+            labels.append(b)
+            constraints += [
+                b.leadingAnchor.constraint(equalTo: glass.leadingAnchor, constant: Self.inset + CGFloat(i) * Self.segment),
+                b.widthAnchor.constraint(equalToConstant: Self.segment),
+                b.topAnchor.constraint(equalTo: glass.topAnchor, constant: Self.inset),
+                b.bottomAnchor.constraint(equalTo: glass.bottomAnchor, constant: -Self.inset),
+            ]
+        }
+        NSLayoutConstraint.activate(constraints)
+        setAccessibilityRole(.radioGroup)
+        updateColors()
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func layout() {
+        super.layout()
+        place(animated: false)
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateColors()
+    }
+
+    private func updateColors() {
+        pill.backgroundColor = resolved(NSColor.labelColor.withAlphaComponent(0.16))
+        for (i, b) in labels.enumerated() {
+            let on = i == selectedSegment
+            b.attributedTitle = NSAttributedString(string: b.title, attributes: [
+                .font: NSFont.systemFont(ofSize: 13.5, weight: on ? .semibold : .medium),
+                .foregroundColor: on ? NSColor.labelColor : NSColor.secondaryLabelColor,
+            ])
+        }
+    }
+
+    private func place(animated: Bool) {
+        let h = TopBar.height - Self.inset * 2
+        let frame = CGRect(x: Self.inset + CGFloat(selectedSegment) * Self.segment, y: Self.inset, width: Self.segment, height: h)
+        CATransaction.begin()
+        CATransaction.setDisableActions(!animated)
+        CATransaction.setAnimationDuration(0.25)
+        CATransaction.setAnimationTimingFunction(CAMediaTimingFunction(name: .easeOut))
+        pill.frame = frame
+        CATransaction.commit()
+        updateColors()
+    }
+
+    @objc private func picked(_ sender: NSButton) {
+        selectedSegment = sender.tag
+        onPick?(sender.tag)
     }
 }

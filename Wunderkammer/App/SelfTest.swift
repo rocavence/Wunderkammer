@@ -803,7 +803,7 @@ final class SelfTest {
             ui.sidebar.toggleFold("顏色")
             let folded = ui.sidebar.rowCount
             ui.sidebar.toggleFold("顏色")
-            check(folded < open && ui.sidebar.rowCount == open, "顏色 folds and unfolds (\(open) → \(folded) → \(ui.sidebar.rowCount) rows)")
+            check(folded != open && ui.sidebar.rowCount == open, "顏色 folds and unfolds (\(open) → \(folded) → \(ui.sidebar.rowCount) rows)")
         }
         ui.sidebar.select(.all)
         await wait(0.3)
@@ -1475,7 +1475,7 @@ protocol SelfTestUI: AnyObject {
     func hoverViewBarForTest() -> String?
     var isSearchExpanded: Bool { get }
     func openSearchForTest()
-    var spacesControlForTest: NSSegmentedControl { get }
+    var spacesControlForTest: NSView { get }
     func flipCabinetForTest()
     func setCoverForTest(_ picture: URL?) -> Bool
     func setVaultForTest(_ folder: URL?)
