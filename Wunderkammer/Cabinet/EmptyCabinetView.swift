@@ -45,7 +45,7 @@ final class EmptyCabinetView: NSView {
         let title = titleField
         title.stringValue = name
         title.font = serif(34)
-        let tagline = NSTextField(labelWithString: "Collect without organizing.")
+        let tagline = NSTextField(labelWithString: "收進來就好，不必整理。")
         tagline.font = serif(16)
         tagline.textColor = .secondaryLabelColor
 

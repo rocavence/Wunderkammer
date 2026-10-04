@@ -548,7 +548,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         grid?.heading = GridView.Heading(title: scope.isSearching ? "「\(scope.search)」" : window.title,
                                          detail: ([kicker?.0].compactMap { $0 } + detail).joined(separator: " · "),
                                          icon: kicker?.1)
-        grid?.tip = scope.isSearching ? "" : GridView.tips[tipIndex]
+        // Tips need something to try them on: none for the first few pieces.
+        grid?.tip = scope.isSearching || library.items.count < 5 ? "" : GridView.tips[tipIndex]
         infinity?.heading = window.title
         // A cabinet with nothing in it yet gets its welcome instead of empty views.
         emptyCabinet?.isHidden = !library.items.isEmpty
@@ -1120,8 +1121,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         viewMenu.addItem(.separator())
         viewMenu.addItem(withTitle: "放大", action: #selector(zoomIn), keyEquivalent: "=").target = self
         viewMenu.addItem(withTitle: "縮小", action: #selector(zoomOut), keyEquivalent: "-").target = self
-        viewMenu.addItem(withTitle: "整理 Canvas", action: #selector(CanvasView.arrange(_:)), keyEquivalent: "")
-        viewMenu.addItem(withTitle: "Canvas 依主題分堆", action: #selector(CanvasView.clusterByTheme(_:)), keyEquivalent: "")
+        viewMenu.addItem(withTitle: "整理畫布", action: #selector(CanvasView.arrange(_:)), keyEquivalent: "")
+        viewMenu.addItem(withTitle: "畫布依主題分堆", action: #selector(CanvasView.clusterByTheme(_:)), keyEquivalent: "")
         viewMenu.addItem(withTitle: "重設地圖擺放…", action: #selector(CanvasView.resetArrangement(_:)), keyEquivalent: "")
         viewMenu.addItem(.separator())
         viewMenu.addItem(withTitle: "隨機一件", action: #selector(randomFromMenu), keyEquivalent: "r").keyEquivalentModifierMask = [.command, .option]

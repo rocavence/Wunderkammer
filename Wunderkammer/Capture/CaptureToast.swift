@@ -31,7 +31,12 @@ final class CaptureToast {
         let label = NSTextField(labelWithString: title)
         label.font = Typography.display(15) ?? .systemFont(ofSize: 15)
         label.textColor = .labelColor
-        let sub = NSTextField(labelWithString: detail ?? "")
+        // One line, whatever was collected: a note's line breaks run together.
+        let oneLine = (detail ?? "").split(whereSeparator: \.isNewline).map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }.joined(separator: " ")
+        let sub = NSTextField(labelWithString: oneLine)
+        sub.maximumNumberOfLines = 1
+        sub.cell?.usesSingleLineMode = true
         sub.font = .systemFont(ofSize: 11)
         sub.textColor = .secondaryLabelColor
         sub.lineBreakMode = .byTruncatingTail

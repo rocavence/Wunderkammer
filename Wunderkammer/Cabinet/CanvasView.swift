@@ -878,7 +878,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
 
     override func draw(_ dirtyRect: NSRect) {
         guard groups.isEmpty else { return }
-        let text = "Canvas 是空的\n先在 Grid 加入圖片，或直接拖檔案進來" as NSString
+        let text = "畫布是空的\n收進來的東西會出現在這裡，也可以直接把檔案拖進來" as NSString
         let style = NSMutableParagraphStyle()
         style.alignment = .center
         style.lineSpacing = 6
