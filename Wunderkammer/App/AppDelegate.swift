@@ -361,6 +361,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         // The cabinet carries its own large title (GridView.heading).
         window.titleVisibility = .hidden
         window.toolbarStyle = .unified
+        // No line where the title bar ends: the bar and the content share one ground.
+        window.titlebarSeparatorStyle = .none
         // The traffic lights keep a row of their own where AppKit puts them;
         // below it, a strip as tall as the bar of our own, which sits there.
         // The bar lives in that strip, part of the title bar, so its clicks
@@ -376,6 +378,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         room.view = strip
         room.layoutAttribute = .bottom
         room.fullScreenMinHeight = below
+        // Content scrolling up under the bar fades out softly: no hard line
+        // where the title bar ends and the cabinet begins.
+        if #available(macOS 26.1, *) { room.preferredScrollEdgeEffectStyle = .soft }
         window.addTitlebarAccessoryViewController(room)
         DispatchQueue.main.async { [weak self] in MainActor.assumeIsolated { self?.alignTopBar() } }
         NotificationCenter.default.addObserver(forName: NSWindow.didResizeNotification, object: window, queue: .main) { [weak self] _ in
@@ -383,7 +388,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         }
         NotificationCenter.default.addObserver(forName: NSSplitView.didResizeSubviewsNotification, object: split.splitView,
                                                queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.alignTopBar() }
+            MainActor.assumeIsolated {
+                self?.alignTopBar()
+                self?.topBar.superview?.needsLayout = true
+            }
         }
         window.setFrameAutosaveName("Main")
         if window.frame.origin == .zero { window.center() }
@@ -1015,7 +1023,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     // MARK: Inspector (⌘I)
 
     @objc private func toggleInspector() {
-        inspectorItem.animator().isCollapsed.toggle()
+        NSAnimationContext.runAnimationGroup({ _ in
+            inspectorItem.animator().isCollapsed.toggle()
+        }, completionHandler: { [weak self] in
+            // The bar follows the content's final width, not a frame mid-slide.
+            MainActor.assumeIsolated { self?.alignTopBar() }
+        })
     }
 
     func toggleInspectorForTest() { toggleInspector() }

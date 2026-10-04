@@ -29,16 +29,13 @@ final class InspectorViewController: NSViewController {
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = 6
-        stack.edgeInsets = NSEdgeInsets(top: 54, left: 18, bottom: 32, right: 18)
+        stack.edgeInsets = NSEdgeInsets(top: 18, left: 18, bottom: 28, right: 18)
         stack.translatesAutoresizingMaskIntoConstraints = false
         let document = FlippedView()
         document.addSubview(stack)
         let scroll = NSScrollView()
         scroll.documentView = document
-        // The window's own colour: the strip the title bar leaves above the
-        // inspector is the same, so no band shows there.
-        scroll.drawsBackground = true
-        scroll.backgroundColor = .windowBackgroundColor
+        scroll.drawsBackground = false
         scroll.hasVerticalScroller = true
         scroll.autohidesScrollers = true
         document.translatesAutoresizingMaskIntoConstraints = false
@@ -49,7 +46,25 @@ final class InspectorViewController: NSViewController {
             stack.topAnchor.constraint(equalTo: document.topAnchor),
             stack.bottomAnchor.constraint(equalTo: document.bottomAnchor),
         ])
-        view = scroll
+        // A card of its own, a little apart from the cabinet on every side:
+        // nothing runs together with the content, and the title bar's strip
+        // above is just more of the window around it.
+        let card = InspectorCard()
+        let column = InspectorColumn()
+        for v in [card, scroll] as [NSView] { v.translatesAutoresizingMaskIntoConstraints = false }
+        column.addSubview(card)
+        card.addSubview(scroll)
+        NSLayoutConstraint.activate([
+            card.topAnchor.constraint(equalTo: column.topAnchor, constant: 8),
+            card.leadingAnchor.constraint(equalTo: column.leadingAnchor, constant: 6),
+            card.trailingAnchor.constraint(equalTo: column.trailingAnchor, constant: -12),
+            card.bottomAnchor.constraint(equalTo: column.bottomAnchor, constant: -12),
+            scroll.topAnchor.constraint(equalTo: card.topAnchor),
+            scroll.leadingAnchor.constraint(equalTo: card.leadingAnchor),
+            scroll.trailingAnchor.constraint(equalTo: card.trailingAnchor),
+            scroll.bottomAnchor.constraint(equalTo: card.bottomAnchor),
+        ])
+        view = column
         NotificationCenter.default.addObserver(forName: Library.didChange, object: library, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.refresh() }
         }
@@ -77,10 +92,10 @@ final class InspectorViewController: NSViewController {
             stack.setCustomSpacing(0, after: empty)
             empty.translatesAutoresizingMaskIntoConstraints = false
             empty.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: -36).isActive = true
-            stack.edgeInsets.top = max(54, (view.bounds.height - 120) / 2)
+            stack.edgeInsets.top = max(18, (view.bounds.height - 140) / 2)
             return
         }
-        stack.edgeInsets.top = 54
+        stack.edgeInsets.top = 18
 
         if let image = NSImage(contentsOf: library.thumbnailURL(item)) {
             let picture = NSImageView(image: image)
@@ -102,8 +117,8 @@ final class InspectorViewController: NSViewController {
         }
 
         // What it is, where it's from, when: one quiet line under the name.
-        let title = label(item.displayTitle, size: 22, serif: true)
-        title.maximumNumberOfLines = 4
+        let title = label(item.displayTitle, size: 18, serif: true)
+        title.maximumNumberOfLines = 3
         stack.addArrangedSubview(title)
         stack.setCustomSpacing(6, after: title)
         let about = [Self.kindName(item), item.domain, item.released.map { String($0.prefix(4)) }, Rediscovery.ageLine(item)]
@@ -473,4 +488,51 @@ final class ClosureButton: NSButton {
     }
 
     @objc private func run() { handler?() }
+}
+
+/// The inspector's ground: a rounded card a shade off the window, held by a hairline.
+@MainActor
+private final class InspectorCard: NSView {
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        wantsLayer = true
+        layer?.cornerRadius = 16
+        layer?.cornerCurve = .continuous
+        layer?.masksToBounds = true
+        layer?.borderWidth = 0.5
+        updateColors()
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateColors()
+    }
+
+    private func updateColors() {
+        layer?.backgroundColor = resolved(NSColor.labelColor.withAlphaComponent(0.045))
+        layer?.borderColor = resolved(NSColor.labelColor.withAlphaComponent(0.1))
+    }
+}
+
+/// Around the card: the window's own colour, the same as the title bar's strip above.
+@MainActor
+private final class InspectorColumn: NSView {
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        wantsLayer = true
+        updateColors()
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateColors()
+    }
+
+    private func updateColors() {
+        layer?.backgroundColor = resolved(.windowBackgroundColor)
+    }
 }
