@@ -37,11 +37,11 @@ final class SelfTest {
         log("\(ok ? "PASS" : "FAIL") \(what)")
     }
 
-    private func shot(_ name: String) {
+    private func shot(_ name: String, windowNumber: Int? = nil) {
         guard let dir = Self.outputDir else { return }
         let p = Process()
         p.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
-        p.arguments = ["-x", "-o", "-l", "\(window.windowNumber)", dir.appendingPathComponent("\(name).png").path]
+        p.arguments = ["-x", "-o", "-l", "\(windowNumber ?? window.windowNumber)", dir.appendingPathComponent("\(name).png").path]
         try? p.run()
         p.waitUntilExit()
     }
@@ -584,7 +584,7 @@ final class SelfTest {
         // The window from the button beside 珍奇室.
         ui.manageCabinets()
         await wait(0.6)
-        shot("cabinet-panel")
+        shot("cabinet-panel", windowNumber: ui.cabinetsWindowNumber)
         ui.closeCabinetsForTest()
         await wait(0.3)
         check(!ui.canDeleteCabinet(home) && ui.canDeleteCabinet(other), "the original stays; another can be removed")

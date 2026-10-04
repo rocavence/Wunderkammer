@@ -1107,7 +1107,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
 
     /// The window for switching, adding, renaming and removing 珍奇室 (a sheet).
     func manageCabinets() {
-        let panel = CabinetsPanel(cabinets: cabinets, count: { [weak self] entry in self?.itemCount(of: entry) ?? 0 })
+        let panel = CabinetsPanel(cabinets: cabinets, count: { [weak self] entry in self?.itemCount(of: entry) ?? 0 },
+                                  covers: { [weak self] entry in self?.coverURLs(of: entry) ?? [] })
         panel.onSwitch = { [weak self] id in self?.switchCabinet(to: id) }
         panel.onChange = { [weak self] in self?.cabinetsChanged() }
         cabinetsPanel = panel
@@ -1118,6 +1119,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private func itemCount(of entry: Cabinets.Entry) -> Int {
         if entry.id == cabinets.currentID { return library.items.count }
         return Library.storedCount(at: cabinets.root(of: entry))
+    }
+
+    /// The newest few pictures of a cabinet, for its card.
+    private func coverURLs(of entry: Cabinets.Entry) -> [URL] {
+        guard entry.id == cabinets.currentID else { return Library.storedCovers(at: cabinets.root(of: entry)) }
+        return library.items.sorted { $0.dateAdded > $1.dateAdded }.prefix(4).map(library.thumbnailURL)
     }
 
     /// Opens another cabinet in place: the same window, its own things.
@@ -1145,6 +1152,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     func createCabinetForTest(_ name: String) -> UUID { cabinets.create(named: name).id }
     var currentCabinet: UUID { cabinets.currentID }
     func closeCabinetsForTest() { cabinetsPanel?.closeForTest() }
+    var cabinetsWindowNumber: Int? { cabinetsPanel?.windowNumber }
     func canDeleteCabinet(_ id: UUID) -> Bool { cabinets.canDelete(id) }
     func deleteCabinetForTest(_ id: UUID) { cabinets.delete(id); cabinetsChanged() }
 

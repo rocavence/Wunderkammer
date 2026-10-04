@@ -44,6 +44,7 @@ chevron-expand-y
 # 動作
 search
 plus
+more-h
 trash
 share
 link

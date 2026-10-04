@@ -69,6 +69,17 @@ final class Library {
         load()
     }
 
+    /// The newest few pictures of the library at `root`, for a cover, without opening it.
+    static func storedCovers(at root: URL, limit: Int = 4) -> [URL] {
+        struct Stored: Decodable { var items: [Entry] }
+        struct Entry: Decodable { var id: UUID; var representationVersion: Int?; var dateAdded: Date }
+        guard let data = try? Data(contentsOf: root.appendingPathComponent("library.json")),
+              let s = try? JSONDecoder().decode(Stored.self, from: data) else { return [] }
+        let thumbs = root.appendingPathComponent("thumbnails")
+        return s.items.sorted { $0.dateAdded > $1.dateAdded }.prefix(limit)
+            .map { Representer.thumbnailURL(thumbs, id: $0.id, version: $0.representationVersion ?? 0) }
+    }
+
     /// How many things the library at `root` holds, without opening it.
     static func storedCount(at root: URL) -> Int {
         struct Count: Decodable { var items: [Skip] }
