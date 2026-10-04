@@ -44,7 +44,7 @@ enum ViewMode: Int, CaseIterable {
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSSearchFieldDelegate, SelfTestUI {
     private var window: NSWindow!
-    /// The 珍奇室 on this Mac; the library is whichever one is open.
+    /// The 珍奇櫃 on this Mac; the library is whichever one is open.
     private let cabinets = Cabinets(base: ProcessInfo.processInfo.environment["WK_LIBRARY_ROOT"].map { URL(fileURLWithPath: $0) }
         ?? Library.defaultRoot)
     private lazy var library = Library(root: cabinets.root(of: cabinets.current))
@@ -395,7 +395,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         Self.show(CaptureController.screenshotShortcut, on: menu.addItem(withTitle: "截圖收藏", action: #selector(captureScreenshot), keyEquivalent: ""))
         menu.addItem(.separator())
         menu.addItem(withTitle: "隨機一件", action: #selector(randomFromStatus), keyEquivalent: "")
-        menu.addItem(withTitle: "打開珍奇室", action: #selector(showCabinet), keyEquivalent: "")
+        menu.addItem(withTitle: "打開珍奇櫃", action: #selector(showCabinet), keyEquivalent: "")
         menu.addItem(.separator())
         menu.addItem(withTitle: "結束 Wunderkammer", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
         for i in menu.items where i.action != #selector(NSApplication.terminate(_:)) { i.target = self }
@@ -1079,7 +1079,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         let windowItem = NSMenuItem()
         let windowMenu = NSMenu(title: "視窗")
         windowMenu.addItem(withTitle: "縮到最小", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
-        windowMenu.addItem(withTitle: "珍奇室", action: #selector(showCabinet), keyEquivalent: "0").target = self
+        windowMenu.addItem(withTitle: "珍奇櫃", action: #selector(showCabinet), keyEquivalent: "0").target = self
         windowItem.submenu = windowMenu
         NSApp.windowsMenu = windowMenu
         main.addItem(windowItem)
@@ -1102,11 +1102,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     @objc private func captureScreenshot() { Task { await capture.captureScreenshot() } }
     @objc private func newBoard() { sidebar.newBoard(nil) }
 
-    // MARK: Cabinets (珍奇室)
+    // MARK: Cabinets (珍奇櫃)
 
     private var cabinetsPanel: CabinetsPanel?
 
-    /// The window for switching, adding, renaming and removing 珍奇室 (a sheet).
+    /// The window for switching, adding, renaming and removing 珍奇櫃 (a sheet).
     func manageCabinets() {
         let panel = CabinetsPanel(cabinets: cabinets, count: { [weak self] entry in self?.itemCount(of: entry) ?? 0 },
                                   covers: { [weak self] entry in self?.coverURLs(of: entry) ?? [] })
@@ -1116,7 +1116,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         panel.present(on: window)
     }
 
-    /// How many things a 珍奇室 holds (the open one from memory, others from disk).
+    /// How many things a 珍奇櫃 holds (the open one from memory, others from disk).
     private func itemCount(of entry: Cabinets.Entry) -> Int {
         if entry.id == cabinets.currentID { return library.items.count }
         return Library.storedCount(at: cabinets.root(of: entry))

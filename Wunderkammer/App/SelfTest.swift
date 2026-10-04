@@ -218,7 +218,7 @@ final class SelfTest {
         case "toast":
             let toast = CaptureToast()
             let image = library.items.first.flatMap { NSImage(contentsOf: library.thumbnailURL($0)) }
-            toast.show(title: "收進珍奇室", detail: library.items.first?.displayTitle, image: image)
+            toast.show(title: "收進珍奇櫃", detail: library.items.first?.displayTitle, image: image)
             await wait(0.5)
             if let panel = toast.panel, let dir = Self.outputDir {
                 let p = Process()
@@ -557,19 +557,19 @@ final class SelfTest {
         shot("02f-ripple-closed")
     }
 
-    /// Several 珍奇室, each its own library: switch, collect, switch back.
+    /// Several 珍奇櫃, each its own library: switch, collect, switch back.
     private func cabinetsCheck() async {
         let home = ui.currentCabinet
         let before = library.items.count
-        let other = ui.createCabinetForTest("旅行的珍奇室")
+        let other = ui.createCabinetForTest("旅行的珍奇櫃")
         ui.switchCabinet(to: other)
         await wait(0.8)
-        check(library.items.isEmpty && ui.grid.shownItems.isEmpty, "a new 珍奇室 starts empty")
-        check(window.title == "旅行的珍奇室", "its name is the title (\(window.title))")
+        check(library.items.isEmpty && ui.grid.shownItems.isEmpty, "a new 珍奇櫃 starts empty")
+        check(window.title == "旅行的珍奇櫃", "its name is the title (\(window.title))")
         shot("cabinet-new")
         _ = await library.capture([.text("京都的苔寺，雨後最好看。", origin: nil)])
         await wait(0.6)
-        check(library.items.count == 1, "collecting goes into the open 珍奇室")
+        check(library.items.count == 1, "collecting goes into the open 珍奇櫃")
         ui.switchCabinet(to: home)
         await wait(0.8)
         check(library.items.count == before && !library.items.contains { $0.text?.contains("苔寺") == true },
@@ -577,11 +577,11 @@ final class SelfTest {
         shot("cabinet-home")
         ui.switchCabinet(to: other)
         await wait(0.6)
-        check(library.items.count == 1 && library.items.first?.text?.contains("苔寺") == true, "the other 珍奇室 kept its things")
-        check(ui.cabinetNames.contains("旅行的珍奇室"), "it's in the list")
+        check(library.items.count == 1 && library.items.first?.text?.contains("苔寺") == true, "the other 珍奇櫃 kept its things")
+        check(ui.cabinetNames.contains("旅行的珍奇櫃"), "it's in the list")
         ui.switchCabinet(to: home)
         await wait(0.4)
-        // The window from the 珍奇室 card atop the sidebar.
+        // The window from the 珍奇櫃 card atop the sidebar.
         ui.manageCabinets()
         await wait(0.6)
         shot("cabinet-panel", windowNumber: ui.cabinetsWindowNumber)
@@ -591,15 +591,15 @@ final class SelfTest {
         await wait(0.4)
         shot("cabinet-draft", windowNumber: ui.cabinetsWindowNumber)
         check(ui.cabinetNames.count == count, "nothing is made before it has a name")
-        ui.typeCabinetNameForTest("草稿的珍奇室")
+        ui.typeCabinetNameForTest("草稿的珍奇櫃")
         await wait(0.3)
-        check(ui.cabinetNames.contains("草稿的珍奇室"), "Return makes it, with that name")
+        check(ui.cabinetNames.contains("草稿的珍奇櫃"), "Return makes it, with that name")
         ui.closeCabinetsForTest()
         await wait(0.3)
-        if let draft = ui.cabinetID(named: "草稿的珍奇室") { ui.deleteCabinetForTest(draft) }
+        if let draft = ui.cabinetID(named: "草稿的珍奇櫃") { ui.deleteCabinetForTest(draft) }
         check(!ui.canDeleteCabinet(home) && ui.canDeleteCabinet(other), "the original stays; another can be removed")
         ui.deleteCabinetForTest(other)
-        check(!ui.cabinetNames.contains("旅行的珍奇室"), "removed from the list")
+        check(!ui.cabinetNames.contains("旅行的珍奇櫃"), "removed from the list")
     }
 
     /// Three spaces, each remembering its layout; the sidebar follows.

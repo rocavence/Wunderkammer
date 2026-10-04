@@ -1,6 +1,6 @@
 import Foundation
 
-/// The cabinets (珍奇室) on this Mac: each a library of its own, named by its
+/// The cabinets (珍奇櫃) on this Mac: each a library of its own, named by its
 /// owner and switched in a moment. The first one is the library that was
 /// always there, where it always was; new ones get a folder of their own.
 @MainActor
@@ -26,10 +26,15 @@ final class Cabinets {
         let file = base.appendingPathComponent("cabinets.json")
         if let data = try? Data(contentsOf: file), let stored = try? JSONDecoder().decode(Stored.self, from: data),
            !stored.entries.isEmpty {
-            entries = stored.entries
+            // The default name was 珍奇室 before it became 珍奇櫃.
+            entries = stored.entries.map { e in
+                var e = e
+                if e.name == "珍奇室" { e.name = "珍奇櫃" } else if e.name == "未命名珍奇室" { e.name = "未命名珍奇櫃" }
+                return e
+            }
             currentID = stored.entries.contains { $0.id == stored.current } ? stored.current : stored.entries[0].id
         } else {
-            let first = Entry(id: UUID(), name: "珍奇室", folder: "")
+            let first = Entry(id: UUID(), name: "珍奇櫃", folder: "")
             entries = [first]
             currentID = first.id
             save()
@@ -80,7 +85,7 @@ final class Cabinets {
 
     private static func clean(_ name: String) -> String {
         let t = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        return t.isEmpty ? "未命名珍奇室" : String(t.prefix(40))
+        return t.isEmpty ? "未命名珍奇櫃" : String(t.prefix(40))
     }
 
     private func save() {

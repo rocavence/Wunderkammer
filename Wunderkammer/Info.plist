@@ -45,7 +45,7 @@
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>按 ⌘⇧C 時，Wunderkammer 會讀取瀏覽器目前分頁的網址與標題，把這個頁面收進珍奇室。</string>
+	<string>按 ⌘⇧C 時，Wunderkammer 會讀取瀏覽器目前分頁的網址與標題，把這個頁面收進珍奇櫃。</string>
 	<key>NSServices</key>
 	<array>
 		<dict>

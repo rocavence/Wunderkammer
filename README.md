@@ -2,7 +2,7 @@
 
 > **Collect without organizing.**
 
-macOS 原生的個人珍奇室。看到喜歡的東西就收進來，不用分類、命名或整理；系統負責理解、搜尋與重新發現。
+macOS 原生的個人珍奇櫃。看到喜歡的東西就收進來，不用分類、命名或整理；系統負責理解、搜尋與重新發現。
 
 <p align="center"><img src="docs/screenshots/00-icon.jpg" width="160" alt="Wunderkammer icon"></p>
 

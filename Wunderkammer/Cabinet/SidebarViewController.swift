@@ -10,10 +10,10 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     private let table = NSTableView()
     var onSelect: ((Scope.Base) -> Void)?
     var onRandom: (() -> Void)?
-    /// The 珍奇室 card at the top: the window for switching, adding and removing 珍奇室.
+    /// The 珍奇櫃 card at the top: the window for switching, adding and removing 珍奇櫃.
     var onManageCabinets: (() -> Void)?
-    /// Which 珍奇室 is open, shown on the card at the top.
-    var cabinetName = "珍奇室" { didSet { if cabinetName != oldValue { reload() } } }
+    /// Which 珍奇櫃 is open, shown on the card at the top.
+    var cabinetName = "珍奇櫃" { didSet { if cabinetName != oldValue { reload() } } }
     var cabinetID: UUID? { didSet { if cabinetID != oldValue { coverIDs = [] ; reload() } } }
     private let header = CabinetHeader()
     /// The pieces the card's cover was last drawn from.
@@ -129,7 +129,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     private static let fileKinds: [Scope.KindView] = [.images, .web, .text, .media, .documents]
     private static let pageKinds: [Scope.KindView] = [.books, .films, .music, .products, .places]
 
-    /// The card shows the open 珍奇室's name, size and newest pieces.
+    /// The card shows the open 珍奇櫃's name, size and newest pieces.
     private func updateHeader() {
         let newest = library.items.sorted { $0.dateAdded > $1.dateAdded }.prefix(4)
         let ids = newest.map(\.id)
@@ -370,8 +370,8 @@ extension SidebarViewController: NSMenuDelegate {
     }
 }
 
-/// The open 珍奇室 at the top of the sidebar: its cover, name and size, and a
-/// chevron saying there are others. The whole card opens the 珍奇室 window.
+/// The open 珍奇櫃 at the top of the sidebar: its cover, name and size, and a
+/// chevron saying there are others. The whole card opens the 珍奇櫃 window.
 @MainActor
 final class CabinetHeader: NSControl {
     private let coverView = NSImageView()
@@ -417,7 +417,7 @@ final class CabinetHeader: NSControl {
             chevron.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
             chevron.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
-        toolTip = "切換、新增、改名或刪除珍奇室"
+        toolTip = "切換、新增、改名或刪除珍奇櫃"
         setAccessibilityElement(true)
         setAccessibilityRole(.button)
         updateFill()
@@ -428,7 +428,7 @@ final class CabinetHeader: NSControl {
     func set(name text: String, count: Int) {
         name.stringValue = text
         detail.stringValue = "\(count) 件收藏"
-        setAccessibilityLabel("珍奇室：\(text)，\(count) 件收藏。按一下切換或管理")
+        setAccessibilityLabel("珍奇櫃：\(text)，\(count) 件收藏。按一下切換或管理")
     }
 
     private func updateFill() {

@@ -1,13 +1,13 @@
 import AppKit
 import ImageIO
 
-/// The 珍奇室 on this Mac as a sheet of cards: each wears a cover made of its
+/// The 珍奇櫃 on this Mac as a sheet of cards: each wears a cover made of its
 /// newest pieces; a click opens it. Names are typed on the card itself. The
-/// default one can't be removed. Opened from the 珍奇室 card atop the sidebar.
+/// default one can't be removed. Opened from the 珍奇櫃 card atop the sidebar.
 @MainActor
 final class CabinetsPanel: NSObject {
     var onSwitch: ((UUID) -> Void)?
-    /// A 珍奇室 was added, renamed or removed.
+    /// A 珍奇櫃 was added, renamed or removed.
     var onChange: (() -> Void)?
 
     private let cabinets: Cabinets
@@ -18,8 +18,10 @@ final class CabinetsPanel: NSObject {
     private let scroll = NSScrollView()
     private let done = NSButton(title: "完成", target: nil, action: nil)
     private var cards: [NSView] = []
-    /// A new 珍奇室 waiting for its name: a card, not yet a folder.
+    /// A new 珍奇櫃 waiting for its name: a card, not yet a folder.
     private var drafting = false
+    /// The tallest the sheet may be: no taller than the window it hangs from.
+    private var maxHeight: CGFloat = .greatestFiniteMagnitude
 
     private static let columns = 3
     private static let cardSize = CGSize(width: 216, height: 236)
@@ -40,14 +42,15 @@ final class CabinetsPanel: NSObject {
     }
 
     func present(on window: NSWindow) {
+        maxHeight = window.contentLayoutRect.height - 24
         layoutCards()
         window.beginSheet(sheet)
     }
 
     private func build() {
-        let title = NSTextField(labelWithString: "珍奇室")
+        let title = NSTextField(labelWithString: "珍奇櫃")
         title.font = Typography.display(26) ?? .systemFont(ofSize: 26)
-        let note = NSTextField(labelWithString: "每個珍奇室都有自己的收藏。點卡片打開，名字旁的按鈕可以改名或刪除。")
+        let note = NSTextField(labelWithString: "每個珍奇櫃都有自己的收藏。點卡片打開，名字旁的按鈕可以改名或刪除。")
         note.font = .systemFont(ofSize: 12.5)
         note.textColor = .secondaryLabelColor
         done.target = self
@@ -85,7 +88,7 @@ final class CabinetsPanel: NSObject {
         sheet.contentView = content
     }
 
-    /// Cards in rows of three: every 珍奇室, then the one being named or the
+    /// Cards in rows of three: every 珍奇櫃, then the one being named or the
     /// card for adding one.
     private func layoutCards() {
         cards.forEach { $0.removeFromSuperview() }
@@ -123,10 +126,13 @@ final class CabinetsPanel: NSObject {
                                 width: Self.cardSize.width, height: Self.cardSize.height)
             grid.addSubview(card)
         }
-        // Two rows show without scrolling; more scroll.
-        let visibleRows = min(rows, 2)
-        let gridHeight = CGFloat(visibleRows) * Self.cardSize.height + CGFloat(visibleRows - 1) * Self.gap + 16
-        sheet.setContentSize(NSSize(width: sheet.frame.width, height: 30 + 34 + 4 + 18 + 20 + gridHeight + 16 + 32 + 24))
+        // Up to two rows show without scrolling, fewer if the window is short;
+        // the rest scroll.
+        let chrome: CGFloat = 30 + 34 + 4 + 18 + 20 + 16 + 32 + 24
+        func gridHeight(_ n: Int) -> CGFloat { CGFloat(n) * Self.cardSize.height + CGFloat(n - 1) * Self.gap + 16 }
+        var visibleRows = min(rows, 2)
+        while visibleRows > 1, chrome + gridHeight(visibleRows) > maxHeight { visibleRows -= 1 }
+        sheet.setContentSize(NSSize(width: sheet.frame.width, height: min(chrome + gridHeight(visibleRows), max(maxHeight, 320))))
     }
 
     // MARK: Actions
@@ -137,7 +143,7 @@ final class CabinetsPanel: NSObject {
     }
 
     /// A blank card takes the place of 新增, its name already being typed.
-    /// Return makes the 珍奇室; Esc or an empty name leaves nothing behind.
+    /// Return makes the 珍奇櫃; Esc or an empty name leaves nothing behind.
     private func add() {
         drafting = true
         layoutCards()
@@ -196,7 +202,7 @@ final class CabinetsPanel: NSObject {
     }
 }
 
-/// One 珍奇室: its cover, its name, how much it holds, and buttons for
+/// One 珍奇櫃: its cover, its name, how much it holds, and buttons for
 /// renaming and removing it. Lifts under the pointer.
 @MainActor
 private final class CabinetCard: NSView, NSTextFieldDelegate {
@@ -254,12 +260,12 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
         views.append(badgeRow)
 
         // Rename and remove, always in view beside the name. The default
-        // 珍奇室 has no remove; the open one can't be removed while open.
+        // 珍奇櫃 has no remove; the open one can't be removed while open.
         var tools: [NSView] = []
         if !isDraft {
             tools.append(CardTool(icon: .edit, tip: "改名", destructive: false) { [weak self] in self?.onRename?() })
             if !isDefault {
-                let trash = CardTool(icon: .trash, tip: canDelete ? "刪除" : "要先打開別的珍奇室，才能刪除這個",
+                let trash = CardTool(icon: .trash, tip: canDelete ? "刪除" : "要先打開別的珍奇櫃，才能刪除這個",
                                      destructive: true) { [weak self] in self?.onDelete?() }
                 trash.isEnabled = canDelete
                 tools.append(trash)
@@ -471,10 +477,10 @@ private final class CardTool: NSButton {
     @objc private func run() { handler() }
 }
 
-/// The newest pieces of a 珍奇室 as one picture, for its card and the sidebar.
+/// The newest pieces of a 珍奇櫃 as one picture, for its card and the sidebar.
 enum CabinetCover {
     /// One fills it, two side by side, three as one large and two small, four
-    /// as a square of four. None: a gradient of the 珍奇室's own colour.
+    /// as a square of four. None: a gradient of the 珍奇櫃's own colour.
     static func mosaic(_ urls: [URL], seed: UUID, size: CGSize = CGSize(width: 408, height: 312)) -> CGImage? {
         let images = urls.prefix(4).compactMap { url -> CGImage? in
             guard let src = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
@@ -530,7 +536,7 @@ enum CabinetCover {
     }
 }
 
-/// The last card: a dashed outline inviting a new 珍奇室.
+/// The last card: a dashed outline inviting a new 珍奇櫃.
 @MainActor
 private final class AddCabinetCard: NSView {
     var onAdd: (() -> Void)?
@@ -546,7 +552,7 @@ private final class AddCabinetCard: NSView {
         layer?.addSublayer(outline)
         let plus = NSImageView(image: Icon.image(.plus, size: 28))
         plus.contentTintColor = .secondaryLabelColor
-        let label = NSTextField(labelWithString: "新增珍奇室")
+        let label = NSTextField(labelWithString: "新增珍奇櫃")
         label.font = .systemFont(ofSize: 13, weight: .medium)
         label.textColor = .secondaryLabelColor
         let stack = NSStackView(views: [plus, label])
@@ -560,7 +566,7 @@ private final class AddCabinetCard: NSView {
         ])
         setAccessibilityElement(true)
         setAccessibilityRole(.button)
-        setAccessibilityLabel("新增珍奇室")
+        setAccessibilityLabel("新增珍奇櫃")
     }
 
     required init?(coder: NSCoder) { fatalError() }
