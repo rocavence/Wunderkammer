@@ -257,6 +257,9 @@ final class SelfTest {
         case "cabinets":
             await cabinetsCheck()
             return finish()
+        case "watch":
+            await watchCheck()
+            return finish()
         case "spaces":
             await spacesCheck()
             return finish()
@@ -558,6 +561,56 @@ final class SelfTest {
     }
 
     /// Several 珍奇櫃, each its own library: switch, collect, switch back.
+    /// A watched folder: what goes in is collected, what leaves goes too.
+    private func watchCheck() async {
+        let fm = FileManager.default
+        let dir = fm.temporaryDirectory.appendingPathComponent("wk-watch-\(UUID().uuidString)", isDirectory: true)
+        try? fm.createDirectory(at: dir, withIntermediateDirectories: true)
+        func picture(_ name: String, hue: CGFloat) -> URL {
+            let image = NSImage(size: NSSize(width: 64, height: 48), flipped: false) { r in
+                NSColor(hue: hue, saturation: 0.7, brightness: 0.8, alpha: 1).setFill()
+                r.fill()
+                return true
+            }
+            let url = dir.appendingPathComponent(name)
+            let rep = NSBitmapImageRep(data: image.tiffRepresentation!)!
+            try? rep.representation(using: .png, properties: [:])!.write(to: url)
+            return url
+        }
+        func inFolder() -> Int { library.items.filter { $0.filePath?.hasPrefix(dir.standardizedFileURL.path + "/") == true }.count }
+        _ = picture("a.png", hue: 0.11)
+        _ = picture("b.png", hue: 0.37)
+        try? fm.setAttributes([.modificationDate: Date(timeIntervalSinceNow: -60)], ofItemAtPath: dir.appendingPathComponent("a.png").path)
+        try? fm.setAttributes([.modificationDate: Date(timeIntervalSinceNow: -60)], ofItemAtPath: dir.appendingPathComponent("b.png").path)
+        check(ui.watchFolderForTest(dir), "a folder can be watched")
+        for _ in 0..<40 where inFolder() < 2 { await wait(0.25) }
+        check(inFolder() == 2, "what was already there comes in (\(inFolder()) of 2)")
+        let c = picture("c.png", hue: 0.63)
+        for _ in 0..<40 where inFolder() < 3 { await wait(0.25) }
+        check(inFolder() == 3, "a new file comes in by itself (\(inFolder()) of 3)")
+        try? fm.removeItem(at: c)
+        for _ in 0..<40 where inFolder() > 2 { await wait(0.25) }
+        check(inFolder() == 2, "a file taken out leaves the 珍奇櫃 (\(inFolder()) of 2)")
+        var extra: [URL] = []
+        for i in 0..<3 {
+            let f = fm.temporaryDirectory.appendingPathComponent("wk-watch-extra-\(i)-\(UUID().uuidString)", isDirectory: true)
+            try? fm.createDirectory(at: f, withIntermediateDirectories: true)
+            extra.append(f)
+        }
+        check(ui.watchFolderForTest(extra[0]) && ui.watchFolderForTest(extra[1]), "up to three folders")
+        check(!ui.watchFolderForTest(extra[2]), "not a fourth")
+        check(!ui.watchFolderForTest(dir.appendingPathComponent("sub")), "nor one inside a watched folder")
+        ui.manageCabinets()
+        await wait(0.6)
+        shot("watch-panel", windowNumber: ui.cabinetsWindowNumber)
+        ui.closeCabinetsForTest()
+        for f in extra + [dir] { ui.unwatchFolderForTest(f) }
+        _ = picture("d.png", hue: 0.85)
+        await wait(4)
+        check(inFolder() == 2, "an unwatched folder is left alone")
+        for f in extra + [dir] { try? fm.removeItem(at: f) }
+    }
+
     private func cabinetsCheck() async {
         let home = ui.currentCabinet
         let before = library.items.count
@@ -1251,6 +1304,8 @@ protocol SelfTestUI: AnyObject {
     func beginAddCabinetForTest()
     func typeCabinetNameForTest(_ name: String)
     func cabinetID(named: String) -> UUID?
+    func watchFolderForTest(_ folder: URL) -> Bool
+    func unwatchFolderForTest(_ folder: URL)
     func canDeleteCabinet(_ id: UUID) -> Bool
     func deleteCabinetForTest(_ id: UUID)
     var currentCabinet: UUID { get }

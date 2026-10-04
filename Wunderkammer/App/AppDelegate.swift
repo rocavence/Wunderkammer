@@ -48,6 +48,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private let cabinets = Cabinets(base: ProcessInfo.processInfo.environment["WK_LIBRARY_ROOT"].map { URL(fileURLWithPath: $0) }
         ?? Library.defaultRoot)
     private lazy var library = Library(root: cabinets.root(of: cabinets.current))
+    private lazy var folderWatcher = FolderWatcher(library: library)
     private let thumbnailer = Thumbnailer()
     private(set) var sidebar: SidebarViewController!
     private var inspector: InspectorViewController!
@@ -237,6 +238,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         sidebar.onManageCabinets = { [weak self] in self?.manageCabinets() }
         sidebar.cabinetName = cabinets.current.name
         sidebar.cabinetID = cabinets.currentID
+        watchFolders()
         inspector = InspectorViewController(library: library)
         inspector.onSelectRelated = { [weak self] id in
             guard let self else { return }
@@ -1147,6 +1149,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         sidebar.cabinetName = cabinets.current.name
         sidebar.cabinetID = cabinets.currentID
         updateTitle()
+        watchFolders()
+    }
+
+    private var watchedNow: (UUID, [URL])?
+
+    /// The open 珍奇櫃's folders, watched; the same ones aren't restarted.
+    private func watchFolders() {
+        let folders = cabinets.watched(cabinets.currentID)
+        if let now = watchedNow, now.0 == cabinets.currentID, now.1 == folders { return }
+        watchedNow = (cabinets.currentID, folders)
+        folderWatcher.watch(folders)
     }
 
     // Tests switch cabinets the way the menu does.
@@ -1158,6 +1171,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     func beginAddCabinetForTest() { cabinetsPanel?.beginAddForTest() }
     func typeCabinetNameForTest(_ name: String) { cabinetsPanel?.typeNameForTest(name) }
     func cabinetID(named name: String) -> UUID? { cabinets.entries.first { $0.name == name }?.id }
+    func watchFolderForTest(_ folder: URL) -> Bool {
+        defer { cabinetsChanged() }
+        return cabinets.watch(folder, in: cabinets.currentID)
+    }
+    func unwatchFolderForTest(_ folder: URL) { cabinets.unwatch(folder, in: cabinets.currentID); cabinetsChanged() }
     func canDeleteCabinet(_ id: UUID) -> Bool { cabinets.canDelete(id) }
     func deleteCabinetForTest(_ id: UUID) { cabinets.delete(id); cabinetsChanged() }
 

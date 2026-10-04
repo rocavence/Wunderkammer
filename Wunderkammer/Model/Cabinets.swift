@@ -10,7 +10,11 @@ final class Cabinets {
         var name: String
         /// Relative to the base folder; "" is the base itself (the original library).
         var folder: String
+        /// Folders whose files come in by themselves (and leave with them).
+        var watched: [String]? = nil
     }
+
+    static let maxWatched = 3
 
     private struct Stored: Codable {
         var entries: [Entry]
@@ -74,6 +78,33 @@ final class Cabinets {
         guard canDelete(id), let e = entries.first(where: { $0.id == id }) else { return }
         try? FileManager.default.trashItem(at: root(of: e), resultingItemURL: nil)
         entries.removeAll { $0.id == id }
+        save()
+    }
+
+    func watched(_ id: UUID) -> [URL] {
+        (entries.first { $0.id == id }?.watched ?? []).map { URL(fileURLWithPath: $0, isDirectory: true) }
+    }
+
+    /// Up to three folders, none twice, none inside another or inside a library.
+    func canWatch(_ folder: URL, in id: UUID) -> Bool {
+        let path = folder.standardizedFileURL.path
+        let mine = watched(id).map(\.path)
+        guard mine.count < Self.maxWatched else { return false }
+        return !mine.contains { $0 == path || path.hasPrefix($0 + "/") || $0.hasPrefix(path + "/") }
+            && !base.standardizedFileURL.path.hasPrefix(path + "/") && !path.hasPrefix(base.standardizedFileURL.path)
+    }
+
+    @discardableResult
+    func watch(_ folder: URL, in id: UUID) -> Bool {
+        guard canWatch(folder, in: id), let i = entries.firstIndex(where: { $0.id == id }) else { return false }
+        entries[i].watched = (entries[i].watched ?? []) + [folder.standardizedFileURL.path]
+        save()
+        return true
+    }
+
+    func unwatch(_ folder: URL, in id: UUID) {
+        guard let i = entries.firstIndex(where: { $0.id == id }) else { return }
+        entries[i].watched?.removeAll { $0 == folder.standardizedFileURL.path }
         save()
     }
 

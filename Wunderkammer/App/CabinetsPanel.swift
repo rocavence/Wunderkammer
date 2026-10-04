@@ -50,7 +50,7 @@ final class CabinetsPanel: NSObject {
     private func build() {
         let title = NSTextField(labelWithString: "珍奇櫃")
         title.font = Typography.display(26) ?? .systemFont(ofSize: 26)
-        let note = NSTextField(labelWithString: "每個珍奇櫃都有自己的收藏。點卡片打開，名字旁的按鈕可以改名或刪除。")
+        let note = NSTextField(labelWithString: "每個珍奇櫃都有自己的收藏。點卡片打開，名字旁的按鈕可以監看資料夾、改名或刪除。")
         note.font = .systemFont(ofSize: 12.5)
         note.textColor = .secondaryLabelColor
         done.target = self
@@ -95,8 +95,10 @@ final class CabinetsPanel: NSObject {
         cards = cabinets.entries.map { entry in
             let card = CabinetCard(name: entry.name, count: count(entry), isCurrent: entry.id == cabinets.currentID,
                                    isDefault: entry.folder.isEmpty, canDelete: cabinets.canDelete(entry.id),
-                                   cover: CabinetCover.mosaic(covers(entry), seed: entry.id))
+                                   cover: CabinetCover.mosaic(covers(entry), seed: entry.id),
+                                   watching: cabinets.watched(entry.id).count)
             card.onOpen = { [weak self] in self?.open(entry.id) }
+            card.onFolders = { [weak self] anchor in self?.showFolders(of: entry.id, at: anchor) }
             card.onRename = { [weak self, weak card] in
                 guard let self, let card else { return }
                 self.edit(card) { name in
@@ -169,6 +171,65 @@ final class CabinetsPanel: NSObject {
         }
     }
 
+    // MARK: Watched folders
+
+    /// The folders a 珍奇櫃 watches, each with its own way out, and a way to
+    /// add another while there's room.
+    private func showFolders(of id: UUID, at anchor: NSView) {
+        let folders = cabinets.watched(id)
+        let menu = NSMenu()
+        menu.autoenablesItems = false
+        let head = NSMenuItem(title: folders.isEmpty ? "放進資料夾的檔案會自動收進這個珍奇櫃" : "自動收進這些資料夾裡的檔案",
+                              action: nil, keyEquivalent: "")
+        head.isEnabled = false
+        menu.addItem(head)
+        for folder in folders {
+            let item = NSMenuItem(title: FileManager.default.displayName(atPath: folder.path), action: nil, keyEquivalent: "")
+            item.image = Icon.image(.folder, size: 14)
+            item.toolTip = folder.path
+            let sub = NSMenu()
+            sub.addItem(ClosureMenuItem("在 Finder 中顯示") { NSWorkspace.shared.activateFileViewerSelecting([folder]) })
+            sub.addItem(ClosureMenuItem("停止監看") { [weak self] in
+                guard let self else { return }
+                self.cabinets.unwatch(folder, in: id)
+                self.layoutCards()
+                self.onChange?()
+            })
+            item.submenu = sub
+            menu.addItem(item)
+        }
+        menu.addItem(.separator())
+        let full = folders.count >= Cabinets.maxWatched
+        let add = ClosureMenuItem(full ? "最多 \(Cabinets.maxWatched) 個資料夾" : "加入資料夾…") { [weak self] in
+            self?.addFolder(to: id)
+        }
+        add.image = Icon.image(.folderAdd, size: 14)
+        add.isEnabled = !full
+        menu.addItem(add)
+        menu.popUp(positioning: nil, at: NSPoint(x: 0, y: anchor.bounds.height + 4), in: anchor)
+    }
+
+    private func addFolder(to id: UUID) {
+        let open = NSOpenPanel()
+        open.canChooseDirectories = true
+        open.canChooseFiles = false
+        open.allowsMultipleSelection = false
+        open.prompt = "監看這個資料夾"
+        open.message = "放進這個資料夾的檔案會自動收進來，從資料夾拿走就跟著移除。裡面現有的檔案也會一起收進來。"
+        open.beginSheetModal(for: sheet) { [weak self] response in
+            guard let self, response == .OK, let folder = open.url else { return }
+            if self.cabinets.watch(folder, in: id) {
+                self.layoutCards()
+                self.onChange?()
+            } else {
+                let alert = NSAlert()
+                alert.messageText = "不能監看這個資料夾"
+                alert.informativeText = "它已經在監看清單裡，或和清單裡的資料夾重疊，或是珍奇櫃自己存放資料的地方。"
+                alert.beginSheetModal(for: self.sheet)
+            }
+        }
+    }
+
     private func delete(_ entry: Cabinets.Entry) {
         guard cabinets.canDelete(entry.id) else { return }
         let alert = NSAlert()
@@ -209,6 +270,7 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
     var onOpen: (() -> Void)?
     var onRename: (() -> Void)?
     var onDelete: (() -> Void)?
+    var onFolders: ((NSView) -> Void)?
 
     private let nameField = NSTextField()
     private let detail: NSTextField
@@ -216,9 +278,11 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
     private(set) var isEditing = false
     private var finish: ((String?) -> Void)?
 
-    init(name: String, count: Int, isCurrent: Bool, isDefault: Bool, canDelete: Bool, cover: CGImage?, isDraft: Bool = false) {
+    init(name: String, count: Int, isCurrent: Bool, isDefault: Bool, canDelete: Bool, cover: CGImage?,
+         watching: Int = 0, isDraft: Bool = false) {
         self.originalName = name
-        detail = NSTextField(labelWithString: isDraft ? "按 Return 建立，Esc 取消" : count == 0 ? "還沒有收藏" : "\(count) 件收藏")
+        let held = count == 0 ? "還沒有收藏" : "\(count) 件收藏"
+        detail = NSTextField(labelWithString: isDraft ? "按 Return 建立，Esc 取消" : watching > 0 ? "\(held) · 監看 \(watching) 個資料夾" : held)
         super.init(frame: .zero)
         wantsLayer = true
         layer?.cornerRadius = 16
@@ -249,6 +313,7 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
         nameField.cell?.isScrollable = true
         nameField.delegate = self
         detail.font = .systemFont(ofSize: 12)
+        detail.lineBreakMode = .byTruncatingTail
         detail.textColor = .secondaryLabelColor
 
         var views: [NSView] = [coverView, nameField, detail]
@@ -263,6 +328,10 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
         // 珍奇櫃 has no remove; the open one can't be removed while open.
         var tools: [NSView] = []
         if !isDraft {
+            let folders = CardTool(icon: .folder, tip: "自動收進資料夾的檔案", destructive: false) {}
+            folders.handler = { [weak self, weak folders] in if let folders { self?.onFolders?(folders) } }
+            if watching > 0 { folders.restingTint = .controlAccentColor }
+            tools.append(folders)
             tools.append(CardTool(icon: .edit, tip: "改名", destructive: false) { [weak self] in self?.onRename?() })
             if !isDefault {
                 let trash = CardTool(icon: .trash, tip: canDelete ? "刪除" : "要先打開別的珍奇櫃，才能刪除這個",
@@ -296,7 +365,8 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
             detail.topAnchor.constraint(equalTo: nameField.bottomAnchor, constant: 3),
             detail.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             toolRow.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
-            toolRow.centerYAnchor.constraint(equalTo: nameField.centerYAnchor, constant: 8),
+            toolRow.centerYAnchor.constraint(equalTo: nameField.centerYAnchor),
+            detail.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -14),
         ])
         if !isDraft {
             setAccessibilityElement(true)
@@ -305,6 +375,10 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
             menu = NSMenu()
             menu?.addItem(ClosureMenuItem("打開") { [weak self] in self?.onOpen?() })
             menu?.addItem(ClosureMenuItem("改名…") { [weak self] in self?.onRename?() })
+            menu?.addItem(ClosureMenuItem("監看資料夾…") { [weak self] in
+                guard let self, let tool = self.subviews.compactMap({ $0 as? NSStackView }).last?.arrangedSubviews.first else { return }
+                self.onFolders?(tool)
+            })
             if !isDefault {
                 let delete = ClosureMenuItem("刪除…") { [weak self] in self?.onDelete?() }
                 delete.isEnabled = canDelete
@@ -432,8 +506,10 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
 /// the destructive one turns red.
 @MainActor
 private final class CardTool: NSButton {
-    private let handler: () -> Void
+    var handler: () -> Void
     private let destructive: Bool
+    /// Its colour when the pointer isn't on it.
+    var restingTint: NSColor = .secondaryLabelColor { didSet { contentTintColor = restingTint } }
 
     init(icon: Reicon, tip: String, destructive: Bool, action: @escaping () -> Void) {
         handler = action
@@ -471,7 +547,7 @@ private final class CardTool: NSButton {
 
     override func mouseExited(with event: NSEvent) {
         layer?.backgroundColor = nil
-        contentTintColor = .secondaryLabelColor
+        contentTintColor = restingTint
     }
 
     @objc private func run() { handler() }

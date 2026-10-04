@@ -46,6 +46,8 @@ search
 plus
 more-h
 edit
+folder
+folder-add
 chevron-down
 trash
 share
