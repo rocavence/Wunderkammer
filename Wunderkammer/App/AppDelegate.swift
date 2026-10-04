@@ -42,7 +42,7 @@ enum ViewMode: Int, CaseIterable {
 }
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSSearchFieldDelegate, SelfTestUI {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate, SelfTestUI {
     private var window: NSWindow!
     /// The 珍奇櫃 on this Mac; the library is whichever one is open.
     private let cabinets = Cabinets(base: ProcessInfo.processInfo.environment["WK_LIBRARY_ROOT"].map { URL(fileURLWithPath: $0) }
@@ -60,11 +60,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private(set) var graphView: GraphView!
     private var emptyCabinet: EmptyCabinetView!
     private(set) var preview: PreviewView!
-    private var spaceControl: NSSegmentedControl?
+    /// Spaces, search and 資訊, across the top of the content.
+    private let topBar = TopBar(titles: Space.allCases.map(\.title),
+                                tips: Space.allCases.map { "\($0.title)（⌘\($0.rawValue + 1)）" })
+    private var sidebarItem: NSSplitViewItem!
     /// The layouts of the current space (格狀/瀑布/時間軸, 畫布/圖譜); hidden when there's one.
     /// The layouts and tools of the view in front, at its foot.
     private let viewBar = ViewBar()
-    private var searchItem: NSSearchToolbarItem?
     private(set) var mode = ViewMode.grid
     private(set) var scope = Scope()
     private var capture: CaptureController!
@@ -226,6 +228,31 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             edgeFade.bottomAnchor.constraint(equalTo: content.safeAreaLayoutGuide.topAnchor, constant: 22),
         ])
         content.addSubview(answerBanner, positioned: .below, relativeTo: preview)
+        topBar.translatesAutoresizingMaskIntoConstraints = false
+        topBar.searchField.delegate = self
+        topBar.onSpace = { [weak self] i in
+            guard let self else { return }
+            if self.preview.isOpen { self.preview.dismissImmediately() }
+            self.setSpace(Space(rawValue: i) ?? .cabinet)
+        }
+        topBar.onSearchOpen = { [weak self] in self?.focusSearch() }
+        topBar.onInfo = { [weak self] in self?.toggleInspector() }
+        content.addSubview(topBar, positioned: .below, relativeTo: preview)
+        NSLayoutConstraint.activate([
+            topBar.topAnchor.constraint(equalTo: content.topAnchor, constant: TopBar.top),
+            topBar.leadingAnchor.constraint(equalTo: content.leadingAnchor),
+            topBar.trailingAnchor.constraint(equalTo: content.trailingAnchor),
+        ])
+        // The sidebar has no button: ⌘⌃S, or the window's left edge brings it back.
+        edgeReveal.onReveal = { [weak self] in self?.revealSidebar() }
+        edgeReveal.translatesAutoresizingMaskIntoConstraints = false
+        content.addSubview(edgeReveal, positioned: .below, relativeTo: preview)
+        NSLayoutConstraint.activate([
+            edgeReveal.topAnchor.constraint(equalTo: content.topAnchor),
+            edgeReveal.bottomAnchor.constraint(equalTo: content.bottomAnchor),
+            edgeReveal.leadingAnchor.constraint(equalTo: content.leadingAnchor),
+            edgeReveal.widthAnchor.constraint(equalToConstant: 6),
+        ])
         viewBar.translatesAutoresizingMaskIntoConstraints = false
         viewBar.onLayout = { [weak self] m in self?.setMode(m) }
         content.addSubview(viewBar, positioned: .below, relativeTo: emptyCabinet)
@@ -295,6 +322,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         let sideItem = NSSplitViewItem(sidebarWithViewController: sidebar)
         sideItem.minimumThickness = 180
         sideItem.maximumThickness = 300
+        sidebarItem = sideItem
         split.addSplitViewItem(sideItem)
         split.addSplitViewItem(NSSplitViewItem(viewController: contentVC))
         inspectorItem = NSSplitViewItem(inspectorWithViewController: inspector)
@@ -313,12 +341,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         // The cabinet carries its own large title (GridView.heading).
         window.titleVisibility = .hidden
         window.toolbarStyle = .unified
-        let toolbar = NSToolbar(identifier: "main")
-        toolbar.delegate = self
-        toolbar.displayMode = .iconOnly
-        // The spaces stay put in the middle whatever comes and goes beside them.
-        toolbar.centeredItemIdentifiers = [Self.spaceID]
-        window.toolbar = toolbar
+        // An empty toolbar for a full-height title bar, a strip below it for
+        // breathing room: the bar of our own sits lower, the traffic lights with it.
+        window.toolbar = NSToolbar(identifier: "main")
+        let room = NSTitlebarAccessoryViewController()
+        room.view = NSView(frame: NSRect(x: 0, y: 0, width: 10, height: TopBar.top))
+        room.layoutAttribute = .bottom
+        window.addTitlebarAccessoryViewController(room)
+        placeTrafficLights()
+        for name in [NSWindow.didResizeNotification, NSWindow.didExitFullScreenNotification,
+                     NSWindow.didBecomeKeyNotification, NSWindow.didResignKeyNotification] {
+            NotificationCenter.default.addObserver(forName: name, object: window, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.placeTrafficLights() }
+            }
+        }
         window.setFrameAutosaveName("Main")
         if window.frame.origin == .zero { window.center() }
         // Quick Look looks for its controller up the responder chain.
@@ -461,7 +497,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         if base == .trail, mode.space != .wander { setSpace(.wander) }
         if case .answer = base {} else if !answerBanner.isHidden { hideAnswerBanner() }
         scope = Scope(base: base, search: "")
-        searchItem?.searchField.stringValue = ""
+        topBar.searchField.stringValue = ""
         if !SelfTest.isEnabled { UserDefaults.standard.set(scope.board?.uuidString, forKey: Self.boardKey) }
         updateTitle()
         grid.show(scope: scope)
@@ -552,7 +588,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     }
 
     private func updateSpaceControls() {
-        spaceControl?.selectedSegment = mode.space.rawValue
+        topBar.spaces.selectedSegment = mode.space.rawValue
         updateViewBar()
     }
 
@@ -701,31 +737,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
 
     @objc private func focusSearch() {
         setSearchExpanded(true)
-        guard let item = searchItem else { return }
-        window.makeFirstResponder(item.searchField)
-        item.beginSearchInteraction()
+        window.makeFirstResponder(topBar.searchField)
     }
 
     /// Search waits as a button; it opens into a field when wanted (click,
     /// ⌘K, Siri) and folds away again once it's empty and left.
     private func setSearchExpanded(_ open: Bool) {
-        guard let toolbar = window?.toolbar else { return }
-        let from = open ? Self.searchButtonID : Self.searchID
-        guard let i = toolbar.items.firstIndex(where: { $0.itemIdentifier == from }) else { return }
-        toolbar.removeItem(at: i)
-        toolbar.insertItem(withItemIdentifier: open ? Self.searchID : Self.searchButtonID, at: i)
+        topBar.setSearchOpen(open)
     }
 
-    var isSearchExpanded: Bool { window?.toolbar?.items.contains { $0.itemIdentifier == Self.searchID } == true }
+    var isSearchExpanded: Bool { topBar.isSearchOpen }
 
     /// Leaving an empty search folds it back into its button.
     func controlTextDidEndEditing(_ obj: Notification) {
-        guard let field = obj.object as? NSSearchField, field === searchItem?.searchField, field.stringValue.isEmpty else { return }
+        guard let field = obj.object as? NSSearchField, field === topBar.searchField, field.stringValue.isEmpty else { return }
         DispatchQueue.main.async { [weak self] in MainActor.assumeIsolated { self?.setSearchExpanded(false) } }
     }
 
     func controlTextDidChange(_ obj: Notification) {
-        guard let field = obj.object as? NSSearchField, field === searchItem?.searchField else { return }
+        guard let field = obj.object as? NSSearchField, field === topBar.searchField else { return }
         search(field.stringValue)
     }
 
@@ -772,7 +802,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     }
 
     private func clearSearch() {
-        searchItem?.searchField.stringValue = ""
+        topBar.searchField.stringValue = ""
         search("")
     }
 
@@ -825,7 +855,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         showCabinet()
         if mode.cabinetStyle == nil { setMode(.grid) }
         setSearchExpanded(true)
-        searchItem?.searchField.stringValue = query
+        topBar.searchField.stringValue = query
         search(query)
         return library.items(for: scope).count
     }
@@ -895,7 +925,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             guard let self, !Task.isCancelled else { return }
             self.askTask = nil
             if let ids {
-                self.searchItem?.searchField.stringValue = ""
+                self.topBar.searchField.stringValue = ""
                 self.setSearchExpanded(false)
                 if self.mode.cabinetStyle == nil { self.setMode(.grid) }
                 self.show(base: .answer(ids))
@@ -954,66 +984,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
 
     func toggleInspectorForTest() { toggleInspector() }
 
-    // MARK: Toolbar
+    // MARK: Window chrome
 
-    private static let spaceID = NSToolbarItem.Identifier("space")
-    private static let searchID = NSToolbarItem.Identifier("search")
-    private static let searchButtonID = NSToolbarItem.Identifier("searchButton")
-    private static let inspectorID = NSToolbarItem.Identifier("inspector")
-
-    func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        [.toggleSidebar, .sidebarTrackingSeparator, .flexibleSpace, Self.spaceID, .flexibleSpace,
-         Self.searchButtonID, .inspectorTrackingSeparator, Self.inspectorID]
+    /// The traffic lights, lowered to sit level with the top bar and moved in
+    /// to line up with the sidebar. AppKit puts them back on resize and the
+    /// like, so this runs again then.
+    private func placeTrafficLights() {
+        guard let window, !window.styleMask.contains(.fullScreen) else { return }
+        let buttons = [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton].compactMap(window.standardWindowButton)
+        guard buttons.count == 3, let bar = buttons[0].superview else { return }
+        let gap = buttons[1].frame.minX - buttons[0].frame.minX
+        let centreFromTop = TopBar.top + TopBar.height / 2
+        for (i, b) in buttons.enumerated() {
+            let h = b.frame.height
+            let y = bar.isFlipped ? centreFromTop - h / 2 : bar.bounds.height - centreFromTop - h / 2
+            b.setFrameOrigin(NSPoint(x: 20 + CGFloat(i) * gap, y: y))
+        }
     }
 
-    func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        toolbarDefaultItemIdentifiers(toolbar) + [Self.searchID]
-    }
+    private let edgeReveal = EdgeReveal()
+    /// The sidebar came out because the pointer reached the edge: it goes
+    /// back once the pointer leaves it.
+    private var sidebarPeeking = false
 
-    func toolbar(_ toolbar: NSToolbar, itemForItemIdentifier id: NSToolbarItem.Identifier,
-                 willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
-        switch id {
-        case Self.spaceID:
-            let control = NSSegmentedControl(labels: Space.allCases.map(\.title), trackingMode: .selectOne,
-                                             target: self, action: #selector(spaceChanged(_:)))
-            for s in Space.allCases {
-                control.setToolTip("\(s.title)（⌘\(s.rawValue + 1)）", forSegment: s.rawValue)
-                control.setWidth(64, forSegment: s.rawValue)
-            }
-            control.segmentStyle = .automatic
-            control.selectedSegmentBezelColor = .controlAccentColor
-            spaceControl = control
-            let item = NSToolbarItem(itemIdentifier: id)
-            item.view = control
-            item.label = "空間"
-            DispatchQueue.main.async { [weak self] in MainActor.assumeIsolated { self?.updateSpaceControls() } }
-            return item
-        case Self.searchButtonID:
-            let item = NSToolbarItem(itemIdentifier: id)
-            item.image = Icon.image(.search, size: 17)
-            item.label = "搜尋"
-            item.toolTip = "搜尋或提問（⌘K）"
-            item.target = self
-            item.action = #selector(focusSearch)
-            return item
-        case Self.searchID:
-            let item = NSSearchToolbarItem(itemIdentifier: id)
-            item.searchField.placeholderString = "搜尋或提問"
-            item.searchField.delegate = self
-            item.preferredWidthForSearchField = 170
-            item.toolTip = "搜尋（⌘K）"
-            searchItem = item
-            return item
-        case Self.inspectorID:
-            let item = NSToolbarItem(itemIdentifier: id)
-            item.image = Icon.image(.infoCircle, size: 17)
-            item.label = "資訊"
-            item.toolTip = "資訊（⌘I）"
-            item.target = self
-            item.action = #selector(toggleInspector)
-            return item
-        default:
-            return nil
+    private func revealSidebar() {
+        guard sidebarItem.isCollapsed else { return }
+        sidebarPeeking = true
+        sidebarItem.animator().isCollapsed = false
+        edgeReveal.watch(sidebar.view) { [weak self] in
+            guard let self, self.sidebarPeeking else { return }
+            self.sidebarPeeking = false
+            self.sidebarItem.animator().isCollapsed = true
         }
     }
 
@@ -1185,7 +1186,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         library.renameColours()
         trail = Trail(root: library.root)
         understanding.libraryChanged()
-        searchItem?.searchField.stringValue = ""
+        topBar.searchField.stringValue = ""
         setSearchExpanded(false)
         sidebar.select(.all)
         cabinetsChanged()
@@ -1230,6 +1231,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     }
     func hoverViewBarForTest() -> String? { viewBar.hoverFirstForTest() }
     func openSearchForTest() { focusSearch() }
+    var spacesControlForTest: NSSegmentedControl { topBar.spaces }
     func flipCabinetForTest() { cabinetsPanel?.flipForTest(cabinets.currentID) }
     func setCoverForTest(_ picture: URL?) -> Bool {
         defer { cabinetsChanged() }
@@ -1241,7 +1243,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         cabinetsChanged()
     }
     func leaveEmptySearchForTest() {
-        guard let field = searchItem?.searchField else { return }
+        let field = topBar.searchField
         field.stringValue = ""
         searchFieldDidEndSearching(field)
     }

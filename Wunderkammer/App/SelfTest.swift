@@ -768,6 +768,17 @@ final class SelfTest {
         ui.leaveEmptySearchForTest()
         await wait(0.3)
         check(!ui.isSearchExpanded, "left empty, it folds again")
+        // The bar of our own takes clicks, under the transparent title bar too.
+        let spaces = ui.spacesControlForTest
+        click(spaces, NSPoint(x: spaces.bounds.width * 0.5, y: spaces.bounds.midY))
+        await wait(0.5)
+        check(ui.mode.space == .wander, "clicking 漫遊 in the top bar goes there (\(ui.mode))")
+        shot("topbar")
+        let buttons = [NSWindow.ButtonType.closeButton, .zoomButton].compactMap(window.standardWindowButton)
+        if let close = buttons.first, let barRect = Optional(spaces.convert(spaces.bounds, to: nil)) {
+            let lightY = close.convert(close.bounds, to: nil).midY
+            check(abs(lightY - barRect.midY) < 4, "the traffic lights sit level with the bar (\(Int(lightY)) vs \(Int(barRect.midY)))")
+        }
         ui.setSpace(.cabinet)
         ui.setMode(.masonry)
         await wait(0.5)
@@ -1464,6 +1475,7 @@ protocol SelfTestUI: AnyObject {
     func hoverViewBarForTest() -> String?
     var isSearchExpanded: Bool { get }
     func openSearchForTest()
+    var spacesControlForTest: NSSegmentedControl { get }
     func flipCabinetForTest()
     func setCoverForTest(_ picture: URL?) -> Bool
     func setVaultForTest(_ folder: URL?)
