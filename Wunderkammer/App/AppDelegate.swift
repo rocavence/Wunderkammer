@@ -220,6 +220,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         answerBanner.translatesAutoresizingMaskIntoConstraints = false
         answerBanner.onClose = { [weak self] in self?.closeAnswer() }
         content.addSubview(answerBanner, positioned: .below, relativeTo: preview)
+        dropOverlay.translatesAutoresizingMaskIntoConstraints = false
+        content.addSubview(dropOverlay, positioned: .below, relativeTo: preview)
+        NSLayoutConstraint.activate([
+            // Below the top bar, over the content only.
+            dropOverlay.topAnchor.constraint(equalTo: content.safeAreaLayoutGuide.topAnchor),
+            dropOverlay.leadingAnchor.constraint(equalTo: content.leadingAnchor),
+            dropOverlay.trailingAnchor.constraint(equalTo: content.trailingAnchor),
+            dropOverlay.bottomAnchor.constraint(equalTo: content.bottomAnchor),
+        ])
+        let hover: (Bool) -> Void = { [weak self] on in
+            guard let self else { return }
+            let board = self.scope.board.flatMap { self.library.collection($0)?.name }
+            self.dropOverlay.show(on, into: board ?? self.cabinets.current.name)
+        }
+        grid.onDropHover = hover
+        canvas.onDropHover = hover
         edgeFade.translatesAutoresizingMaskIntoConstraints = false
         content.addSubview(edgeFade, positioned: .below, relativeTo: answerBanner)
         NSLayoutConstraint.activate([
@@ -1022,6 +1038,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private let edgeReveal = EdgeReveal()
     /// The top shade the wall has, behind the bar in the other views too.
     private let edgeFade = EdgeFade()
+    private let dropOverlay = DropOverlay()
     /// The sidebar came out because the pointer reached the edge: it goes
     /// back once the pointer leaves it.
     private var sidebarPeeking = false
@@ -1077,7 +1094,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         fileMenu.addItem(.separator())
         fileMenu.addItem(withTitle: "新增 board", action: #selector(newBoard), keyEquivalent: "n").target = self
         fileMenu.addItem(.separator())
-        fileMenu.addItem(withTitle: "在 Finder 顯示圖庫", action: #selector(revealLibrary), keyEquivalent: "").target = self
+        fileMenu.addItem(withTitle: "在 Finder 顯示珍奇櫃的資料", action: #selector(revealLibrary), keyEquivalent: "").target = self
         fileMenu.addItem(withTitle: "關閉視窗", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
         fileItem.submenu = fileMenu
         main.addItem(fileItem)

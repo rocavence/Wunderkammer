@@ -129,7 +129,7 @@ final class InspectorViewController: NSViewController {
             })
         }
         if item.storedFilename == nil, item.filePath != nil, library.originalURL(item) != nil {
-            actions.addArrangedSubview(button("複製到圖庫", icon: .copy) { [weak self] in
+            actions.addArrangedSubview(button("複製到珍奇櫃", icon: .copy) { [weak self] in
                 guard let self else { return }
                 Task {
                     await self.library.copyIntoLibrary([item.id])
@@ -332,7 +332,7 @@ final class InspectorViewController: NSViewController {
         if !item.originalFilename.isEmpty, item.kind != .web { f.append(("檔名", item.originalFilename)) }
         if let path = item.filePath {
             if item.storedFilename != nil {
-                f.append(("位置", "圖庫裡有一份複本"))
+                f.append(("位置", "珍奇櫃裡有一份複本"))
                 f.append(("原始位置", Self.shortPath(path)))
             } else {
                 f.append(("位置", library.originalURL(item) == nil ? "找不到原始檔" : Self.shortPath(path)))

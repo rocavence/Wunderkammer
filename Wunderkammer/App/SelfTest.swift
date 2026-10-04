@@ -818,6 +818,12 @@ final class SelfTest {
         ui.setMode(.masonry)
         await wait(0.5)
         shot("space-cabinet")
+        // Something dragged in from outside: the view says where it'll go.
+        ui.grid.onDropHover?(true)
+        await wait(0.3)
+        shot("drop-hover")
+        ui.grid.onDropHover?(false)
+        await wait(0.3)
         // A 格式 view says so, with its icon.
         ui.sidebar.select(.kind(.images))
         await wait(0.5)

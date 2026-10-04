@@ -866,10 +866,20 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
 
     // MARK: Drop from outside
 
-    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation { .copy }
+    /// Something from outside is held over the canvas (true) or has gone (false).
+    var onDropHover: ((Bool) -> Void)?
+
+    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        onDropHover?(true)
+        return .copy
+    }
+
+    override func draggingExited(_ sender: NSDraggingInfo?) { onDropHover?(false) }
+    override func draggingEnded(_ sender: NSDraggingInfo) { onDropHover?(false) }
 
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
-        importPasteboard(sender.draggingPasteboard, library: library, board: board)
+        onDropHover?(false)
+        return importPasteboard(sender.draggingPasteboard, library: library, board: board)
     }
 
     @objc func paste(_ sender: Any?) {

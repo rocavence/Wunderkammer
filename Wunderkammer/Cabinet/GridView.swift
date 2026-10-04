@@ -803,16 +803,25 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
 
     // MARK: Drop & paste
 
+    /// Something from outside is held over the view (true) or has gone (false).
+    var onDropHover: ((Bool) -> Void)?
+
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
-        (sender.draggingSource as? GridView) === self ? [] : .copy
+        let own = (sender.draggingSource as? GridView) === self
+        onDropHover?(!own)
+        return own ? [] : .copy
     }
 
     override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
-        draggingEntered(sender)
+        (sender.draggingSource as? GridView) === self ? [] : .copy
     }
 
+    override func draggingExited(_ sender: NSDraggingInfo?) { onDropHover?(false) }
+    override func draggingEnded(_ sender: NSDraggingInfo) { onDropHover?(false) }
+
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
-        importFrom(sender.draggingPasteboard)
+        onDropHover?(false)
+        return importFrom(sender.draggingPasteboard)
     }
 
     @objc func paste(_ sender: Any?) {

@@ -344,3 +344,67 @@ final class BarStrip: PassThroughView {
         onLayout?()
     }
 }
+
+/// Over the content while something is dragged in from outside: a dashed
+/// frame and where it will go, so letting go is never a guess.
+@MainActor
+final class DropOverlay: NSView {
+    private let frameLayer = CAShapeLayer()
+    private let label = NSTextField(labelWithString: "")
+    private let icon = NSImageView(image: Icon.optical(.inboxIn, size: 34))
+
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        wantsLayer = true
+        layer?.addSublayer(frameLayer)
+        frameLayer.lineWidth = 2
+        frameLayer.lineDashPattern = [8, 6]
+        label.font = .systemFont(ofSize: 15, weight: .semibold)
+        let stack = NSStackView(views: [icon, label])
+        stack.orientation = .vertical
+        stack.spacing = 10
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.centerXAnchor.constraint(equalTo: centerXAnchor),
+            stack.centerYAnchor.constraint(equalTo: centerYAnchor),
+        ])
+        alphaValue = 0
+        isHidden = true
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
+
+    override func layout() {
+        super.layout()
+        let r = bounds.insetBy(dx: 14, dy: 14)
+        frameLayer.frame = bounds
+        frameLayer.path = CGPath(roundedRect: r, cornerWidth: 18, cornerHeight: 18, transform: nil)
+        updateColors()
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateColors()
+    }
+
+    private func updateColors() {
+        frameLayer.strokeColor = resolved(.controlAccentColor)
+        // A veil over the pictures so the words read, tinted with the accent.
+        frameLayer.fillColor = resolved(NSColor.windowBackgroundColor.withAlphaComponent(0.86))
+        icon.contentTintColor = .controlAccentColor
+        label.textColor = .labelColor
+    }
+
+    func show(_ on: Bool, into name: String) {
+        if on { label.stringValue = "放開就收進「\(name)」"; isHidden = false }
+        NSAnimationContext.runAnimationGroup({ ctx in
+            ctx.duration = 0.15
+            animator().alphaValue = on ? 1 : 0
+        }, completionHandler: { [weak self] in
+            if !on { self?.isHidden = true }
+        })
+    }
+}
