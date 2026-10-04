@@ -691,6 +691,25 @@ final class SelfTest {
             check(abs(d0.x - d1.x) < 1 && abs(d0.y - d1.y) < 1, "the pieces move together: nothing was dragged out of place")
         }
         check(!ui.preview.isOpen, "a space that panned doesn't open the preview")
+        // Reset: one pile again, connections kept.
+        canvas.clusterByTheme(nil)
+        await wait(0.6)
+        let pilesBefore = canvas.debugGroupFrames.count, linksBefore = canvas.debugLinkCount
+        // Asked first; going on asks again; cancelling leaves it as it was.
+        canvas.resetArrangement(nil)
+        await wait(0.6)
+        check(window.attachedSheet != nil, "reset asks first")
+        if let sheet = window.attachedSheet { window.endSheet(sheet, returnCode: .alertFirstButtonReturn) }
+        await wait(0.6)
+        check(window.attachedSheet != nil, "and asks again")
+        shot("reset-confirm")
+        if let sheet = window.attachedSheet { window.endSheet(sheet, returnCode: .alertSecondButtonReturn) }
+        await wait(0.5)
+        check(canvas.debugGroupFrames.count == pilesBefore, "cancelling changes nothing")
+        canvas.performReset()
+        await wait(0.6)
+        check(pilesBefore > 1 && canvas.debugGroupFrames.count == 1, "reset puts it back in one pile (\(pilesBefore) → \(canvas.debugGroupFrames.count))")
+        check(canvas.debugLinkCount == linksBefore, "reset keeps the connections (\(linksBefore))")
         // Scrolling zooms rather than moves.
         let zoomBefore = canvas.debugZoom, offsetBefore = canvas.debugOffset
         if let cg = CGEvent(scrollWheelEvent2Source: nil, units: .line, wheelCount: 1, wheel1: 3, wheel2: 0, wheel3: 0),

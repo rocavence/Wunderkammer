@@ -206,6 +206,51 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         layoutGroups()
     }
 
+    /// Back to how the map first looked: every move and pile forgotten,
+    /// connections kept. Asked twice, the second time with what will go.
+    @objc func resetArrangement(_ sender: Any?) {
+        guard let window else { return }
+        let first = NSAlert()
+        first.messageText = "重設地圖的擺放？"
+        first.informativeText = "拖過的位置和自己分的堆，會回到一開始自動排好的樣子。收藏和連線都不會動。"
+        first.addButton(withTitle: "繼續…")
+        first.addButton(withTitle: "取消")
+        first.beginSheetModal(for: window) { [weak self] response in
+            guard let self, response == .alertFirstButtonReturn else { return }
+            // The first sheet has to be gone before the second can show.
+            DispatchQueue.main.async { self.confirmReset(in: window) }
+        }
+    }
+
+    private func confirmReset(in window: NSWindow) {
+        let second = NSAlert()
+        second.alertStyle = .critical
+        second.messageText = "真的要重設嗎？"
+        let piles = groups.count
+        second.informativeText = (piles > 1 ? "\(piles) 個堆會合回一堆，" : "") + "所有位置回到原本的排列。這個動作無法復原。"
+        second.addButton(withTitle: "重設")
+        second.addButton(withTitle: "取消")
+        second.buttons.first?.hasDestructiveAction = true
+        second.beginSheetModal(for: window) { [weak self] response in
+            guard response == .alertFirstButtonReturn else { return }
+            self?.performReset()
+        }
+    }
+
+    func performReset() {
+        library.resetCanvas(key: scope.canvasKey)
+        selection = Selection()
+        groups = currentGroups()
+        layoutGroups()
+        findRelations()
+        needsFit = true
+        fit(animated: true)
+        render(animated: true)
+        needsDisplay = true
+    }
+
+    var debugLinkCount: Int { links.count }
+
     @objc func arrange(_ sender: Any?) {
         let sizes = groups.map { groupFrames[$0.id]?.size ?? .zero }
         let widest = sizes.map(\.width).max() ?? 0
@@ -747,6 +792,8 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
             }
             menu.addItem(ClosureMenuItem("整理成整齊的排列") { [weak self] in self?.arrange(nil) })
             menu.addItem(ClosureMenuItem("顯示全部") { [weak self] in self?.fit(animated: true) })
+            menu.addItem(.separator())
+            menu.addItem(ClosureMenuItem("重設擺放…") { [weak self] in self?.resetArrangement(nil) })
             menu.addItem(.separator())
             let hint = NSMenuItem(title: "按住 ⌥ 從一件拖到另一件，可以連起來", action: nil, keyEquivalent: "")
             hint.isEnabled = false

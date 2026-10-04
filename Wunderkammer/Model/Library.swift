@@ -402,6 +402,13 @@ final class Library {
     /// Canvas edits don't post didChange: the canvas already shows them.
     /// Removed items stay in the pile they were in (hidden), so ⌘Z puts them
     /// back there even if the canvas was rearranged meanwhile.
+    /// Forgets how a canvas was arranged: it's one pile again, in collected
+    /// order. Its connections stay.
+    func resetCanvas(key: String) {
+        canvases[key] = nil
+        save()
+    }
+
     func setCanvasGroups(_ groups: [CanvasGroup], key: String) {
         var groups = groups
         let shown = Set(groups.flatMap(\.itemIDs))
