@@ -610,6 +610,8 @@ final class SelfTest {
         ui.showRandom()
         await wait(0.8)
         key(53)
+        // A random video or file opens in Quick Look, which Esc to our window doesn't reach.
+        if QLPreviewPanel.sharedPreviewPanelExists() { QLPreviewPanel.shared().close() }
         await wait(0.6)
         ui.search("Chungking")
         await wait(0.6)
