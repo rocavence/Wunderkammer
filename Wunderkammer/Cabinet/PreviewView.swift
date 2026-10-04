@@ -31,6 +31,11 @@ final class PreviewView: NSView {
         wantsLayer = true
         dim.opacity = 0
         imageLayer.contentsGravity = .resizeAspect
+        // Presented, not pasted: a soft shadow lifts the piece off the stage.
+        imageLayer.shadowColor = NSColor.black.cgColor
+        imageLayer.shadowOpacity = 0.55
+        imageLayer.shadowRadius = 28
+        imageLayer.shadowOffset = CGSize(width: 0, height: -14)
         imageLayer.minificationFilter = .trilinear
         layer?.addSublayer(dim)
         layer?.addSublayer(imageLayer)
@@ -183,9 +188,10 @@ final class PreviewView: NSView {
         let aspect = CGFloat(item.pixelWidth) / max(CGFloat(item.pixelHeight), 1)
         var size = NSSize(width: area.width, height: area.width / aspect)
         if size.height > area.height { size = NSSize(width: area.height * aspect, height: area.height) }
-        // Never upscale beyond the image's own pixels (in points).
+        // Small pictures may grow a little (up to 1.6× their own pixels), so a
+        // meme isn't a stamp in the middle of the stage; never more than that.
         let scale = window?.backingScaleFactor ?? 2
-        let native = CGFloat(item.pixelWidth) / scale
+        let native = CGFloat(item.pixelWidth) / scale * 1.6
         if size.width > native, native > 0 { size = NSSize(width: native, height: native / aspect) }
         return NSRect(x: area.midX - size.width / 2, y: area.midY - size.height / 2, width: size.width, height: size.height)
     }

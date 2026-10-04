@@ -77,7 +77,21 @@ struct CultureGraph {
         // relations (and drifts off to a corner): left out, unless nothing connects.
         let linked = edges(of: nodes).reduce(into: Set<Int>()) { $0.insert($1.a); $0.insert($1.b) }
         if !linked.isEmpty { nodes = nodes.indices.filter(linked.contains).map { nodes[$0] } }
+        // A pair talking only to each other, apart from everything else, reads as
+        // debris next to the main web: kept only when there's no main web.
+        let pieces = Self.components(nodes.count, edges(of: nodes))
+        if let biggest = pieces.map(\.count).max(), biggest >= 3 {
+            let keep = Set(pieces.filter { $0.count >= 3 }.flatMap { $0 })
+            nodes = nodes.indices.filter(keep.contains).map { nodes[$0] }
+        }
         return CultureGraph(nodes: nodes, edges: edges(of: nodes))
+    }
+
+    private static func components(_ n: Int, _ edges: [Edge]) -> [[Int]] {
+        var parent = Array(0..<n)
+        func root(_ i: Int) -> Int { var r = i; while parent[r] != r { r = parent[r] }; return r }
+        for e in edges { parent[root(e.a)] = root(e.b) }
+        return Dictionary(grouping: 0..<n, by: root).values.map { $0 }
     }
 
     /// Force-directed placement (Fruchterman–Reingold), deterministic: the

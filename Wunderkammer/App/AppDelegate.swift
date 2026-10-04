@@ -541,8 +541,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         let index = toolbar.items.firstIndex { $0.itemIdentifier == Self.layoutID }
         if layouts.count < 2, let index {
             toolbar.removeItem(at: index)
-        } else if layouts.count >= 2, index == nil, let search = toolbar.items.firstIndex(where: { $0.itemIdentifier == Self.searchID }) {
-            toolbar.insertItem(withItemIdentifier: Self.layoutID, at: search)
+        } else if layouts.count >= 2, index == nil,
+                  let next = toolbar.items.firstIndex(where: { $0.itemIdentifier == Self.randomID || $0.itemIdentifier == Self.searchID }) {
+            // Back in its one place: after the spaces, before 隨機 and search.
+            toolbar.insertItem(withItemIdentifier: Self.layoutID, at: next)
         }
     }
 

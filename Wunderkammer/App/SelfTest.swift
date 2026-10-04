@@ -871,8 +871,9 @@ final class SelfTest {
             await wait(0.25)
         }
         let b = bare.first.flatMap(library.item)
-        check(snapped && (b.map { abs(CGFloat($0.pixelWidth) / CGFloat($0.pixelHeight) - 1.5) < 0.01 } ?? false),
-              "page without og:image gets a screenshot (\(b?.pixelWidth ?? 0)×\(b?.pixelHeight ?? 0), title: \(b?.title ?? "–"))")
+        // The top of the page set as a card: as wide as a card, a little taller than the plate.
+        check(snapped && (b.map { $0.pixelWidth == 1200 && $0.pixelHeight > 760 && $0.pixelHeight < 1000 } ?? false),
+              "page without og:image gets a page card (\(b?.pixelWidth ?? 0)×\(b?.pixelHeight ?? 0), title: \(b?.title ?? "–"))")
         await wait(0.8)
         // Resting on a page shows its title at the foot of the tile.
         if let p = center(of: ids[3], in: ui.grid),

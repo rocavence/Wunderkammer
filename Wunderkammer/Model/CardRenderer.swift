@@ -76,6 +76,35 @@ enum CardRenderer {
         }
     }
 
+    /// A page with no picture of its own: the top of the page as a plate,
+    /// then its name and site below on paper, like a catalogue entry —
+    /// not a whole browser window shrunk to grey.
+    static func pageShot(_ shot: CGImage, title: String, domain: String, favicon: CGImage?) -> CGImage? {
+        let plate = CGRect(x: 0, y: 0, width: 600, height: 340)
+        // As tall as the name needs: one line or two.
+        let name = serif(title, size: 24, lineHeight: 1.15)
+        let nameHeight = min(64, ceil(name.boundingRect(with: CGSize(width: 600 - 64, height: 200), options: [.usesLineFragmentOrigin]).height))
+        let size = CGSize(width: 600, height: plate.maxY + 22 + 26 + nameHeight + 26)
+        // The top of the page, as wide as the card.
+        let cropHeight = min(CGFloat(shot.height), CGFloat(shot.width) * plate.height / plate.width)
+        let top = shot.cropping(to: CGRect(x: 0, y: 0, width: CGFloat(shot.width), height: cropHeight)) ?? shot
+        return draw(size) { ctx, rect in
+            fill(ctx, rect, paper)
+            drawImage(ctx, top, in: plate)
+            ctx.setFillColor(rule)
+            ctx.fill(CGRect(x: 0, y: plate.maxY, width: size.width, height: 0.5))
+            let inset = CGRect(x: 32, y: plate.maxY + 22, width: size.width - 64, height: size.height - plate.maxY - 44)
+            var x = inset.minX
+            if let favicon {
+                drawImage(ctx, favicon, in: CGRect(x: x, y: inset.minY + 1, width: 14, height: 14))
+                x += 22
+            }
+            let site = domain.hasPrefix("www.") ? String(domain.dropFirst(4)) : domain
+            drawText(ctx, label(site, size: 13, color: muted, tracking: 0.2), in: CGRect(x: x, y: inset.minY, width: inset.maxX - x, height: 18))
+            drawText(ctx, name, in: CGRect(x: inset.minX, y: inset.minY + 26, width: inset.width, height: nameHeight + 4))
+        }
+    }
+
     /// Audio without artwork: title, artist, and the waveform.
     static func audio(title: String, artist: String?, waveform: [Float]) -> CGImage? {
         let size = CGSize(width: 400, height: 400)

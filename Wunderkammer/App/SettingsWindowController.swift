@@ -78,7 +78,7 @@ final class SettingsWindowController: NSWindowController {
             if let last = stack.arrangedSubviews.last { stack.setCustomSpacing(22, after: last) }
         }
         group("收藏", [
-            row("收藏剪貼簿或目前頁面", "剛複製的東西優先；沒有的話，收瀏覽器正在看的頁面", capture),
+            row("收藏剪貼簿或目前頁面", "剛拷貝的東西優先；沒有的話，收瀏覽器正在看的頁面", capture),
             row("截圖收藏", "選範圍或視窗，截好直接收進來", shot),
         ], note: "點一下快捷鍵，再按下新的組合鍵。Esc 取消，Delete 還原預設。")
         group("搜尋與理解", [

@@ -80,9 +80,12 @@ final class TrailView: NSScrollView {
         row.orientation = .horizontal
         row.alignment = .centerY
         row.spacing = 8
-        for step in visit {
+        for (i, step) in visit.enumerated() {
             // Plain browsing is just a step; a search, chance or a relation says so.
-            row.addArrangedSubview(arrow(step.via == .browse ? "" : Trail.short(step.via)))
+            // (A sitting that simply began has nothing before its first picture.)
+            if !(i == 0 && step.via == .browse) {
+                row.addArrangedSubview(arrow(step.via == .browse ? "" : Trail.short(step.via)))
+            }
             if let item = library.item(step.item) { row.addArrangedSubview(node(item)) }
         }
         // Long sittings scroll sideways rather than wrap: it's a path.

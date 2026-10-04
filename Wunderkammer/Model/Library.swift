@@ -472,9 +472,12 @@ final class Library {
             if let imageURL = meta.imageURL {
                 picture = await WebMetadata.image(imageURL, maxPixel: Representer.cardSize)
             }
-            if picture == nil {
-                // No preview image of its own: a picture of the page itself.
-                picture = await WebSnapshot.capture(url)
+            if picture == nil, let shot = await WebSnapshot.capture(url) {
+                // No preview image of its own: the top of the page, set as a card.
+                var icon: CGImage?
+                if let iconURL = meta.iconURL { icon = await WebMetadata.image(iconURL, maxPixel: 64) }
+                let title = meta.title.map { Item.withoutSiteName($0, domain: item.domain) } ?? item.displayTitle
+                picture = CardRenderer.pageShot(shot, title: title, domain: item.domain ?? "", favicon: icon)
             }
             if picture == nil {
                 var icon: CGImage?
@@ -583,7 +586,7 @@ final class Library {
     /// Pages collected before cookie notices were cleared off their pictures
     /// get their picture and saved copy once more, once.
     func redoWebPictures() {
-        let key = "webPictures.v2"
+        let key = "webPictures.v4"
         guard !UserDefaults.standard.bool(forKey: key) else { return }
         UserDefaults.standard.set(true, forKey: key)
         let ids = items.filter { $0.kind == .web }.map(\.id)
