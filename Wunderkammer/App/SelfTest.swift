@@ -582,6 +582,8 @@ final class SelfTest {
         _ = picture("b.png", hue: 0.37)
         try? fm.setAttributes([.modificationDate: Date(timeIntervalSinceNow: -60)], ofItemAtPath: dir.appendingPathComponent("a.png").path)
         try? fm.setAttributes([.modificationDate: Date(timeIntervalSinceNow: -60)], ofItemAtPath: dir.appendingPathComponent("b.png").path)
+        // The copied library may already watch folders of its own.
+        for f in ui.watchedFoldersForTest { ui.unwatchFolderForTest(f) }
         check(ui.watchFolderForTest(dir), "a folder can be watched")
         for _ in 0..<40 where inFolder() < 2 { await wait(0.25) }
         check(inFolder() == 2, "what was already there comes in (\(inFolder()) of 2)")
@@ -1306,6 +1308,7 @@ protocol SelfTestUI: AnyObject {
     func cabinetID(named: String) -> UUID?
     func watchFolderForTest(_ folder: URL) -> Bool
     func unwatchFolderForTest(_ folder: URL)
+    var watchedFoldersForTest: [URL] { get }
     func canDeleteCabinet(_ id: UUID) -> Bool
     func deleteCabinetForTest(_ id: UUID)
     var currentCabinet: UUID { get }

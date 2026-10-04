@@ -19,14 +19,14 @@ enum Subjects {
 
     /// The cabinet's own themes: labels on at least 3 items (and not on nearly
     /// everything), most common first.
-    static func discover(in items: [Item], limit: Int = 8) -> [Subject] {
+    static func discover(in items: [Item], limit: Int = 8, minimum: Int = 3) -> [Subject] {
         var counts: [String: Int] = [:]
         for item in items {
             for label in Set(item.labels ?? []) where !ignored.contains(label) { counts[label, default: 0] += 1 }
         }
         let ceiling = max(Int(Double(items.count) * 0.7), 3)
         return counts
-            .filter { $0.value >= 3 && $0.value <= ceiling }
+            .filter { $0.value >= minimum && $0.value <= ceiling }
             .sorted { $0.value != $1.value ? $0.value > $1.value : $0.key < $1.key }
             .prefix(limit)
             .map { Subject(label: $0.key, title: title($0.key), count: $0.value) }
@@ -64,6 +64,13 @@ enum Subjects {
         "flowerpot": "盆栽", "houseplant": "室內植物", "leaf": "葉子", "rock": "岩石", "lake": "湖", "river": "河", "waterfall": "瀑布",
         "cloud": "雲", "rain": "雨", "winter": "冬天", "autumn": "秋天", "spring": "春天", "summer": "夏天",
         "adult": "成人", "teen": "青少年", "document": "文件", "printed page": "印刷頁", "screenshot": "截圖",
+        "door": "門", "brick": "磚", "cardboard box": "紙箱", "cord": "線材", "raw glass": "玻璃", "cabinet": "櫃子",
+        "circuit board": "電路板", "chart": "圖表", "diagram": "圖解", "stool": "凳子", "footwear": "鞋類", "sandal": "涼鞋",
+        "toilet seat": "馬桶座", "toilet": "馬桶", "bathroom": "浴室", "sink": "洗手台", "bathtub": "浴缸", "faucet": "水龍頭",
+        "tile": "磁磚", "floor": "地板", "wall": "牆", "ceiling": "天花板", "stairs": "樓梯", "curtain": "窗簾", "shelf": "架子",
+        "bed": "床", "desk": "書桌", "mirror": "鏡子", "rug": "地毯", "pillow": "枕頭", "tool": "工具", "hand": "手",
+        "cable": "電線", "wire": "電線", "construction": "施工", "paper": "紙",
+        "textile": "布料", "fabric": "布料", "bag_luggage": "行李", "container": "容器", "box": "盒子",
         "structure": "結構物", "outdoor": "戶外", "land": "地景", "clothing": "服裝", "sky": "天空", "blue sky": "藍天",
         "blue_sky": "藍天", "cloudy": "多雲", "machine": "機器", "conveyance": "交通工具", "vehicle": "車輛",
         "automobile": "汽車", "road other": "道路", "material": "材質", "fence": "圍欄", "necktie": "領帶",

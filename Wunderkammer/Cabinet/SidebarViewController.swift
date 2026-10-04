@@ -113,7 +113,8 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             (.pet, ["animal", "mammal", "cat", "dog", "bird", "fish", "insect", "horse"]),
             (.palette, ["art", "painting", "drawing", "sculpture"]),
             (.paintbrush, ["illustrations", "cartoon", "comics", "anime", "graphic design", "poster"]),
-            (.building, ["building", "structure", "architecture", "house", "skyscraper", "cityscape", "city", "interior", "bridge"]),
+            (.building, ["building", "structure", "architecture", "house", "skyscraper", "cityscape", "city", "interior", "bridge",
+                         "door", "window", "portal", "brick", "tile", "wall", "floor", "ceiling", "stairs"]),
             (.car, ["road", "road other", "street", "car", "automobile", "vehicle", "conveyance", "bicycle", "train", "aircraft", "boat"]),
             (.leaf, ["plant", "tree", "foliage", "grass", "leaf", "flower", "garden", "houseplant", "flowerpot", "nature", "forest"]),
             (.cloud, ["sky", "blue sky", "blue_sky", "cloudy", "cloud", "rain", "snow", "night sky", "night_sky"]),
@@ -144,7 +145,8 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     private func reload() {
         updateHeader()
         var r: [Row] = []
-        let subjects = Subjects.discover(in: library.items, limit: 6)
+        // Every theme two or more pieces share: the more ways in, the better.
+        let subjects = Subjects.discover(in: library.items, limit: .max, minimum: 2)
         let themeRows: [Row] = subjects.isEmpty ? [] : [.header("主題")] + subjects.map {
             .view(.subject($0.label), title: $0.title, icon: Self.themeIcon($0.label), count: $0.count)
         }

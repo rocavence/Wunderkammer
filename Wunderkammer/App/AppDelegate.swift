@@ -1175,6 +1175,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         defer { cabinetsChanged() }
         return cabinets.watch(folder, in: cabinets.currentID)
     }
+    var watchedFoldersForTest: [URL] { cabinets.watched(cabinets.currentID) }
     func unwatchFolderForTest(_ folder: URL) { cabinets.unwatch(folder, in: cabinets.currentID); cabinetsChanged() }
     func canDeleteCabinet(_ id: UUID) -> Bool { cabinets.canDelete(id) }
     func deleteCabinetForTest(_ id: UUID) { cabinets.delete(id); cabinetsChanged() }
