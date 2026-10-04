@@ -893,7 +893,7 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
     static let width: CGFloat = 480
     private static let pad: CGFloat = 28
 
-    private let coverView = NSImageView()
+    private let coverView = CoverWell()
     private let heading = NSTextField(labelWithString: "")
     private let subheading = NSTextField(labelWithString: "")
     private let coverActions = NSStackView()
@@ -921,6 +921,7 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
         heading.lineBreakMode = .byTruncatingTail
         subheading.font = .systemFont(ofSize: 12)
         subheading.textColor = .secondaryLabelColor
+        coverView.onClick = { [weak self] in self?.onChooseCover?() }
         coverActions.spacing = 12
         let titles = NSStackView(views: [heading, subheading, coverActions])
         titles.orientation = .vertical
@@ -1206,5 +1207,52 @@ private final class ChoiceTile: NSView {
     override func mouseDown(with event: NSEvent) {}
     override func mouseUp(with event: NSEvent) {
         if bounds.contains(convert(event.locationInWindow, from: nil)) { onPick?() }
+    }
+}
+
+/// The cover on the settings: a click changes it, and says so under the pointer.
+@MainActor
+private final class CoverWell: NSImageView {
+    var onClick: (() -> Void)?
+    private let veil = CALayer()
+    private let word = CATextLayer()
+
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        wantsLayer = true
+        veil.backgroundColor = NSColor.black.withAlphaComponent(0.45).cgColor
+        veil.opacity = 0
+        word.string = NSAttributedString(string: "更換", attributes: [
+            .font: NSFont.systemFont(ofSize: 13, weight: .semibold), .foregroundColor: NSColor.white,
+        ])
+        word.alignmentMode = .center
+        word.contentsScale = 2
+        veil.addSublayer(word)
+        toolTip = "更換封面"
+        setAccessibilityLabel("更換封面")
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func layout() {
+        super.layout()
+        if veil.superlayer == nil { layer?.addSublayer(veil) }
+        veil.frame = bounds
+        word.frame = CGRect(x: 0, y: bounds.midY - 9, width: bounds.width, height: 18)
+        word.contentsScale = window?.backingScaleFactor ?? 2
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        trackingAreas.forEach(removeTrackingArea)
+        addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect, .cursorUpdate], owner: self))
+    }
+
+    override func cursorUpdate(with event: NSEvent) { NSCursor.pointingHand.set() }
+    override func mouseEntered(with event: NSEvent) { veil.opacity = 1 }
+    override func mouseExited(with event: NSEvent) { veil.opacity = 0 }
+    override func mouseDown(with event: NSEvent) {}
+    override func mouseUp(with event: NSEvent) {
+        if bounds.contains(convert(event.locationInWindow, from: nil)) { onClick?() }
     }
 }

@@ -608,6 +608,26 @@ final class Library {
         }
     }
 
+    /// Colours named before they were judged strictly (beige is not orange)
+    /// are named again from each picture, once per library.
+    func renameColours() {
+        let key = "colours.v2." + root.standardizedFileURL.path
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        UserDefaults.standard.set(true, forKey: key)
+        let pictures = items.filter { $0.colors != nil }.map { ($0.id, thumbnailURL($0)) }
+        Task {
+            let named = await Task.detached { () -> [(UUID, [String])] in
+                pictures.compactMap { id, url in
+                    guard let src = CGImageSourceCreateWithURL(url as CFURL, nil),
+                          let image = CGImageSourceCreateImageAtIndex(src, 0, nil) else { return nil }
+                    return (id, Analyzer.dominantColors(image))
+                }
+            }.value
+            for (id, colours) in named { self.update(id, notify: false) { $0.colors = colours } }
+            self.changed()
+        }
+    }
+
     /// Text cards drawn before Chinese got its own serif and the source line
     /// grew legible are drawn again, once.
     func redrawTextCards() {

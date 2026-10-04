@@ -163,6 +163,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             library.redoWebPictures()
             library.redrawTextCards()
         }
+        library.renameColours()
         try? FileManager.default.removeItem(at: Self.textPreviewDir)
         grid = GridView(library: library, thumbnailer: thumbnailer)
         scroll = NSScrollView()
@@ -1181,6 +1182,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         trail.save()
         cabinets.select(id)
         library.open(root: cabinets.root(of: entry))
+        library.renameColours()
         trail = Trail(root: library.root)
         understanding.libraryChanged()
         searchItem?.searchField.stringValue = ""

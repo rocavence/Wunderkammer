@@ -98,19 +98,26 @@ enum Analyzer {
             counts[name(r, g, b), default: 0] += 1
         }
         let total = Double(side * side)
-        return counts.filter { Double($0.value) / total > 0.12 }.sorted { $0.value > $1.value }.map(\.key)
+        // Strict: a colour has to be a fair part of the picture to name it,
+        // the neutrals (which are everywhere) more so.
+        return counts.filter { Double($0.value) / total > (neutrals.contains($0.key) ? 0.3 : 0.2) }
+            .sorted { $0.value > $1.value }.map(\.key)
     }
+
+    static let neutrals: Set<String> = ["white", "gray", "black"]
 
     /// A plain colour word for an sRGB value.
     static func name(_ r: CGFloat, _ g: CGFloat, _ b: CGFloat) -> String {
         let c = NSColor(srgbRed: r, green: g, blue: b, alpha: 1)
         var h: CGFloat = 0, s: CGFloat = 0, v: CGFloat = 0
         c.getHue(&h, saturation: &s, brightness: &v, alpha: nil)
-        if v < 0.18 { return "black" }
-        if s < 0.14 { return v > 0.85 ? "white" : "gray" }
+        if v < 0.2 { return "black" }
+        // Washed-out tints (beige walls, off-white paper, grey concrete) aren't
+        // colours: only a clearly saturated, lit pixel counts as one.
+        if s < 0.3 || v < 0.3 { return v > 0.82 ? "white" : "gray" }
         let deg = h * 360
-        // Dark, low-saturation oranges and reds read as brown.
-        if (10..<45).contains(deg), v < 0.6 { return "brown" }
+        // Dark oranges and reds read as brown.
+        if (10..<45).contains(deg), v < 0.55 { return "brown" }
         switch deg {
         case ..<14, 345...: return s < 0.45 && v > 0.7 ? "pink" : "red"
         case ..<40: return "orange"
