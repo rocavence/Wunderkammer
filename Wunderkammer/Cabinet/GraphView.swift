@@ -169,8 +169,10 @@ final class GraphView: NSView {
             let line = CAShapeLayer()
             line.path = path
             line.fillColor = nil
-            line.strokeColor = resolved(NSColor.tertiaryLabelColor)
-            line.lineWidth = max(1, (1 + log2(CGFloat(weight))) * 1.2 * zoom)
+            // More shared, thicker and brighter: the legend's promise, visible.
+            let strength = min(1, 0.25 + CGFloat(weight - 1) * 0.15)
+            line.strokeColor = resolved(NSColor.labelColor).copy(alpha: strength)
+            line.lineWidth = max(1, (1 + CGFloat(weight - 1) * 1.6) * zoom)
             edgesLayer.addSublayer(line)
         }
 

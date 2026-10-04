@@ -241,7 +241,7 @@ final class TilePool {
             let v = veil ?? {
                 let v = CALayer()
                 v.name = "veil"
-                v.backgroundColor = CGColor(gray: 0, alpha: 0.12)
+                v.backgroundColor = CGColor(gray: 0, alpha: 0.22)
                 v.autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
                 tile.addSublayer(v)
                 return v

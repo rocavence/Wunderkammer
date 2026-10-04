@@ -670,7 +670,7 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
                 caption.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
                 caption.masksToBounds = true
                 let shade = CAGradientLayer()
-                shade.colors = [CGColor(gray: 0, alpha: 0), CGColor(gray: 0, alpha: 0.65)]
+                shade.colors = [CGColor(gray: 0, alpha: 0), CGColor(gray: 0, alpha: 0.82)]
                 shade.name = "shade"
                 let text = CATextLayer()
                 text.name = "text"

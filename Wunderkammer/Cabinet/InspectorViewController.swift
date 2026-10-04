@@ -62,10 +62,22 @@ final class InspectorViewController: NSViewController {
         guard isViewLoaded else { return }
         stack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         guard let id = itemID, let item = library.item(id) else {
-            let hint = label("選一件收藏，這裡會顯示系統替它記下的一切。", size: 12, color: .secondaryLabelColor)
-            stack.addArrangedSubview(hint)
+            // Centered and calm, saying what will appear here.
+            let icon = NSImageView(image: Icon.image(.infoCircle, size: 28))
+            icon.contentTintColor = .tertiaryLabelColor
+            let hint = label("選一件收藏\n這裡會顯示系統替它記下的一切：\n它是什麼、從哪來、和什麼有關", size: 12.5, color: .secondaryLabelColor)
+            hint.alignment = .center
+            let empty = NSStackView(views: [icon, hint])
+            empty.orientation = .vertical
+            empty.spacing = 10
+            stack.addArrangedSubview(empty)
+            stack.setCustomSpacing(0, after: empty)
+            empty.translatesAutoresizingMaskIntoConstraints = false
+            empty.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: -36).isActive = true
+            stack.edgeInsets.top = max(54, (view.bounds.height - 120) / 2)
             return
         }
+        stack.edgeInsets.top = 54
 
         if let image = NSImage(contentsOf: library.thumbnailURL(item)) {
             let picture = NSImageView(image: image)

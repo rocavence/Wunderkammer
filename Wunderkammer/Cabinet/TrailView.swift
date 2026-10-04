@@ -113,8 +113,8 @@ final class TrailView: NSScrollView {
 
     private func arrow(_ text: String) -> NSView {
         let label = NSTextField(labelWithString: text.isEmpty ? "→" : "\(text) →")
-        label.font = .systemFont(ofSize: 11)
-        label.textColor = .tertiaryLabelColor
+        label.font = .systemFont(ofSize: 11.5)
+        label.textColor = .secondaryLabelColor
         label.lineBreakMode = .byTruncatingTail
         label.widthAnchor.constraint(lessThanOrEqualToConstant: 140).isActive = true
         return label

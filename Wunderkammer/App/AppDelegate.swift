@@ -21,7 +21,7 @@ enum ViewMode: Int, CaseIterable {
     case grid, masonry, timeline, canvas, infinity, graph
 
     var title: String { ["格狀", "瀑布", "時間軸", "畫布", "無限牆", "圖譜"][rawValue] }
-    var icon: Reicon { [.grid, .layout, .calendar, .layers, .infinite, .nodes][rawValue] }
+    var icon: Reicon { [.grid, .kanban, .calendar, .layers, .infinite, .nodes][rawValue] }
     var space: Space {
         switch self {
         case .grid, .masonry, .timeline: .cabinet
@@ -477,7 +477,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         if learning > 0 { detail.append("正在理解 \(learning) 件") }
         grid?.heading = (scope.isSearching ? "「\(scope.search)」" : window.title, detail.joined(separator: " · "))
         grid?.tip = scope.isSearching ? "" : GridView.tips[tipIndex]
-        infinity?.heading = scope.base == .all ? "整個珍奇室" : window.title
+        infinity?.heading = window.title
         // A cabinet with nothing in it yet gets its welcome instead of empty views.
         emptyCabinet?.isHidden = !library.items.isEmpty
     }
@@ -638,7 +638,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         if mode == .graph { setMode(.grid) }
         if scope.isSearching { clearSearch() }
         currentSurface.reveal(pick.id)
-        let caption = Rediscovery.ageLine(pick)
+        let caption = Rediscovery.ageLine(pick) + " · R 再抽一件 · Esc 關閉"
         pendingVia = .random
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
             MainActor.assumeIsolated { self?.openPreview(pick.id, caption: caption) }
@@ -939,7 +939,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             let item = NSSearchToolbarItem(itemIdentifier: id)
             item.searchField.placeholderString = "搜尋或提問"
             item.searchField.delegate = self
-            item.preferredWidthForSearchField = 260
+            item.preferredWidthForSearchField = 200
             item.toolTip = "搜尋（⌘K）"
             searchItem = item
             return item

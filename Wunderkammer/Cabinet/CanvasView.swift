@@ -80,9 +80,10 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         linesLayer.shadowOffset = .zero
         layer?.addSublayer(linesLayer)
         relationsLayer.fillColor = nil
-        relationsLayer.lineWidth = 1.2
-        relationsLayer.lineDashPattern = [4, 4]
-        relationsLayer.zPosition = 5.5
+        relationsLayer.lineWidth = 1.5
+        relationsLayer.lineDashPattern = [5, 4]
+        // Under the pictures: the lines show in the gaps, never across a photo.
+        relationsLayer.zPosition = -1
         layer?.addSublayer(relationsLayer)
         registerForDraggedTypes([.fileURL, .URL, .string, .png, .tiff, .wunderkammerItem])
         NotificationCenter.default.addObserver(forName: Library.didChange, object: library, queue: .main) { [weak self] _ in
@@ -412,7 +413,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
             path.addLine(to: b)
         }
         relationsLayer.frame = bounds
-        relationsLayer.strokeColor = resolved(.secondaryLabelColor)
+        relationsLayer.strokeColor = resolved(.controlAccentColor).copy(alpha: 0.75)
         relationsLayer.path = path
         let labelled = zoom >= 0.45 && shown.count <= 60 ? shown : []
         while relationLabels.count < labelled.count {
@@ -457,7 +458,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         CATransaction.setDisableActions(!animated)
         CATransaction.setAnimationDuration(TilePool.animation)
         for g in groups {
-            guard let title = g.title, let frame = groupFrames[g.id], zoom > 0.15,
+            guard let title = g.title, let frame = groupFrames[g.id], zoom > 0.06,
                   frame.insetBy(dx: 0, dy: -60).intersects(visible) else { continue }
             keep.insert(g.id)
             let t = titleLayers[g.id] ?? {

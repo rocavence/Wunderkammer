@@ -37,6 +37,8 @@ leaf
 cloud
 image-mountain
 coffee
+kanban
+routing
 
 # 動作
 search

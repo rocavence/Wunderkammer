@@ -323,7 +323,11 @@ final class SelfTest {
         shot("04-board")
         // Marquee: from empty space right of the last tile, sweep left over the last row.
         let last = grid.frames.last!
-        await drag(grid, from: NSPoint(x: min(last.maxX + 60, grid.bounds.width - 40), y: last.maxY + 20),
+        // The last row may be below the fold: bring it into view first.
+        grid.scrollToVisible(last.insetBy(dx: 0, dy: -30))
+        await wait(0.3)
+        // Start in the margin under the last row (still inside the view, whatever the zoom).
+        await drag(grid, from: NSPoint(x: min(last.maxX + 60, grid.bounds.width - 40), y: min(last.maxY + 8, grid.bounds.maxY - 2)),
                    to: NSPoint(x: last.minX + 5, y: last.midY))
         await wait(0.2)
         check(grid.selection.ids.contains(grid.shownItems.last!.id) && grid.selection.ids.count >= 1,

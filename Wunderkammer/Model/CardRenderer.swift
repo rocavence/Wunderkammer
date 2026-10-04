@@ -24,7 +24,7 @@ enum CardRenderer {
         var size = short ? CGSize(width: 480, height: 360) : CGSize(width: 420, height: 525)
         if short {
             // As tall as the words need (within reason), not a fixed sheet of empty paper.
-            let fontSize: CGFloat = max(20, 30 - CGFloat(body.count) / 12)
+            let fontSize = Self.shortSize(body)
             let words = serif(body, size: fontSize, lineHeight: 1.25)
             let height = words.boundingRect(with: CGSize(width: 480 - 72, height: 1000), options: [.usesLineFragmentOrigin]).height
             size.height = min(360, max(220, ceil(height) + 34 * 2 + (source == nil ? 0 : 34) + 24))
@@ -40,13 +40,16 @@ enum CardRenderer {
                 drawText(ctx, label(site, size: 13, color: muted, tracking: 0.2),
                          in: CGRect(x: inset.minX, y: inset.maxY - 17, width: inset.width, height: 18))
             }
-            let fontSize: CGFloat = short ? max(20, 30 - CGFloat(body.count) / 12) : 14
+            let fontSize: CGFloat = short ? Self.shortSize(body) : 14
             let clipped = String(body.prefix(short ? 140 : 900))
             drawText(ctx, serif(clipped, size: fontSize, lineHeight: short ? 1.25 : 1.45),
                      in: CGRect(x: inset.minX, y: inset.minY, width: inset.width, height: inset.height - footer),
                      fadeBottom: !short)
         }
     }
+
+    /// A short note is set large, but a two-word phrase doesn't become a poster.
+    static func shortSize(_ body: String) -> CGFloat { min(26, max(20, 30 - CGFloat(body.count) / 12)) }
 
     /// A page without a preview image: site, title, description.
     static func web(title: String, domain: String, description: String?, favicon: CGImage?) -> CGImage? {
