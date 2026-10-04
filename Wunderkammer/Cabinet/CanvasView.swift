@@ -56,6 +56,10 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
     }
 
     private var gesture = Gesture.none
+    /// Space held down: the hand. Dragging then moves the canvas; a tap
+    /// without a drag still previews, as it always did.
+    private var spaceHeld = false
+    private var spacePanned = false
     /// While dragging piles the dragged block follows the cursor with a short ease, not a spring.
     private var isMoving: Bool { if case .movingItems = gesture { return true }; return false }
     /// Set when a board is shown before the view has a size to fit it into.
@@ -556,6 +560,12 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
     override func mouseDown(with event: NSEvent) {
         window?.makeFirstResponder(self)
         let p = convert(event.locationInWindow, from: nil)
+        if spaceHeld {
+            spacePanned = true
+            NSCursor.closedHand.set()
+            gesture = .pan(last: p)
+            return
+        }
         let id = hit(p)
         let modifier = Selection.modifier(event.modifierFlags)
         let option = event.modifierFlags.contains(.option)
@@ -614,6 +624,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
     }
 
     override func mouseUp(with event: NSEvent) {
+        if spaceHeld { NSCursor.openHand.set() }
         switch gesture {
         case .pressedItem(_, let hit, let narrow):
             if narrow {
@@ -756,7 +767,10 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
     override func keyDown(with event: NSEvent) {
         switch event.keyCode {
         case 49:
-            if let id = selection.anchor ?? selection.ordered(order).first { onOpen?(id) }
+            guard !event.isARepeat, !spaceHeld else { return }
+            spaceHeld = true
+            spacePanned = false
+            NSCursor.openHand.set()
         case 51, 117:
             deleteSelection()
         case 36, 76:
@@ -770,6 +784,25 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
             super.keyDown(with: event)
         }
     }
+
+    override func keyUp(with event: NSEvent) {
+        guard event.keyCode == 49, spaceHeld else { return super.keyUp(with: event) }
+        releaseSpace()
+        if !spacePanned, let id = selection.anchor ?? selection.ordered(order).first { onOpen?(id) }
+    }
+
+    private func releaseSpace() {
+        spaceHeld = false
+        NSCursor.arrow.set()
+    }
+
+    // Focus gone mid-hold: the key-up may never come.
+    override func resignFirstResponder() -> Bool {
+        if spaceHeld { spacePanned = true; releaseSpace() }
+        return super.resignFirstResponder()
+    }
+
+    var debugOffset: CGPoint { offset }
 
     @objc override func selectAll(_ sender: Any?) {
         selection.set(Set(order))

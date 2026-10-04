@@ -658,6 +658,52 @@ final class SelfTest {
     }
 
     /// Three spaces, each remembering its layout; the sidebar follows.
+    private func keyEvent(_ type: NSEvent.EventType, _ code: UInt16, _ chars: String, repeating: Bool = false) {
+        guard let e = NSEvent.keyEvent(with: type, location: .zero, modifierFlags: [],
+                                       timestamp: ProcessInfo.processInfo.systemUptime,
+                                       windowNumber: window.windowNumber, context: nil,
+                                       characters: chars, charactersIgnoringModifiers: chars,
+                                       isARepeat: repeating, keyCode: code) else { return }
+        window.sendEvent(e)
+    }
+
+    /// Space held on the map's canvas: a drag moves the canvas, even one that
+    /// starts on a piece, and the pieces keep their places.
+    private func spacePanCheck() async {
+        let canvas = ui.canvas!
+        window.makeFirstResponder(canvas)
+        let shown = library.items.map(\.id).filter { canvas.rectInWindow(for: $0) != nil }.prefix(2)
+        guard shown.count == 2, let a = center(of: shown[0], in: canvas),
+              let before0 = canvas.rectInWindow(for: shown[0]), let before1 = canvas.rectInWindow(for: shown[1]) else {
+            return check(false, "the canvas shows pieces to pan past")
+        }
+        let start = canvas.debugOffset
+        keyEvent(.keyDown, 49, " ")
+        keyEvent(.keyDown, 49, " ", repeating: true)
+        await drag(canvas, from: a, to: NSPoint(x: a.x - 120, y: a.y - 60))
+        keyEvent(.keyUp, 49, " ")
+        await wait(0.3)
+        let moved = canvas.debugOffset
+        check(hypot(moved.x - start.x, moved.y - start.y) > 50, "space + drag moves the canvas (\(Int(moved.x - start.x)), \(Int(moved.y - start.y)))")
+        if let after0 = canvas.rectInWindow(for: shown[0]), let after1 = canvas.rectInWindow(for: shown[1]) {
+            let d0 = CGPoint(x: after0.minX - before0.minX, y: after0.minY - before0.minY)
+            let d1 = CGPoint(x: after1.minX - before1.minX, y: after1.minY - before1.minY)
+            check(abs(d0.x - d1.x) < 1 && abs(d0.y - d1.y) < 1, "the pieces move together: nothing was dragged out of place")
+        }
+        check(!ui.preview.isOpen, "a space that panned doesn't open the preview")
+        // A tap, no drag: the preview, as before.
+        if let picture = library.items.first(where: { $0.kind == .image && canvas.rectInWindow(for: $0.id) != nil }),
+           let p = center(of: picture.id, in: canvas) {
+            click(canvas, p)
+            keyEvent(.keyDown, 49, " ")
+            keyEvent(.keyUp, 49, " ")
+            await wait(0.8)
+            check(ui.preview.isOpen, "a tap of space still previews")
+            if ui.preview.isOpen { ui.preview.dismissImmediately() }
+            await wait(0.3)
+        }
+    }
+
     private func spacesCheck() async {
         ui.setSpace(.cabinet)
         ui.setMode(.masonry)
@@ -674,6 +720,7 @@ final class SelfTest {
         ui.setSpace(.map)
         await wait(0.8)
         check(ui.mode == .canvas, "地圖 starts on the canvas")
+        await spacePanCheck()
         ui.setMode(.graph)
         await wait(0.8)
         shot("space-map-graph")

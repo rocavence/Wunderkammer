@@ -12,6 +12,8 @@ final class GraphView: NSView {
 
     private(set) var graph = CultureGraph(nodes: [], edges: [])
     private var offset = CGPoint.zero
+    /// Space held down: the hand, as on the canvas. A click then doesn't open.
+    private var spaceHeld = false
     private var zoom: CGFloat = 1
     private let edgesLayer = CAShapeLayer()
     private var nodeLayers: [String: (circle: CALayer, ring: CAShapeLayer, label: CATextLayer)] = [:]
@@ -268,6 +270,7 @@ final class GraphView: NSView {
     override func mouseDown(with event: NSEvent) {
         window?.makeFirstResponder(self)
         let p = convert(event.locationInWindow, from: nil)
+        if spaceHeld { NSCursor.closedHand.set() }
         dragStart = p
         dragLast = p
     }
@@ -283,9 +286,28 @@ final class GraphView: NSView {
 
     override func mouseUp(with event: NSEvent) {
         defer { dragStart = nil; dragLast = nil }
+        if spaceHeld { NSCursor.openHand.set(); return }
         let p = convert(event.locationInWindow, from: nil)
         guard let start = dragStart, hypot(p.x - start.x, p.y - start.y) < 4, let n = node(at: p) else { return }
         onOpenView?(n.base)
+    }
+
+    override func keyDown(with event: NSEvent) {
+        guard event.keyCode == 49 else { return super.keyDown(with: event) }
+        guard !event.isARepeat, !spaceHeld else { return }
+        spaceHeld = true
+        NSCursor.openHand.set()
+    }
+
+    override func keyUp(with event: NSEvent) {
+        guard event.keyCode == 49, spaceHeld else { return super.keyUp(with: event) }
+        spaceHeld = false
+        NSCursor.arrow.set()
+    }
+
+    override func resignFirstResponder() -> Bool {
+        if spaceHeld { spaceHeld = false; NSCursor.arrow.set() }
+        return super.resignFirstResponder()
     }
 
     override func scrollWheel(with event: NSEvent) {
