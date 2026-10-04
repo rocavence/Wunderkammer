@@ -157,11 +157,24 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
     static let headingHeight: CGFloat = 78
     private let titleLayer = CATextLayer()
     private let detailLayer = CATextLayer()
+    private let tipLayer = CATextLayer()
+
+    /// One quiet suggestion at the right of the title: what else the cabinet can do.
+    var tip = "" { didSet { if tip != oldValue { renderHeading() } } }
+
+    static let tips = [
+        "試試：按 R 隨機重看一件",
+        "在搜尋框問問題，例如：我收過哪些書？",
+        "漫遊會自己慢慢漂移，按空白鍵暫停",
+        "選一件，按 ⌘I 看它和什麼有關",
+        "地圖的畫布上按右鍵：依關聯分堆",
+        "足跡記得你怎麼從一件走到另一件",
+    ]
 
     private func renderHeading() {
         guard let root = layer else { return }
         withoutAnimation {
-            for t in [titleLayer, detailLayer] where t.superlayer == nil {
+            for t in [titleLayer, detailLayer, tipLayer] where t.superlayer == nil {
                 t.contentsScale = window?.backingScaleFactor ?? 2
                 t.truncationMode = .end
                 root.addSublayer(t)
@@ -178,6 +191,14 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
             let inset = CabinetLayout(style: style, width: 0, size: 0).inset
             titleLayer.frame = CGRect(x: inset + 2, y: 10, width: max(bounds.width - inset * 2, 0), height: 40)
             detailLayer.frame = CGRect(x: inset + 3, y: 50, width: max(bounds.width - inset * 2, 0), height: 18)
+            let tipStyle = NSMutableParagraphStyle()
+            tipStyle.alignment = .right
+            tipLayer.string = NSAttributedString(string: tip, attributes: [
+                .font: NSFont.systemFont(ofSize: 12), .paragraphStyle: tipStyle,
+                .foregroundColor: NSColor(cgColor: resolved(.tertiaryLabelColor)) ?? .tertiaryLabelColor,
+            ])
+            tipLayer.alignmentMode = .right
+            tipLayer.frame = CGRect(x: bounds.width / 2, y: 50, width: max(bounds.width / 2 - inset - 2, 0), height: 18)
         }
     }
 

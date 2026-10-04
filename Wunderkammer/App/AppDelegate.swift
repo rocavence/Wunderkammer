@@ -423,7 +423,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
 
     // MARK: State
 
+    private var tipIndex = Int.random(in: 0..<GridView.tips.count)
+
     private func show(base: Scope.Base) {
+        // A different suggestion each time the view changes.
+        tipIndex = (tipIndex + 1) % GridView.tips.count
+        grid?.tip = GridView.tips[tipIndex]
         // 足跡 lives in 漫遊.
         if base == .trail, mode.space != .wander { setSpace(.wander) }
         if case .answer = base {} else if !answerBanner.isHidden { hideAnswerBanner() }

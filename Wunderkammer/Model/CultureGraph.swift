@@ -73,6 +73,10 @@ struct CultureGraph {
             }.prefix(limit).map { nodes[$0] }
         }
         nodes.sort { $0.id < $1.id }
+        // A node sharing nothing with any other says nothing on a map of
+        // relations (and drifts off to a corner): left out, unless nothing connects.
+        let linked = edges(of: nodes).reduce(into: Set<Int>()) { $0.insert($1.a); $0.insert($1.b) }
+        if !linked.isEmpty { nodes = nodes.indices.filter(linked.contains).map { nodes[$0] } }
         return CultureGraph(nodes: nodes, edges: edges(of: nodes))
     }
 
