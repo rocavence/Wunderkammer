@@ -266,7 +266,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         quickLook.library = library
         quickLook.sourceFrame = { [weak self] id in self?.screenRect(for: id) }
         window.nextResponder = quickLook
-        window.makeKeyAndOrderFront(nil)
+        // The self-test never takes focus from whatever you're doing.
+        if SelfTest.isEnabled { window.orderFrontRegardless() } else { window.makeKeyAndOrderFront(nil) }
 
         buildMenu()
 
@@ -274,7 +275,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         let savedBoard = defaults.string(forKey: Self.boardKey).flatMap(UUID.init(uuidString:))
         setMode(ViewMode(rawValue: defaults.integer(forKey: Self.modeKey)) ?? .grid)
         sidebar.select(board: savedBoard)
-        NSApp.activate()
+        if !SelfTest.isEnabled { NSApp.activate() }
 
         capture = CaptureController(library: library)
         capture.currentBoard = { [weak self] in self?.scope.board }
@@ -292,10 +293,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         if SelfTest.isEnabled {
             if ProcessInfo.processInfo.environment["WK_APPEARANCE"] == "light" { NSApp.appearance = NSAppearance(named: .aqua) }
             window.setFrameAutosaveName("")
-            window.setFrame(NSRect(x: 80, y: 80, width: 1280, height: 820), display: true)
-            // Covered by other windows, the cabinet rightly stops animating and
-            // clicks land elsewhere: keep the test window on top while it runs.
+            // On a second screen when there is one, out of the way of your work;
+            // above other windows there (covered, the cabinet rightly stops
+            // animating). Your real pointer passes through it: only the test's
+            // own events reach it, and it never becomes the active app.
+            let screen = NSScreen.screens.dropFirst().first ?? NSScreen.screens.first
+            let area = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
+            let size = NSSize(width: min(1280, area.width - 20), height: min(820, area.height - 20))
+            window.setFrame(NSRect(x: area.minX + 10, y: area.maxY - size.height - 10, width: size.width, height: size.height), display: true)
             window.level = .floating
+            window.ignoresMouseEvents = true
             window.orderFrontRegardless()
             setMode(.grid)
             sidebar.select(board: nil)
@@ -318,7 +325,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
 
     @objc func showCabinet() {
         window.makeKeyAndOrderFront(nil)
-        NSApp.activate()
+        if !SelfTest.isEnabled { NSApp.activate() }
     }
 
     /// Shows the user's shortcut next to a menu item (the global hotkey does the work).

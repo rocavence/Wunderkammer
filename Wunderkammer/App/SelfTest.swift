@@ -348,6 +348,10 @@ final class SelfTest {
         mouse(.leftMouseUp, canvas, target)
         await wait(0.6)
         var groups = library.canvasGroups(for: board.id)
+        if groups.count != 2 {
+            await wait(2)
+            log("DIAG canvas drag: after 2.6s \(library.canvasGroups(for: board.id).count) piles; selection \(canvas.debugSelectionCount), gesture \(canvas.debugGesture)")
+        }
         check(groups.count == 2, "drag out makes a second pile (\(groups.count))")
         check(groups.contains { Set($0.itemIDs) == Set([ids[0], ids[3]]) }, "new pile holds the two dragged images")
         shot("08-canvas-dropped")

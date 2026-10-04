@@ -28,7 +28,7 @@ final class SettingsWindowController: NSWindowController {
         build()
         window?.center()
         super.showWindow(sender)
-        NSApp.activate()
+        if !SelfTest.isEnabled { NSApp.activate() }
     }
 
     private func build() {

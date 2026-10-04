@@ -233,6 +233,8 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
     }
 
     var debugPileTitles: [String] { groups.compactMap(\.title) }
+    var debugSelectionCount: Int { selection.ids.count }
+    var debugGesture: String { "\(gesture)".prefix(60).description }
     var debugRelationCount: Int { relationLinks.count }
     var debugTitleFrames: [String] {
         groups.compactMap { g in titleLayers[g.id].map { "\(g.title ?? "") \($0.frame.integral) hidden \($0.isHidden)" } }
