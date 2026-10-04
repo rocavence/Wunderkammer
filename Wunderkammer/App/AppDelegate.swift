@@ -288,6 +288,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         let toolbar = NSToolbar(identifier: "main")
         toolbar.delegate = self
         toolbar.displayMode = .iconOnly
+        // The spaces stay put in the middle whatever comes and goes beside them.
+        toolbar.centeredItemIdentifiers = [Self.spaceID]
         window.toolbar = toolbar
         window.setFrameAutosaveName("Main")
         if window.frame.origin == .zero { window.center() }
@@ -422,6 +424,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     // MARK: State
 
     private func show(base: Scope.Base) {
+        // 足跡 lives in 漫遊.
+        if base == .trail, mode.space != .wander { setSpace(.wander) }
         if case .answer = base {} else if !answerBanner.isHidden { hideAnswerBanner() }
         scope = Scope(base: base, search: "")
         searchItem?.searchField.stringValue = ""
@@ -875,12 +879,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
 
     private static let spaceID = NSToolbarItem.Identifier("space")
     private static let layoutID = NSToolbarItem.Identifier("layout")
+    private static let randomID = NSToolbarItem.Identifier("random")
     private static let searchID = NSToolbarItem.Identifier("search")
     private static let inspectorID = NSToolbarItem.Identifier("inspector")
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        [.toggleSidebar, .sidebarTrackingSeparator, .flexibleSpace, Self.spaceID, .flexibleSpace, Self.layoutID, Self.searchID,
-         .inspectorTrackingSeparator, Self.inspectorID]
+        [.toggleSidebar, .sidebarTrackingSeparator, .flexibleSpace, Self.spaceID, .flexibleSpace, Self.layoutID, Self.randomID,
+         Self.searchID, .inspectorTrackingSeparator, Self.inspectorID]
     }
 
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
@@ -920,6 +925,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             item.preferredWidthForSearchField = 260
             item.toolTip = "搜尋（⌘K）"
             searchItem = item
+            return item
+        case Self.randomID:
+            // Rediscovery is the point: one click away, not only a shortcut.
+            let item = NSToolbarItem(itemIdentifier: id)
+            item.image = Icon.image(.shuffle, size: 17)
+            item.label = "隨機一件"
+            item.toolTip = "隨機一件（R）"
+            item.target = self
+            item.action = #selector(randomFromMenu)
             return item
         case Self.inspectorID:
             let item = NSToolbarItem(itemIdentifier: id)

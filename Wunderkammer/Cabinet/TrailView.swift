@@ -81,13 +81,16 @@ final class TrailView: NSScrollView {
         row.alignment = .centerY
         row.spacing = 8
         for step in visit {
-            row.addArrangedSubview(arrow(Trail.short(step.via)))
+            // Plain browsing is just a step; a search, chance or a relation says so.
+            row.addArrangedSubview(arrow(step.via == .browse ? "" : Trail.short(step.via)))
             if let item = library.item(step.item) { row.addArrangedSubview(node(item)) }
         }
         // Long sittings scroll sideways rather than wrap: it's a path.
         let scroller = NSScrollView()
         scroller.hasHorizontalScroller = true
         scroller.autohidesScrollers = true
+        // Shown while scrolling, not standing under every row.
+        scroller.scrollerStyle = .overlay
         scroller.drawsBackground = false
         scroller.verticalScrollElasticity = .none
         row.translatesAutoresizingMaskIntoConstraints = false
@@ -109,7 +112,7 @@ final class TrailView: NSScrollView {
     }
 
     private func arrow(_ text: String) -> NSView {
-        let label = NSTextField(labelWithString: "\(text) →")
+        let label = NSTextField(labelWithString: text.isEmpty ? "→" : "\(text) →")
         label.font = .systemFont(ofSize: 11)
         label.textColor = .tertiaryLabelColor
         label.lineBreakMode = .byTruncatingTail

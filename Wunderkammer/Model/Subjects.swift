@@ -63,5 +63,11 @@ enum Subjects {
         "dining": "用餐", "cooking": "烹飪", "bread": "麵包", "cake": "蛋糕", "pizza": "披薩", "sushi": "壽司", "wine": "葡萄酒",
         "flowerpot": "盆栽", "houseplant": "室內植物", "leaf": "葉子", "rock": "岩石", "lake": "湖", "river": "河", "waterfall": "瀑布",
         "cloud": "雲", "rain": "雨", "winter": "冬天", "autumn": "秋天", "spring": "春天", "summer": "夏天",
+        "adult": "成人", "teen": "青少年", "document": "文件", "printed page": "印刷頁", "screenshot": "截圖",
+        "structure": "結構物", "outdoor": "戶外", "land": "地景", "clothing": "服裝", "sky": "天空", "blue sky": "藍天",
+        "blue_sky": "藍天", "cloudy": "多雲", "machine": "機器", "conveyance": "交通工具", "vehicle": "車輛",
+        "automobile": "汽車", "road other": "道路", "material": "材質", "fence": "圍欄", "necktie": "領帶",
+        "foliage": "枝葉", "cityscape": "城市風景", "elevator": "電梯", "portal": "入口", "window": "窗戶",
+        "electric fan": "電風扇", "plant": "植物",
     ]
 }

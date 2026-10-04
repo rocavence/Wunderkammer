@@ -27,6 +27,16 @@ film
 vinyl
 shopping-bag
 map-point
+people
+pet
+palette
+paintbrush
+building
+car
+leaf
+cloud
+image-mountain
+coffee
 
 # 動作
 search

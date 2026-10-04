@@ -83,7 +83,7 @@ final class TilePool {
             }
             if tile.opacity != 1 { tile.opacity = 1 }
             if tile.zPosition != p.z { tile.zPosition = p.z }
-            let border: CGFloat = p.selected ? 3 : 0
+            let border: CGFloat = p.selected ? 2 : 0
             if tile.borderWidth != border { withoutAnimation { tile.borderWidth = border } }
             updateBadge(tile, item: p.item, size: p.frame.size, scale: scale)
             loadImage(key: p.key, item: p.item, into: tile, pixels: max(p.frame.width, p.frame.height) * scale)

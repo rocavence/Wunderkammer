@@ -90,6 +90,25 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         .books: .book, .films: .film, .music: .vinyl, .products: .shoppingBag, .places: .mapPoint,
     ]
 
+    /// A theme's icon says what family it belongs to; the rest keep the sparkle.
+    static func themeIcon(_ label: String) -> Reicon {
+        let families: [(Reicon, Set<String>)] = [
+            (.people, ["people", "adult", "teen", "child", "baby", "portrait", "face", "crowd", "people group", "people_group"]),
+            (.pet, ["animal", "mammal", "cat", "dog", "bird", "fish", "insect", "horse"]),
+            (.palette, ["art", "painting", "drawing", "sculpture"]),
+            (.paintbrush, ["illustrations", "cartoon", "comics", "anime", "graphic design", "poster"]),
+            (.building, ["building", "structure", "architecture", "house", "skyscraper", "cityscape", "city", "interior", "bridge"]),
+            (.car, ["road", "road other", "street", "car", "automobile", "vehicle", "conveyance", "bicycle", "train", "aircraft", "boat"]),
+            (.leaf, ["plant", "tree", "foliage", "grass", "leaf", "flower", "garden", "houseplant", "flowerpot", "nature", "forest"]),
+            (.cloud, ["sky", "blue sky", "blue_sky", "cloudy", "cloud", "rain", "snow", "night sky", "night_sky"]),
+            (.imageMountain, ["land", "outdoor", "mountain", "sea", "ocean", "beach", "lake", "river", "desert", "waterfall"]),
+            (.coffee, ["food", "drink", "coffee", "dessert", "fruit", "cake", "bread", "dining", "cooking"]),
+            (.fileText, ["document", "printed page", "text", "book", "screenshot", "sign", "handwriting", "typography"]),
+            (.vinyl, ["music", "musical instrument", "guitar", "piano", "concert", "record", "turntable"]),
+        ]
+        return families.first { $0.1.contains(label) }?.0 ?? .sparkles
+    }
+
     /// Kinds of file first; what a page is about (書, 電影…) sits under 網頁.
     private static let fileKinds: [Scope.KindView] = [.images, .web, .text, .media, .documents]
     private static let pageKinds: [Scope.KindView] = [.books, .films, .music, .products, .places]
@@ -98,7 +117,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         var r: [Row] = []
         let subjects = Subjects.discover(in: library.items, limit: 6)
         let themeRows: [Row] = subjects.isEmpty ? [] : [.header("主題")] + subjects.map {
-            .view(.subject($0.label), title: $0.title, icon: .sparkles, count: $0.count)
+            .view(.subject($0.label), title: $0.title, icon: Self.themeIcon($0.label), count: $0.count)
         }
         func count(_ k: Scope.KindView) -> Int { library.items.reduce(0) { $0 + (k.contains($1) ? 1 : 0) } }
         switch space {

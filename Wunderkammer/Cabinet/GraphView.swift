@@ -118,7 +118,7 @@ final class GraphView: NSView {
         switch kind {
         // Three kinds, three colours that can't be mistaken (the accent may be orange too).
         case .theme: .systemIndigo
-        case .name: .systemOrange
+        case .name: .systemTeal
         case .site: .systemGray
         }
     }

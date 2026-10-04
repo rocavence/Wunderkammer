@@ -234,7 +234,8 @@ final class InspectorViewController: NSViewController {
     private func link(_ title: String, _ action: @escaping @MainActor () -> Void) -> NSButton {
         let b = ClosureButton(title: title, action: action)
         b.isBordered = false
-        b.contentTintColor = .controlAccentColor
+        // Links look like links; the accent colour is for selection.
+        b.contentTintColor = .linkColor
         b.font = .systemFont(ofSize: 12.5)
         b.lineBreakMode = .byTruncatingTail
         b.alignment = .left
