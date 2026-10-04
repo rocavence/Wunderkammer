@@ -14,6 +14,8 @@ struct Scope: Equatable, Sendable {
         case similar(UUID)
         /// A theme the system found (a Vision label).
         case subject(String)
+        /// Things whose main colours include this one ("red", "blue"…).
+        case color(String)
         /// Everything that mentions a name.
         case mentions(String)
         /// Everything from one website.
@@ -94,6 +96,7 @@ struct Scope: Equatable, Sendable {
         case .forgotten: "forgotten"
         case .similar(let id): "similar:\(id.uuidString)"
         case .subject(let label): "subject:\(label)"
+        case .color(let name): "color:\(name)"
         case .mentions(let name): "mentions:\(name)"
         case .site(let domain): "site:\(domain)"
         case .trail: "trail"
@@ -114,6 +117,7 @@ extension Library {
         case .forgotten: result = Rediscovery.forgotten(items, now: now)
         case .similar(let id): result = (item(id).map { [$0] } ?? []) + (similarity?(id) ?? [])
         case .subject(let label): result = items.filter { $0.labels?.contains(label) == true }
+        case .color(let name): result = items.filter { $0.colors?.contains(name) == true }
         case .mentions(let name):
             let key = Search.normalize(name)
             result = items.filter { $0.entities?.contains { Search.normalize($0.name) == key } == true }

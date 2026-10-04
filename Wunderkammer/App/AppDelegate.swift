@@ -479,6 +479,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         case .forgotten: window.title = "被遺忘的"
         case .similar(let id): window.title = "與「\(library.item(id)?.displayTitle.prefix(20) ?? "")」相似"
         case .subject(let label): window.title = Subjects.title(label)
+        case .color(let name): window.title = Colours.title(name)
         case .mentions(let name): window.title = "提到「\(name)」"
         case .site(let domain): window.title = domain
         case .trail: window.title = "足跡"

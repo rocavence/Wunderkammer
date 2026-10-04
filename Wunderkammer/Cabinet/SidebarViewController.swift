@@ -126,6 +126,19 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         return families.first { $0.1.contains(label) }?.0 ?? .sparkles
     }
 
+    /// A round swatch of a colour, ringed so white shows on white.
+    static func swatch(_ color: NSColor) -> NSImage {
+        NSImage(size: NSSize(width: 16, height: 16), flipped: false) { _ in
+            let dot = NSBezierPath(ovalIn: NSRect(x: 2.5, y: 2.5, width: 11, height: 11))
+            color.setFill()
+            dot.fill()
+            NSColor.separatorColor.setStroke()
+            dot.lineWidth = 1
+            dot.stroke()
+            return true
+        }
+    }
+
     /// Which group a view belongs to and its icon, for the heading above it:
     /// 格式 (what it is as a file), 分類 (what it's about), 主題…
     static func kicker(for base: Scope.Base) -> (label: String, icon: Reicon)? {
@@ -133,6 +146,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         case .all: nil
         case .kind(let k): (fileKinds.contains(k) ? "格式" : "分類", kindIcons[k] ?? .file)
         case .subject(let label): ("主題", themeIcon(label))
+        case .color: ("顏色", .palette)
         case .board: ("Board", .layers)
         case .onThisDay: ("漫遊", .calendarDay)
         case .forgotten: ("漫遊", .history)
@@ -168,6 +182,14 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         let themeRows: [Row] = subjects.isEmpty ? [] : [.header("主題")] + subjects.map {
             .view(.subject($0.label), title: $0.title, icon: Self.themeIcon($0.label), count: $0.count)
         }
+        // The colours the pictures are mostly made of, in spectrum order.
+        let colourRows: [Row] = {
+            let rows: [Row] = Colours.all.compactMap { c in
+                let n = library.items.reduce(0) { $0 + ($1.colors?.contains(c.name) == true ? 1 : 0) }
+                return n > 0 ? .view(.color(c.name), title: c.title, icon: .palette, count: n) : nil
+            }
+            return rows.isEmpty ? [] : [.header("顏色")] + rows
+        }()
         func count(_ k: Scope.KindView) -> Int { library.items.reduce(0) { $0 + (k.contains($1) ? 1 : 0) } }
         switch space {
         case .wander:
@@ -176,7 +198,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
                  .view(.onThisDay, title: "過去的今天", icon: .calendarDay, count: nil),
                  .view(.forgotten, title: "被遺忘的", icon: .history, count: nil),
                  .view(.trail, title: "足跡", icon: .routing, count: nil),
-                 .random] + themeRows
+                 .random] + colourRows + themeRows
         case .cabinet, .map:
             r = [.view(.all, title: "全部", icon: .grid, count: library.items.count)]
             // What it is as a file, then what it's about (a book, a film…), side by side.
@@ -191,7 +213,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             // Only worth a section when the cabinet holds more than one kind of thing.
             if kinds.count > 1 { r += [.header("格式")] + kinds }
             if !works.isEmpty { r += [.header("分類")] + works }
-            r += themeRows
+            r += colourRows + themeRows
             if !library.collections.isEmpty {
                 r += [.header("Boards")] + library.collections.map { .board($0) }
             }
@@ -268,7 +290,13 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             label.textColor = .secondaryLabelColor
             return label
         case .view(let base, let title, let icon, let count):
-            return cell(title: title, icon: icon, count: count)
+            let c = cell(title: title, icon: icon, count: count)
+            // A colour is shown by itself, not by an icon.
+            if case .color(let name) = base {
+                c.imageView?.image = Self.swatch(Colours.swatch(name))
+                c.imageView?.contentTintColor = nil
+            }
+            return c
         case .random:
             return cell(title: "隨機一件", icon: .shuffle, count: nil, hint: "R")
         case .board(let b):

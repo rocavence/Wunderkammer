@@ -776,6 +776,15 @@ final class SelfTest {
         if let clip = ui.grid.superview as? NSClipView { clip.scroll(to: NSPoint(x: 0, y: -clip.contentInsets.top)) }
         await wait(0.3)
         shot("heading-kind")
+        // Colours: a section of their own, each a view of what's mostly that colour.
+        if let colour = Colours.all.map(\.name).first(where: { c in library.items.contains { $0.colors?.contains(c) == true } }) {
+            ui.sidebar.select(.color(colour))
+            await wait(0.5)
+            let shown = library.items(for: Scope(base: .color(colour)))
+            check(!shown.isEmpty && shown.allSatisfy { $0.colors?.contains(colour) == true } && ui.grid.heading.detail.hasPrefix("顏色"),
+                  "\(Colours.title(colour)) shows what's that colour, headed 顏色 (\(shown.count))")
+            shot("heading-colour")
+        }
         ui.sidebar.select(.all)
         await wait(0.3)
         check(ui.viewBarTipsForTest.starts(with: ["格狀", "瀑布", "時間軸"]), "收藏's layouts are in the bar below (\(ui.viewBarTipsForTest))")

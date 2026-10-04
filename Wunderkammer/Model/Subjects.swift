@@ -1,4 +1,4 @@
-import Foundation
+import AppKit
 
 /// Auto collections by subject: the things the system keeps seeing in the
 /// cabinet (people, architecture, illustration…) become views of their own.
@@ -78,4 +78,19 @@ enum Subjects {
         "electric fan": "電風扇", "plant": "植物",
         "path": "小徑", "decoration": "裝飾", "frame": "框", "washbasin": "洗手台", "armchair": "扶手椅", "hill": "山丘", "bathroom room": "浴室空間", "carton": "紙盒", "utensil": "器具", "sneaker": "球鞋", "shower": "淋浴", "bucket": "水桶", "kitchen countertop": "流理台", "alley": "巷弄", "bath": "泡澡", "bathroom faucet": "浴室水龍頭", "broom": "掃把", "housewares": "家用品", "kitchen sink": "廚房水槽", "decorative plant": "裝飾植物",
     ]
+}
+
+/// The colour words the analysis gives each picture, in the order of the
+/// spectrum, with their Chinese names and a swatch to show them by.
+enum Colours {
+    static let all: [(name: String, title: String, swatch: NSColor)] = [
+        ("red", "紅色", .systemRed), ("orange", "橙色", .systemOrange), ("yellow", "黃色", .systemYellow),
+        ("green", "綠色", .systemGreen), ("blue", "藍色", .systemBlue), ("purple", "紫色", .systemPurple),
+        ("pink", "粉紅色", .systemPink), ("brown", "棕色", .systemBrown),
+        ("black", "黑色", NSColor(white: 0.08, alpha: 1)), ("white", "白色", NSColor(white: 0.97, alpha: 1)),
+        ("gray", "灰色", .systemGray),
+    ]
+
+    static func title(_ name: String) -> String { all.first { $0.name == name }?.title ?? name }
+    static func swatch(_ name: String) -> NSColor { all.first { $0.name == name }?.swatch ?? .gray }
 }

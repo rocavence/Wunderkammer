@@ -13,6 +13,7 @@ enum EmptyState {
         case .forgotten: return "沒有被遺忘的東西\n收藏超過一個月沒看的，會慢慢出現在這裡"
         case .similar: return "系統還在看這件收藏\n看完就能找到相似的東西"
         case .subject: return "這個主題現在沒有東西了"
+        case .color(let name): return "沒有以\(Colours.title(name))為主的收藏"
         case .mentions(let name): return "沒有其他收藏提到「\(name)」"
         case .site(let domain): return "沒有其他來自 \(domain) 的收藏"
         case .trail: return "還沒有足跡\n打開的每一件收藏，都會依序留在這裡"
