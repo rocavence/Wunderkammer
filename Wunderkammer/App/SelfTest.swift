@@ -475,16 +475,21 @@ final class SelfTest {
         let pushed = displacement()
         check(ui.preview.isOpen && pushed > 100, "open pushes neighbours away (\(Int(pushed))pt)")
         ui.preview.close()
-        // The neighbours come back in place; when the image lands they get a
-        // small nudge outward and spring back.
-        var biggest: CGFloat = 0
-        for i in 0..<45 {
+        // The neighbours ride the Item Spring home from where they were pushed:
+        // a glide that settles with the image, no jump back and no wobble.
+        let closeStart = CACurrentMediaTime()
+        var curve: [(t: Double, d: CGFloat)] = []
+        while CACurrentMediaTime() - closeStart < 0.7 {
             await wait(0.016)
-            biggest = max(biggest, displacement())
-            if i == 16 { shot("02e-ripple-closing") }
+            curve.append((CACurrentMediaTime() - closeStart, displacement()))
+            if curve.count == 10 { shot("02e-ripple-closing") }
         }
-        check(biggest > 3 && biggest < 80, "closing nudges neighbours slightly (max \(Int(biggest))pt)")
-        await wait(0.8)
+        log("close curve: " + curve.map { String(format: "%.2fs %.0f", $0.t, $0.d) }.joined(separator: ", "))
+        let first = curve.first?.d ?? 0
+        check(first > pushed * 0.5, "closing starts from where the neighbours were (\(Int(first))pt of \(Int(pushed))pt)")
+        let homeAt = curve.first { $0.d < 1 }?.t ?? 9
+        check(homeAt > 0.25 && homeAt < 0.6, "neighbours glide home in \(String(format: "%.2f", homeAt))s")
+        await wait(0.3)
         let settled = displacement()
         let allVisible = grid.pool.tiles.values.allSatisfy { $0.opacity == 1 }
         check(settled < 0.5 && allVisible && !ui.preview.isOpen,

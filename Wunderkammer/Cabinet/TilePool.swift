@@ -133,98 +133,71 @@ final class TilePool {
     private var hiddenKey: String?
     var isScattered: Bool { !homes.isEmpty || hiddenKey != nil }
 
-    /// Pushes every tile away from `center`: the nearest fly farthest, the push
-    /// fading with distance. Both scale with tile size, like Atlas's Push/Reach.
+    /// Atlas's Push and Reach, defined at a 156 pt tile and scaled with it.
+    static let scatterPush: CGFloat = 500
+    static let scatterReach: CGFloat = 620
+    /// Past this many tiles the ripple weakens (push × threshold / count).
+    static let scatterDensity: CGFloat = 60
+
+    /// Pushes every tile away from `center` on the Item Spring: the nearest fly
+    /// farthest, the push fading with distance, and all of them fade out. Tiles
+    /// that would move less than a pixel only fade.
     /// The tile under `key` is hidden: the preview flies in its place.
     func scatter(from center: CGPoint, hiding key: String?) {
         homes = [:]
         hiddenKey = key
         let sizes = tiles.values.map { max($0.bounds.width, $0.bounds.height) }.sorted()
-        let tileSize = sizes.isEmpty ? 156 : sizes[sizes.count / 2]
-        let push = tileSize * 3.2
-        let reach = tileSize * 4
-        CATransaction.begin()
-        CATransaction.setAnimationDuration(0.42)
-        CATransaction.setAnimationTimingFunction(CAMediaTimingFunction(controlPoints: 0.3, 0.7, 0.2, 1))
+        let scale = (sizes.isEmpty ? 156 : sizes[sizes.count / 2]) / 156
+        let density = min(1, Self.scatterDensity / CGFloat(max(tiles.count, 1)))
+        let push = Self.scatterPush * scale * density
+        let reach = Self.scatterReach * scale
         for (k, tile) in tiles {
             if k == key {
                 withoutAnimation { tile.opacity = 0 }
                 continue
             }
             let f = tile.frame
+            homes[k] = f
             var v = CGVector(dx: f.midX - center.x, dy: f.midY - center.y)
             var d = hypot(v.dx, v.dy)
             if d < 1 { v = CGVector(dx: 0, dy: 1); d = 1 }
-            let amount = push * exp(-d / reach) + tileSize * 0.3
-            homes[k] = f
-            tile.position = CGPoint(x: tile.position.x + v.dx / d * amount, y: tile.position.y + v.dy / d * amount)
-            tile.opacity = 0
+            let amount = push * exp(-d / reach)
+            if amount >= 1 {
+                glideFrame(tile, to: f.offsetBy(dx: v.dx / d * amount, dy: v.dy / d * amount), duration: ItemSpring.scatter)
+            }
+            fadeOpacity(tile, to: 0, duration: ItemSpring.scatter)
         }
-        CATransaction.commit()
     }
 
-    /// Puts everything back home as the preview closes. Nothing flies back in:
-    /// the tiles fade in where they belong, and when the image lands on
-    /// `landing` the neighbours get a small outward nudge and spring back,
-    /// strongest next to it and fading with distance.
+    /// The tiles spring back home from wherever they are on the Item Spring
+    /// and fade back in, settling with the image as it lands on `landing`.
     func gather(landing: String?) {
         if let old = hiddenKey, old != landing, let tile = tiles[old], homes[old] == nil {
             fadeIn(tile)
         }
-        let center = landing.flatMap { homes[$0] ?? tiles[$0]?.frame }.map { CGPoint(x: $0.midX, y: $0.midY) }
-        let sizes = homes.values.map { max($0.width, $0.height) }.sorted()
-        let tileSize = sizes.isEmpty ? 156 : sizes[sizes.count / 2]
         for (k, home) in homes {
             guard let tile = tiles[k] else { continue }
-            tile.removeAllAnimations()
-            withoutAnimation {
-                tile.frame = home
-                tile.opacity = k == landing ? 0 : 1
+            if k == landing {
+                tile.removeAllAnimations()
+                withoutAnimation { tile.frame = home; tile.opacity = 0 }
+                continue
             }
-            guard k != landing else { continue }
-            let fade = CABasicAnimation(keyPath: "opacity")
-            fade.fromValue = 0
-            fade.toValue = 1
-            fade.duration = 0.25
-            tile.add(fade, forKey: "opacity")
-            if let center { nudge(tile, awayFrom: center, tileSize: tileSize) }
+            // The falloff left it where it was: no spring, just the fade.
+            if tile.frame != home { glideFrame(tile, to: home, duration: ItemSpring.close) }
+            fadeOpacity(tile, to: 1, duration: ItemSpring.close)
         }
         homes = [:]
         hiddenKey = landing
     }
 
-    /// Additive push-out-and-spring-back, timed to the image landing.
-    private func nudge(_ tile: CALayer, awayFrom center: CGPoint, tileSize: CGFloat) {
-        let f = tile.frame
-        var v = CGVector(dx: f.midX - center.x, dy: f.midY - center.y)
-        let d = max(hypot(v.dx, v.dy), 1)
-        v = CGVector(dx: v.dx / d, dy: v.dy / d)
-        let amount = tileSize * 0.22 * exp(-d / (tileSize * 2.5))
-        guard amount > 0.5 else { return }
-        let offset = NSValue(point: CGPoint(x: v.dx * amount, y: v.dy * amount))
-        let zero = NSValue(point: .zero)
-        let landing: CFTimeInterval = 0.2
-
-        let out = CABasicAnimation(keyPath: "position")
-        out.fromValue = zero
-        out.toValue = offset
-        out.duration = 0.09
-        out.timingFunction = CAMediaTimingFunction(name: .easeOut)
-
-        let back = CASpringAnimation(perceptualDuration: 0.45, bounce: 0.35)
-        back.keyPath = "position"
-        back.fromValue = offset
-        back.toValue = zero
-        back.beginTime = 0.09
-        back.duration = back.settlingDuration
-
-        let group = CAAnimationGroup()
-        group.animations = [out, back]
-        out.isAdditive = true
-        back.isAdditive = true
-        group.duration = 0.09 + back.settlingDuration
-        group.beginTime = CACurrentMediaTime() + landing
-        tile.add(group, forKey: "nudge")
+    private func fadeOpacity(_ tile: CALayer, to opacity: Float, duration: CFTimeInterval) {
+        let fade = CABasicAnimation(keyPath: "opacity")
+        fade.fromValue = (tile.presentation() ?? tile).opacity
+        fade.toValue = opacity
+        fade.duration = duration
+        fade.timingFunction = CAMediaTimingFunction(name: .easeOut)
+        withoutAnimation { tile.opacity = opacity }
+        tile.add(fade, forKey: "opacity")
     }
 
     private func fadeIn(_ tile: CALayer) {
@@ -382,6 +355,39 @@ final class TilePool {
         tile.contents = image
         CATransaction.commit()
     }
+}
+
+/// Atlas's Item Spring (as of 1.6.7): mass 1.89, stiffness 200.67, damping
+/// 31.86, sped up so it settles in the given duration. Shared by open, close
+/// and scatter, so the image and its neighbours move as one.
+enum ItemSpring {
+    static let open: CFTimeInterval = 0.5
+    static let close: CFTimeInterval = 0.5
+    static let scatter: CFTimeInterval = 0.5
+
+    static func animation(_ keyPath: String, from: Any?, to: Any?, duration: CFTimeInterval) -> CASpringAnimation {
+        let a = CASpringAnimation(keyPath: keyPath)
+        a.mass = 1.89
+        a.stiffness = 200.67
+        a.damping = 31.86
+        a.fromValue = from
+        a.toValue = to
+        a.duration = a.settlingDuration
+        a.speed = Float(a.settlingDuration / duration)
+        return a
+    }
+}
+
+/// Moves a layer's frame from wherever it is on screen now on the Item Spring.
+@MainActor
+func glideFrame(_ layer: CALayer, to frame: CGRect, duration: CFTimeInterval) {
+    let now = layer.presentation() ?? layer
+    let fromPosition = now.position, fromBounds = now.bounds
+    layer.removeAnimation(forKey: "position")
+    layer.removeAnimation(forKey: "bounds")
+    withoutAnimation { layer.frame = frame }
+    layer.add(ItemSpring.animation("position", from: NSValue(point: fromPosition), to: NSValue(point: layer.position), duration: duration), forKey: "position")
+    layer.add(ItemSpring.animation("bounds", from: NSValue(rect: fromBounds), to: NSValue(rect: layer.bounds), duration: duration), forKey: "bounds")
 }
 
 /// Springs a layer's frame from wherever it is on screen now. A touch of

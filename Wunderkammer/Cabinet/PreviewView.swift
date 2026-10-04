@@ -63,7 +63,7 @@ final class PreviewView: NSView {
         // The neighbours get pushed away while the image grows out of its tile.
         surface.previewWillOpen(id)
         fade(dim, to: 1, duration: 0.35)
-        springFrame(imageLayer, to: fitRect(for: items[i]), bounce: 0.1, response: 0.45)
+        glideFrame(imageLayer, to: fitRect(for: items[i]), duration: ItemSpring.open)
         loadFull(items[i])
         setCaption(text)
     }
@@ -103,12 +103,13 @@ final class PreviewView: NSView {
         let id = items[index].id
         surface?.reveal(id)
         let end = startRect(for: id)
-        // The neighbours spring back from the edges as the image flies home.
+        // The neighbours ride the same spring home as the image.
         surface?.previewWillClose(landingOn: id)
         fade(dim, to: 0, duration: 0.2)
         fade(caption, to: 0, duration: 0.15)
-        springFrame(imageLayer, to: end, bounce: 0.16, response: 0.5)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
+        glideFrame(imageLayer, to: end, duration: ItemSpring.close)
+        // Settle pass once the spring is done, like Atlas's collapseDuration + 0.05.
+        DispatchQueue.main.asyncAfter(deadline: .now() + ItemSpring.close + 0.05) { [weak self] in
             MainActor.assumeIsolated {
                 guard let self, self.closing else { return }
                 self.closing = false

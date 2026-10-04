@@ -13,6 +13,8 @@ final class InfinityView: NSView, ItemSurface {
     /// Points per second, in world units.
     private static let drift = CGVector(dx: 9, dy: 14)
     private static let idleBeforeDrift: TimeInterval = 2.5
+    /// Velocity kept per millisecond while coasting.
+    private static let deceleration = 0.998
 
     let library: Library
     let pool: TilePool
@@ -28,7 +30,7 @@ final class InfinityView: NSView, ItemSurface {
     private var zoom: CGFloat = 1
     private var velocity = CGVector.zero
     private var lastInteraction = Date.distantPast
-    private var timer: Timer?
+    private var timer: CADisplayLink?
     private var lastTick = CACurrentMediaTime()
 
     /// What's on screen now: tile key → item and world frame. Lets the preview
@@ -140,14 +142,13 @@ final class InfinityView: NSView, ItemSurface {
     private func startTimer() {
         guard timer == nil, window?.occlusionState.contains(.visible) ?? false else { return }
         lastTick = CACurrentMediaTime()
-        let t = Timer(timeInterval: 1.0 / 60, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated { self?.tick() }
-        }
-        RunLoop.main.add(t, forMode: .common)
-        timer = t
+        // In step with the display (120 Hz on ProMotion), not a 60 Hz timer.
+        let link = displayLink(target: self, selector: #selector(tick))
+        link.add(to: .main, forMode: .common)
+        timer = link
     }
 
-    private func tick() {
+    @objc private func tick() {
         let now = CACurrentMediaTime()
         let dt = min(now - lastTick, 0.05)
         lastTick = now
@@ -158,9 +159,11 @@ final class InfinityView: NSView, ItemSurface {
             velocity.dx += (Self.drift.dx - velocity.dx) * 0.02
             velocity.dy += (Self.drift.dy - velocity.dy) * 0.02
         } else {
-            // Coast after a flick.
-            velocity.dx *= 0.94
-            velocity.dy *= 0.94
+            // Coast after a flick, slowing the same at any frame rate
+            // (like a scroll view's normal deceleration).
+            let decay = CGFloat(pow(Self.deceleration, dt * 1000))
+            velocity.dx *= decay
+            velocity.dy *= decay
         }
         guard abs(velocity.dx) + abs(velocity.dy) > 0.05 else { return }
         offset.x += velocity.dx * dt
@@ -178,7 +181,7 @@ final class InfinityView: NSView, ItemSurface {
             return
         }
         let visible = CGRect(x: offset.x, y: offset.y, width: bounds.width / zoom, height: bounds.height / zoom)
-            .insetBy(dx: -150, dy: -150)
+            .insetBy(dx: -max(bounds.width, bounds.height) * 0.4 / zoom, dy: -max(bounds.width, bounds.height) * 0.4 / zoom)
         let bw = blockSize.width, bh = blockSize.height
         var placements: [TilePool.Placement] = []
         var tiles: [String: (id: UUID, world: CGRect)] = [:]
@@ -316,8 +319,9 @@ final class InfinityView: NSView, ItemSurface {
         offset.y -= (p.y - last.y) / zoom
         dragDistance += hypot(p.x - last.x, p.y - last.y)
         dragLast = p
-        dragSamples.append((CACurrentMediaTime(), p))
-        if dragSamples.count > 6 { dragSamples.removeFirst() }
+        let now = CACurrentMediaTime()
+        dragSamples.append((now, p))
+        dragSamples.removeAll { now - $0.t > 0.1 }
         render()
     }
 
@@ -335,6 +339,9 @@ final class InfinityView: NSView, ItemSurface {
             return
         }
         // Flick: keep moving with the release velocity, then coast down.
+        // Only the last 100 ms count: holding still before letting go doesn't fling.
+        let now = CACurrentMediaTime()
+        dragSamples.removeAll { now - $0.t > 0.1 }
         if let first = dragSamples.first, let last = dragSamples.last, last.t > first.t {
             let dt = CGFloat(last.t - first.t)
             velocity = CGVector(dx: -(last.p.x - first.p.x) / dt / zoom, dy: -(last.p.y - first.p.y) / dt / zoom)
