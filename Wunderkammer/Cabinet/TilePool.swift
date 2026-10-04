@@ -86,6 +86,7 @@ final class TilePool {
             let border: CGFloat = p.selected ? 2 : 0
             if tile.borderWidth != border { withoutAnimation { tile.borderWidth = border } }
             updateBadge(tile, item: p.item, size: p.frame.size, scale: scale)
+            updateSurface(tile, item: p.item)
             loadImage(key: p.key, item: p.item, into: tile, pixels: max(p.frame.width, p.frame.height) * scale)
         }
 
@@ -218,10 +219,58 @@ final class TilePool {
     /// After a light/dark switch.
     func refreshColors() {
         withoutAnimation {
-            for tile in tiles.values {
+            for (key, tile) in tiles {
                 tile.backgroundColor = colors(.quaternaryLabelColor)
                 tile.borderColor = colors(.controlAccentColor)
+                if let item = tileItem[key] { updateSurface(tile, item: item) }
             }
+        }
+    }
+
+    private var isDark: Bool {
+        let bg = NSColor(cgColor: colors(.windowBackgroundColor))?.usingColorSpace(.deviceRGB)
+        return (bg?.brightnessComponent ?? 1) < 0.5
+    }
+
+    /// Paper cards are dimmed a touch in dark mode (full cream glares on
+    /// near-black), and a page still being fetched shimmers until its picture lands.
+    private func updateSurface(_ tile: CALayer, item: Item) {
+        let paper = item.kind == .text || (item.kind == .web && item.representationVersion == 0)
+        let veil = tile.sublayers?.first { $0.name == "veil" }
+        if paper && isDark {
+            let v = veil ?? {
+                let v = CALayer()
+                v.name = "veil"
+                v.backgroundColor = CGColor(gray: 0, alpha: 0.12)
+                v.autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
+                tile.addSublayer(v)
+                return v
+            }()
+            withoutAnimation { v.frame = tile.bounds; v.isHidden = false }
+        } else if let veil {
+            withoutAnimation { veil.isHidden = true }
+        }
+
+        let fetching = item.kind == .web && item.representationVersion == 0 && Date().timeIntervalSince(item.dateAdded) < 120
+        let shimmer = tile.sublayers?.first { $0.name == "shimmer" } as? CAGradientLayer
+        if fetching, shimmer == nil {
+            let g = CAGradientLayer()
+            g.name = "shimmer"
+            g.startPoint = CGPoint(x: 0, y: 0.5)
+            g.endPoint = CGPoint(x: 1, y: 0.5)
+            g.colors = [CGColor(gray: 1, alpha: 0), CGColor(gray: 1, alpha: 0.18), CGColor(gray: 1, alpha: 0)]
+            g.locations = [0, 0.5, 1]
+            g.autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
+            withoutAnimation { g.frame = tile.bounds }
+            let sweep = CABasicAnimation(keyPath: "locations")
+            sweep.fromValue = [-0.6, -0.3, 0]
+            sweep.toValue = [1, 1.3, 1.6]
+            sweep.duration = 1.6
+            sweep.repeatCount = .infinity
+            g.add(sweep, forKey: "sweep")
+            tile.addSublayer(g)
+        } else if !fetching, let shimmer {
+            shimmer.removeFromSuperlayer()
         }
     }
 
