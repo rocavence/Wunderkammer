@@ -539,7 +539,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private func updateTitle() {
         switch scope.base {
         case .all: window.title = cabinets.current.name
-        case .board(let id): window.title = library.collection(id)?.name ?? "Board"
+        case .board(let id): window.title = library.collection(id)?.name ?? "釘選版"
         case .kind(let k): window.title = k.title
         case .onThisDay: window.title = "過去的今天"
         case .forgotten: window.title = "被遺忘的"
@@ -1092,7 +1092,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         fileMenu.addItem(withTitle: "加入檔案…", action: #selector(importFiles), keyEquivalent: "o").target = self
         fileMenu.addItem(withTitle: "從 Atlas 匯入", action: #selector(importAtlas), keyEquivalent: "").target = self
         fileMenu.addItem(.separator())
-        fileMenu.addItem(withTitle: "新增 board", action: #selector(newBoard), keyEquivalent: "n").target = self
+        fileMenu.addItem(withTitle: "新增釘選版", action: #selector(newBoard), keyEquivalent: "n").target = self
         fileMenu.addItem(.separator())
         fileMenu.addItem(withTitle: "在 Finder 顯示珍奇櫃的資料", action: #selector(revealLibrary), keyEquivalent: "").target = self
         fileMenu.addItem(withTitle: "關閉視窗", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")

@@ -33,7 +33,7 @@ enum ItemActions {
             undo?.registerUndo(withTarget: library) { lib in
                 MainActor.assumeIsolated { lib.add(ids, to: board) }
             }
-            undo?.setActionName(ids.count == 1 ? "從 board 移除" : "從 board 移除 \(ids.count) 件")
+            undo?.setActionName(ids.count == 1 ? "從釘選版移除" : "從釘選版移除 \(ids.count) 件")
             return
         }
         guard let removal = library.delete(Set(ids)) else { return }
@@ -51,14 +51,14 @@ enum ItemActions {
             menu.addItem(ClosureMenuItem("找相似的") { similar() })
         }
 
-        let addTo = NSMenuItem(title: "加入 board", action: nil, keyEquivalent: "")
+        let addTo = NSMenuItem(title: "加入釘選版", action: nil, keyEquivalent: "")
         let sub = NSMenu()
         for b in library.collections where b.id != board {
             sub.addItem(ClosureMenuItem(b.name) { library.add(ids, to: b.id) })
         }
         if !library.collections.isEmpty { sub.addItem(.separator()) }
-        sub.addItem(ClosureMenuItem("新增 board…") {
-            if let name = promptName(title: "新 board 名稱", initial: "未命名 board", window: window) {
+        sub.addItem(ClosureMenuItem("新增釘選版…") {
+            if let name = promptName(title: "新釘選版的名稱", initial: "未命名釘選版", window: window) {
                 library.createCollection(named: name, with: ids)
             }
         })
@@ -79,7 +79,7 @@ enum ItemActions {
             menu.addItem(ClosureMenuItem("複製一份到珍奇櫃") { Task { await library.copyIntoLibrary(copyable) } })
         }
         menu.addItem(.separator())
-        let title = board == nil ? "移除" : "從 board 移除"
+        let title = board == nil ? "移除" : "從釘選版移除"
         menu.addItem(ClosureMenuItem(title) { delete(ids, board: board, library: library, window: window) })
         return menu
     }

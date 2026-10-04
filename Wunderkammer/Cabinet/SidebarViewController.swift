@@ -72,7 +72,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
 
         let add = NSButton(image: Icon.image(.plus), target: self, action: #selector(newBoard(_:)))
         add.isBordered = false
-        add.toolTip = "新增 board"
+        add.toolTip = "新增釘選版"
         add.contentTintColor = .secondaryLabelColor
 
         header.target = self
@@ -153,7 +153,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         case .kind(let k): (fileKinds.contains(k) ? "格式" : "分類", kindIcons[k] ?? .file)
         case .subject(let label): ("主題", themeIcon(label))
         case .color: ("顏色", .palette)
-        case .board: ("Board", .layers)
+        case .board: ("釘選版", .layers)
         case .onThisDay: ("漫遊", .calendarDay)
         case .forgotten: ("漫遊", .history)
         case .trail: ("漫遊", .routing)
@@ -234,7 +234,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             if !works.isEmpty { r += [.header("分類")] + works }
             r += themeRows + colourRows
             if !library.collections.isEmpty {
-                r += [.header("Boards")] + library.collections.map { .board($0) }
+                r += [.header("釘選版")] + library.collections.map { .board($0) }
             }
         }
         return r
@@ -489,7 +489,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
 
     @objc func newBoard(_ sender: Any?) {
         let n = library.collections.count + 1
-        let b = library.createCollection(named: "Board \(n)")
+        let b = library.createCollection(named: "釘選版 \(n)")
         select(.board(b.id))
         if let row = rows.firstIndex(where: { if case .board(let x) = $0 { return x.id == b.id }; return false }) {
             startRename(row: row)
@@ -520,12 +520,12 @@ extension SidebarViewController: NSMenuDelegate {
         menu.removeAllItems()
         let row = table.clickedRow
         guard let b = board(at: row) else {
-            menu.addItem(ClosureMenuItem("新增 board") { [weak self] in self?.newBoard(nil) })
+            menu.addItem(ClosureMenuItem("新增釘選版") { [weak self] in self?.newBoard(nil) })
             return
         }
         menu.addItem(ClosureMenuItem("重新命名") { [weak self] in self?.startRename(row: row) })
         menu.addItem(.separator())
-        menu.addItem(ClosureMenuItem("刪除 board「\(b.name)」") { [weak self] in
+        menu.addItem(ClosureMenuItem("刪除釘選版「\(b.name)」") { [weak self] in
             self?.library.deleteCollection(b.id)
         })
     }
