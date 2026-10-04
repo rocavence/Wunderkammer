@@ -655,7 +655,7 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
         guard index != captionIndex else { return }
         captionIndex = index
         guard let i = index, frames.indices.contains(i), frames[i].width > 120, frames[i].height > 70,
-              items[i].kind != .image || items[i].title != nil, let root = layer else {
+              items[i].kind != .image || items[i].title != nil || scope.isSearching, let root = layer else {
             CATransaction.begin()
             CATransaction.setAnimationDuration(0.15)
             caption.opacity = 0
@@ -688,7 +688,9 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
                 text.contentsScale = window?.backingScaleFactor ?? 2
                 // The title, then what it is and where it's from: 電影 · letterboxd.com · 1999.
                 let item = items[i]
-                let about = [item.thing?.title, item.domain, item.released.map { String($0.prefix(4)) }].compactMap { $0 }
+                // Searching, the second line says why it's here.
+                let about = scope.isSearching ? [Search.reason(scope.search, item)]
+                    : [item.thing?.title, item.domain, item.released.map { String($0.prefix(4)) }].compactMap { $0 }
                 let line = NSMutableAttributedString(string: item.displayTitle, attributes: [
                     .font: NSFont.systemFont(ofSize: 12.5, weight: .semibold), .foregroundColor: NSColor.white,
                 ])

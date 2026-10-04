@@ -98,6 +98,23 @@ struct RediscoveryTests {
     }
 }
 
+struct SearchReasonTests {
+    private func item(_ build: (inout Item) -> Void) -> Item {
+        var i = Item(kind: .image, originalFilename: "", pixelWidth: 1, pixelHeight: 1, contentHash: UUID().uuidString)
+        build(&i)
+        return i
+    }
+
+    @Test func saysWhereTheWordsWereFound() {
+        #expect(Search.reason("matrix", item { $0.title = "The Matrix" }) == "符合：標題")
+        #expect(Search.reason("receive", item { $0.ocrText = "I receive: you receive:" }) == "符合：圖中文字")
+        #expect(Search.reason("wong", item { $0.entities = [Item.Entity(kind: .person, name: "Wong Kar-Wai")] }) == "符合：名字 Wong Kar-Wai")
+        #expect(Search.reason("人物", item { $0.labels = ["people"] }) == "符合：主題 人物")
+        // Found by meaning only.
+        #expect(Search.reason("a cat at dinner", item { $0.title = "Smudge" }) == "意思相近")
+    }
+}
+
 @MainActor
 struct TrailTests {
     @Test func recordsPathsAndPersists() {

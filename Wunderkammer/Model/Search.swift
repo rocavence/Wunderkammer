@@ -101,6 +101,36 @@ enum Search {
         return best
     }
 
+    /// Why this item is among the results, in a few words: 「標題」, 「圖中文字」,
+    /// 「名字 Wong Kar-Wai」. nil-free: what the words didn't find, meaning did.
+    static func reason(_ query: String, _ item: Item) -> String {
+        var found: [String] = []
+        func add(_ r: String) { if !found.contains(r) { found.append(r) } }
+        for term in tokens(query) {
+            for t in [term] + (synonyms[term] ?? []) {
+                if let year = Int(t), (1990...2100).contains(year) {
+                    if Calendar.current.component(.year, from: item.dateAdded) == year { add("\(year) 年收藏") }
+                    continue
+                }
+                if contains(item.title, t) { add("標題"); break }
+                if contains(item.originalFilename, t) { add("檔名"); break }
+                if let name = item.entities?.first(where: { normalize($0.name).contains(t) }) { add("名字 \(name.name)"); break }
+                if contains(item.creator, t) { add("作者 \(item.creator ?? "")"); break }
+                if contains(item.domain, t) { add("網站"); break }
+                if let label = item.labels?.first(where: { normalize($0) == t || normalize($0).hasPrefix(t) || Subjects.chinese[$0].map(normalize) == t }) {
+                    add("主題 \(Subjects.title(label))"); break
+                }
+                if item.colors?.contains(where: { normalize($0) == t }) == true { add("顏色"); break }
+                if kindWords[item.kind]?.contains(t) == true { add("類型"); break }
+                if contains(item.ocrText, t) { add("圖中文字"); break }
+                if contains(item.text, t) { add("內文"); break }
+                if contains(item.pageText, t) { add("頁面內文"); break }
+                if contains(item.url, t) { add("網址"); break }
+            }
+        }
+        return found.isEmpty ? "意思相近" : "符合：" + found.prefix(3).joined(separator: "、")
+    }
+
     private static func contains(_ field: String?, _ term: String) -> Bool {
         guard let field, !field.isEmpty else { return false }
         return normalize(field).contains(term)
