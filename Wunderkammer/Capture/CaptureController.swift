@@ -62,9 +62,6 @@ final class CaptureController: NSObject {
         registerShortcuts()
         NSApp.servicesProvider = self
         NSUpdateDynamicServices()
-        NSAppleEventManager.shared().setEventHandler(self, andSelector: #selector(handleURL(_:reply:)),
-                                                     forEventClass: AEEventClass(kInternetEventClass),
-                                                     andEventID: AEEventID(kAEGetURL))
         let timer = Timer(timeInterval: 0.5, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.watchClipboard() }
         }
@@ -148,9 +145,8 @@ final class CaptureController: NSObject {
 
     // MARK: wunderkammer://capture?url=…&title=…&text=…&image=…
 
-    @objc private func handleURL(_ event: NSAppleEventDescriptor, reply: NSAppleEventDescriptor) {
-        guard let s = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue,
-              let url = URL(string: s) else { return }
+    /// The app delegate receives the link (it can arrive before launch is done).
+    func handle(_ url: URL) {
         let sources = Self.sources(fromCaptureURL: url)
         guard !sources.isEmpty else { return }
         Task { await collect(sources, sourceApp: "Browser") }

@@ -555,7 +555,8 @@ final class SelfTest {
         }
         let note = dir.appendingPathComponent("note.md")
         try? "Wunderkammer is a place for the things you don't want to lose, but don't want to organize either.".write(to: note, atomically: true, encoding: .utf8)
-        let page = URL(string: "https://en.wikipedia.org/wiki/Cabinet_of_curiosities")!
+        // Unique per run: the test library is a copy of the real one, which may hold this page already.
+        let page = URL(string: "https://en.wikipedia.org/wiki/Cabinet_of_curiosities?wk=\(UUID().uuidString)")!
         let before = library.items.count
         let pb = NSPasteboard(name: .init("wk-selftest-capture"))
         pb.clearContents()

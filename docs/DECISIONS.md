@@ -190,3 +190,14 @@ Atlas 的偵錯說明文字寫明舊版（1.6.7）的參數：質量 1.89、剛�
 已知限制：IMDb 擋程式抓取；Spotify、Apple Music、博客來的頁面不提供結構化資料，只會是一般網頁。已經收進來的網頁不會回頭補抓。
 
 修改位置：`WebMetadata.structured`、`Item.thing` / `credits` / `released`、`Scope.KindView`。
+
+## D28 同一個圖庫只讓一份 app 執行
+
+開發時這台 Mac 上有好幾份 Wunderkammer（`dist/`、`build-release/`、`build/`），識別碼相同。系統把 `wunderkammer://` 連結交給其中一份，可能跟正在用的不是同一份，於是兩份 app 同時寫同一個 `library.json`，後存檔的那份會蓋掉另一份新收的東西。實際發生過：22 件收藏被蓋掉，靠備份救回。
+
+* 啟動時若已有另一份在跑（而且用的是同一個圖庫），新的這份把收到的連結與檔案轉給已在跑的那份，然後自行結束，結束時不存檔。
+* 自我測試用自己的圖庫（`WK_LIBRARY_ROOT`），不受影響。
+
+同時修正：啟動 app 的那個連結會在 `applicationDidFinishLaunching` 之前送到，原本處理器還沒裝好就被丟掉。現在在 `applicationWillFinishLaunching` 就裝好，收到的連結先排隊，收藏功能就緒後再處理。
+
+修改位置：`AppDelegate.applicationWillFinishLaunching`、`handleLink`、`forward`。

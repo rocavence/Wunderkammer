@@ -40,6 +40,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private(set) var mode = ViewMode.grid
     private(set) var scope = Scope()
     private var capture: CaptureController!
+    /// wunderkammer:// links that arrived before capture was ready.
+    private var pendingLinks: [URL] = []
+    /// Another copy of the app already has this library open: hand everything to it.
+    private var forwardTo: NSRunningApplication?
     private let quickLook = QuickLookHost()
     private var understanding: Understanding!
     private lazy var trail = Trail(root: library.root)
@@ -78,7 +82,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     private static let modeKey = "mode"
     private static let boardKey = "board"
 
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        // Two copies writing one library.json lose each other's captures. The
+        // self-test has a library of its own and runs next to the real app.
+        if ProcessInfo.processInfo.environment["WK_LIBRARY_ROOT"] == nil, let id = Bundle.main.bundleIdentifier {
+            forwardTo = NSRunningApplication.runningApplications(withBundleIdentifier: id)
+                .first { $0.processIdentifier != ProcessInfo.processInfo.processIdentifier && !$0.isTerminated }
+        }
+        // A link that launches the app arrives before didFinishLaunching.
+        if !SelfTest.isEnabled {
+            NSAppleEventManager.shared().setEventHandler(self, andSelector: #selector(handleLink(_:reply:)),
+                                                         forEventClass: AEEventClass(kInternetEventClass),
+                                                         andEventID: AEEventID(kAEGetURL))
+        }
+    }
+
+    @objc private func handleLink(_ event: NSAppleEventDescriptor, reply: NSAppleEventDescriptor) {
+        guard let s = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue, let url = URL(string: s) else { return }
+        if forwardTo != nil { forward([url]) } else if let capture { capture.handle(url) } else { pendingLinks.append(url) }
+    }
+
+    /// Opens links or files in the copy that's already running.
+    private func forward(_ urls: [URL]) {
+        guard let other = forwardTo?.bundleURL, !urls.isEmpty else { return }
+        NSWorkspace.shared.open(urls, withApplicationAt: other, configuration: NSWorkspace.OpenConfiguration())
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        if let other = forwardTo {
+            // Launch-time links and files are forwarded by now; leave the library alone.
+            other.activate()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { NSApp.terminate(nil) }
+            return
+        }
         // Copies and representations of items removed in an earlier session.
         library.purgeOrphans()
         try? FileManager.default.removeItem(at: Self.textPreviewDir)
@@ -200,6 +236,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         capture.currentBoard = { [weak self] in self?.scope.board }
         // The self-test runs next to the real app; the shortcuts belong to that one.
         if !SelfTest.isEnabled { capture.start() }
+        pendingLinks.forEach(capture.handle)
+        pendingLinks = []
 
         understanding.start()
         if !SelfTest.isEnabled {
@@ -225,6 +263,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { SelfTest.isEnabled }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
+        if forwardTo != nil { return false }
         if !hasVisibleWindows { showCabinet() }
         return true
     }
@@ -271,6 +310,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     func application(_ application: NSApplication, open urls: [URL]) {
         let files = urls.filter(\.isFileURL)
         guard !files.isEmpty else { return }
+        if forwardTo != nil { return forward(files) }
         let board = scope.board
         Task { await library.capture(files.map { .file($0) }, into: board, sourceApp: "Dock") }
     }
@@ -288,6 +328,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        // A forwarding copy never owned the library: saving would overwrite the real one.
+        guard forwardTo == nil else { return }
         try? FileManager.default.removeItem(at: Self.textPreviewDir)
         library.save()
         trail.save()
