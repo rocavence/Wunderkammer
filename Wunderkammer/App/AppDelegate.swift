@@ -457,6 +457,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         if !scope.isSearching, today > 0, today < count { detail.append("今天新增 \(today) 件") }
         if learning > 0 { detail.append("正在理解 \(learning) 件") }
         grid?.heading = (scope.isSearching ? "「\(scope.search)」" : window.title, detail.joined(separator: " · "))
+        infinity?.heading = scope.base == .all ? "整個珍奇室" : window.title
         // A cabinet with nothing in it yet gets its welcome instead of empty views.
         emptyCabinet?.isHidden = !library.items.isEmpty
     }

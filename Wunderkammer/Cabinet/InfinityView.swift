@@ -64,6 +64,7 @@ final class InfinityView: NSView, ItemSurface {
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()
         layer?.backgroundColor = resolved(.windowBackgroundColor)
+        renderChrome()
         pool.refreshColors()
         appearanceChanged()
     }
@@ -72,8 +73,66 @@ final class InfinityView: NSView, ItemSurface {
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
     override var isOpaque: Bool { true }
 
+    // MARK: Edges and caption
+
+    /// What's being wandered, at the foot of the wall ("被遺忘的").
+    var heading = "" { didSet { if heading != oldValue { renderChrome(); showHint() } } }
+    private let topShade = CAGradientLayer()
+    private let bottomShade = CAGradientLayer()
+    private let titleLabel = NSTextField(labelWithString: "")
+    private let hintLabel = NSTextField(labelWithString: "拖曳或捲動來漫遊 · 空白鍵 暫停漂移 · R 隨機一件")
+
+    /// The wall fades out under the toolbar and at the foot, where its name sits.
+    private func renderChrome() {
+        guard let root = layer else { return }
+        if topShade.superlayer == nil {
+            for g in [topShade, bottomShade] {
+                g.zPosition = 50
+                root.addSublayer(g)
+            }
+            for t in [titleLabel, hintLabel] {
+                t.translatesAutoresizingMaskIntoConstraints = false
+                addSubview(t)
+                // Above the tiles and the shade (tiles join the layer tree later).
+                t.wantsLayer = true
+                t.layer?.zPosition = 60
+            }
+            hintLabel.font = .systemFont(ofSize: 11.5)
+            NSLayoutConstraint.activate([
+                titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 24),
+                titleLabel.bottomAnchor.constraint(equalTo: hintLabel.topAnchor, constant: -4),
+                hintLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 25),
+                hintLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -20),
+            ])
+        }
+        let bg = resolved(.windowBackgroundColor)
+        withoutAnimation {
+            topShade.colors = [bg.copy(alpha: 0.9)!, bg.copy(alpha: 0)!]
+            topShade.frame = CGRect(x: 0, y: 0, width: bounds.width, height: 120)
+            bottomShade.colors = [bg.copy(alpha: 0)!, bg.copy(alpha: 0.85)!]
+            bottomShade.frame = CGRect(x: 0, y: bounds.height - 140, width: bounds.width, height: 140)
+        }
+        let size: CGFloat = 24
+        titleLabel.font = NSFont.systemFont(ofSize: size).fontDescriptor.withDesign(.serif)
+            .flatMap { NSFont(descriptor: $0, size: size) } ?? .systemFont(ofSize: size)
+        titleLabel.stringValue = heading
+        titleLabel.textColor = .labelColor
+        hintLabel.textColor = .secondaryLabelColor
+    }
+
+    /// The how-to shows when you arrive and fades once you start moving.
+    private func showHint() {
+        hintLabel.alphaValue = 1
+    }
+
+    private func fadeHint() {
+        guard hintLabel.alphaValue > 0 else { return }
+        NSAnimationContext.runAnimationGroup { $0.duration = 0.6; hintLabel.animator().alphaValue = 0 }
+    }
+
     override func setFrameSize(_ newSize: NSSize) {
         super.setFrameSize(newSize)
+        renderChrome()
         render()
     }
 
@@ -271,6 +330,7 @@ final class InfinityView: NSView, ItemSurface {
 
     private func interacted() {
         lastInteraction = Date()
+        fadeHint()
     }
 
     override func scrollWheel(with event: NSEvent) {
