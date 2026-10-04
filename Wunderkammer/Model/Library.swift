@@ -488,10 +488,12 @@ final class Library {
                 $0.title = $0.title ?? meta.title
                 if meta.title != nil, $0.title == $0.domain { $0.title = meta.title }
                 $0.text = meta.description ?? $0.text
-                $0.creator = meta.credits.first(where: { $0.role != .brand })?.name ?? meta.author ?? meta.siteName ?? $0.creator
+                $0.creator = meta.credits.first(where: { $0.role != .brand && $0.role != .actor })?.name ?? meta.author ?? meta.siteName ?? $0.creator
                 $0.thing = meta.thing ?? $0.thing
                 if !meta.credits.isEmpty { $0.credits = meta.credits }
                 $0.released = meta.released ?? $0.released
+                $0.locality = meta.locality ?? $0.locality
+                $0.webDataVersion = WebMetadata.version
                 $0.entities = Item.merging($0.entities ?? [], credits: $0.credits)
                 $0.createdDate = meta.published ?? $0.createdDate
                 if let finalPicture {
@@ -503,6 +505,27 @@ final class Library {
             }
             await self.archive(id)
         }
+    }
+
+    /// Pages read before WebMetadata learned more: what they are, who made
+    /// them, where; the picture stays as it is.
+    func refreshWebData() async {
+        let ids = items.filter { $0.kind == .web && ($0.webDataVersion ?? 0) < WebMetadata.version }.map(\.id)
+        for id in ids {
+            guard let url = item(id)?.url.flatMap(URL.init(string:)), let meta = await WebMetadata.fetch(url), !meta.isImage else {
+                update(id, notify: false) { $0.webDataVersion = WebMetadata.version }
+                continue
+            }
+            update(id, notify: false) {
+                $0.thing = meta.thing ?? $0.thing
+                if !meta.credits.isEmpty { $0.credits = meta.credits }
+                $0.released = meta.released ?? $0.released
+                $0.locality = meta.locality ?? $0.locality
+                $0.entities = Item.merging($0.entities ?? [], credits: $0.credits)
+                $0.webDataVersion = WebMetadata.version
+            }
+        }
+        if !ids.isEmpty { NotificationCenter.default.post(name: Self.didChange, object: self) }
     }
 
     func archiveURL(_ item: Item) -> URL? {

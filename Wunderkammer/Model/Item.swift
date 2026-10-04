@@ -50,6 +50,10 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
     var credits: [Credit]?
     /// As the page gives it: "2021-10-22", "2021-10" or "2021".
     var released: String?
+    /// The city a place is in, or where a work is set ("New York").
+    var locality: String?
+    /// Which WebMetadata.version last read this page's structured data.
+    var webDataVersion: Int?
     /// A web page as it was when collected: the whole page as a PDF in archives/.
     var archiveFilename: String?
     /// The page's own words (the start of them), for search and questions.
@@ -114,6 +118,8 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
         thing = try? c.decodeIfPresent(Thing.self, forKey: .thing)
         credits = try? c.decodeIfPresent([Credit].self, forKey: .credits)
         released = try c.decodeIfPresent(String.self, forKey: .released)
+        locality = try c.decodeIfPresent(String.self, forKey: .locality)
+        webDataVersion = try c.decodeIfPresent(Int.self, forKey: .webDataVersion)
         archiveFilename = try c.decodeIfPresent(String.self, forKey: .archiveFilename)
         pageText = try c.decodeIfPresent(String.self, forKey: .pageText)
         archivedAt = try c.decodeIfPresent(Date.self, forKey: .archivedAt)
@@ -143,7 +149,7 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
 
     struct Credit: Codable, Hashable, Sendable {
         enum Role: String, Codable, Sendable {
-            case author, director, artist, creator, brand
+            case author, director, artist, creator, brand, actor
 
             var title: String {
                 switch self {
@@ -152,6 +158,7 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
                 case .artist: "演出者"
                 case .creator: "創作者"
                 case .brand: "品牌"
+                case .actor: "演員"
                 }
             }
         }

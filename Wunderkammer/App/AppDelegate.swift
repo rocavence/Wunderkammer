@@ -125,6 +125,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         library.purgeOrphans()
         if !SelfTest.isEnabled {
             library.archiveMissing()
+            Task { await library.refreshWebData() }
             library.shrinkArchives()
         }
         try? FileManager.default.removeItem(at: Self.textPreviewDir)

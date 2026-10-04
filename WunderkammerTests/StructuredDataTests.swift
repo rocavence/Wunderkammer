@@ -59,6 +59,21 @@ struct StructuredDataTests {
         #expect(m.released == "1999-03-31")
     }
 
+    @Test func castAndCityAreKept() {
+        let m = page("""
+        <script type="application/ld+json">{"@type":"Movie","name":"Arrival","director":[{"name":"Denis Villeneuve"}],
+         "actor":[{"name":"Amy Adams"},{"name":"Jeremy Renner"},{"name":"Forest Whitaker"}]}</script>
+        """)
+        #expect(m.credits.filter { $0.role == .actor }.map(\.name) == ["Amy Adams", "Jeremy Renner", "Forest Whitaker"])
+        #expect(m.credits.first?.role == .director)
+        let museum = page("""
+        <script type="application/ld+json">{"@type":["TouristAttraction","Museum"],"name":"The Museum of Modern Art",
+         "address":{"@type":"PostalAddress","addressLocality":"New York"}}</script>
+        """)
+        #expect(museum.thing == .place)
+        #expect(museum.locality == "New York")
+    }
+
     @Test func albumCreditsTheArtist() {
         let m = page("""
         <script type="application/ld+json">[{"@type":"MusicAlbum","name":"Blue","byArtist":{"@type":"MusicGroup","name":"Joni Mitchell"},"datePublished":"1971"}]</script>

@@ -5,6 +5,10 @@ import ImageIO
 /// structured data (what it is and who made it), favicon. Fetched after
 /// capture so capturing a URL is instant.
 struct WebMetadata: Sendable {
+    /// Bumped when more is read from pages (2: cast and city), so pages
+    /// collected earlier are read again.
+    static let version = 2
+
     var title: String?
     var description: String?
     var siteName: String?
@@ -16,6 +20,7 @@ struct WebMetadata: Sendable {
     var thing: Item.Thing?
     var credits: [Item.Credit] = []
     var released: String?
+    var locality: String?
     /// If the URL itself is an image (someone copied an image link).
     var isImage = false
 
@@ -99,12 +104,17 @@ struct WebMetadata: Sendable {
             if let name = (object["name"] as? String).flatMap({ clean(decode($0)) }) { meta.title = name }
             let roles: [(String, Item.Credit.Role)] = thing == .music
                 ? [("byArtist", .artist), ("author", .artist), ("creator", .creator)]
-                : [("author", .author), ("director", .director), ("byArtist", .artist), ("creator", .creator), ("brand", .brand)]
+                : [("author", .author), ("director", .director), ("byArtist", .artist), ("creator", .creator), ("brand", .brand),
+                   ("actor", .actor), ("actors", .actor)]
             for (key, role) in roles {
-                for name in names(object[key]) where !meta.credits.contains(where: { $0.name == name }) {
+                // The leads, not the whole cast.
+                for name in names(object[key]).prefix(role == .actor ? 8 : 20) where !meta.credits.contains(where: { $0.name == name }) {
                     meta.credits.append(Item.Credit(role: role, name: name))
                 }
             }
+            let address = object["address"] as? [String: Any]
+            meta.locality = (address?["addressLocality"] as? String).flatMap { clean(decode($0)) }
+                ?? names(object["contentLocation"]).first ?? names(object["locationCreated"]).first
             // dateCreated last: on some sites it's when their record was made.
             let event = ((object["releasedEvent"] as? [[String: Any]])?.first ?? object["releasedEvent"] as? [String: Any])?["startDate"]
             meta.released = [object["datePublished"], object["releaseDate"], event, object["startDate"], object["dateCreated"]]

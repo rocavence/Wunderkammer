@@ -228,6 +228,9 @@ final class SelfTest {
             }
             check(toast.panel?.isVisible == true && toast.panel?.isKeyWindow == false, "toast shows without taking focus")
             return finish()
+        case "relations":
+            await relationsCheck()
+            return finish()
         case "keep":
             await keepCheck()
             return finish()
@@ -505,6 +508,43 @@ final class SelfTest {
         check(settled < 0.5 && allVisible && !ui.preview.isOpen,
               "after closing every tile is home and visible (\(String(format: "%.1f", settled))pt)")
         shot("02f-ripple-closed")
+    }
+
+    /// Relations across kinds in the real library copy (network: pages are read again).
+    private func relationsCheck() async {
+        let t = CACurrentMediaTime()
+        await library.refreshWebData()
+        log(String(format: "refreshed web data in %.1fs", CACurrentMediaTime() - t))
+        var total = 0
+        for item in library.items {
+            let relations = CrossMedia.relations(of: item, in: library.items)
+            total += relations.count
+            for r in relations {
+                guard let other = library.item(r.other) else { continue }
+                let title = String((CrossMedia.name(of: other) ?? other.displayTitle).prefix(40))
+                log("REL \(item.displayTitle.prefix(30)) → \(r.sentence(title: title, kindName: InspectorViewController.kindName(other)))")
+            }
+        }
+        log("relations: \(total)")
+        func related(_ a: String, _ b: String) -> Bool {
+            guard let x = library.items.first(where: { $0.kind == .web && $0.displayTitle.contains(a) }) else { return false }
+            return CrossMedia.relations(of: x, in: library.items).contains { library.item($0.other)?.displayTitle.contains(b) == true }
+        }
+        check(related("Cabinet of curiosities", "Ole Worm"), "the cabinet page mentions Ole Worm's page")
+        check(related("In the Mood for Love", "Chungking Express"), "Wong Kar-Wai's films relate")
+        check(related("Museum of Modern Art", "Whitney"), "two museums in New York relate")
+        if let matrix = library.items.first(where: { $0.url?.contains("letterboxd.com/film/the-matrix") == true }) {
+            check(matrix.credits?.contains { $0.role == .actor && $0.name == "Keanu Reeves" } == true, "the cast is read (\(matrix.credits?.filter { $0.role == .actor }.count ?? 0) actors)")
+            ui.toggleInspectorForTest()
+            ui.grid.reveal(matrix.id)
+            await wait(0.8)
+            shot("relations-inspector")
+        }
+        if let cabinet = library.items.first(where: { $0.kind == .web && $0.displayTitle.contains("Cabinet of curiosities") }) {
+            ui.grid.reveal(cabinet.id)
+            await wait(0.8)
+            shot("relations-cabinet")
+        }
     }
 
     /// What's kept when the source is only a link or a path: pages are saved

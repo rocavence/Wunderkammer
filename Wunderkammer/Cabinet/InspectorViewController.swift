@@ -101,6 +101,28 @@ final class InspectorViewController: NSViewController {
             body.maximumNumberOfLines = 8
             stack.addArrangedSubview(body)
         }
+        // How it relates to other kinds of things: the same person, a mention, the same city.
+        let relations = CrossMedia.relations(of: item, in: library.items).prefix(8)
+        if !relations.isEmpty {
+            stack.addArrangedSubview(label("關聯", size: 11, color: .tertiaryLabelColor))
+            let rows = NSStackView()
+            rows.orientation = .vertical
+            rows.alignment = .leading
+            rows.spacing = 2
+            for r in relations {
+                guard let other = library.item(r.other) else { continue }
+                let title = String((CrossMedia.name(of: other) ?? other.displayTitle).prefix(40))
+                let b = ClosureButton(title: r.sentence(title: title, kindName: Self.kindName(other))) { [weak self] in
+                    self?.onSelectRelated?(other.id)
+                }
+                b.isBordered = false
+                b.contentTintColor = .controlAccentColor
+                b.font = .systemFont(ofSize: 12)
+                b.lineBreakMode = .byTruncatingTail
+                rows.addArrangedSubview(b)
+            }
+            stack.addArrangedSubview(rows)
+        }
         // Connections: each name and the site lead to everything else they appear in.
         var links: [(String, Scope.Base)] = (item.entities ?? []).prefix(8).map { ($0.name, .mentions($0.name)) }
         if let domain = item.domain { links.append((domain, .site(domain))) }
@@ -183,6 +205,11 @@ final class InspectorViewController: NSViewController {
             }
             stack.addArrangedSubview(grid)
         }
+    }
+
+    static func kindName(_ item: Item) -> String {
+        let names: [Item.Kind: String] = [.image: "圖片", .video: "影片", .audio: "聲音", .pdf: "PDF", .web: "網頁", .text: "文字", .file: "檔案"]
+        return item.thing?.title ?? names[item.kind] ?? ""
     }
 
     /// The facts worth showing for this kind, in reading order.
