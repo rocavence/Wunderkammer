@@ -48,7 +48,7 @@ enum Reicon: String, CaseIterable, Sendable {
     case searchZoomIn = "search-zoom-in"
     case searchZoomOut = "search-zoom-out"
     case maximize = "maximize"
-    case alignTop = "align-top"
+    case grid2 = "grid2"
     case restart = "restart"
     case trash = "trash"
     case share = "share"

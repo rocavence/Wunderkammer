@@ -562,7 +562,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
             tools = [
                 [.init(icon: .sparkles, tip: "依主題分堆") { [weak self] in self?.canvas.clusterByTheme(nil) },
                  .init(icon: .link, tip: "依關聯分堆", enabled: canvas.hasRelations) { [weak self] in self?.canvas.clusterByRelation(nil) },
-                 .init(icon: .alignTop, tip: "整理成整齊的排列") { [weak self] in self?.canvas.arrange(nil) }],
+                 .init(icon: .grid2, tip: "整理成整齊的排列") { [weak self] in self?.canvas.arrange(nil) }],
                 [.init(icon: .maximize, tip: "顯示全部") { [weak self] in self?.canvas.fit(animated: true) }] + zoom,
                 [.init(icon: .restart, tip: "重設擺放…", destructive: true) { [weak self] in self?.canvas.resetArrangement(nil) }],
             ]
