@@ -45,6 +45,8 @@ chevron-expand-y
 search
 plus
 more-h
+edit
+chevron-down
 trash
 share
 link

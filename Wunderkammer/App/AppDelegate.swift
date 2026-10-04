@@ -236,6 +236,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
         sidebar.onRandom = { [weak self] in self?.showRandom() }
         sidebar.onManageCabinets = { [weak self] in self?.manageCabinets() }
         sidebar.cabinetName = cabinets.current.name
+        sidebar.cabinetID = cabinets.currentID
         inspector = InspectorViewController(library: library)
         inspector.onSelectRelated = { [weak self] id in
             guard let self else { return }
@@ -1144,6 +1145,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
 
     private func cabinetsChanged() {
         sidebar.cabinetName = cabinets.current.name
+        sidebar.cabinetID = cabinets.currentID
         updateTitle()
     }
 
@@ -1153,6 +1155,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSToolbarDelegate, NSS
     var currentCabinet: UUID { cabinets.currentID }
     func closeCabinetsForTest() { cabinetsPanel?.closeForTest() }
     var cabinetsWindowNumber: Int? { cabinetsPanel?.windowNumber }
+    func beginAddCabinetForTest() { cabinetsPanel?.beginAddForTest() }
+    func typeCabinetNameForTest(_ name: String) { cabinetsPanel?.typeNameForTest(name) }
+    func cabinetID(named name: String) -> UUID? { cabinets.entries.first { $0.name == name }?.id }
     func canDeleteCabinet(_ id: UUID) -> Bool { cabinets.canDelete(id) }
     func deleteCabinetForTest(_ id: UUID) { cabinets.delete(id); cabinetsChanged() }
 

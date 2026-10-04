@@ -581,12 +581,22 @@ final class SelfTest {
         check(ui.cabinetNames.contains("旅行的珍奇室"), "it's in the list")
         ui.switchCabinet(to: home)
         await wait(0.4)
-        // The window from the button beside 珍奇室.
+        // The window from the 珍奇室 card atop the sidebar.
         ui.manageCabinets()
         await wait(0.6)
         shot("cabinet-panel", windowNumber: ui.cabinetsWindowNumber)
+        // 新增: a blank card, named where it stands.
+        let count = ui.cabinetNames.count
+        ui.beginAddCabinetForTest()
+        await wait(0.4)
+        shot("cabinet-draft", windowNumber: ui.cabinetsWindowNumber)
+        check(ui.cabinetNames.count == count, "nothing is made before it has a name")
+        ui.typeCabinetNameForTest("草稿的珍奇室")
+        await wait(0.3)
+        check(ui.cabinetNames.contains("草稿的珍奇室"), "Return makes it, with that name")
         ui.closeCabinetsForTest()
         await wait(0.3)
+        if let draft = ui.cabinetID(named: "草稿的珍奇室") { ui.deleteCabinetForTest(draft) }
         check(!ui.canDeleteCabinet(home) && ui.canDeleteCabinet(other), "the original stays; another can be removed")
         ui.deleteCabinetForTest(other)
         check(!ui.cabinetNames.contains("旅行的珍奇室"), "removed from the list")
@@ -1238,6 +1248,9 @@ protocol SelfTestUI: AnyObject {
     func manageCabinets()
     func closeCabinetsForTest()
     var cabinetsWindowNumber: Int? { get }
+    func beginAddCabinetForTest()
+    func typeCabinetNameForTest(_ name: String)
+    func cabinetID(named: String) -> UUID?
     func canDeleteCabinet(_ id: UUID) -> Bool
     func deleteCabinetForTest(_ id: UUID)
     var currentCabinet: UUID { get }

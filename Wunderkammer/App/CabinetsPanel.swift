@@ -2,8 +2,8 @@ import AppKit
 import ImageIO
 
 /// The 珍奇室 on this Mac as a sheet of cards: each wears a cover made of its
-/// newest pieces; a click opens it. The default one can't be removed.
-/// Opened from the button beside the sidebar's first row.
+/// newest pieces; a click opens it. Names are typed on the card itself. The
+/// default one can't be removed. Opened from the 珍奇室 card atop the sidebar.
 @MainActor
 final class CabinetsPanel: NSObject {
     var onSwitch: ((UUID) -> Void)?
@@ -16,10 +16,13 @@ final class CabinetsPanel: NSObject {
     private let sheet: NSWindow
     private let grid = FlippedView()
     private let scroll = NSScrollView()
+    private let done = NSButton(title: "完成", target: nil, action: nil)
     private var cards: [NSView] = []
+    /// A new 珍奇室 waiting for its name: a card, not yet a folder.
+    private var drafting = false
 
     private static let columns = 3
-    private static let cardSize = CGSize(width: 216, height: 232)
+    private static let cardSize = CGSize(width: 216, height: 236)
     private static let gap: CGFloat = 18
     private static let margin: CGFloat = 32
 
@@ -44,10 +47,11 @@ final class CabinetsPanel: NSObject {
     private func build() {
         let title = NSTextField(labelWithString: "珍奇室")
         title.font = Typography.display(26) ?? .systemFont(ofSize: 26)
-        let note = NSTextField(labelWithString: "每個珍奇室都有自己的收藏。點一下卡片就打開它。")
+        let note = NSTextField(labelWithString: "每個珍奇室都有自己的收藏。點卡片打開，名字旁的按鈕可以改名或刪除。")
         note.font = .systemFont(ofSize: 12.5)
         note.textColor = .secondaryLabelColor
-        let done = NSButton(title: "完成", target: self, action: #selector(close))
+        done.target = self
+        done.action = #selector(close)
         done.bezelStyle = .rounded
         done.keyEquivalent = "\u{1b}"
         done.controlSize = .large
@@ -81,21 +85,34 @@ final class CabinetsPanel: NSObject {
         sheet.contentView = content
     }
 
-    /// Cards in rows of three: every 珍奇室, then one for a new one.
+    /// Cards in rows of three: every 珍奇室, then the one being named or the
+    /// card for adding one.
     private func layoutCards() {
         cards.forEach { $0.removeFromSuperview() }
         cards = cabinets.entries.map { entry in
-            let card = CabinetCard(entry: entry, count: count(entry), isCurrent: entry.id == cabinets.currentID,
+            let card = CabinetCard(name: entry.name, count: count(entry), isCurrent: entry.id == cabinets.currentID,
                                    isDefault: entry.folder.isEmpty, canDelete: cabinets.canDelete(entry.id),
-                                   cover: CabinetCard.mosaic(covers(entry), seed: entry.id))
+                                   cover: CabinetCover.mosaic(covers(entry), seed: entry.id))
             card.onOpen = { [weak self] in self?.open(entry.id) }
-            card.onRename = { [weak self] in self?.rename(entry) }
+            card.onRename = { [weak self, weak card] in
+                guard let self, let card else { return }
+                self.edit(card) { name in
+                    self.cabinets.rename(entry.id, to: name)
+                    self.onChange?()
+                }
+            }
             card.onDelete = { [weak self] in self?.delete(entry) }
             return card
         }
-        let add = AddCabinetCard()
-        add.onAdd = { [weak self] in self?.add() }
-        cards.append(add)
+        if drafting {
+            let draft = CabinetCard(name: "", count: 0, isCurrent: false, isDefault: false, canDelete: false,
+                                    cover: CabinetCover.mosaic([], seed: UUID()), isDraft: true)
+            cards.append(draft)
+        } else {
+            let add = AddCabinetCard()
+            add.onAdd = { [weak self] in self?.add() }
+            cards.append(add)
+        }
         let rows = (cards.count + Self.columns - 1) / Self.columns
         let height = CGFloat(rows) * Self.cardSize.height + CGFloat(rows - 1) * Self.gap + 16
         grid.frame = NSRect(x: 0, y: 0, width: sheet.frame.width, height: height)
@@ -119,18 +136,31 @@ final class CabinetsPanel: NSObject {
         if id != cabinets.currentID { onSwitch?(id) }
     }
 
+    /// A blank card takes the place of 新增, its name already being typed.
+    /// Return makes the 珍奇室; Esc or an empty name leaves nothing behind.
     private func add() {
-        guard let name = ItemActions.promptName(title: "新的珍奇室", initial: "未命名珍奇室", window: nil) else { return }
-        cabinets.create(named: name)
+        drafting = true
         layoutCards()
-        onChange?()
+        guard let draft = cards.last as? CabinetCard else { return }
+        draft.scrollToVisible(draft.bounds)
+        edit(draft) { [weak self] name in
+            guard let self else { return }
+            self.cabinets.create(named: name)
+            self.onChange?()
+        }
     }
 
-    private func rename(_ entry: Cabinets.Entry) {
-        guard let name = ItemActions.promptName(title: "重新命名珍奇室", initial: entry.name, window: nil) else { return }
-        cabinets.rename(entry.id, to: name)
-        layoutCards()
-        onChange?()
+    /// Types a name on the card. Commits non-empty names, then redraws.
+    private func edit(_ card: CabinetCard, commit: @escaping (String) -> Void) {
+        // While typing, Esc belongs to the name, not to 完成.
+        done.keyEquivalent = ""
+        card.beginEditing(in: sheet) { [weak self] name in
+            guard let self else { return }
+            self.done.keyEquivalent = "\u{1b}"
+            if let name { commit(name) }
+            self.drafting = false
+            self.layoutCards()
+        }
     }
 
     private func delete(_ entry: Cabinets.Entry) {
@@ -141,10 +171,12 @@ final class CabinetsPanel: NSObject {
         alert.addButton(withTitle: "刪除")
         alert.addButton(withTitle: "取消")
         alert.buttons.first?.hasDestructiveAction = true
-        guard alert.runModal() == .alertFirstButtonReturn else { return }
-        cabinets.delete(entry.id)
-        layoutCards()
-        onChange?()
+        alert.beginSheetModal(for: sheet) { [weak self] response in
+            guard let self, response == .alertFirstButtonReturn else { return }
+            self.cabinets.delete(entry.id)
+            self.layoutCards()
+            self.onChange?()
+        }
     }
 
     @objc private func close() {
@@ -155,30 +187,38 @@ final class CabinetsPanel: NSObject {
     var isShown: Bool { sheet.isVisible }
     var windowNumber: Int { sheet.windowNumber }
     func closeForTest() { close() }
+    /// The 新增 card clicked: the blank card waiting for a name.
+    func beginAddForTest() { add() }
+    /// Typing a name into the card being edited and pressing Return.
+    func typeNameForTest(_ name: String) {
+        guard let card = cards.compactMap({ $0 as? CabinetCard }).first(where: \.isEditing) else { return }
+        card.commitForTest(name)
+    }
 }
 
-/// One 珍奇室: its cover, its name, how much it holds. Lifts under the pointer.
+/// One 珍奇室: its cover, its name, how much it holds, and buttons for
+/// renaming and removing it. Lifts under the pointer.
 @MainActor
-private final class CabinetCard: NSView {
+private final class CabinetCard: NSView, NSTextFieldDelegate {
     var onOpen: (() -> Void)?
     var onRename: (() -> Void)?
     var onDelete: (() -> Void)?
 
-    private let more = NSButton()
-    private let canDelete: Bool
-    private let isDefault: Bool
-    private let isCurrent: Bool
+    private let nameField = NSTextField()
+    private let detail: NSTextField
+    private let originalName: String
+    private(set) var isEditing = false
+    private var finish: ((String?) -> Void)?
 
-    init(entry: Cabinets.Entry, count: Int, isCurrent: Bool, isDefault: Bool, canDelete: Bool, cover: CGImage?) {
-        self.canDelete = canDelete
-        self.isDefault = isDefault
-        self.isCurrent = isCurrent
+    init(name: String, count: Int, isCurrent: Bool, isDefault: Bool, canDelete: Bool, cover: CGImage?, isDraft: Bool = false) {
+        self.originalName = name
+        detail = NSTextField(labelWithString: isDraft ? "按 Return 建立，Esc 取消" : count == 0 ? "還沒有收藏" : "\(count) 件收藏")
         super.init(frame: .zero)
         wantsLayer = true
         layer?.cornerRadius = 16
         layer?.backgroundColor = NSColor.controlBackgroundColor.withAlphaComponent(0.6).cgColor
-        layer?.borderWidth = isCurrent ? 2 : 0.5
-        layer?.borderColor = (isCurrent ? NSColor.controlAccentColor : NSColor.separatorColor).cgColor
+        layer?.borderWidth = isCurrent || isDraft ? 2 : 0.5
+        layer?.borderColor = (isCurrent || isDraft ? NSColor.controlAccentColor : NSColor.separatorColor).cgColor
         layer?.shadowColor = NSColor.black.cgColor
         layer?.shadowOpacity = 0.18
         layer?.shadowRadius = 10
@@ -190,39 +230,53 @@ private final class CabinetCard: NSView {
         coverView.wantsLayer = true
         coverView.layer?.cornerRadius = 12
         coverView.layer?.masksToBounds = true
-        coverView.layer?.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
 
-        let name = NSTextField(labelWithString: entry.name)
-        name.font = Typography.display(18, weight: .medium) ?? .systemFont(ofSize: 18, weight: .medium)
-        name.lineBreakMode = .byTruncatingTail
-        let detail = NSTextField(labelWithString: count == 0 ? "還沒有收藏" : "\(count) 件收藏")
+        nameField.stringValue = name
+        nameField.placeholderString = "替它取個名字"
+        nameField.font = Typography.display(18, weight: .medium) ?? .systemFont(ofSize: 18, weight: .medium)
+        nameField.isEditable = false
+        nameField.isSelectable = false
+        nameField.isBordered = false
+        nameField.drawsBackground = false
+        nameField.focusRingType = .none
+        nameField.lineBreakMode = .byTruncatingTail
+        nameField.cell?.isScrollable = true
+        nameField.delegate = self
         detail.font = .systemFont(ofSize: 12)
         detail.textColor = .secondaryLabelColor
 
-        more.image = Icon.image(.moreH, size: 15)
-        more.isBordered = false
-        more.contentTintColor = .white
-        more.wantsLayer = true
-        more.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.45).cgColor
-        more.layer?.cornerRadius = 12
-        more.target = self
-        more.action = #selector(showMenu)
-        more.toolTip = "重新命名或刪除"
-        more.setAccessibilityLabel("更多")
-        more.alphaValue = 0
-
-        var views: [NSView] = [coverView, name, detail, more]
+        var views: [NSView] = [coverView, nameField, detail]
         var badges: [NSView] = []
         if isCurrent { badges.append(Self.pill("目前", fill: .controlAccentColor, text: .white)) }
         if isDefault { badges.append(Self.pill("預設", fill: NSColor.black.withAlphaComponent(0.5), text: .white)) }
         let badgeRow = NSStackView(views: badges)
         badgeRow.spacing = 6
         views.append(badgeRow)
+
+        // Rename and remove, always in view beside the name. The default
+        // 珍奇室 has no remove; the open one can't be removed while open.
+        var tools: [NSView] = []
+        if !isDraft {
+            tools.append(CardTool(icon: .edit, tip: "改名", destructive: false) { [weak self] in self?.onRename?() })
+            if !isDefault {
+                let trash = CardTool(icon: .trash, tip: canDelete ? "刪除" : "要先打開別的珍奇室，才能刪除這個",
+                                     destructive: true) { [weak self] in self?.onDelete?() }
+                trash.isEnabled = canDelete
+                tools.append(trash)
+            }
+        }
+        let toolRow = NSStackView(views: tools)
+        toolRow.spacing = 2
+        views.append(toolRow)
+
         for v in views {
             v.translatesAutoresizingMaskIntoConstraints = false
             addSubview(v)
         }
-        name.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        nameField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        // A name typed into an empty field still has room to grow.
+        if isDraft { nameField.widthAnchor.constraint(greaterThanOrEqualToConstant: 150).isActive = true }
+        toolRow.setHuggingPriority(.required, for: .horizontal)
         NSLayoutConstraint.activate([
             coverView.topAnchor.constraint(equalTo: topAnchor, constant: 6),
             coverView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6),
@@ -230,19 +284,28 @@ private final class CabinetCard: NSView {
             coverView.heightAnchor.constraint(equalToConstant: 156),
             badgeRow.topAnchor.constraint(equalTo: coverView.topAnchor, constant: 10),
             badgeRow.leadingAnchor.constraint(equalTo: coverView.leadingAnchor, constant: 10),
-            more.topAnchor.constraint(equalTo: coverView.topAnchor, constant: 8),
-            more.trailingAnchor.constraint(equalTo: coverView.trailingAnchor, constant: -8),
-            more.widthAnchor.constraint(equalToConstant: 24),
-            more.heightAnchor.constraint(equalToConstant: 24),
-            name.topAnchor.constraint(equalTo: coverView.bottomAnchor, constant: 12),
-            name.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            name.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -16),
-            detail.topAnchor.constraint(equalTo: name.bottomAnchor, constant: 3),
-            detail.leadingAnchor.constraint(equalTo: name.leadingAnchor),
+            nameField.topAnchor.constraint(equalTo: coverView.bottomAnchor, constant: 12),
+            nameField.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
+            nameField.trailingAnchor.constraint(lessThanOrEqualTo: toolRow.leadingAnchor, constant: -4),
+            detail.topAnchor.constraint(equalTo: nameField.bottomAnchor, constant: 3),
+            detail.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            toolRow.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
+            toolRow.centerYAnchor.constraint(equalTo: nameField.centerYAnchor, constant: 8),
         ])
-        setAccessibilityElement(true)
-        setAccessibilityRole(.button)
-        setAccessibilityLabel("\(entry.name)，\(count) 件收藏" + (isCurrent ? "，目前開著" : ""))
+        if !isDraft {
+            setAccessibilityElement(true)
+            setAccessibilityRole(.button)
+            setAccessibilityLabel("\(name)，\(count) 件收藏" + (isCurrent ? "，目前開著" : ""))
+            menu = NSMenu()
+            menu?.addItem(ClosureMenuItem("打開") { [weak self] in self?.onOpen?() })
+            menu?.addItem(ClosureMenuItem("改名…") { [weak self] in self?.onRename?() })
+            if !isDefault {
+                let delete = ClosureMenuItem("刪除…") { [weak self] in self?.onDelete?() }
+                delete.isEnabled = canDelete
+                menu?.addItem(delete)
+            }
+            menu?.autoenablesItems = false
+        }
     }
 
     required init?(coder: NSCoder) { fatalError() }
@@ -269,6 +332,55 @@ private final class CabinetCard: NSView {
         return box
     }
 
+    // MARK: Naming on the card
+
+    /// The name becomes a field; `done` gets the new name, or nil if
+    /// nothing changed or it was cancelled.
+    func beginEditing(in window: NSWindow, done: @escaping (String?) -> Void) {
+        finish = done
+        isEditing = true
+        nameField.isEditable = true
+        nameField.drawsBackground = true
+        nameField.backgroundColor = NSColor.textBackgroundColor.withAlphaComponent(0.6)
+        window.makeFirstResponder(nameField)
+        nameField.currentEditor()?.selectAll(nil)
+    }
+
+    private func end(_ name: String?) {
+        guard isEditing else { return }
+        isEditing = false
+        nameField.isEditable = false
+        nameField.drawsBackground = false
+        let trimmed = name?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let result = trimmed.isEmpty || trimmed == originalName ? nil : trimmed
+        let f = finish
+        finish = nil
+        f?(result)
+    }
+
+    func control(_ control: NSControl, textView: NSTextView, doCommandBy selector: Selector) -> Bool {
+        switch selector {
+        case #selector(NSResponder.insertNewline(_:)):
+            end(nameField.stringValue)
+            return true
+        case #selector(NSResponder.cancelOperation(_:)):
+            end(nil)
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// Clicking elsewhere keeps what was typed.
+    func controlTextDidEndEditing(_ obj: Notification) {
+        end(nameField.stringValue)
+    }
+
+    func commitForTest(_ name: String) {
+        nameField.stringValue = name
+        end(name)
+    }
+
     // MARK: Hover and click
 
     override func updateTrackingAreas() {
@@ -277,17 +389,12 @@ private final class CabinetCard: NSView {
         addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
     }
 
-    override func mouseEntered(with event: NSEvent) { lift(true) }
+    override func mouseEntered(with event: NSEvent) { if !isEditing { lift(true) } }
     override func mouseExited(with event: NSEvent) { lift(false) }
 
     /// Rises a little towards you, its shadow deepening.
     private func lift(_ up: Bool) {
         guard let layer else { return }
-        NSAnimationContext.runAnimationGroup { ctx in
-            ctx.duration = 0.22
-            ctx.allowsImplicitAnimation = true
-            more.animator().alphaValue = up ? 1 : 0
-        }
         let spring = CASpringAnimation(perceptualDuration: 0.35, bounce: 0.2)
         spring.keyPath = "shadowRadius"
         spring.fromValue = layer.presentation()?.shadowRadius ?? layer.shadowRadius
@@ -310,30 +417,65 @@ private final class CabinetCard: NSView {
     }
 
     override func mouseUp(with event: NSEvent) {
-        let p = convert(event.locationInWindow, from: nil)
-        guard bounds.contains(p), !more.frame.contains(p) else { return }
+        guard !isEditing, bounds.contains(convert(event.locationInWindow, from: nil)) else { return }
         onOpen?()
     }
+}
 
-    @objc private func showMenu() {
-        let menu = NSMenu()
-        menu.addItem(ClosureMenuItem("重新命名…") { [weak self] in self?.onRename?() })
-        if !isDefault {
-            let delete = ClosureMenuItem(isCurrent ? "刪除…（先打開別的珍奇室）" : "刪除…") { [weak self] in self?.onDelete?() }
-            delete.isEnabled = canDelete
-            menu.addItem(delete)
-        }
-        menu.autoenablesItems = false
-        menu.popUp(positioning: nil, at: NSPoint(x: 0, y: more.bounds.height + 4), in: more)
+/// A small icon button on a card that shows its ground under the pointer;
+/// the destructive one turns red.
+@MainActor
+private final class CardTool: NSButton {
+    private let handler: () -> Void
+    private let destructive: Bool
+
+    init(icon: Reicon, tip: String, destructive: Bool, action: @escaping () -> Void) {
+        handler = action
+        self.destructive = destructive
+        super.init(frame: .zero)
+        image = Icon.image(icon, size: 15)
+        isBordered = false
+        contentTintColor = .secondaryLabelColor
+        toolTip = tip
+        setAccessibilityLabel(tip)
+        wantsLayer = true
+        layer?.cornerRadius = 7
+        target = self
+        self.action = #selector(run)
+        translatesAutoresizingMaskIntoConstraints = false
+        widthAnchor.constraint(equalToConstant: 28).isActive = true
+        heightAnchor.constraint(equalToConstant: 28).isActive = true
     }
 
-    // MARK: Cover
+    required init?(coder: NSCoder) { fatalError() }
 
-    /// The newest pieces as one picture: one fills it, two side by side,
-    /// three as one large and two small, four as a square of four. None: a
-    /// gradient of its own colour.
-    static func mosaic(_ urls: [URL], seed: UUID) -> CGImage? {
-        let size = CGSize(width: 408, height: 312)
+    override var isEnabled: Bool { didSet { alphaValue = isEnabled ? 1 : 0.35 } }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        trackingAreas.forEach(removeTrackingArea)
+        addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+    }
+
+    override func mouseEntered(with event: NSEvent) {
+        guard isEnabled else { return }
+        layer?.backgroundColor = resolved((destructive ? NSColor.systemRed : .labelColor).withAlphaComponent(0.12))
+        contentTintColor = destructive ? .systemRed : .labelColor
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        layer?.backgroundColor = nil
+        contentTintColor = .secondaryLabelColor
+    }
+
+    @objc private func run() { handler() }
+}
+
+/// The newest pieces of a 珍奇室 as one picture, for its card and the sidebar.
+enum CabinetCover {
+    /// One fills it, two side by side, three as one large and two small, four
+    /// as a square of four. None: a gradient of the 珍奇室's own colour.
+    static func mosaic(_ urls: [URL], seed: UUID, size: CGSize = CGSize(width: 408, height: 312)) -> CGImage? {
         let images = urls.prefix(4).compactMap { url -> CGImage? in
             guard let src = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
             return CGImageSourceCreateThumbnailAtIndex(src, 0, [kCGImageSourceCreateThumbnailFromImageAlways: true,
@@ -342,13 +484,15 @@ private final class CabinetCard: NSView {
         guard let ctx = CGContext(data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 0,
                                   space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
         else { return nil }
-        let hue = CGFloat(abs(seed.hashValue % 360)) / 360
+        // The same colour every launch: from the id's bytes, not its hash.
+        let bytes = withUnsafeBytes(of: seed.uuid) { Array($0) }
+        let hue = CGFloat(bytes.reduce(0) { ($0 &* 31 &+ Int($1)) % 360 }) / 360
         let a = NSColor(hue: hue, saturation: 0.35, brightness: 0.42, alpha: 1).cgColor
         let b = NSColor(hue: (hue + 0.08).truncatingRemainder(dividingBy: 1), saturation: 0.45, brightness: 0.22, alpha: 1).cgColor
         if let g = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB), colors: [a, b] as CFArray, locations: [0, 1]) {
             ctx.drawLinearGradient(g, start: CGPoint(x: 0, y: size.height), end: CGPoint(x: size.width, y: 0), options: [])
         }
-        let gap: CGFloat = 3
+        let gap = max(1, size.width / 136)
         let w = size.width, h = size.height
         // Rects in CoreGraphics' bottom-up coordinates.
         let rects: [CGRect]
@@ -375,10 +519,12 @@ private final class CabinetCard: NSView {
         }
         if images.isEmpty, let icon = Icon.image(.cabinet, size: 56).cgImage(forProposedRect: nil, context: nil, hints: nil) {
             // A quiet cabinet mark on its colour.
+            let side = min(56, min(w, h) * 0.5)
+            let r = CGRect(x: w / 2 - side / 2, y: h / 2 - side / 2, width: side, height: side)
             ctx.setAlpha(0.5)
-            ctx.clip(to: CGRect(x: w / 2 - 28, y: h / 2 - 28, width: 56, height: 56), mask: icon)
+            ctx.clip(to: r, mask: icon)
             ctx.setFillColor(CGColor(gray: 1, alpha: 1))
-            ctx.fill(CGRect(x: w / 2 - 28, y: h / 2 - 28, width: 56, height: 56))
+            ctx.fill(r)
         }
         return ctx.makeImage()
     }
@@ -393,6 +539,7 @@ private final class AddCabinetCard: NSView {
     override init(frame: NSRect) {
         super.init(frame: frame)
         wantsLayer = true
+        layer?.cornerRadius = 16
         outline.fillColor = nil
         outline.lineWidth = 1.5
         outline.lineDashPattern = [6, 5]

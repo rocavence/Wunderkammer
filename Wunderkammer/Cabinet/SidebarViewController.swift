@@ -10,10 +10,14 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     private let table = NSTableView()
     var onSelect: ((Scope.Base) -> Void)?
     var onRandom: (() -> Void)?
-    /// The button beside the first row: the window for switching, adding and removing 珍奇室.
+    /// The 珍奇室 card at the top: the window for switching, adding and removing 珍奇室.
     var onManageCabinets: (() -> Void)?
-    /// Which 珍奇室 is open: the first row's name.
+    /// Which 珍奇室 is open, shown on the card at the top.
     var cabinetName = "珍奇室" { didSet { if cabinetName != oldValue { reload() } } }
+    var cabinetID: UUID? { didSet { if cabinetID != oldValue { coverIDs = [] ; reload() } } }
+    private let header = CabinetHeader()
+    /// The pieces the card's cover was last drawn from.
+    private var coverIDs: [UUID] = []
 
     /// The sidebar follows the space: filters for 收藏 and 地圖, ways in for 漫遊.
     var space: Space = .cabinet {
@@ -58,19 +62,27 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         scroll.drawsBackground = false
         scroll.hasVerticalScroller = true
         scroll.autohidesScrollers = true
+        // The card above already clears the title bar.
+        scroll.automaticallyAdjustsContentInsets = false
 
         let add = NSButton(image: Icon.image(.plus), target: self, action: #selector(newBoard(_:)))
         add.isBordered = false
         add.toolTip = "新增 board"
         add.contentTintColor = .secondaryLabelColor
 
+        header.target = self
+        header.action = #selector(manageCabinets)
+
         let container = NSView()
-        for v in [scroll, add] as [NSView] {
+        for v in [header, scroll, add] as [NSView] {
             v.translatesAutoresizingMaskIntoConstraints = false
             container.addSubview(v)
         }
         NSLayoutConstraint.activate([
-            scroll.topAnchor.constraint(equalTo: container.topAnchor),
+            header.topAnchor.constraint(equalTo: container.safeAreaLayoutGuide.topAnchor, constant: 6),
+            header.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 10),
+            header.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -10),
+            scroll.topAnchor.constraint(equalTo: header.bottomAnchor, constant: 6),
             scroll.leadingAnchor.constraint(equalTo: container.leadingAnchor),
             scroll.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             scroll.bottomAnchor.constraint(equalTo: add.topAnchor, constant: -6),
@@ -117,7 +129,20 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     private static let fileKinds: [Scope.KindView] = [.images, .web, .text, .media, .documents]
     private static let pageKinds: [Scope.KindView] = [.books, .films, .music, .products, .places]
 
+    /// The card shows the open 珍奇室's name, size and newest pieces.
+    private func updateHeader() {
+        let newest = library.items.sorted { $0.dateAdded > $1.dateAdded }.prefix(4)
+        let ids = newest.map(\.id)
+        if ids != coverIDs || header.cover == nil {
+            coverIDs = ids
+            header.cover = CabinetCover.mosaic(newest.map(library.thumbnailURL), seed: cabinetID ?? UUID(),
+                                               size: CGSize(width: 72, height: 72))
+        }
+        header.set(name: cabinetName, count: library.items.count)
+    }
+
     private func reload() {
+        updateHeader()
         var r: [Row] = []
         let subjects = Subjects.discover(in: library.items, limit: 6)
         let themeRows: [Row] = subjects.isEmpty ? [] : [.header("主題")] + subjects.map {
@@ -127,13 +152,13 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         switch space {
         case .wander:
             // Ways into the wall: everything, what time brings back, where you've been.
-            r = [.view(.all, title: cabinetName, icon: .cabinet, count: library.items.count),
+            r = [.view(.all, title: "全部", icon: .grid, count: library.items.count),
                  .view(.onThisDay, title: "過去的今天", icon: .calendarDay, count: nil),
                  .view(.forgotten, title: "被遺忘的", icon: .history, count: nil),
                  .view(.trail, title: "足跡", icon: .routing, count: nil),
                  .random] + themeRows
         case .cabinet, .map:
-            r = [.view(.all, title: cabinetName, icon: .cabinet, count: library.items.count)]
+            r = [.view(.all, title: "全部", icon: .grid, count: library.items.count)]
             // What it is as a file, then what it's about (a book, a film…), side by side.
             let kinds: [Row] = Self.fileKinds.compactMap { k in
                 let n = count(k)
@@ -223,9 +248,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             label.textColor = .secondaryLabelColor
             return label
         case .view(let base, let title, let icon, let count):
-            let c = cell(title: title, icon: icon, count: count)
-            if base == .all { addCabinetsButton(to: c) }
-            return c
+            return cell(title: title, icon: icon, count: count)
         case .random:
             return cell(title: "隨機一件", icon: .shuffle, count: nil, hint: "R")
         case .board(let b):
@@ -301,28 +324,6 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         }
     }
 
-    /// ⇅ after the count on the first row: clicking the name shows everything,
-    /// clicking this opens the 珍奇室 window.
-    private func addCabinetsButton(to cell: NSTableCellView) {
-        let b = NSButton(image: Icon.image(.chevronExpandY, size: 13), target: self, action: #selector(manageCabinets))
-        b.isBordered = false
-        b.contentTintColor = .secondaryLabelColor
-        b.toolTip = "切換、新增或刪除珍奇室"
-        b.setAccessibilityLabel("管理珍奇室")
-        b.translatesAutoresizingMaskIntoConstraints = false
-        cell.addSubview(b)
-        // The count moves left to make room.
-        if let badge = cell.subviews.compactMap({ $0 as? NSTextField }).last {
-            for c in cell.constraints where c.firstItem === badge && c.firstAttribute == .trailing { c.isActive = false }
-            badge.trailingAnchor.constraint(equalTo: b.leadingAnchor, constant: -6).isActive = true
-        }
-        NSLayoutConstraint.activate([
-            b.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -2),
-            b.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
-            b.widthAnchor.constraint(equalToConstant: 18),
-        ])
-    }
-
     @objc private func manageCabinets() { onManageCabinets?() }
 
     @objc func newBoard(_ sender: Any?) {
@@ -366,5 +367,98 @@ extension SidebarViewController: NSMenuDelegate {
         menu.addItem(ClosureMenuItem("刪除 board「\(b.name)」") { [weak self] in
             self?.library.deleteCollection(b.id)
         })
+    }
+}
+
+/// The open 珍奇室 at the top of the sidebar: its cover, name and size, and a
+/// chevron saying there are others. The whole card opens the 珍奇室 window.
+@MainActor
+final class CabinetHeader: NSControl {
+    private let coverView = NSImageView()
+    private let name = NSTextField(labelWithString: "")
+    private let detail = NSTextField(labelWithString: "")
+    private let chevron = NSImageView(image: Icon.image(.chevronDown, size: 14))
+    private var hovering = false { didSet { updateFill() } }
+    private var pressed = false { didSet { updateFill() } }
+
+    var cover: CGImage? {
+        didSet { coverView.image = cover.map { NSImage(cgImage: $0, size: NSSize(width: 36, height: 36)) } }
+    }
+
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        wantsLayer = true
+        layer?.cornerRadius = 10
+        coverView.wantsLayer = true
+        coverView.layer?.cornerRadius = 8
+        coverView.layer?.masksToBounds = true
+        coverView.imageScaling = .scaleAxesIndependently
+        name.font = .systemFont(ofSize: 13.5, weight: .semibold)
+        name.lineBreakMode = .byTruncatingTail
+        detail.font = .systemFont(ofSize: 11)
+        detail.textColor = .secondaryLabelColor
+        chevron.contentTintColor = .secondaryLabelColor
+        for v in [coverView, name, detail, chevron] as [NSView] {
+            v.translatesAutoresizingMaskIntoConstraints = false
+            addSubview(v)
+        }
+        name.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        NSLayoutConstraint.activate([
+            heightAnchor.constraint(equalToConstant: 52),
+            coverView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+            coverView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            coverView.widthAnchor.constraint(equalToConstant: 36),
+            coverView.heightAnchor.constraint(equalToConstant: 36),
+            name.leadingAnchor.constraint(equalTo: coverView.trailingAnchor, constant: 10),
+            name.trailingAnchor.constraint(lessThanOrEqualTo: chevron.leadingAnchor, constant: -6),
+            name.bottomAnchor.constraint(equalTo: centerYAnchor, constant: 1),
+            detail.leadingAnchor.constraint(equalTo: name.leadingAnchor),
+            detail.topAnchor.constraint(equalTo: centerYAnchor, constant: 2),
+            chevron.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
+            chevron.centerYAnchor.constraint(equalTo: centerYAnchor),
+        ])
+        toolTip = "切換、新增、改名或刪除珍奇室"
+        setAccessibilityElement(true)
+        setAccessibilityRole(.button)
+        updateFill()
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    func set(name text: String, count: Int) {
+        name.stringValue = text
+        detail.stringValue = "\(count) 件收藏"
+        setAccessibilityLabel("珍奇室：\(text)，\(count) 件收藏。按一下切換或管理")
+    }
+
+    private func updateFill() {
+        let alpha: CGFloat = pressed ? 0.14 : hovering ? 0.1 : 0.06
+        layer?.backgroundColor = resolved(NSColor.labelColor.withAlphaComponent(alpha))
+        chevron.contentTintColor = hovering ? .labelColor : .secondaryLabelColor
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateFill()
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        trackingAreas.forEach(removeTrackingArea)
+        addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+    }
+
+    override func mouseEntered(with event: NSEvent) { hovering = true }
+    override func mouseExited(with event: NSEvent) { hovering = false }
+    override func mouseDown(with event: NSEvent) { pressed = true }
+
+    override func mouseUp(with event: NSEvent) {
+        pressed = false
+        if bounds.contains(convert(event.locationInWindow, from: nil)) { sendAction(action, to: target) }
+    }
+
+    override func accessibilityPerformPress() -> Bool {
+        sendAction(action, to: target)
+        return true
     }
 }

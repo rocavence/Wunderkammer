@@ -41,6 +41,8 @@ enum Reicon: String, CaseIterable, Sendable {
     case search = "search"
     case plus = "plus"
     case moreH = "more-h"
+    case edit = "edit"
+    case chevronDown = "chevron-down"
     case trash = "trash"
     case share = "share"
     case link = "link"
