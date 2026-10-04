@@ -783,7 +783,7 @@ final class SelfTest {
             click(canvas, p)
             keyEvent(.keyDown, 49, " ")
             keyEvent(.keyUp, 49, " ")
-            await wait(0.8)
+            for _ in 0..<10 where !ui.preview.isOpen { await wait(0.2) }
             check(ui.preview.isOpen, "a tap of space still previews")
             if ui.preview.isOpen { ui.preview.dismissImmediately() }
             await wait(0.3)
