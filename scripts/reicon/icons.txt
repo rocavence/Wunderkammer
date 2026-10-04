@@ -57,6 +57,8 @@ restart
 trash
 share
 link
+box
+check
 eye
 sidebar
 info-circle

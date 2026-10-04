@@ -627,7 +627,7 @@ final class SelfTest {
         ui.manageCabinets()
         await wait(0.6)
         ui.flipCabinetForTest()
-        await wait(0.4)
+        await wait(1.2)
         shot("cabinet-back", windowNumber: ui.cabinetsWindowNumber)
         ui.closeCabinetsForTest()
         ui.setVaultForTest(nil)

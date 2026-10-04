@@ -53,6 +53,8 @@ enum Reicon: String, CaseIterable, Sendable {
     case trash = "trash"
     case share = "share"
     case link = "link"
+    case box = "box"
+    case check = "check"
     case eye = "eye"
     case sidebar = "sidebar"
     case infoCircle = "info-circle"
