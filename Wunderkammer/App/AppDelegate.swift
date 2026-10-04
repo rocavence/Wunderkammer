@@ -238,12 +238,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         topBar.onSearchOpen = { [weak self] in self?.focusSearch() }
         topBar.onInfo = { [weak self] in self?.toggleInspector() }
         topBar.onSidebar = { [weak self] in self?.toggleSidebarFromButton() }
-        content.addSubview(topBar, positioned: .below, relativeTo: preview)
-        NSLayoutConstraint.activate([
-            topBar.topAnchor.constraint(equalTo: content.topAnchor, constant: TopBar.top),
-            topBar.leadingAnchor.constraint(equalTo: content.leadingAnchor),
-            topBar.trailingAnchor.constraint(equalTo: content.trailingAnchor),
-        ])
         // The sidebar has no button: ⌘⌃S, or the window's left edge brings it back.
         edgeReveal.onReveal = { [weak self] in self?.revealSidebar() }
         edgeReveal.translatesAutoresizingMaskIntoConstraints = false
@@ -267,6 +261,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
             answerBanner.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -14),
         ])
         let contentVC = NSViewController()
+        contentArea = content
         contentVC.view = content
 
         sidebar = SidebarViewController(library: library)
@@ -346,28 +341,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         // The cabinet carries its own large title (GridView.heading).
         window.titleVisibility = .hidden
         window.toolbarStyle = .unified
-        // An empty toolbar for a full-height title bar, a strip below it for
-        // breathing room: the bar of our own sits lower, the traffic lights with it.
-        window.toolbar = NSToolbar(identifier: "main")
+        // The traffic lights keep a row of their own where AppKit puts them;
+        // below it, a strip as tall as the bar of our own, which sits there.
+        // The bar lives in that strip, part of the title bar, so its clicks
+        // reach it; it spans the content, between the sidebar and the inspector.
         let room = NSTitlebarAccessoryViewController()
-        room.view = NSView(frame: NSRect(x: 0, y: 0, width: 10, height: TopBar.top))
+        let lightsRow = window.frame.height - window.contentLayoutRect.height
+        let below = TopBar.top + TopBar.height + 10 - lightsRow
+        let strip = PassThroughView(frame: NSRect(x: 0, y: 0, width: window.frame.width, height: below))
+        strip.addSubview(topBar)
+        barLeading = topBar.leadingAnchor.constraint(equalTo: strip.leadingAnchor)
+        barTrailing = topBar.trailingAnchor.constraint(equalTo: strip.trailingAnchor)
+        NSLayoutConstraint.activate([
+            topBar.topAnchor.constraint(equalTo: strip.topAnchor, constant: TopBar.top - lightsRow),
+            barLeading, barTrailing,
+        ])
+        room.view = strip
         room.layoutAttribute = .bottom
+        room.fullScreenMinHeight = below
         window.addTitlebarAccessoryViewController(room)
-        placeTrafficLights()
-        // The sidebar coming and going lays the title bar out again too.
+        DispatchQueue.main.async { [weak self] in MainActor.assumeIsolated { self?.alignTopBar() } }
+        NotificationCenter.default.addObserver(forName: NSWindow.didResizeNotification, object: window, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.alignTopBar() }
+        }
         NotificationCenter.default.addObserver(forName: NSSplitView.didResizeSubviewsNotification, object: split.splitView,
                                                queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated {
-                self?.placeTrafficLights()
-                // AppKit lays the title bar out once more when the sidebar has settled.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { self?.placeTrafficLights() }
-            }
-        }
-        for name in [NSWindow.didResizeNotification, NSWindow.didExitFullScreenNotification,
-                     NSWindow.didBecomeKeyNotification, NSWindow.didResignKeyNotification] {
-            NotificationCenter.default.addObserver(forName: name, object: window, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.placeTrafficLights() }
-            }
+            MainActor.assumeIsolated { self?.alignTopBar() }
         }
         window.setFrameAutosaveName("Main")
         if window.frame.origin == .zero { window.center() }
@@ -1000,53 +999,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
 
     // MARK: Window chrome
 
-    /// The traffic lights, lowered to sit level with the top bar and moved in
-    /// to line up with the sidebar. AppKit puts them back on resize and the
-    /// like, so this runs again then.
-    private var placingLights = false
+    /// The middle of the window: what the bar spans.
+    private var contentArea: NSView?
+    private var barLeading: NSLayoutConstraint!
+    private var barTrailing: NSLayoutConstraint!
 
-    private func placeTrafficLights() {
-        guard let window, !window.styleMask.contains(.fullScreen), !placingLights else { return }
-        placingLights = true
-        defer { placingLights = false }
-        let buttons = [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton].compactMap(window.standardWindowButton)
-        guard buttons.count == 3, let bar = buttons[0].superview else { return }
-        let gap = buttons[1].frame.minX - buttons[0].frame.minX
-        let centreFromTop = TopBar.top + TopBar.height / 2
-        for (i, b) in buttons.enumerated() {
-            let h = b.frame.height
-            let y = bar.isFlipped ? centreFromTop - h / 2 : bar.bounds.height - centreFromTop - h / 2
-            b.setFrameOrigin(NSPoint(x: 20 + CGFloat(i) * gap, y: y))
-        }
-        // With the sidebar away the bar runs under the lights: its switch steps past them.
-        topBar.clearLights(sidebarItem.isCollapsed ? buttons[2].frame.maxX + 16 : 0)
-        // AppKit moves the lights back now and then (focus, the sidebar, the
-        // title bar's own height changing): whenever they move, they're put back.
-        if !watchingLights {
-            watchingLights = true
-            for watched in [buttons[0], bar] {
-                watched.postsFrameChangedNotifications = true
-                NotificationCenter.default.addObserver(forName: NSView.frameDidChangeNotification, object: watched,
-                                                       queue: .main) { [weak self] _ in
-                    // After AppKit has finished its own layout, not in the middle of it.
-                    MainActor.assumeIsolated { self?.placeTrafficLightsSoon() }
-                }
-            }
-        }
-    }
-
-    private var watchingLights = false
-    private var lightsPending = false
-
-    private func placeTrafficLightsSoon() {
-        guard !lightsPending else { return }
-        lightsPending = true
-        DispatchQueue.main.async { [weak self] in
-            MainActor.assumeIsolated {
-                self?.lightsPending = false
-                self?.placeTrafficLights()
-            }
-        }
+    /// The bar over the content only, from its left edge to its right, wherever
+    /// AppKit has started the title bar's strip.
+    private func alignTopBar() {
+        guard let strip = topBar.superview, let content = contentArea, strip.window != nil else { return }
+        let area = content.convert(content.bounds, to: nil)
+        let stripRect = strip.convert(strip.bounds, to: nil)
+        barLeading.constant = area.minX - stripRect.minX
+        barTrailing.constant = area.maxX - stripRect.maxX
     }
 
     @objc private func toggleSidebarFromButton() {
@@ -1286,6 +1251,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     func hoverViewBarForTest() -> String? { viewBar.hoverFirstForTest() }
     func openSearchForTest() { focusSearch() }
     var spacesControlForTest: NSView { topBar.spaces }
+    var contentAreaForTest: NSView? { contentArea }
     var sidebarToggleForTest: NSView { topBar.sidebarButton }
     var isSidebarCollapsed: Bool { sidebarItem.isCollapsed }
     func flipCabinetForTest() { cabinetsPanel?.flipForTest(cabinets.currentID) }

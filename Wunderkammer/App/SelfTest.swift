@@ -216,7 +216,7 @@ final class SelfTest {
                 if let close = window.standardWindowButton(.closeButton) {
                     let lightY = close.convert(close.bounds, to: nil).midY
                     let toggleY = ui.sidebarToggleForTest.convert(ui.sidebarToggleForTest.bounds, to: nil).midY
-                    check(abs(lightY - toggleY) < 2, "the lights stay level with the bar after scrolling (\(Int(lightY)) vs \(Int(toggleY)))")
+                    check(lightY > toggleY + 20, "the lights keep their own row after scrolling (\(Int(lightY)) over \(Int(toggleY)))")
                 }
             }
             return finish()
@@ -779,6 +779,10 @@ final class SelfTest {
         await wait(0.5)
         check(ui.mode.space == .wander, "clicking 漫遊 in the top bar goes there (\(ui.mode))")
         shot("topbar")
+        if let area = ui.contentAreaForTest {
+            let a = area.convert(area.bounds, to: nil), b = spaces.convert(spaces.bounds, to: nil)
+            check(abs(a.midX - b.midX) < 2, "the spaces sit in the middle of the content (\(Int(b.midX)) vs \(Int(a.midX)))")
+        }
         let sideWidth = ui.sidebar.view.frame.width
         check((220...320).contains(sideWidth), "the sidebar starts at a fifth or so of the window (\(Int(sideWidth)) of \(Int(window.frame.width)))")
         // The sidebar's switch beside the lights, on the bar's line.
@@ -795,7 +799,8 @@ final class SelfTest {
         let buttons = [NSWindow.ButtonType.closeButton, .zoomButton].compactMap(window.standardWindowButton)
         if let close = buttons.first, let barRect = Optional(spaces.convert(spaces.bounds, to: nil)) {
             let lightY = close.convert(close.bounds, to: nil).midY
-            check(abs(lightY - barRect.midY) < 4, "the traffic lights sit level with the bar (\(Int(lightY)) vs \(Int(barRect.midY)))")
+            let lights = close.convert(close.bounds, to: nil)
+            check(lights.minY > barRect.maxY, "the traffic lights have a row of their own, above the bar (\(Int(lightY)) over \(Int(barRect.maxY)))")
         }
         ui.setSpace(.cabinet)
         ui.setMode(.masonry)
@@ -1494,6 +1499,7 @@ protocol SelfTestUI: AnyObject {
     var isSearchExpanded: Bool { get }
     func openSearchForTest()
     var spacesControlForTest: NSView { get }
+    var contentAreaForTest: NSView? { get }
     var sidebarToggleForTest: NSView { get }
     var isSidebarCollapsed: Bool { get }
     func flipCabinetForTest()

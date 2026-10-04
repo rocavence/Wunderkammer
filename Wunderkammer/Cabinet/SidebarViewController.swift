@@ -81,8 +81,8 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             container.addSubview(v)
         }
         NSLayoutConstraint.activate([
-            // Just under the traffic lights, which sit level with the top bar.
-            header.topAnchor.constraint(equalTo: container.topAnchor, constant: TopBar.top + TopBar.height + 8),
+            // On the top bar's row, under the traffic lights' own.
+            header.topAnchor.constraint(equalTo: container.topAnchor, constant: TopBar.top),
             header.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 10),
             header.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -10),
             scroll.topAnchor.constraint(equalTo: header.bottomAnchor, constant: 6),

@@ -21,8 +21,8 @@ final class TopBar: NSView {
     private(set) var isSearchOpen = false
 
     static let height: CGFloat = 36
-    /// From the window's top edge to the bar: the breathing room.
-    static let top: CGFloat = 16
+    /// From the window's top edge to the bar: below the traffic lights' own row.
+    static let top: CGFloat = 38
 
     init(titles: [String], tips: [String]) {
         spaces = SpaceSwitch(titles: titles, tips: tips)
@@ -107,9 +107,9 @@ final class TopBar: NSView {
     private static func capsule() -> Glass { Glass(cornerRadius: height / 2) }
 
     /// Clicks on the empty parts of the bar fall through to what's below.
-    override func hitTest(_ point: NSPoint) -> NSView? {
-        let hit = super.hitTest(point)
-        return hit === self ? nil : hit
+    /// The bar's empty stretches move the window, as a title bar does.
+    override func mouseDown(with event: NSEvent) {
+        window?.performDrag(with: event)
     }
 
     /// The search button grows into a field, or the field folds back.
@@ -128,10 +128,6 @@ final class TopBar: NSView {
     @objc private func searchTapped() { onSearchOpen?() }
     @objc private func sidebarTapped() { onSidebar?() }
 
-    /// Room at the left for the traffic lights when the bar runs to the window's edge.
-    func clearLights(_ width: CGFloat) {
-        sidebarLeading.constant = width > 0 ? width : 16
-    }
     @objc private func infoTapped() { onInfo?() }
 }
 
@@ -313,5 +309,13 @@ final class SpaceSwitch: NSView {
     @objc private func picked(_ sender: NSButton) {
         selectedSegment = sender.tag
         onPick?(sender.tag)
+    }
+}
+
+/// Space whose empty parts take no clicks: they go to whatever is under it.
+final class PassThroughView: NSView {
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        let hit = super.hitTest(point)
+        return hit === self ? nil : hit
     }
 }
