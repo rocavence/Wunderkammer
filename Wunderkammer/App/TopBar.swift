@@ -314,6 +314,11 @@ final class SpaceSwitch: NSView {
     /// The space you're in sits on the accent, its name in white.
     private func updateColors() {
         pill.backgroundColor = resolved(.accent)
+        // A glow of the same colour around it, spilling softly into the glass.
+        pill.shadowColor = resolved(.accent)
+        pill.shadowOpacity = 1
+        pill.shadowRadius = 18
+        pill.shadowOffset = .zero
         for (i, b) in labels.enumerated() {
             let on = i == selectedSegment
             b.attributedTitle = NSAttributedString(string: b.title, attributes: [
