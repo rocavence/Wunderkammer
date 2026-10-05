@@ -337,7 +337,6 @@ main { padding: 0 20px; }
 }
 .cta:hover { transform: translateY(-1px); box-shadow: 0 16px 36px -14px #000000aa; }
 .cta:active { transform: translateY(0) scale(.98); }
-.cta svg { width: 18px; height: 18px; }
 .fine { margin-top: 14px; color: var(--soft); font-size: 14px; text-wrap: balance; }
 .fine a { color: var(--soft); }
 
