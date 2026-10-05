@@ -99,6 +99,13 @@ final class InspectorViewController: NSViewController {
     private func refresh() {
         guard isViewLoaded else { return }
         shown = itemID.flatMap(library.item)
+        // Nothing in the panel is wider than the panel: text wraps to it.
+        defer {
+            for v in stack.arrangedSubviews {
+                v.widthAnchor.constraint(lessThanOrEqualTo: stack.widthAnchor,
+                                         constant: -(stack.edgeInsets.left + stack.edgeInsets.right)).isActive = true
+            }
+        }
         stack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         guard let id = itemID, let item = library.item(id) else {
             // Centered and calm, saying what will appear here.
@@ -121,6 +128,9 @@ final class InspectorViewController: NSViewController {
         if let image = NSImage(contentsOf: library.thumbnailURL(item)) {
             let picture = NSImageView(image: image)
             picture.imageScaling = .scaleProportionallyUpOrDown
+            // Its own pixel size mustn't make the panel wider; it fits the panel.
+            picture.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+            picture.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
             picture.wantsLayer = true
             picture.layer?.cornerRadius = 10
             picture.layer?.masksToBounds = true
@@ -149,9 +159,9 @@ final class InspectorViewController: NSViewController {
         stack.addArrangedSubview(line)
         stack.setCustomSpacing(14, after: line)
 
-        // What you can do with it, right away.
+        // What you can do with it, right away: two to a row, sharing the
+        // width, so a narrow inspector never has to be wider than its buttons.
         let actions = NSStackView()
-        actions.spacing = 6
         if library.openURL(item) != nil {
             actions.addArrangedSubview(button(String(localized: "打開"), icon: .arrowUpRight) { [weak self] in
                 guard let self, let url = self.library.openURL(item) else { return }
@@ -182,7 +192,23 @@ final class InspectorViewController: NSViewController {
                 NSPasteboard.general.setString(url, forType: .string)
             })
         }
-        if !actions.arrangedSubviews.isEmpty { stack.addArrangedSubview(actions) }
+        let buttons = actions.arrangedSubviews
+        if !buttons.isEmpty {
+            buttons.forEach { $0.removeFromSuperview() }
+            let grid = NSStackView()
+            grid.orientation = .vertical
+            grid.alignment = .leading
+            grid.spacing = 6
+            for start in stride(from: 0, to: buttons.count, by: 2) {
+                let row = NSStackView(views: Array(buttons[start..<min(start + 2, buttons.count)]))
+                row.spacing = 6
+                row.distribution = .fillEqually
+                grid.addArrangedSubview(row)
+                row.widthAnchor.constraint(equalTo: grid.widthAnchor).isActive = true
+            }
+            stack.addArrangedSubview(grid)
+            grid.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: -36).isActive = true
+        }
 
         if let arrived = arrival?(item) {
             // Breaks only between steps, never inside a word.
@@ -256,7 +282,8 @@ final class InspectorViewController: NSViewController {
         if let related = related?(item), !related.isEmpty {
             section(String(localized: "相關的收藏"))
             let columns = 3
-            let side: CGFloat = 76
+            // Three across fit the narrowest the panel gets (the sidebar's minimum).
+            let side: CGFloat = 56
             let grid = NSGridView(numberOfColumns: columns, rows: 0)
             grid.rowSpacing = 6
             grid.columnSpacing = 6
@@ -441,7 +468,8 @@ final class InspectorViewController: NSViewController {
         l.font = font
         l.textColor = color
         l.isSelectable = true
-        l.preferredMaxLayoutWidth = 240
+        // Wraps at whatever width the panel gives it.
+        l.preferredMaxLayoutWidth = 0
         return l
     }
 
@@ -478,6 +506,9 @@ final class InspectorViewController: NSViewController {
         b.imagePosition = .imageLeading
         b.bezelStyle = .rounded
         b.controlSize = .small
+        b.lineBreakMode = .byTruncatingTail
+        b.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        b.toolTip = title
         return b
     }
 }

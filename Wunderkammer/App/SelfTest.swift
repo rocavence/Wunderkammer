@@ -820,7 +820,7 @@ final class SelfTest {
         window.setFrame(roomy, display: true)
         await wait(0.4)
         let sideWidth = ui.sidebar.view.frame.width
-        check((220...320).contains(sideWidth), "the sidebar starts at a fifth or so of the window (\(Int(sideWidth)) of \(Int(window.frame.width)))")
+        check((240...320).contains(sideWidth), "the sidebar starts at a fifth or so of the window (\(Int(sideWidth)) of \(Int(window.frame.width)))")
         // The sidebar's switch beside the lights, on the bar's line.
         let toggle = ui.sidebarToggleForTest
         let toggleY = toggle.convert(toggle.bounds, to: nil).midY, barY = spaces.convert(spaces.bounds, to: nil).midY
@@ -1477,6 +1477,10 @@ final class SelfTest {
         }
         await wait(0.8)
         shot("ui-inspector")
+        if let insp = (NSApp.delegate as? AppDelegate)?.inspectorViewForTest {
+            let side = ui.sidebar.view.frame.width, own = insp.frame.width
+            check(abs(side - own) < 2, "the inspector opens as wide as the sidebar (\(Int(own)) vs \(Int(side)))")
+        }
         // How long showing an item in the inspector takes, and the toggle.
         if let some = library.items.dropFirst(3).first {
             let t0 = CFAbsoluteTimeGetCurrent()

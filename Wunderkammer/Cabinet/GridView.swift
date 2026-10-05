@@ -343,17 +343,11 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
             // The band spans the whole width; the words keep the grid's margins.
             var frame = CGRect(x: 0, y: h.frame.minY, width: bounds.width, height: h.frame.height)
             var pinned = false
-            // Pinned, the band reaches up under the top bar to the window's
-            // edge, so bar and content are one ground with no seam between.
-            var above: CGFloat = 0
             if frame.minY < top {
                 let next = headers[safe: i + 1]?.frame.minY ?? .greatestFiniteMagnitude
                 guard next > top else { continue }
                 frame.origin.y = min(top, next - frame.height)
                 pinned = true
-                above = max(frame.minY - (superview?.bounds.minY ?? frame.minY), 0)
-                frame.origin.y -= above
-                frame.size.height += above
             }
             guard frame.intersects(visible) else { continue }
             keep.insert(i)
@@ -364,7 +358,7 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
                 return b
             }()
             band.frame = frame
-            band.show(title: h.title, detail: h.detail, inset: h.frame.minX, pinned: pinned, colors: colors, above: above)
+            band.show(title: h.title, detail: h.detail, inset: h.frame.minX, pinned: pinned, colors: colors)
         }
         for (i, layer) in headerLayers where !keep.contains(i) {
             layer.removeFromSuperlayer()
@@ -885,14 +879,13 @@ private final class HeadingBand: CALayer {
         }
         fade.startPoint = CGPoint(x: 0.5, y: 0)
         fade.endPoint = CGPoint(x: 0.5, y: 1)
-        addSublayer(fade)
+        insertSublayer(fade, at: 0)
     }
 
     override init(layer: Any) { super.init(layer: layer) }
     required init?(coder: NSCoder) { fatalError() }
 
-    /// `above`: how much of the band runs up under the top bar; the words sit below it.
-    func show(title: String, detail: String, inset: CGFloat, pinned: Bool, colors: Colors, above: CGFloat = 0) {
+    func show(title: String, detail: String, inset: CGFloat, pinned: Bool, colors: Colors) {
         self.title = title
         isPinned = pinned
         let serif = Typography.display(20) ?? .systemFont(ofSize: 20)
@@ -903,15 +896,21 @@ private final class HeadingBand: CALayer {
         // The serif's line, centred in the row; the detail shares its baseline.
         let lineHeight = ceil(serif.ascender - serif.descender + serif.leading)
         let titleWidth = ceil(titleText.size().width) + 2
-        let titleY = above + (bounds.height - above - lineHeight) / 2
+        let titleY = (bounds.height - lineHeight) / 2
         titleLayer.frame = CGRect(x: inset + 2, y: titleY, width: min(titleWidth, bounds.width - inset * 2), height: lineHeight)
         let baseline = titleY + serif.ascender
         let detailHeight = ceil(small.ascender - small.descender) + 2
         detailLayer.frame = CGRect(x: titleLayer.frame.maxX + 10, y: baseline - small.ascender - 1,
                                    width: max(bounds.width - inset - titleLayer.frame.maxX - 10, 0), height: detailHeight)
-        backgroundColor = pinned ? colors.band : nil
+        // Pinned, a veil rather than a slab: it fades in above and out below,
+        // so what scrolls under the top bar still shows, as on the wall.
+        backgroundColor = nil
         fade.isHidden = !pinned
-        fade.frame = CGRect(x: 0, y: bounds.height, width: bounds.width, height: 18)
-        fade.colors = [colors.band, colors.band.copy(alpha: 0)!]
+        let reach: CGFloat = 26
+        fade.frame = CGRect(x: 0, y: -reach, width: bounds.width, height: bounds.height + reach * 2)
+        let veil = colors.band.copy(alpha: 0.9)!
+        fade.colors = [colors.band.copy(alpha: 0)!, veil, veil, colors.band.copy(alpha: 0)!]
+        let edge = NSNumber(value: Double(reach / fade.frame.height))
+        fade.locations = [0, edge, NSNumber(value: 1 - edge.doubleValue), 1]
     }
 }

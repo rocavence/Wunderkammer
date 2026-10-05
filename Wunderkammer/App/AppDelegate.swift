@@ -347,15 +347,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         let sideItem = NSSplitViewItem(sidebarWithViewController: sidebar)
         // About a fifth of the window: the sidebar holds its own beside the
         // content without crowding it.
-        sideItem.minimumThickness = 220
+        sideItem.minimumThickness = 240
         sideItem.maximumThickness = 320
         sideItem.preferredThicknessFraction = 0.21
         sidebarItem = sideItem
         split.addSplitViewItem(sideItem)
         split.addSplitViewItem(NSSplitViewItem(viewController: contentVC))
         inspectorItem = NSSplitViewItem(inspectorWithViewController: inspector)
-        inspectorItem.minimumThickness = 260
-        inspectorItem.maximumThickness = 340
+        // The same as the sidebar: the same default share, the same range.
+        inspectorItem.minimumThickness = sideItem.minimumThickness
+        inspectorItem.maximumThickness = sideItem.maximumThickness
+        inspectorItem.preferredThicknessFraction = sideItem.preferredThicknessFraction
         inspectorItem.isCollapsed = true
         inspectorItem.titlebarSeparatorStyle = .none
         split.addSplitViewItem(inspectorItem)
@@ -1015,7 +1017,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         // At once, not slid: sliding reflowed the whole cabinet beside it on
         // every frame. The pieces then spring to their new places in one go.
         grid.animateNextWidthChange = mode.cabinetStyle != nil
+        let opening = inspectorItem.isCollapsed
         inspectorItem.isCollapsed.toggle()
+        if opening, !sidebarItem.isCollapsed {
+            // Opens as wide as the sidebar: held at that width while it lays
+            // out, then free again to be dragged within the sidebar's range.
+            let width = sidebar.view.frame.width
+            let (low, high) = (inspectorItem.minimumThickness, inspectorItem.maximumThickness)
+            inspectorItem.minimumThickness = width
+            inspectorItem.maximumThickness = width
+            window.layoutIfNeeded()
+            DispatchQueue.main.async { [weak self] in
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    self.inspectorItem.minimumThickness = low
+                    self.inspectorItem.maximumThickness = high
+                    // Loosened, the split would go back to its own idea of the
+                    // width; put the divider where the sidebar's width says.
+                    if let split = self.splitController?.splitView, split.arrangedSubviews.count == 3 {
+                        split.setPosition(split.bounds.width - width - split.dividerThickness, ofDividerAt: 1)
+                    }
+                }
+            }
+        }
     }
 
     func toggleInspectorForTest() { toggleInspector() }
