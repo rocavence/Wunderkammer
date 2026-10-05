@@ -2,7 +2,7 @@
 
 > **Collect without organizing.**
 
-macOS 原生的個人珍奇室。看到喜歡的東西就收進來，不用分類、命名或整理；系統負責理解、搜尋與重新發現。
+macOS 原生的個人展室。看到喜歡的東西就收進來，不用分類、命名或整理；系統負責理解、搜尋與重新發現。
 
 <p align="center"><img src="docs/screenshots/00-icon.jpg" width="160" alt="Wunderkammer icon"></p>
 
@@ -16,7 +16,7 @@ macOS 原生的個人珍奇室。看到喜歡的東西就收進來，不用分�
 | 截圖 | `⌃⌘⇧C`：選範圍或視窗，截好直接收進來 |
 | 拖放、貼上 | 把檔案、圖片、網址或文字拖進視窗，或按 `⌘V` |
 | Dock | 把檔案拖到 Dock 上的 icon |
-| 選單列 | 珍奇室 icon：收藏剪貼簿、截圖收藏、隨機一件 |
+| 選單列 | 展室 icon：收藏剪貼簿、截圖收藏、隨機一件 |
 | 分享選單 | 任何 app 的「分享 → Wunderkammer」 |
 | 服務選單 | 選取文字或檔案後，右鍵「服務 → 收進 Wunderkammer」 |
 | 瀏覽器 | 擴充或書籤小程式，見 [extensions/README.md](extensions/README.md) |

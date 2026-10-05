@@ -200,7 +200,7 @@ final class CaptureController: NSObject {
         let isNew = !before.contains(first.id)
         let image = NSImage(contentsOf: library.thumbnailURL(first))
         let count = ids.count
-        let title = isNew ? (count > 1 ? String(localized: "收進 \(count) 件") : String(localized: "收進珍奇室")) : String(localized: "已經在珍奇室裡")
+        let title = isNew ? (count > 1 ? String(localized: "收進 \(count) 件") : String(localized: "收進展室")) : String(localized: "已經在展室裡")
         toast.show(title: title, detail: first.displayTitle, image: image)
     }
 }

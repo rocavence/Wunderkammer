@@ -1481,42 +1481,42 @@
         }
       }
     },
-    "There's nothing in the cabinet yet.": {
+    "There's nothing in the room yet.": {
       "localizations": {
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "展室裡還沒有東西。"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "There's nothing in the cabinet yet."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Todavía no hay nada en el gabinete."
+            "value": "There's nothing in the room yet."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "キャビネットにはまだ何もありません。"
+            "value": "展示室にはまだ何もありません。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "캐비닛에 아직 아무것도 없습니다."
+            "value": "전시실에 아직 아무것도 없습니다."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía no hay nada en la sala."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ainda não há nada no gabinete."
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "There's nothing in the cabinet yet."
+            "value": "Ainda não há nada na sala."
           }
         }
       }
@@ -1681,42 +1681,42 @@
         }
       }
     },
-    "Wunderkammer：把東西拖到這裡就收進珍奇室": {
+    "Wunderkammer：把東西拖到這裡就收進展室": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wunderkammer: drop things here to add them to the cabinet"
+            "value": "Wunderkammer: drop things here to add them to the room"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wunderkammer: arrastra cosas aquí para añadirlas al gabinete"
+            "value": "Wunderkammer: arrastra cosas aquí para añadirlas a la sala"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wunderkammer：ここにドラッグするとキャビネットに追加されます"
+            "value": "Wunderkammer：ここにドラッグすると展示室に追加されます"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wunderkammer: 여기로 드래그하면 캐비닛에 수집됩니다"
+            "value": "Wunderkammer: 여기로 드래그하면 전시실에 수집됩니다"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wunderkammer: arraste algo para cá para adicionar ao gabinete"
+            "value": "Wunderkammer: arraste algo para cá para adicionar à sala"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wunderkammer：把東西拖到這裡就收進珍奇室"
+            "value": "Wunderkammer：把東西拖到這裡就收進展室"
           }
         }
       }
@@ -3641,42 +3641,42 @@
         }
       }
     },
-    "切換、新增、改名或刪除珍奇室": {
+    "切換、新增、改名或刪除展室": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Switch, add, rename or delete cabinets"
+            "value": "Switch, add, rename or delete rooms"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cambiar, crear, renombrar o eliminar gabinetes"
+            "value": "Cambiar, crear, renombrar o eliminar salas"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "キャビネットの切り替え、追加、名称変更、削除"
+            "value": "展示室の切り替え、追加、名称変更、削除"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "캐비닛 전환, 추가, 이름 변경 또는 삭제"
+            "value": "전시실 전환, 추가, 이름 변경 또는 삭제"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Alterne, crie, renomeie ou apague gabinetes"
+            "value": "Alterne, crie, renomeie ou apague salas"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "切換、新增、改名或刪除珍奇室"
+            "value": "切換、新增、改名或刪除展室"
           }
         }
       }
@@ -4961,42 +4961,42 @@
         }
       }
     },
-    "在 Finder 顯示珍奇室的資料": {
+    "在 Finder 顯示展室的資料": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show Cabinet Data in Finder"
+            "value": "Show Room Data in Finder"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mostrar los datos del gabinete en Finder"
+            "value": "Mostrar los datos de la sala en Finder"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "キャビネットのデータを Finder に表示"
+            "value": "展示室のデータを Finder に表示"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Finder에서 캐비닛 데이터 보기"
+            "value": "Finder에서 전시실 데이터 보기"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mostrar os dados do gabinete no Finder"
+            "value": "Mostrar os dados da sala no Finder"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "在 Finder 顯示珍奇室的資料"
+            "value": "在 Finder 顯示展室的資料"
           }
         }
       }
@@ -5161,46 +5161,6 @@
         }
       }
     },
-    "地圖": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Map"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mapa"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "マップ"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "지도"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mapa"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "地圖"
-          }
-        }
-      }
-    },
     "地點": {
       "localizations": {
         "en": {
@@ -5361,42 +5321,42 @@
         }
       }
     },
-    "它已經在監看清單裡，或和清單裡的資料夾重疊，或是珍奇室自己存放資料的地方。": {
+    "它已經在監看清單裡，或和清單裡的資料夾重疊，或是展室自己存放資料的地方。": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "It's already being watched, overlaps a watched folder, or is where the cabinet stores its own data."
+            "value": "It's already being watched, overlaps a watched folder, or is where the room stores its own data."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ya está en la lista, se solapa con una carpeta de la lista o es donde el gabinete guarda sus datos."
+            "value": "Ya está en la lista, se solapa con una carpeta de la lista o es donde la sala guarda sus datos."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "すでに監視リストにあるか、リスト内のフォルダと重なっているか、キャビネット自体のデータ保存場所です。"
+            "value": "すでに監視リストにあるか、リスト内のフォルダと重なっているか、展示室自体のデータ保存場所です。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이미 감시 목록에 있거나, 목록의 폴더와 겹치거나, 캐비닛 자체의 데이터 저장 위치입니다."
+            "value": "이미 감시 목록에 있거나, 목록의 폴더와 겹치거나, 전시실 자체의 데이터 저장 위치입니다."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ela já está na lista, se sobrepõe a uma pasta da lista ou é onde o próprio gabinete guarda seus dados."
+            "value": "Ela já está na lista, se sobrepõe a uma pasta da lista ou é onde a própria sala guarda seus dados."
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "它已經在監看清單裡，或和清單裡的資料夾重疊，或是珍奇室自己存放資料的地方。"
+            "value": "它已經在監看清單裡，或和清單裡的資料夾重疊，或是展室自己存放資料的地方。"
           }
         }
       }
@@ -5641,6 +5601,206 @@
         }
       }
     },
+    "展室": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sala"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "展示室"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "전시실"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sala"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "展室"
+          }
+        }
+      }
+    },
+    "展室的名字": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room name"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre de la sala"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "展示室の名前"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "전시실 이름"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nome da sala"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "展室的名字"
+          }
+        }
+      }
+    },
+    "展室裡有一份複本": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A copy is kept in the room"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hay una copia en la sala"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "展示室にコピーがあります"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "전시실에 사본 있음"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Há uma cópia na sala"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "展室裡有一份複本"
+          }
+        }
+      }
+    },
+    "展室還是空的\n看到喜歡的東西，按 ⌘⇧C 收進來\n也可以把檔案、圖片、網址或文字拖到這裡": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The room is empty\nWhen you see something you like, press ⌘⇧C to collect it\nYou can also drag files, images, URLs or text here"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La sala aún está vacía\nCuando veas algo que te guste, pulsa ⌘⇧C para guardarlo\nTambién puedes arrastrar aquí archivos, imágenes, URL o texto"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "展示室はまだ空です\n気に入ったものを見つけたら ⌘⇧C で追加しましょう\nファイル、画像、URL、テキストをここにドラッグすることもできます"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "전시실이 아직 비어 있습니다\n마음에 드는 것을 발견하면 ⌘⇧C를 눌러 수집하십시오\n파일, 이미지, URL 또는 텍스트를 여기로 드래그해도 됩니다"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A sala ainda está vazia\nQuando vir algo de que goste, pressione ⌘⇧C para coletar\nVocê também pode arrastar arquivos, imagens, URLs ou texto para cá"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "展室還是空的\n看到喜歡的東西，按 ⌘⇧C 收進來\n也可以把檔案、圖片、網址或文字拖到這裡"
+          }
+        }
+      }
+    },
+    "展室：%@，%lld 件收藏。按一下切換或管理": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room: %@, %lld items. Click to switch or manage"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sala: %@, %lld elementos. Haz clic para cambiar o gestionar"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "展示室：%@、%lld 件のアイテム。クリックして切り替えまたは管理"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "전시실: %@, 항목 %lld개. 클릭하여 전환하거나 관리"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sala: %@, %lld itens. Clique para alternar ou gerenciar"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "展室：%@，%lld 件收藏。按一下切換或管理"
+          }
+        }
+      }
+    },
     "展開%@": {
       "localizations": {
         "en": {
@@ -5677,6 +5837,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "展開%@"
+          }
+        }
+      }
+    },
+    "工作台": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Workbench"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mesa de trabajo"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "作業台"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업대"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bancada"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "工作台"
           }
         }
       }
@@ -5721,42 +5921,42 @@
         }
       }
     },
-    "已經在珍奇室裡": {
+    "已經在展室裡": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Already in the cabinet"
+            "value": "Already in the room"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ya está en el gabinete"
+            "value": "Ya está en la sala"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "すでにキャビネットにあります"
+            "value": "すでに展示室にあります"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이미 캐비닛에 있음"
+            "value": "이미 전시실에 있음"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Já está no gabinete"
+            "value": "Já está na sala"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "已經在珍奇室裡"
+            "value": "已經在展室裡"
           }
         }
       }
@@ -6401,42 +6601,42 @@
         }
       }
     },
-    "打開珍奇室": {
+    "打開展室": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open Cabinet"
+            "value": "Open Room"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abrir gabinete"
+            "value": "Abrir sala"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "キャビネットを開く"
+            "value": "展示室を開く"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "캐비닛 열기"
+            "value": "전시실 열기"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abrir gabinete"
+            "value": "Abrir sala"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "打開珍奇室"
+            "value": "打開展室"
           }
         }
       }
@@ -7841,122 +8041,82 @@
         }
       }
     },
-    "收進櫃子": {
+    "收進展室": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Keep files in the cabinet"
+            "value": "Keep files in the room"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Guardar archivos en el gabinete"
+            "value": "Guardar en la sala"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "キャビネットに保管"
+            "value": "展示室に保管"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "캐비닛에 파일 보관"
+            "value": "전시실에 보관"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Guardar no gabinete"
+            "value": "Guardar na sala"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "收進櫃子"
+            "value": "收進展室"
           }
         }
       }
     },
-    "收進珍奇室": {
+    "改成把檔案收進展室？": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Add to Cabinet"
+            "value": "Keep files in the room instead?"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Añadir al gabinete"
+            "value": "¿Guardar los archivos en la sala?"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "キャビネットに追加"
+            "value": "ファイルを展示室に保管する方式に変更しますか？"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "캐비닛에 수집"
+            "value": "파일을 전시실에 보관하도록 변경하겠습니까?"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Adicionar ao gabinete"
+            "value": "Passar a guardar os arquivos na sala?"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "收進珍奇室"
-          }
-        }
-      }
-    },
-    "改成把檔案收進珍奇室？": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Keep files in the cabinet instead?"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "¿Guardar los archivos en el gabinete?"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ファイルをキャビネットに保管する方式に変更しますか？"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "파일을 캐비닛에 보관하도록 변경하겠습니까?"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Passar a guardar os arquivos no gabinete?"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "改成把檔案收進珍奇室？"
+            "value": "改成把檔案收進展室？"
           }
         }
       }
@@ -8401,42 +8561,42 @@
         }
       }
     },
-    "新增珍奇室": {
+    "新增展室": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "New Cabinet"
+            "value": "New Room"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nuevo gabinete"
+            "value": "Nueva sala"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "新規キャビネット"
+            "value": "新規展示室"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "새로운 캐비닛"
+            "value": "새로운 전시실"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Novo gabinete"
+            "value": "Nova sala"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "新增珍奇室"
+            "value": "新增展室"
           }
         }
       }
@@ -8961,42 +9121,42 @@
         }
       }
     },
-    "未命名珍奇室": {
+    "未命名展室": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Untitled Cabinet"
+            "value": "Untitled Room"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gabinete sin título"
+            "value": "Sala sin título"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "名称未設定キャビネット"
+            "value": "名称未設定展示室"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이름 없는 캐비닛"
+            "value": "이름 없는 전시실"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gabinete sem nome"
+            "value": "Sala sem nome"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "未命名珍奇室"
+            "value": "未命名展室"
           }
         }
       }
@@ -9561,6 +9721,46 @@
         }
       }
     },
+    "每個展室都有自己的收藏。點卡片打開，按編輯翻到背面設定名稱與檔案。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each room has its own items. Click a card to open it, or click Edit to flip it over and set its name and files."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada sala tiene sus propios elementos. Haz clic en una tarjeta para abrirla, o en Editar para darle la vuelta y ajustar el nombre y los archivos."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "展示室にはそれぞれ独自のアイテムがあります。カードをクリックして開き、「編集」で裏返すと名前とファイルを設定できます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "전시실마다 고유한 항목이 있습니다. 카드를 클릭하여 열고, 편집을 클릭하면 뒷면에서 이름과 파일을 설정할 수 있습니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada sala tem seus próprios itens. Clique em um cartão para abrir; clique em Editar para virá-lo e definir o nome e os arquivos."
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每個展室都有自己的收藏。點卡片打開，按編輯翻到背面設定名稱與檔案。"
+          }
+        }
+      }
+    },
     "每個收進來的檔案，都複製一份到你選的資料夾。": {
       "localizations": {
         "en": {
@@ -9597,46 +9797,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "每個收進來的檔案，都複製一份到你選的資料夾。"
-          }
-        }
-      }
-    },
-    "每個珍奇室都有自己的收藏。點卡片打開，按編輯翻到背面設定名稱與檔案。": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Each cabinet has its own items. Click a card to open it, or click Edit to flip it over and set its name and files."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cada gabinete tiene sus propios elementos. Haz clic en una tarjeta para abrirlo, o en Editar para darle la vuelta y ajustar el nombre y los archivos."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "キャビネットにはそれぞれ独自のアイテムがあります。カードをクリックして開き、「編集」で裏返すと名前とファイルを設定できます。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "캐비닛마다 고유한 항목이 있습니다. 카드를 클릭하여 열고, 편집을 클릭하면 뒷면에서 이름과 파일을 설정할 수 있습니다."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cada gabinete tem seus próprios itens. Clique em um cartão para abrir; clique em Editar para virá-lo e definir o nome e os arquivos."
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "每個珍奇室都有自己的收藏。點卡片打開，按編輯翻到背面設定名稱與檔案。"
           }
         }
       }
@@ -10517,206 +10677,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "版本 %@"
-          }
-        }
-      }
-    },
-    "珍奇室": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cabinet"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gabinete"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "キャビネット"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "캐비닛"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gabinete"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "珍奇室"
-          }
-        }
-      }
-    },
-    "珍奇室的名字": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cabinet name"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nombre del gabinete"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "キャビネットの名前"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "캐비닛 이름"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nome do gabinete"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "珍奇室的名字"
-          }
-        }
-      }
-    },
-    "珍奇室裡有一份複本": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A copy is kept in the cabinet"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hay una copia en el gabinete"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "キャビネットにコピーがあります"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "캐비닛에 사본 있음"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Há uma cópia no gabinete"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "珍奇室裡有一份複本"
-          }
-        }
-      }
-    },
-    "珍奇室還是空的\n看到喜歡的東西，按 ⌘⇧C 收進來\n也可以把檔案、圖片、網址或文字拖到這裡": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The cabinet is empty\nWhen you see something you like, press ⌘⇧C to collect it\nYou can also drag files, images, URLs or text here"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "El gabinete aún está vacío\nCuando veas algo que te guste, pulsa ⌘⇧C para guardarlo\nTambién puedes arrastrar aquí archivos, imágenes, URL o texto"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "キャビネットはまだ空です\n気に入ったものを見つけたら ⌘⇧C で追加しましょう\nファイル、画像、URL、テキストをここにドラッグすることもできます"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "캐비닛이 아직 비어 있습니다\n마음에 드는 것을 발견하면 ⌘⇧C를 눌러 수집하십시오\n파일, 이미지, URL 또는 텍스트를 여기로 드래그해도 됩니다"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "O gabinete ainda está vazio\nQuando vir algo de que goste, pressione ⌘⇧C para coletar\nVocê também pode arrastar arquivos, imagens, URLs ou texto para cá"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "珍奇室還是空的\n看到喜歡的東西，按 ⌘⇧C 收進來\n也可以把檔案、圖片、網址或文字拖到這裡"
-          }
-        }
-      }
-    },
-    "珍奇室：%@，%lld 件收藏。按一下切換或管理": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cabinet: %@, %lld items. Click to switch or manage"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gabinete: %@, %lld elementos. Haz clic para cambiar o gestionar"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "キャビネット：%@、%lld 件のアイテム。クリックして切り替えまたは管理"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "캐비닛: %@, 항목 %lld개. 클릭하여 전환하거나 관리"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gabinete: %@, %lld itens. Clique para alternar ou gerenciar"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "珍奇室：%@，%lld 件收藏。按一下切換或管理"
           }
         }
       }
@@ -12801,42 +12761,42 @@
         }
       }
     },
-    "複製一份到珍奇室": {
+    "複製一份到展室": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Copy into the cabinet"
+            "value": "Copy into the room"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Copiar al gabinete"
+            "value": "Copiar a la sala"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "キャビネットにコピー"
+            "value": "展示室にコピー"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "캐비닛에 사본 저장"
+            "value": "전시실에 사본 저장"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Copiar para o gabinete"
+            "value": "Copiar para a sala"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "複製一份到珍奇室"
+            "value": "複製一份到展室"
           }
         }
       }
@@ -12881,82 +12841,82 @@
         }
       }
     },
-    "複製到珍奇室": {
+    "複製到展室": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Copy to Cabinet"
+            "value": "Copy to Room"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Copiar al gabinete"
+            "value": "Copiar a la sala"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "キャビネットにコピー"
+            "value": "展示室にコピー"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "캐비닛으로 복사"
+            "value": "전시실로 복사"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Copiar para o gabinete"
+            "value": "Copiar para a sala"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "複製到珍奇室"
+            "value": "複製到展室"
           }
         }
       }
     },
-    "要先打開別的珍奇室，才能刪除這個": {
+    "要先打開別的展室，才能刪除這個": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open another cabinet before deleting this one"
+            "value": "Open another room before deleting this one"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abre otro gabinete antes de eliminar este"
+            "value": "Abre otra sala antes de eliminar esta"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "このキャビネットを削除するには、先に別のキャビネットを開いてください"
+            "value": "この展示室を削除するには、先に別の展示室を開いてください"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이 캐비닛을 삭제하려면 먼저 다른 캐비닛을 여십시오"
+            "value": "이 전시실을 삭제하려면 먼저 다른 전시실을 여십시오"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abra outro gabinete antes de apagar este"
+            "value": "Abra outra sala antes de apagar esta"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "要先打開別的珍奇室，才能刪除這個"
+            "value": "要先打開別的展室，才能刪除這個"
           }
         }
       }
@@ -14441,82 +14401,82 @@
         }
       }
     },
-    "重設地圖擺放…": {
+    "重設工作台擺放…": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Reset Map Layout…"
+            "value": "Reset Workbench Layout…"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Restablecer disposición del mapa…"
+            "value": "Restablecer disposición de la Mesa de trabajo…"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "マップの配置をリセット…"
+            "value": "作業台の配置をリセット…"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "지도 배치 재설정…"
+            "value": "작업대 배치 재설정…"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Redefinir disposição do Mapa…"
+            "value": "Redefinir disposição da Bancada…"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "重設地圖擺放…"
+            "value": "重設工作台擺放…"
           }
         }
       }
     },
-    "重設地圖的擺放？": {
+    "重設工作台的擺放？": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Reset the map layout?"
+            "value": "Reset the Workbench layout?"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "¿Restablecer la disposición del mapa?"
+            "value": "¿Restablecer la disposición de la Mesa de trabajo?"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "マップの配置をリセットしますか？"
+            "value": "作業台の配置をリセットしますか？"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "지도 배치를 재설정하겠습니까?"
+            "value": "작업대 배치를 재설정하겠습니까?"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Redefinir a disposição do Mapa?"
+            "value": "Redefinir a disposição da Bancada?"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "重設地圖的擺放？"
+            "value": "重設工作台的擺放？"
           }
         }
       }

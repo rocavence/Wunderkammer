@@ -223,7 +223,7 @@ final class SelfTest {
         case "toast":
             let toast = CaptureToast()
             let image = library.items.first.flatMap { NSImage(contentsOf: library.thumbnailURL($0)) }
-            toast.show(title: "收進珍奇室", detail: library.items.first?.displayTitle, image: image)
+            toast.show(title: "收進展室", detail: library.items.first?.displayTitle, image: image)
             await wait(0.5)
             if let panel = toast.panel, let dir = Self.outputDir {
                 let p = Process()
@@ -573,7 +573,7 @@ final class SelfTest {
         shot("02f-ripple-closed")
     }
 
-    /// Several 珍奇室, each its own library: switch, collect, switch back.
+    /// Several 展室, each its own library: switch, collect, switch back.
     /// A watched folder: what goes in is collected, what leaves goes too.
     private func watchCheck() async {
         let fm = FileManager.default
@@ -605,7 +605,7 @@ final class SelfTest {
         check(inFolder() == 3, "a new file comes in by itself (\(inFolder()) of 3)")
         try? fm.removeItem(at: c)
         for _ in 0..<40 where inFolder() > 2 { await wait(0.25) }
-        check(inFolder() == 2, "a file taken out leaves the 珍奇室 (\(inFolder()) of 2)")
+        check(inFolder() == 2, "a file taken out leaves the 展室 (\(inFolder()) of 2)")
         var extra: [URL] = []
         for i in 0..<3 {
             let f = fm.temporaryDirectory.appendingPathComponent("wk-watch-extra-\(i)-\(UUID().uuidString)", isDirectory: true)
@@ -624,11 +624,11 @@ final class SelfTest {
         await wait(4)
         check(inFolder() == 2, "an unwatched folder is left alone")
 
-        // Keeping files instead: a vault of the 珍奇室's own, a copy of each file in it.
+        // Keeping files instead: a vault of the 展室's own, a copy of each file in it.
         let vault = fm.temporaryDirectory.appendingPathComponent("wk-vault-\(UUID().uuidString)", isDirectory: true)
         try? fm.createDirectory(at: vault, withIntermediateDirectories: true)
         ui.setVaultForTest(vault)
-        check(!ui.watchFolderForTest(extra[0]), "a 珍奇室 that keeps files doesn't also link folders")
+        check(!ui.watchFolderForTest(extra[0]), "a 展室 that keeps files doesn't also link folders")
         let loose = fm.temporaryDirectory.appendingPathComponent("wk-loose-\(UUID().uuidString).txt")
         try? "苔寺的筆記".write(to: loose, atomically: true, encoding: .utf8)
         let ids = await library.importFiles([loose])
@@ -638,7 +638,7 @@ final class SelfTest {
               "a collected file is copied into the vault (\(kept ?? "nowhere"))")
         check(fm.fileExists(atPath: loose.path), "the original stays where it was")
         // A cover of its own.
-        check(ui.setCoverForTest(picture("cover.png", hue: 0.55)), "a picture can be the 珍奇室's cover")
+        check(ui.setCoverForTest(picture("cover.png", hue: 0.55)), "a picture can be the 展室's cover")
         ui.manageCabinets()
         await wait(0.6)
         ui.flipCabinetForTest()
@@ -655,15 +655,15 @@ final class SelfTest {
     private func cabinetsCheck() async {
         let home = ui.currentCabinet
         let before = library.items.count
-        let other = ui.createCabinetForTest("旅行的珍奇室")
+        let other = ui.createCabinetForTest("旅行的展室")
         ui.switchCabinet(to: other)
         await wait(0.8)
-        check(library.items.isEmpty && ui.grid.shownItems.isEmpty, "a new 珍奇室 starts empty")
-        check(window.title == "旅行的珍奇室", "its name is the title (\(window.title))")
+        check(library.items.isEmpty && ui.grid.shownItems.isEmpty, "a new 展室 starts empty")
+        check(window.title == "旅行的展室", "its name is the title (\(window.title))")
         shot("cabinet-new")
         _ = await library.capture([.text("京都的苔寺，雨後最好看。", origin: nil)])
         await wait(0.6)
-        check(library.items.count == 1, "collecting goes into the open 珍奇室")
+        check(library.items.count == 1, "collecting goes into the open 展室")
         ui.switchCabinet(to: home)
         await wait(0.8)
         check(library.items.count == before && !library.items.contains { $0.text?.contains("苔寺") == true },
@@ -671,11 +671,11 @@ final class SelfTest {
         shot("cabinet-home")
         ui.switchCabinet(to: other)
         await wait(0.6)
-        check(library.items.count == 1 && library.items.first?.text?.contains("苔寺") == true, "the other 珍奇室 kept its things")
-        check(ui.cabinetNames.contains("旅行的珍奇室"), "it's in the list")
+        check(library.items.count == 1 && library.items.first?.text?.contains("苔寺") == true, "the other 展室 kept its things")
+        check(ui.cabinetNames.contains("旅行的展室"), "it's in the list")
         ui.switchCabinet(to: home)
         await wait(0.4)
-        // The window from the 珍奇室 card atop the sidebar.
+        // The window from the 展室 card atop the sidebar.
         ui.manageCabinets()
         await wait(0.6)
         shot("cabinet-panel", windowNumber: ui.cabinetsWindowNumber)
@@ -685,15 +685,15 @@ final class SelfTest {
         await wait(0.4)
         shot("cabinet-draft", windowNumber: ui.cabinetsWindowNumber)
         check(ui.cabinetNames.count == count, "nothing is made before it has a name")
-        ui.typeCabinetNameForTest("草稿的珍奇室")
+        ui.typeCabinetNameForTest("草稿的展室")
         await wait(0.3)
-        check(ui.cabinetNames.contains("草稿的珍奇室"), "Return makes it, with that name")
+        check(ui.cabinetNames.contains("草稿的展室"), "Return makes it, with that name")
         ui.closeCabinetsForTest()
         await wait(0.3)
-        if let draft = ui.cabinetID(named: "草稿的珍奇室") { ui.deleteCabinetForTest(draft) }
+        if let draft = ui.cabinetID(named: "草稿的展室") { ui.deleteCabinetForTest(draft) }
         check(!ui.canDeleteCabinet(home) && ui.canDeleteCabinet(other), "the original stays; another can be removed")
         ui.deleteCabinetForTest(other)
-        check(!ui.cabinetNames.contains("旅行的珍奇室"), "removed from the list")
+        check(!ui.cabinetNames.contains("旅行的展室"), "removed from the list")
     }
 
     /// Three spaces, each remembering its layout; the sidebar follows.
@@ -878,8 +878,8 @@ final class SelfTest {
         ui.sidebar.select(.all)
         ui.setSpace(.map)
         await wait(0.8)
-        // 地圖 opens on whichever layout was used last; the canvas, for what follows.
-        check(ui.mode == .canvas, "地圖 is the canvas (\(ui.mode))")
+        // 工作台 opens on whichever layout was used last; the canvas, for what follows.
+        check(ui.mode == .canvas, "工作台 is the canvas (\(ui.mode))")
         ui.setMode(.canvas)
         await wait(0.6)
         check(ui.viewBarTipsForTest.contains("依主題分堆") && ui.viewBarTipsForTest.contains("重設擺放…"), "the canvas's tools are in the bar (\(ui.viewBarTipsForTest))")
@@ -892,7 +892,7 @@ final class SelfTest {
         check(ui.mode == .masonry, "收藏 remembers its layout (\(ui.mode))")
         ui.setSpace(.map)
         await wait(0.4)
-        check(ui.mode == .canvas, "地圖 comes back to the canvas (\(ui.mode))")
+        check(ui.mode == .canvas, "工作台 comes back to the canvas (\(ui.mode))")
     }
 
     /// Siri and Shortcuts: what each command does, run in the app. (Collect is

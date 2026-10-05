@@ -44,7 +44,7 @@ struct RandomCuriosityIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        guard let title = cabinet?.randomForIntent() else { return .result(dialog: "There's nothing in the cabinet yet.") }
+        guard let title = cabinet?.randomForIntent() else { return .result(dialog: "There's nothing in the room yet.") }
         return .result(dialog: IntentDialog(stringLiteral: "Here's “\(title)”."))
     }
 }

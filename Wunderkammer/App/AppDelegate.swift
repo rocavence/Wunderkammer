@@ -7,7 +7,7 @@ import Quartz
 enum Space: Int, CaseIterable {
     case cabinet, wander, map
 
-    var title: String { [String(localized: "收藏"), String(localized: "漫遊"), String(localized: "地圖")][rawValue] }
+    var title: String { [String(localized: "收藏"), String(localized: "漫遊"), String(localized: "工作台")][rawValue] }
     var layouts: [ViewMode] {
         switch self {
         case .cabinet: [.grid, .masonry, .timeline]
@@ -44,7 +44,7 @@ enum ViewMode: Int, CaseIterable {
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate, SelfTestUI {
     private var window: NSWindow!
-    /// The 珍奇室 on this Mac; the library is whichever one is open.
+    /// The 展室 on this Mac; the library is whichever one is open.
     private let cabinets = Cabinets(base: ProcessInfo.processInfo.environment["WK_LIBRARY_ROOT"].map { URL(fileURLWithPath: $0) }
         ?? Library.defaultRoot)
     private lazy var library = Library(root: cabinets.root(of: cabinets.current))
@@ -462,7 +462,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private func buildStatusItem() {
         if let old = statusItem { NSStatusBar.system.removeStatusItem(old) }
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        item.button?.toolTip = String(localized: "Wunderkammer：把東西拖到這裡就收進珍奇室")
+        item.button?.toolTip = String(localized: "Wunderkammer：把東西拖到這裡就收進展室")
         if let button = item.button { statusDrop.attach(to: button) }
         statusDrop.onDrop = { [weak self] pasteboard in self?.capture.collectDrop(pasteboard) ?? false }
         let menu = NSMenu()
@@ -470,7 +470,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         Self.show(CaptureController.screenshotShortcut, on: menu.addItem(withTitle: String(localized: "截圖收藏"), action: #selector(captureScreenshot), keyEquivalent: ""))
         menu.addItem(.separator())
         menu.addItem(withTitle: String(localized: "隨機一件"), action: #selector(randomFromStatus), keyEquivalent: "")
-        menu.addItem(withTitle: String(localized: "打開珍奇室"), action: #selector(showCabinet), keyEquivalent: "")
+        menu.addItem(withTitle: String(localized: "打開展室"), action: #selector(showCabinet), keyEquivalent: "")
         menu.addItem(.separator())
         menu.addItem(withTitle: String(localized: "結束 Wunderkammer"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
         for i in menu.items where i.action != #selector(NSApplication.terminate(_:)) { i.target = self }
@@ -517,6 +517,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private var tipIndex = Int.random(in: 0..<GridView.tips.count)
 
     private func show(base: Scope.Base) {
+        // Somewhere else chosen in the sidebar: go there, out of the single piece.
+        if preview.isOpen { preview.dismissImmediately() }
         // A different suggestion each time the view changes.
         tipIndex = (tipIndex + 1) % GridView.tips.count
         grid?.tip = GridView.tips[tipIndex]
@@ -1119,7 +1121,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         fileMenu.addItem(.separator())
         fileMenu.addItem(withTitle: String(localized: "新增釘選版"), action: #selector(newBoard), keyEquivalent: "n").target = self
         fileMenu.addItem(.separator())
-        fileMenu.addItem(withTitle: String(localized: "在 Finder 顯示珍奇室的資料"), action: #selector(revealLibrary), keyEquivalent: "").target = self
+        fileMenu.addItem(withTitle: String(localized: "在 Finder 顯示展室的資料"), action: #selector(revealLibrary), keyEquivalent: "").target = self
         fileMenu.addItem(withTitle: String(localized: "關閉視窗"), action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
         fileItem.submenu = fileMenu
         main.addItem(fileItem)
@@ -1165,7 +1167,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         viewMenu.addItem(withTitle: String(localized: "縮小"), action: #selector(zoomOut), keyEquivalent: "-").target = self
         viewMenu.addItem(withTitle: String(localized: "整理畫布"), action: #selector(CanvasView.arrange(_:)), keyEquivalent: "")
         viewMenu.addItem(withTitle: String(localized: "畫布依主題分堆"), action: #selector(CanvasView.clusterByTheme(_:)), keyEquivalent: "")
-        viewMenu.addItem(withTitle: String(localized: "重設地圖擺放…"), action: #selector(CanvasView.resetArrangement(_:)), keyEquivalent: "")
+        viewMenu.addItem(withTitle: String(localized: "重設工作台擺放…"), action: #selector(CanvasView.resetArrangement(_:)), keyEquivalent: "")
         viewMenu.addItem(.separator())
         viewMenu.addItem(withTitle: String(localized: "隨機一件"), action: #selector(randomFromMenu), keyEquivalent: "r").keyEquivalentModifierMask = [.command, .option]
         viewMenu.items.last?.target = self
@@ -1180,7 +1182,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         let windowItem = NSMenuItem()
         let windowMenu = NSMenu(title: String(localized: "視窗"))
         windowMenu.addItem(withTitle: String(localized: "縮到最小"), action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
-        windowMenu.addItem(withTitle: String(localized: "珍奇室"), action: #selector(showCabinet), keyEquivalent: "0").target = self
+        windowMenu.addItem(withTitle: String(localized: "展室"), action: #selector(showCabinet), keyEquivalent: "0").target = self
         windowItem.submenu = windowMenu
         NSApp.windowsMenu = windowMenu
         main.addItem(windowItem)
@@ -1203,11 +1205,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     @objc private func captureScreenshot() { Task { await capture.captureScreenshot() } }
     @objc private func newBoard() { sidebar.newBoard(nil) }
 
-    // MARK: Cabinets (珍奇室)
+    // MARK: Cabinets (展室)
 
     private var cabinetsPanel: CabinetsPanel?
 
-    /// The window for switching, adding, renaming and removing 珍奇室 (a sheet).
+    /// The window for switching, adding, renaming and removing 展室 (a sheet).
     func manageCabinets() {
         let panel = CabinetsPanel(cabinets: cabinets, count: { [weak self] entry in self?.itemCount(of: entry) ?? 0 },
                                   covers: { [weak self] entry in self?.coverURLs(of: entry) ?? [] },
@@ -1218,7 +1220,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         panel.present(on: window)
     }
 
-    /// How many things a 珍奇室 holds (the open one from memory, others from disk).
+    /// How many things a 展室 holds (the open one from memory, others from disk).
     /// Collected files that still live where they were found.
     private func referencedCount(of entry: Cabinets.Entry) -> Int {
         guard entry.id == cabinets.currentID else { return Library.storedReferencedCount(at: cabinets.root(of: entry)) }
@@ -1263,8 +1265,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
 
     private var watchedNow: (UUID, [URL])?
 
-    /// The open 珍奇室's folders, watched; the same ones aren't restarted.
-    /// A 珍奇室 that keeps its files fills its vault instead.
+    /// The open 展室's folders, watched; the same ones aren't restarted.
+    /// A 展室 that keeps its files fills its vault instead.
     private func watchFolders() {
         let vault = cabinets.vault(cabinets.currentID)
         if library.vaultDir != vault {

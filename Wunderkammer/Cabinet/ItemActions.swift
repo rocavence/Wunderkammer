@@ -76,7 +76,7 @@ enum ItemActions {
         // Only referenced files whose original is still there can be copied.
         let copyable = items.filter { $0.storedFilename == nil && $0.filePath != nil && library.originalURL($0) != nil }.map(\.id)
         if !copyable.isEmpty {
-            menu.addItem(ClosureMenuItem(String(localized: "複製一份到珍奇室")) { Task { await library.copyIntoLibrary(copyable) } })
+            menu.addItem(ClosureMenuItem(String(localized: "複製一份到展室")) { Task { await library.copyIntoLibrary(copyable) } })
         }
         menu.addItem(.separator())
         let title = board == nil ? String(localized: "移除") : String(localized: "從釘選版移除")

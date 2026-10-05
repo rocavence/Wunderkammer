@@ -866,6 +866,7 @@ private final class HeadingBand: CALayer {
     private let detailLayer = CATextLayer()
     /// Under a pinned band: the pictures fade in rather than being cut off.
     private let fade = CAGradientLayer()
+    private let pill = CALayer()
     private(set) var title = ""
     private(set) var isPinned = false
 
@@ -880,6 +881,9 @@ private final class HeadingBand: CALayer {
         fade.startPoint = CGPoint(x: 0.5, y: 0)
         fade.endPoint = CGPoint(x: 0.5, y: 1)
         insertSublayer(fade, at: 0)
+        pill.borderWidth = 0.5
+        pill.isHidden = true
+        insertSublayer(pill, at: 0)
     }
 
     override init(layer: Any) { super.init(layer: layer) }
@@ -902,15 +906,19 @@ private final class HeadingBand: CALayer {
         let detailHeight = ceil(small.ascender - small.descender) + 2
         detailLayer.frame = CGRect(x: titleLayer.frame.maxX + 10, y: baseline - small.ascender - 1,
                                    width: max(bounds.width - inset - titleLayer.frame.maxX - 10, 0), height: detailHeight)
-        // Pinned, a veil rather than a slab: it fades in above and out below,
-        // so what scrolls under the top bar still shows, as on the wall.
+        // Pinned, the date rides on a small pill of the bars' glass, just
+        // its words wide: the pictures scroll past around it, untouched.
         backgroundColor = nil
-        fade.isHidden = !pinned
-        let reach: CGFloat = 26
-        fade.frame = CGRect(x: 0, y: -reach, width: bounds.width, height: bounds.height + reach * 2)
-        let veil = colors.band.copy(alpha: 0.9)!
-        fade.colors = [colors.band.copy(alpha: 0)!, veil, veil, colors.band.copy(alpha: 0)!]
-        let edge = NSNumber(value: Double(reach / fade.frame.height))
-        fade.locations = [0, edge, NSNumber(value: 1 - edge.doubleValue), 1]
+        fade.isHidden = true
+        pill.isHidden = !pinned
+        if pinned {
+            let words = titleLayer.frame.union(detailLayer.frame.width > 0 && !detail.isEmpty
+                ? CGRect(x: detailLayer.frame.minX, y: detailLayer.frame.minY, width: ceil(detailLayer.preferredFrameSize().width), height: detailLayer.frame.height)
+                : titleLayer.frame)
+            pill.frame = words.insetBy(dx: -14, dy: -5).integral
+            pill.cornerRadius = pill.frame.height / 2
+            pill.backgroundColor = colors.band.copy(alpha: 0.86)
+            pill.borderColor = colors.detail.copy(alpha: 0.25)
+        }
     }
 }

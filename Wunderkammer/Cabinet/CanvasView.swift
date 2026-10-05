@@ -211,7 +211,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
     @objc func resetArrangement(_ sender: Any?) {
         guard let window else { return }
         let first = NSAlert()
-        first.messageText = String(localized: "重設地圖的擺放？")
+        first.messageText = String(localized: "重設工作台的擺放？")
         first.informativeText = String(localized: "拖過的位置和自己分的堆，會回到一開始自動排好的樣子。收藏和連線都不會動。")
         first.addButton(withTitle: String(localized: "繼續…"))
         first.addButton(withTitle: String(localized: "取消"))
