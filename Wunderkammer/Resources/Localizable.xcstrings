@@ -809,6 +809,12 @@
             "value" : "Apple’s image–text model, which lets you find pictures with a sentence."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El modelo de imagen y texto de Apple que te deja buscar imágenes con una frase."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -819,12 +825,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple의 이미지·텍스트 모델로, 한 문장으로 그림을 찾게 해 줍니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "El modelo de imagen y texto de Apple que te deja buscar imágenes con una frase."
           }
         },
         "pt-BR" : {
@@ -1729,6 +1729,12 @@
             "value" : "How Wunder answers"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cómo responde Wunder"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1739,12 +1745,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wunder의 해답"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cómo responde Wunder"
           }
         },
         "pt-BR" : {
@@ -1769,6 +1769,12 @@
             "value" : "A Wunderkammer was a Renaissance cabinet of curiosities: books, specimens, paintings, and maps in one room, finding meaning in how they were placed side by side, not in how they were sorted. Wunder is its short name, German for “wonder.” Every room is your own cabinet of curiosities."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una Wunderkammer era un gabinete de curiosidades renacentista: libros, especímenes, pinturas y mapas en una sala, con sentido en cómo se colocaban juntos, no en cómo se clasificaban. Wunder es su nombre corto, «maravilla» en alemán. Cada sala es tu propio gabinete de curiosidades."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1779,12 +1785,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wunderkammer는 르네상스 시대의 호기심의 방입니다. 책, 표본, 그림, 지도가 한 방에 놓여 분류가 아닌 배치와 나란함으로 의미를 만들었습니다. Wunder는 그 줄임말로, 독일어로 ‘경이’. 모든 전시실은 당신만의 호기심의 방입니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Una Wunderkammer era un gabinete de curiosidades renacentista: libros, especímenes, pinturas y mapas en una sala, con sentido en cómo se colocaban juntos, no en cómo se clasificaban. Wunder es su nombre corto, «maravilla» en alemán. Cada sala es tu propio gabinete de curiosidades."
           }
         },
         "pt-BR" : {
@@ -2089,6 +2089,12 @@
             "value" : "Everything stays on this Mac. Text, objects, similarity, and descriptions are all recognized here: no uploads, no account, no subscription."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo se queda en este Mac. Texto, objetos, semejanzas y descripciones se reconocen aquí: sin subir nada, sin cuenta, sin suscripción."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2099,12 +2105,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "모든 것은 이 Mac에. 텍스트, 사물, 유사도, 설명 인식이 모두 기기에서 이뤄져 업로드도, 계정도, 구독도 필요 없습니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Todo se queda en este Mac. Texto, objetos, semejanzas y descripciones se reconocen aquí: sin subir nada, sin cuenta, sin suscripción."
           }
         },
         "pt-BR" : {
@@ -3489,6 +3489,12 @@
             "value" : "Every icon in the interface comes from Reicon."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos los iconos de la interfaz son de Reicon."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3499,12 +3505,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "인터페이스의 아이콘은 모두 Reicon에서 왔습니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Todos los iconos de la interfaz son de Reicon."
           }
         },
         "pt-BR" : {
@@ -3609,6 +3609,12 @@
             "value" : "Author · GitHub"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autor · GitHub"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3619,12 +3625,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "제작자 · GitHub"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Autor · GitHub"
           }
         },
         "pt-BR" : {
@@ -3677,6 +3677,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "你以前常看，已經 %lld 天沒打開"
+          }
+        }
+      }
+    },
+    "你只要收藏。哪天想起來打開，它已經整理好了。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Just collect. Whenever you do open it, it’s already tidied up."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "集めるだけ。いつか思い出して開いたとき、もう整理は済んでいます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "담기만 하세요. 언젠가 생각나서 열면 이미 정리돼 있습니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo guarda. El día que lo abras, ya estará ordenado."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Só guarde. No dia em que abrir, já vai estar arrumado."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你只要收藏。哪天想起來打開，它已經整理好了。"
           }
         }
       }
@@ -5357,6 +5397,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "同步"
+          }
+        }
+      }
+    },
+    "同類的 app 我用過不少。不是貴到要先想想這個月還吃不吃飯，就是功能貪心到什麼都想塞，打開來像在看飛機駕駛艙。結果就是：根本不想打開。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I’ve tried plenty of apps like this. They’re either so pricey you start rethinking this month’s groceries, or so greedy with features that opening one feels like stepping into a cockpit. So I just… didn’t open them."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同じような app はたくさん試しました。今月の食費を考え直すほど高いか、機能を欲張りすぎて開くとまるで飛行機のコックピット。結局、開く気になれませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비슷한 앱을 꽤 써 봤습니다. 이번 달 식비를 다시 계산하게 될 만큼 비싸거나, 기능을 욕심껏 넣어서 열면 비행기 조종석 같거나. 결국 열고 싶지가 않았습니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "He probado muchas apps así. O son tan caras que te hacen replantearte la compra del mes, o tan glotonas de funciones que abrirlas parece entrar en la cabina de un avión. Resultado: no daban ganas de abrirlas."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Já testei vários apps assim. Ou são tão caros que você repensa o mercado do mês, ou tão gulosos de recursos que abrir parece entrar numa cabine de avião. Resultado: dava preguiça de abrir."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同類的 app 我用過不少。不是貴到要先想想這個月還吃不吃飯，就是功能貪心到什麼都想塞，打開來像在看飛機駕駛艙。結果就是：根本不想打開。"
           }
         }
       }
@@ -9721,46 +9801,6 @@
         }
       }
     },
-    "收了之後就再也沒打開過。收藏變成倉庫，不再是讓人心動的地方。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Once saved, things are never opened again. A collection turns into a storeroom instead of a place that moves you."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "一度しまったら二度と開かない。コレクションは倉庫になり、心が動く場所ではなくなります。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "한번 담고 나면 다시는 열어 보지 않습니다. 컬렉션은 창고가 되고, 더는 마음이 움직이는 곳이 아닙니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lo guardado nunca se vuelve a abrir. La colección se convierte en un trastero y deja de emocionar."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O que foi guardado nunca mais é aberto. A coleção vira um depósito e deixa de emocionar."
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "收了之後就再也沒打開過。收藏變成倉庫，不再是讓人心動的地方。"
-          }
-        }
-      }
-    },
     "收藏" : {
       "localizations" : {
         "en" : {
@@ -9837,46 +9877,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "收藏剪貼簿或目前頁面"
-          }
-        }
-      }
-    },
-    "收藏工具大多要訂閱，要把東西上傳到別人的伺服器，還要照它的規則分類。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Most collecting tools want a subscription, want your things on someone else’s server, and want you to sort by their rules."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "多くの収集ツールはサブスクリプションが必要で、他人のサーバにアップロードさせ、そのルールで分類させます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "수집 도구 대부분은 구독이 필요하고, 남의 서버에 올리게 하고, 그 규칙대로 분류하게 합니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Casi todas las herramientas piden suscripción, subir tus cosas al servidor de otro y clasificar según sus reglas."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A maioria das ferramentas pede assinatura, quer suas coisas no servidor de outra pessoa e quer que você classifique pelas regras dela."
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "收藏工具大多要訂閱，要把東西上傳到別人的伺服器，還要照它的規則分類。"
           }
         }
       }
@@ -10129,6 +10129,12 @@
             "value" : "Just collect. A shortcut, a drag onto the arch in the menu bar, or a screenshot: one move and it’s in, without asking where it goes."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo guarda. Un atajo, arrastrar al arco de la barra de menús o una captura: un gesto y listo, sin preguntar dónde va."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10139,12 +10145,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "담기만 하세요. 단축키, 메뉴 막대의 아치로 끌어 놓기, 스크린샷. 한 번이면 담기고, 어디에 둘지 묻지 않습니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Solo guarda. Un atajo, arrastrar al arco de la barra de menús o una captura: un gesto y listo, sin preguntar dónde va."
           }
         },
         "pt-BR" : {
@@ -10529,6 +10529,12 @@
             "value" : "The system organizes. Everything is sorted by format, category, theme, and color; forget the file name and a sentence still finds it."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El sistema organiza. Todo se ordena por formato, categoría, tema y color; aunque olvides el nombre, una frase lo encuentra."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10539,12 +10545,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "정리는 시스템이. 형식, 분류, 주제, 색으로 자동으로 나뉘고, 파일 이름을 몰라도 한 문장으로 찾을 수 있습니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "El sistema organiza. Todo se ordena por formato, categoría, tema y color; aunque olvides el nombre, una frase lo encuentra."
           }
         },
         "pt-BR" : {
@@ -13089,6 +13089,12 @@
             "value" : "Why Wunder"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por qué Wunder"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13099,12 +13105,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wunder를 만든 이유"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Por qué Wunder"
           }
         },
         "pt-BR" : {
@@ -13209,6 +13209,12 @@
             "value" : "Generates the Xcode project."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genera el proyecto de Xcode."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13219,12 +13225,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Xcode 프로젝트를 생성합니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Genera el proyecto de Xcode."
           }
         },
         "pt-BR" : {
@@ -15409,6 +15409,12 @@
             "value" : "Thanks"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agradecimientos"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15419,12 +15425,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "감사의 말"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Agradecimientos"
           }
         },
         "pt-BR" : {
@@ -15841,46 +15841,6 @@
         }
       }
     },
-    "要找得到，就得先整理：建資料夾、取檔名、下標籤。整理比收藏還累，收藏的興致就這樣被磨掉。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "To find things, you have to organize first: folders, file names, tags. Organizing is more work than collecting, and the joy of collecting wears away."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "見つけるには、まず整理が必要です。フォルダを作り、名前を付け、タグを付ける。集めるより整理のほうが疲れて、集める楽しさがすり減っていきます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "찾으려면 먼저 정리해야 합니다. 폴더를 만들고, 이름을 붙이고, 태그를 달고. 모으는 것보다 정리가 더 힘들어서 모으는 즐거움이 닳아 없어집니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Para encontrar algo, primero hay que organizar: carpetas, nombres, etiquetas. Organizar cansa más que guardar, y las ganas de coleccionar se desgastan."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Para achar algo, é preciso organizar antes: pastas, nomes, etiquetas. Organizar cansa mais do que guardar, e a vontade de colecionar se desgasta."
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "要找得到，就得先整理：建資料夾、取檔名、下標籤。整理比收藏還累，收藏的興致就這樣被磨掉。"
-          }
-        }
-      }
-    },
     "視窗" : {
       "localizations" : {
         "en" : {
@@ -16041,12 +16001,58 @@
         }
       }
     },
+    "說實話，Wunder 你可能也不會天天打開。沒關係，它本來就不用你照顧。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Honestly, you might not open Wunder every day either. That’s fine. It doesn’t need looking after."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正直、Wunder も毎日は開かないかもしれません。大丈夫。もともと世話のいらないアプリです。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "솔직히 Wunder도 매일 열지는 않을 거예요. 괜찮아요. 원래 돌봐 줄 필요가 없으니까요."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinceramente, puede que tampoco abras Wunder cada día. No pasa nada: no necesita que lo cuides."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinceramente, talvez você também não abra o Wunder todo dia. Tudo bem: ele não precisa de cuidados."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "說實話，Wunder 你可能也不會天天打開。沒關係，它本來就不用你照顧。"
+          }
+        }
+      }
+    },
     "讓舊收藏回來找你。漫遊、過去的今天、被遺忘的，把收過的東西一件件再帶回眼前。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Old finds come back to you. Wunder, On this day, and Forgotten bring what you saved back before your eyes, one piece at a time."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo antiguo vuelve a ti. Deambular, Un día como hoy y Olvidados te devuelven lo guardado, una pieza cada vez."
           }
         },
         "ja" : {
@@ -16059,12 +16065,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "오래된 수집품이 당신을 찾아옵니다. 둘러보기, 과거의 오늘, 잊힌 항목이 모아 둔 것을 하나씩 다시 눈앞에 데려옵니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lo antiguo vuelve a ti. Deambular, Un día como hoy y Olvidados te devuelven lo guardado, una pieza cada vez."
           }
         },
         "pt-BR" : {
@@ -17277,6 +17277,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "還沒有連結資料夾。"
+          }
+        }
+      }
+    },
+    "還要花腦袋分資料夾、取檔名、下標籤？醒醒，這件事從來就不現實。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spend brainpower on folders, file names, and tags? Come on. That was never going to happen."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頭を使ってフォルダを分け、名前を付け、タグを付ける？目を覚まして。そんなの最初から無理な話です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "머리 써서 폴더 나누고, 이름 붙이고, 태그 달라고요? 정신 차려요. 처음부터 현실적이지 않았어요."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Gastar neuronas en carpetas, nombres y etiquetas? Venga ya. Eso nunca iba a pasar."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gastar neurônios com pastas, nomes e etiquetas? Fala sério. Isso nunca ia acontecer."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "還要花腦袋分資料夾、取檔名、下標籤？醒醒，這件事從來就不現實。"
           }
         }
       }
@@ -18517,46 +18557,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "霍克尼藍"
-          }
-        }
-      }
-    },
-    "靈感散落各處。截圖躺在桌面，書籤沉在瀏覽器，下載的圖埋在資料夾。真的要用時，記得看過，卻找不到。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inspiration ends up everywhere. Screenshots pile up on the desktop, bookmarks sink in the browser, downloads get buried in folders. When you need something, you remember seeing it but can’t find it."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "インスピレーションはあちこちに散らばります。スクリーンショットはデスクトップに、ブックマークはブラウザの奥に、ダウンロードした画像はフォルダの中に。いざ使うとき、見た覚えはあるのに見つかりません。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "영감은 여기저기 흩어집니다. 스크린샷은 데스크탑에, 북마크는 브라우저 깊숙이, 내려받은 그림은 폴더 속에. 막상 쓰려고 하면 본 기억은 있는데 찾을 수가 없습니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La inspiración acaba por todas partes. Capturas en el escritorio, marcadores hundidos en el navegador, descargas enterradas en carpetas. Cuando lo necesitas, recuerdas haberlo visto, pero no lo encuentras."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A inspiração fica espalhada. Capturas na mesa, favoritos afundados no navegador, downloads enterrados em pastas. Na hora de usar, você lembra que viu, mas não encontra."
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "靈感散落各處。截圖躺在桌面，書籤沉在瀏覽器，下載的圖埋在資料夾。真的要用時，記得看過，卻找不到。"
           }
         }
       }
