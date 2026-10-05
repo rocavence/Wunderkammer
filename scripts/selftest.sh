@@ -17,7 +17,7 @@ PY
 
 xcodebuild -project Wunderkammer.xcodeproj -scheme Wunderkammer -configuration Debug \
   -derivedDataPath build build | grep -E "error:|BUILD FAILED" || true
-APP=build/Build/Products/Debug/Wunderkammer.app/Contents/MacOS/Wunderkammer
+APP=build/Build/Products/Debug/Wunder.app/Contents/MacOS/Wunder
 
 WK_APPEARANCE="${WK_APPEARANCE:-}" WK_SELFTEST_ONLY="${1:-}" WK_SELFTEST="$OUT/shots" WK_LIBRARY_ROOT="$OUT/library" "$APP" -AppleLanguages "(\"${WK_LANG:-zh-Hant}\")" > "$OUT/log" 2>&1 &
 PID=$!

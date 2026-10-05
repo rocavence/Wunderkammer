@@ -841,42 +841,42 @@
         }
       }
     },
-    "Ask Wunderkammer" : {
+    "Ask Wunder" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ask Wunderkammer"
+            "value" : "Ask Wunder"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Preguntar a Wunderkammer"
+            "value" : "Preguntar a Wunder"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer に質問"
+            "value" : "Wunder に質問"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer에 질문하기"
+            "value" : "Wunder에 질문하기"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Perguntar ao Wunderkammer"
+            "value" : "Perguntar ao Wunder"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ask Wunderkammer"
+            "value" : "Ask Wunder"
           }
         }
       }
@@ -961,42 +961,42 @@
         }
       }
     },
-    "Collect into Wunderkammer" : {
+    "Collect into Wunder" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Collect into Wunderkammer"
+            "value" : "Collect into Wunder"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guardar en Wunderkammer"
+            "value" : "Guardar en Wunder"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer に追加"
+            "value" : "Wunder に追加"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer에 수집"
+            "value" : "Wunder에 수집"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Coletar no Wunderkammer"
+            "value" : "Coletar no Wunder"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Collect into Wunderkammer"
+            "value" : "Collect into Wunder"
           }
         }
       }
@@ -1281,42 +1281,42 @@
         }
       }
     },
-    "Search Wunderkammer" : {
+    "Search Wunder" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Search Wunderkammer"
+            "value" : "Search Wunder"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Buscar en Wunderkammer"
+            "value" : "Buscar en Wunder"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer を検索"
+            "value" : "Wunder を検索"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer 검색"
+            "value" : "Wunder 검색"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Buscar no Wunderkammer"
+            "value" : "Buscar no Wunder"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Search Wunderkammer"
+            "value" : "Search Wunder"
           }
         }
       }
@@ -1441,42 +1441,42 @@
         }
       }
     },
-    "Something from Wunderkammer" : {
+    "Something from Wunder" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Something from Wunderkammer"
+            "value" : "Something from Wunder"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Algo de Wunderkammer"
+            "value" : "Algo de Wunder"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer からの 1 件"
+            "value" : "Wunder からの 1 件"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer의 항목"
+            "value" : "Wunder의 항목"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Algo do Wunderkammer"
+            "value" : "Algo do Wunder"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Something from Wunderkammer"
+            "value" : "Something from Wunder"
           }
         }
       }
@@ -1641,82 +1641,82 @@
         }
       }
     },
-    "Wunderkammer isn't ready yet." : {
+    "Wunder isn't ready yet." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer isn't ready yet."
+            "value" : "Wunder isn't ready yet."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer todavía no está listo."
+            "value" : "Wunder todavía no está listo."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer はまだ準備ができていません。"
+            "value" : "Wunder はまだ準備ができていません。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer가 아직 준비되지 않았습니다."
+            "value" : "Wunder가 아직 준비되지 않았습니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Wunderkammer ainda não está pronto."
+            "value" : "O Wunder ainda não está pronto."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer isn't ready yet."
+            "value" : "Wunder isn't ready yet."
           }
         }
       }
     },
-    "Wunderkammer：把東西拖到這裡就收進展室" : {
+    "Wunder：把東西拖到這裡就收進展室" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer: drop things here to add them to the room"
+            "value" : "Wunder: drop things here to add them to the room"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer: arrastra cosas aquí para añadirlas a la sala"
+            "value" : "Wunder: arrastra cosas aquí para añadirlas a la sala"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer：ここにドラッグすると展示室に追加されます"
+            "value" : "Wunder：ここにドラッグすると展示室に追加されます"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer: 여기로 드래그하면 전시실에 수집됩니다"
+            "value" : "Wunder: 여기로 드래그하면 전시실에 수집됩니다"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer: arraste algo para cá para adicionar à sala"
+            "value" : "Wunder: arraste algo para cá para adicionar à sala"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer：把東西拖到這裡就收進展室"
+            "value" : "Wunder：把東西拖到這裡就收進展室"
           }
         }
       }
@@ -5321,42 +5321,42 @@
         }
       }
     },
-    "在任何 app 的分享選單選 Wunderkammer" : {
+    "在任何 app 的分享選單選 Wunder" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose Wunderkammer in any app's Share menu"
+            "value" : "Choose Wunder in any app's Share menu"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Elige Wunderkammer en el menú Compartir de cualquier app"
+            "value" : "Elige Wunder en el menú Compartir de cualquier app"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "任意のアプリの共有メニューで Wunderkammer を選択"
+            "value" : "任意のアプリの共有メニューで Wunder を選択"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "아무 앱의 공유 메뉴에서 Wunderkammer를 선택하십시오"
+            "value" : "아무 앱의 공유 메뉴에서 Wunder를 선택하십시오"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Escolha Wunderkammer no menu Compartilhar de qualquer app"
+            "value" : "Escolha Wunder no menu Compartilhar de qualquer app"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在任何 app 的分享選單選 Wunderkammer"
+            "value" : "在任何 app 的分享選單選 Wunder"
           }
         }
       }
@@ -5401,42 +5401,42 @@
         }
       }
     },
-    "在搜尋框輸入問句後按 Return，或對 Siri 說 Ask Wunderkammer" : {
+    "在搜尋框輸入問句後按 Return，或對 Siri 說 Ask Wunder" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Type a question in the search field and press Return, or say “Ask Wunderkammer” to Siri"
+            "value" : "Type a question in the search field and press Return, or say “Ask Wunder” to Siri"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Escribe una pregunta en el campo de búsqueda y pulsa Return, o dile a Siri “Ask Wunderkammer”"
+            "value" : "Escribe una pregunta en el campo de búsqueda y pulsa Return, o dile a Siri “Ask Wunder”"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "検索フィールドに質問を入力して Return を押すか、Siri に「Ask Wunderkammer」と話しかけます"
+            "value" : "検索フィールドに質問を入力して Return を押すか、Siri に「Ask Wunder」と話しかけます"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "검색 필드에 질문을 입력하고 Return을 누르거나 Siri에게 ‘Ask Wunderkammer’라고 말하십시오"
+            "value" : "검색 필드에 질문을 입력하고 Return을 누르거나 Siri에게 ‘Ask Wunder’라고 말하십시오"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Digite uma pergunta no campo de busca e pressione Return, ou diga “Ask Wunderkammer” à Siri"
+            "value" : "Digite uma pergunta no campo de busca e pressione Return, ou diga “Ask Wunder” à Siri"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在搜尋框輸入問句後按 Return，或對 Siri 說 Ask Wunderkammer"
+            "value" : "在搜尋框輸入問句後按 Return，或對 Siri 說 Ask Wunder"
           }
         }
       }
@@ -12641,42 +12641,42 @@
         }
       }
     },
-    "結束 Wunderkammer" : {
+    "結束 Wunder" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quit Wunderkammer"
+            "value" : "Quit Wunder"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Salir de Wunderkammer"
+            "value" : "Salir de Wunder"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer を終了"
+            "value" : "Wunder を終了"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer 종료"
+            "value" : "Wunder 종료"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Encerrar Wunderkammer"
+            "value" : "Encerrar Wunder"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "結束 Wunderkammer"
+            "value" : "結束 Wunder"
           }
         }
       }
@@ -14921,42 +14921,42 @@
         }
       }
     },
-    "重新開啟 Wunderkammer 後換成新的語言。" : {
+    "重新開啟 Wunder 後換成新的語言。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The new language takes effect after you relaunch Wunderkammer."
+            "value" : "The new language takes effect after you relaunch Wunder."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El nuevo idioma se aplicará al reabrir Wunderkammer."
+            "value" : "El nuevo idioma se aplicará al reabrir Wunder."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer を再起動すると新しい言語に切り替わります。"
+            "value" : "Wunder を再起動すると新しい言語に切り替わります。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer를 다시 열면 새로운 언어로 변경됩니다."
+            "value" : "Wunder를 다시 열면 새로운 언어로 변경됩니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O novo idioma será aplicado quando você reabrir o Wunderkammer."
+            "value" : "O novo idioma será aplicado quando você reabrir o Wunder."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "重新開啟 Wunderkammer 後換成新的語言。"
+            "value" : "重新開啟 Wunder 後換成新的語言。"
           }
         }
       }
@@ -15401,42 +15401,42 @@
         }
       }
     },
-    "關於 Wunderkammer" : {
+    "關於 Wunder" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "About Wunderkammer"
+            "value" : "About Wunder"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Acerca de Wunderkammer"
+            "value" : "Acerca de Wunder"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer について"
+            "value" : "Wunder について"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer에 관하여"
+            "value" : "Wunder에 관하여"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sobre o Wunderkammer"
+            "value" : "Sobre o Wunder"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "關於 Wunderkammer"
+            "value" : "關於 Wunder"
           }
         }
       }
@@ -15681,42 +15681,42 @@
         }
       }
     },
-    "隱藏 Wunderkammer" : {
+    "隱藏 Wunder" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hide Wunderkammer"
+            "value" : "Hide Wunder"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ocultar Wunderkammer"
+            "value" : "Ocultar Wunder"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer を非表示"
+            "value" : "Wunder を非表示"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wunderkammer 가리기"
+            "value" : "Wunder 가리기"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ocultar Wunderkammer"
+            "value" : "Ocultar Wunder"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "隱藏 Wunderkammer"
+            "value" : "隱藏 Wunder"
           }
         }
       }

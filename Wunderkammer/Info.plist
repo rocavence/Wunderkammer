@@ -45,19 +45,19 @@
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>按 ⌘⇧C 時，Wunderkammer 會讀取瀏覽器目前分頁的網址與標題，把這個頁面收進展室。</string>
+	<string>按 ⌘⇧C 時，Wunder 會讀取瀏覽器目前分頁的網址與標題，把這個頁面收進展室。</string>
 	<key>NSServices</key>
 	<array>
 		<dict>
 			<key>NSMenuItem</key>
 			<dict>
 				<key>default</key>
-				<string>收進 Wunderkammer</string>
+				<string>收進 Wunder</string>
 			</dict>
 			<key>NSMessage</key>
 			<string>collectService</string>
 			<key>NSPortName</key>
-			<string>Wunderkammer</string>
+			<string>Wunder</string>
 			<key>NSRequiredContext</key>
 			<dict/>
 			<key>NSSendFileTypes</key>

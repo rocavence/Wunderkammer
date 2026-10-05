@@ -478,7 +478,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private func buildStatusItem() {
         if let old = statusItem { NSStatusBar.system.removeStatusItem(old) }
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        item.button?.toolTip = String(localized: "Wunderkammer：把東西拖到這裡就收進展室")
+        item.button?.toolTip = String(localized: "Wunder：把東西拖到這裡就收進展室")
         if let button = item.button { statusDrop.attach(to: button) }
         statusDrop.onDrop = { [weak self] pasteboard in self?.capture.collectDrop(pasteboard) ?? false }
         let menu = NSMenu()
@@ -488,7 +488,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         menu.addItem(withTitle: String(localized: "隨機一件"), action: #selector(randomFromStatus), keyEquivalent: "")
         menu.addItem(withTitle: String(localized: "打開展室"), action: #selector(showCabinet), keyEquivalent: "")
         menu.addItem(.separator())
-        menu.addItem(withTitle: String(localized: "結束 Wunderkammer"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
+        menu.addItem(withTitle: String(localized: "結束 Wunder"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
         for i in menu.items where i.action != #selector(NSApplication.terminate(_:)) { i.target = self }
         item.menu = menu
         statusItem = item
@@ -1143,7 +1143,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
 
         let appItem = NSMenuItem()
         let appMenu = NSMenu()
-        appMenu.addItem(withTitle: String(localized: "關於 Wunderkammer"), action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
+        appMenu.addItem(withTitle: String(localized: "關於 Wunder"), action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: String(localized: "設定…"), action: #selector(showSettings), keyEquivalent: ",").target = self
         appMenu.addItem(.separator())
@@ -1152,8 +1152,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         NSApp.servicesMenu = services.submenu
         appMenu.addItem(services)
         appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: String(localized: "隱藏 Wunderkammer"), action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
-        appMenu.addItem(withTitle: String(localized: "結束 Wunderkammer"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        appMenu.addItem(withTitle: String(localized: "隱藏 Wunder"), action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
+        appMenu.addItem(withTitle: String(localized: "結束 Wunder"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         appItem.submenu = appMenu
         main.addItem(appItem)
 

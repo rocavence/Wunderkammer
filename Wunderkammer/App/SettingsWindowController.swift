@@ -194,7 +194,7 @@ final class SettingsWindowController: NSWindowController {
         swatches.spacing = 6
         return [
             row(String(localized: "語言"),
-                pending ? String(localized: "重新開啟 Wunderkammer 後換成新的語言。") : String(localized: "選單、按鈕與訊息使用的語言。"),
+                pending ? String(localized: "重新開啟 Wunder 後換成新的語言。") : String(localized: "選單、按鈕與訊息使用的語言。"),
                 languageControl),
             row(String(localized: "外觀"), String(localized: "淺色、深色，或跟著系統切換。"), look),
             row(String(localized: "重點色"), String(localized: "只用在選中與作用中的東西：所在的空間、選取、拖放的目標。可以跟隨系統，或在這裡另外指定。"),
@@ -225,7 +225,7 @@ final class SettingsWindowController: NSWindowController {
         return [
             row(String(localized: "用描述找圖"), String(localized: "例如「a cat at a dinner table」，用本機的 MobileCLIP 模型"),
                 status(semanticReady(), ready: String(localized: "已安裝"), missing: String(localized: "未安裝"))),
-            row(String(localized: "對收藏提問"), String(localized: "在搜尋框輸入問句後按 Return，或對 Siri 說 Ask Wunderkammer"),
+            row(String(localized: "對收藏提問"), String(localized: "在搜尋框輸入問句後按 Return，或對 Siri 說 Ask Wunder"),
                 status(asking, ready: String(localized: "Apple Intelligence 可用"), missing: String(localized: "需要 Apple Intelligence"))),
             row(String(localized: "中文描述"), String(localized: "用中文描述找圖，需要系統的中文 → 英文翻譯語言"), chinese),
         ]
@@ -246,7 +246,7 @@ final class SettingsWindowController: NSWindowController {
     private func about() -> NSView {
         let icon = NSImageView(image: NSApp.applicationIconImage ?? NSImage())
         icon.imageScaling = .scaleProportionallyUpOrDown
-        let name = NSTextField(labelWithString: "Wunderkammer")
+        let name = NSTextField(labelWithString: "Wunder")
         name.font = Typography.display(26) ?? .systemFont(ofSize: 26, weight: .semibold)
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
         let detail = NSTextField(labelWithString: String(localized: "版本 \(version)"))

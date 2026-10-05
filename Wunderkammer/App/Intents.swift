@@ -9,7 +9,7 @@ import AppKit
 private var cabinet: AppDelegate? { NSApp.delegate as? AppDelegate }
 
 struct AskCabinetIntent: AppIntent {
-    static let title: LocalizedStringResource = "Ask Wunderkammer"
+    static let title: LocalizedStringResource = "Ask Wunder"
     static let description = IntentDescription("Ask a question about what you've collected. Answered on this Mac by Apple Intelligence.")
 
     @Parameter(title: "Question", requestValueDialog: IntentDialog("What would you like to know?"))
@@ -17,13 +17,13 @@ struct AskCabinetIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        guard let cabinet else { return .result(dialog: "Wunderkammer isn't ready yet.") }
+        guard let cabinet else { return .result(dialog: "Wunder isn't ready yet.") }
         return .result(dialog: IntentDialog(stringLiteral: await cabinet.answerForIntent(question)))
     }
 }
 
 struct SearchCabinetIntent: AppIntent {
-    static let title: LocalizedStringResource = "Search Wunderkammer"
+    static let title: LocalizedStringResource = "Search Wunder"
     static let description = IntentDescription("Find curiosities by words, names, colours, sites, years or what they look like.")
     static let openAppWhenRun = true
 
@@ -38,7 +38,7 @@ struct SearchCabinetIntent: AppIntent {
 }
 
 struct RandomCuriosityIntent: AppIntent {
-    static let title: LocalizedStringResource = "Something from Wunderkammer"
+    static let title: LocalizedStringResource = "Something from Wunder"
     static let description = IntentDescription("Show something you collected a while ago, at random.")
     static let openAppWhenRun = true
 
@@ -50,7 +50,7 @@ struct RandomCuriosityIntent: AppIntent {
 }
 
 struct CollectIntent: AppIntent {
-    static let title: LocalizedStringResource = "Collect into Wunderkammer"
+    static let title: LocalizedStringResource = "Collect into Wunder"
     static let description = IntentDescription("Collect what you just copied, or the page open in your browser. Same as ⌘⇧C.")
 
     @MainActor

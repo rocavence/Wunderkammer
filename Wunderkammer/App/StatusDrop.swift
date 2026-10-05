@@ -33,7 +33,7 @@ final class StatusDrop: NSObject, NSWindowDelegate, NSDraggingDestination {
             return true
         }
         image.isTemplate = true
-        image.accessibilityDescription = "Wunderkammer"
+        image.accessibilityDescription = "Wunder"
         return image
     }
 
