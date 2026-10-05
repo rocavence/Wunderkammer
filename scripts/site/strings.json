@@ -355,7 +355,15 @@
       "travel": "travel",
       "brown": "brown",
       "yellow": "yellow"
-    }
+    },
+    "folders_kicker": "folders",
+    "folders_title": "two ways to bring files in",
+    "watch_title": "watch a folder",
+    "watch_p": "pick up to three folders. whatever lands in them comes into the room by itself, and leaves when you take it out. the files stay where they are.",
+    "vault_title": "file it away",
+    "vault_p": "rather keep your own copy? the room gets a folder of its own, and everything you collect is copied in under its own name.",
+    "watch_folder": "Downloads",
+    "vault_folder": "Moodboard"
   },
   "zh-Hant": {
     "lang": "zh-Hant",
@@ -713,7 +721,15 @@
       "travel": "旅行",
       "brown": "棕色",
       "yellow": "黃色"
-    }
+    },
+    "folders_kicker": "資料夾",
+    "folders_title": "兩種收法，看你習慣",
+    "watch_title": "自動監看資料夾",
+    "watch_p": "指定最多三個資料夾。放進去的檔案自己收進展室，從資料夾拿走就跟著移除，檔案都留在原處。",
+    "vault_title": "自訂歸檔",
+    "vault_p": "想留一份自己的？讓展室開一個專屬資料夾，每件收進來的東西都複製一份存進去，用原本的檔名。",
+    "watch_folder": "下載項目",
+    "vault_folder": "靈感板"
   },
   "ja": {
     "lang": "ja",
@@ -1071,7 +1087,15 @@
       "travel": "旅",
       "brown": "茶色",
       "yellow": "黄色"
-    }
+    },
+    "folders_kicker": "フォルダ",
+    "folders_title": "ファイルの取り込み方は 2 通り",
+    "watch_title": "フォルダを見張る",
+    "watch_p": "フォルダを 3 つまで指定できます。入れたファイルは自動で展示室へ、フォルダから出せば展示室からも消えます。ファイルは元の場所のまま。",
+    "vault_title": "自分で保管する",
+    "vault_p": "手元に控えを残したいなら、展示室に専用フォルダを作り、集めたものを元の名前でコピーして保管します。",
+    "watch_folder": "ダウンロード",
+    "vault_folder": "ムードボード"
   },
   "ko": {
     "lang": "ko",
@@ -1429,7 +1453,15 @@
       "travel": "여행",
       "brown": "갈색",
       "yellow": "노랑"
-    }
+    },
+    "folders_kicker": "폴더",
+    "folders_title": "파일을 들이는 두 가지 방법",
+    "watch_title": "폴더 지켜보기",
+    "watch_p": "폴더를 세 개까지 지정하세요. 넣은 파일은 저절로 전시실에 들어오고, 폴더에서 빼면 함께 빠집니다. 파일은 원래 자리에 그대로.",
+    "vault_title": "직접 보관하기",
+    "vault_p": "사본을 따로 두고 싶다면, 전시실 전용 폴더를 만들어 모은 것을 원래 이름으로 복사해 둡니다.",
+    "watch_folder": "다운로드",
+    "vault_folder": "무드보드"
   },
   "es": {
     "lang": "es",
@@ -1787,7 +1819,15 @@
       "travel": "Viajes",
       "brown": "Marrón",
       "yellow": "Amarillo"
-    }
+    },
+    "folders_kicker": "Carpetas",
+    "folders_title": "Dos formas de traer archivos",
+    "watch_title": "Vigilar una carpeta",
+    "watch_p": "Elige hasta tres carpetas. Lo que entre en ellas llega solo a la sala y se va cuando lo sacas. Los archivos se quedan donde están.",
+    "vault_title": "Archivarlo aparte",
+    "vault_p": "¿Prefieres tu propia copia? La sala tiene una carpeta propia y todo lo que guardas se copia ahí con su nombre.",
+    "watch_folder": "Descargas",
+    "vault_folder": "Moodboard"
   },
   "pt-BR": {
     "lang": "pt-BR",
@@ -2145,6 +2185,14 @@
       "travel": "Viagem",
       "brown": "Marrom",
       "yellow": "Amarelo"
-    }
+    },
+    "folders_kicker": "Pastas",
+    "folders_title": "Duas formas de trazer arquivos",
+    "watch_title": "Vigiar uma pasta",
+    "watch_p": "Escolha até três pastas. O que cair nelas entra sozinho na sala e sai quando você tira. Os arquivos ficam onde estão.",
+    "vault_title": "Arquivar à parte",
+    "vault_p": "Quer sua própria cópia? A sala ganha uma pasta própria e tudo o que você guarda é copiado para lá com o nome original.",
+    "watch_folder": "Downloads",
+    "vault_folder": "Moodboard"
   }
 }

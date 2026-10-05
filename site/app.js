@@ -371,6 +371,17 @@
     addEventListener("resize", aim);
   }
 
+  // ── Folders: each file flies from where it starts to the room, or to the folder ──
+  const scenes = document.querySelectorAll(".fo-scene");
+  const aimScenes = () => scenes.forEach((scene) => {
+    const file = scene.querySelector(".fo-file");
+    const target = scene.querySelector(scene.classList.contains("watch") ? ".fo-room" : ".fo-folder");
+    const from = file.offsetLeft + file.offsetWidth / 2, to = target.offsetLeft + target.offsetWidth / 2;
+    scene.style.setProperty("--fly", Math.round(to - from) + "px");
+  });
+  aimScenes();
+  addEventListener("resize", aimScenes);
+
   // ── A button that leans toward you ───────────────────────────────
   if (matchMedia("(hover: hover)").matches && !still.matches) {
     document.querySelectorAll(".cta").forEach((b) => {
