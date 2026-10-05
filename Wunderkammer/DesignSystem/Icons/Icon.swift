@@ -48,7 +48,7 @@ enum Icon {
     /// Where equal area still doesn't look equal: a circle reads small, four
     /// corner arrows read big. Adjusted by eye.
     private static let opticalNudge: [Reicon: CGFloat] = [
-        .infoCircle: 1.08,
+        .infoCircle: 1.2,
         .search: 1.04,
         .maximize: 0.84,
     ]
