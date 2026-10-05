@@ -8,6 +8,7 @@ struct Scope: Equatable, Sendable {
         case all
         case board(UUID)
         case kind(KindView)
+        case forToday
         case onThisDay
         case forgotten
         /// Looks like this one (visual fingerprint).
@@ -92,6 +93,7 @@ struct Scope: Equatable, Sendable {
         case .all: Library.allKey
         case .board(let id): id.uuidString
         case .kind(let k): "kind:\(k.rawValue)"
+        case .forToday: "forToday"
         case .onThisDay: "onThisDay"
         case .forgotten: "forgotten"
         case .similar(let id): "similar:\(id.uuidString)"
@@ -113,6 +115,7 @@ extension Library {
         case .all: result = items
         case .board(let id): result = items(in: id)
         case .kind(let k): result = items.filter(k.contains)
+        case .forToday: result = Rediscovery.forToday(items, now: now).map(\.item)
         case .onThisDay: result = Rediscovery.onThisDay(items, now: now)
         case .forgotten: result = Rediscovery.forgotten(items, now: now)
         case .similar(let id): result = (item(id).map { [$0] } ?? []) + (similarity?(id) ?? [])

@@ -19,6 +19,9 @@ enum Subjects {
 
     /// The cabinet's own themes: labels on at least 3 items (and not on nearly
     /// everything), most common first.
+    /// A label that can name a theme (not too generic to mean anything).
+    static func isTheme(_ label: String) -> Bool { !ignored.contains(label) }
+
     static func discover(in items: [Item], limit: Int = 8, minimum: Int = 3) -> [Subject] {
         var counts: [String: Int] = [:]
         for item in items {

@@ -154,6 +154,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         case .subject(let label): (String(localized: "主題"), themeIcon(label))
         case .color: (String(localized: "顏色"), .palette)
         case .board: (String(localized: "釘選版"), .layers)
+        case .forToday: (String(localized: "漫遊"), .sunLight)
         case .onThisDay: (String(localized: "漫遊"), .calendarDay)
         case .forgotten: (String(localized: "漫遊"), .history)
         case .trail: (String(localized: "漫遊"), .routing)
@@ -214,6 +215,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         case .wander:
             // Ways into the wall: everything, what time brings back, where you've been.
             r = [.view(.all, title: String(localized: "全部"), icon: .grid, count: library.items.count),
+                 .view(.forToday, title: String(localized: "今天的推薦"), icon: .sunLight, count: nil),
                  .view(.onThisDay, title: String(localized: "過去的今天"), icon: .calendarDay, count: nil),
                  .view(.forgotten, title: String(localized: "被遺忘的"), icon: .history, count: nil),
                  .view(.trail, title: String(localized: "足跡"), icon: .routing, count: nil),

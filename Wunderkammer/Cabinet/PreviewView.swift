@@ -50,6 +50,9 @@ final class PreviewView: NSView {
     override var isFlipped: Bool { true }
     override var acceptsFirstResponder: Bool { true }
 
+    /// A line per item to show instead of when it was collected.
+    var notes: [UUID: String] = [:]
+
     func open(_ id: UUID, from surface: ItemSurface, caption text: String? = nil) {
         self.surface = surface
         items = surface.shownItems
@@ -86,7 +89,7 @@ final class PreviewView: NSView {
             style.lineBreakMode = .byTruncatingTail
             style.paragraphSpacing = 4
             let about = [InspectorViewController.kindName(item), item.domain, item.released.map { String($0.prefix(4)) },
-                         note ?? Rediscovery.ageLine(item)].compactMap { $0 }.filter { !$0.isEmpty }
+                         note ?? notes[item.id] ?? Rediscovery.ageLine(item)].compactMap { $0 }.filter { !$0.isEmpty }
             // A note's title is its first words, already on the card.
             let text = NSMutableAttributedString(string: item.kind == .text ? "" : item.displayTitle + "\n", attributes: [
                 .font: serif ?? NSFont.systemFont(ofSize: size),

@@ -78,6 +78,37 @@ struct RediscoveryTests {
         #expect(Rediscovery.forgotten([seenRecently, neverSeen, older, fresh], now: now).map(\.id) == [older.id, neverSeen.id])
     }
 
+    @Test func forTodayFollowsWhatYouLookAtLately() {
+        let now = at(2026, 10, 4)
+        var lately = item(added: at(2026, 9, 1), viewed: at(2026, 10, 2), views: 3)
+        lately.labels = ["butterfly", "insect"]
+        var kin = item(added: at(2025, 3, 1))
+        kin.labels = ["butterfly"]
+        var stranger = item(added: at(2025, 3, 1))
+        stranger.labels = ["car"]
+        let picks = Rediscovery.forToday([lately, kin, stranger], now: now, count: 1, calendar: cal)
+        #expect(picks.map(\.item.id) == [kin.id])
+        #expect(picks.first?.reason.isEmpty == false)
+    }
+
+    @Test func forTodayLeavesOutWhatYouJustSaw() {
+        let now = at(2026, 10, 4)
+        let justSeen = item(added: at(2025, 1, 1), viewed: at(2026, 10, 3), views: 1)
+        let justAdded = item(added: at(2026, 10, 3))
+        let old = item(added: at(2024, 1, 1))
+        #expect(Rediscovery.forToday([justSeen, justAdded, old], now: now, count: 1, calendar: cal).map(\.item.id) == [old.id])
+        // A room that's only days old still has something for today.
+        #expect(Rediscovery.forToday([justSeen, justAdded], now: now, calendar: cal).map(\.item.id) == [justAdded.id])
+    }
+
+    @Test func forTodayStaysPutForTheDayAndChangesTheNext() {
+        let items = (0..<60).map { _ in item(added: at(2024, 1, 1)) }
+        let morning = Rediscovery.forToday(items, now: at(2026, 10, 4), calendar: cal).map(\.item.id)
+        let evening = Rediscovery.forToday(items, now: at(2026, 10, 4).addingTimeInterval(8 * 3600), calendar: cal).map(\.item.id)
+        let tomorrow = Rediscovery.forToday(items, now: at(2026, 10, 5), calendar: cal).map(\.item.id)
+        #expect(morning.count == 12 && morning == evening && morning != tomorrow)
+    }
+
     @Test func onceFavouritesComeBackFirst() {
         let now = at(2026, 10, 4)
         let favourite = item(added: at(2025, 1, 1), viewed: at(2026, 6, 1), views: 12)

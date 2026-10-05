@@ -580,6 +580,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         case .all: window.title = cabinets.current.name
         case .board(let id): window.title = library.collection(id)?.name ?? String(localized: "釘選版")
         case .kind(let k): window.title = k.title
+        case .forToday: window.title = String(localized: "今天的推薦")
         case .onThisDay: window.title = String(localized: "過去的今天")
         case .forgotten: window.title = String(localized: "被遺忘的")
         case .similar(let id): window.title = String(localized: "與「\(String(library.item(id)?.displayTitle.prefix(20) ?? ""))」相似")
@@ -772,6 +773,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         case .text where item.url != nil: [item.domain, String(localized: "按 Return 打開來源")].compactMap { $0 }.joined(separator: " · ")
         default: nil
         }
+        // In 今天的推薦, each picture says why it's there.
+        preview.notes = scope.base == .forToday
+            ? Dictionary(uniqueKeysWithValues: Rediscovery.forToday(library.items).map { ($0.item.id, $0.reason) }) : [:]
         preview.open(id, from: currentSurface, caption: caption ?? hint)
     }
 

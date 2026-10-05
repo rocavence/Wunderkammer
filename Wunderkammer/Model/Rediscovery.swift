@@ -28,6 +28,72 @@ enum Rediscovery {
             .sorted { score($0) > score($1) }
     }
 
+    struct Pick {
+        let item: Item
+        /// Why it's here today, in a line under the picture.
+        let reason: String
+    }
+
+    /// 今天的推薦: a dozen things for today, chosen on this Mac from what you've
+    /// been looking at lately (shared themes), what you used to come back to,
+    /// and what you collected but never really looked at. Nothing looked at in
+    /// the last three days; things collected that recently only fill in when
+    /// the room is too new to have enough else. The same all day; a new set tomorrow.
+    static func forToday(_ items: [Item], now: Date = Date(), count: Int = 12, calendar: Calendar = .current) -> [Pick] {
+        let day = 86400.0
+        let lately = now.addingTimeInterval(-14 * day), fresh = now.addingTimeInterval(-3 * day)
+        var taste: [String: Double] = [:]
+        for item in items where (item.lastViewed ?? .distantPast) > lately || item.dateAdded > lately {
+            for label in Set(item.labels ?? []) where Subjects.isTheme(label) {
+                taste[label, default: 0] += 1 + Double(item.viewCount) * 0.2
+            }
+        }
+        let strongest = taste.values.max() ?? 1
+        let seed = calendar.startOfDay(for: now).timeIntervalSinceReferenceDate
+        var scored: [(pick: Pick, score: Double, theme: String?)] = []
+        for item in items where (item.lastViewed ?? .distantPast) < fresh {
+            let unseen = now.timeIntervalSince(item.lastViewed ?? item.dateAdded) / day
+            let theme = (item.labels ?? []).filter { taste[$0] != nil }.max { taste[$0]! < taste[$1]! }
+            let kin = theme.map { taste[$0]! / strongest } ?? 0
+            let favourite = item.viewCount >= 3 && unseen > 30
+            let unlooked = item.lastViewed == nil && unseen > 14
+            var score = kin * 1.2 + log1p(unseen) / 12 + jitter(item.id, seed) * 0.6
+            if item.dateAdded > fresh { score -= 10 }
+            if favourite { score += 0.8 }
+            if unlooked { score += 0.4 }
+            let reason: String
+            if let theme, kin >= 0.3 {
+                reason = String(localized: "和你最近常看的「\(Subjects.title(theme))」有關")
+            } else if favourite {
+                reason = String(localized: "你以前常看，已經 \(Int(unseen)) 天沒打開")
+            } else if unlooked {
+                reason = String(localized: "收進來之後還沒仔細看過")
+            } else {
+                reason = ageLine(item, now: now, calendar: calendar)
+            }
+            scored.append((Pick(item: item, reason: reason), score, kin >= 0.3 ? theme : nil))
+        }
+        // Best first, but no one theme takes more than a third of the day.
+        var picks: [Pick] = [], perTheme: [String: Int] = [:]
+        for s in scored.sorted(by: { $0.score > $1.score }) where picks.count < count {
+            if let t = s.theme {
+                guard perTheme[t, default: 0] < max(count / 3, 1) else { continue }
+                perTheme[t, default: 0] += 1
+            }
+            picks.append(s.pick)
+        }
+        return picks
+    }
+
+    /// The same small nudge for an item all day, a different one tomorrow.
+    private static func jitter(_ id: UUID, _ seed: Double) -> Double {
+        var h: UInt64 = 0xcbf29ce484222325
+        for b in (id.uuidString + String(Int(seed))).utf8 {
+            h = (h ^ UInt64(b)) &* 0x100000001b3
+        }
+        return Double(h % 10_000) / 10_000
+    }
+
     /// R: not uniform. Older and less-seen things are likelier, recently shown
     /// ones much less; a little pure chance keeps it surprising.
     static func pick(_ items: [Item], now: Date = Date(), avoiding recent: [UUID] = [],

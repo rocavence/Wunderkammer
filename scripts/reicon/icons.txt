@@ -68,3 +68,4 @@ undo undo
 camera camera
 clipboard paste-clipboard
 inbox-in download-circle
+sunLight sun-light

@@ -3001,6 +3001,86 @@
         }
       }
     },
+    "今天沒有推薦\n收藏多一點、看一陣子之後，這裡每天會有一組新的" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing for today yet\nCollect a little more and look around for a while; a new set will appear here every day"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日のおすすめはまだありません\nもう少し集めてしばらく眺めると、毎日新しい組み合わせが届きます"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아직 오늘의 추천이 없어요\n조금 더 모으고 둘러보면 매일 새로운 묶음이 나타나요"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todavía no hay nada para hoy\nGuarda un poco más y explora un tiempo; cada día aparecerá aquí una selección nueva"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ainda não há nada para hoje\nGuarde mais um pouco e explore por um tempo; todo dia aparece aqui uma seleção nova"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天沒有推薦\n收藏多一點、看一陣子之後，這裡每天會有一組新的"
+          }
+        }
+      }
+    },
+    "今天的推薦" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For Today"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日のおすすめ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘의 추천"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para hoy"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para hoje"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天的推薦"
+          }
+        }
+      }
+    },
     "位置" : {
       "localizations" : {
         "en" : {
@@ -3077,6 +3157,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "作者"
+          }
+        }
+      }
+    },
+    "你以前常看，已經 %lld 天沒打開" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You used to come back to this; not opened in %lld days"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以前よく見ていたもの。%lld 日開いていません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "예전에 자주 봤지만 %lld일 동안 열지 않았어요"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solías volver a esto; hace %lld días que no lo abres"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Você voltava sempre a isto; não abre há %lld dias"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你以前常看，已經 %lld 天沒打開"
           }
         }
       }
@@ -4761,6 +4881,46 @@
         }
       }
     },
+    "和你最近常看的「%@」有關" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Like the “%@” you’ve been looking at lately"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近よく見ている「%@」に関連"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최근 자주 본 ‘%@’와(과) 관련"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relacionado con «%@», que has mirado últimamente"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ligado a “%@”, que você tem visto ultimamente"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "和你最近常看的「%@」有關"
+          }
+        }
+      }
+    },
     "品牌" : {
       "localizations" : {
         "en" : {
@@ -5489,6 +5649,12 @@
             "value" : "In the Settings that just opened, allow Wunder to control %@, then press ⌘⇧C again"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En los Ajustes que se abrieron, permite que Wunder controle %@ y vuelve a pulsar ⌘⇧C"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5499,12 +5665,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "열린 설정에서 Wunder가 %@을(를) 제어하도록 허용한 뒤 ⌘⇧C를 다시 누르세요"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "En los Ajustes que se abrieron, permite que Wunder controle %@ y vuelve a pulsar ⌘⇧C"
           }
         },
         "pt-BR" : {
@@ -8557,6 +8717,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "收進 %lld 件"
+          }
+        }
+      }
+    },
+    "收進來之後還沒仔細看過" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collected, but never really looked at"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "集めてから、まだちゃんと見ていません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모아 두고 아직 제대로 보지 않았어요"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo guardaste, pero aún no lo has mirado bien"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardado, mas ainda não visto com calma"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收進來之後還沒仔細看過"
           }
         }
       }
@@ -16089,6 +16289,12 @@
             "value" : "Automation permission needed"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se necesita permiso de Automatización"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16099,12 +16305,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "‘자동화’ 권한이 필요합니다"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Se necesita permiso de Automatización"
           }
         },
         "pt-BR" : {
