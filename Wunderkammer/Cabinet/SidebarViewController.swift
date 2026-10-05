@@ -277,6 +277,9 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
 
     // MARK: Table
 
+    /// No row looks chosen (screenshots drawn by the window itself show the selection as a black bar).
+    func clearHighlightForTest() { table.deselectAll(nil) }
+
     func numberOfRows(in tableView: NSTableView) -> Int { rows.count }
 
     /// Headers are ordinary rows (not group rows): laid out in the same frame
