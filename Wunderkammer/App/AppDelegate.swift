@@ -1523,6 +1523,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     func hoverViewBarForTest() -> String? { viewBar.hoverFirstForTest() }
     var snapshotBarForTest: SnapshotBar { snapshotBar }
     var canvasTipsForTest: CanvasTips? { canvasTips.isHidden ? nil : canvasTips }
+    var settingsRowHeightsForTest: [CGFloat] { settings.rowHeightsForTest }
     func openSearchForTest() { focusSearch() }
     var spacesControlForTest: NSView { topBar.spaces }
     var topBarSearchCapsuleForTest: NSView? { topBar.searchCapsuleForTest }

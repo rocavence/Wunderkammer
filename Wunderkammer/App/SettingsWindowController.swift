@@ -152,6 +152,7 @@ final class SettingsWindowController: NSWindowController {
         }
         heading.stringValue = tab.title
         page.subviews.forEach { $0.removeFromSuperview() }
+        self.rows = []
         let rows: [NSView]
         switch tab {
         case .general: rows = generalRows()
@@ -296,6 +297,10 @@ final class SettingsWindowController: NSWindowController {
 
     /// One setting: its name and what it does on the left, the control at the
     /// right, a hairline under it.
+    /// One setting: its name and what it does, the control beside them, a
+    /// hairline under it. Every row is at least the same height with the same
+    /// room around it; a wide control (the colour swatches) goes under the
+    /// words instead of squeezing them.
     private func row(_ title: String, _ detail: String, _ control: NSView) -> NSView {
         let name = NSTextField(labelWithString: title)
         name.font = .systemFont(ofSize: 13.5, weight: .medium)
@@ -305,17 +310,31 @@ final class SettingsWindowController: NSWindowController {
         let text = NSStackView(views: [name, about])
         text.orientation = .vertical
         text.alignment = .leading
-        text.spacing = 3
-        let row = NSStackView()
-        row.addView(text, in: .leading)
-        row.addView(control, in: .trailing)
-        row.alignment = .centerY
-        row.spacing = 24
-        row.edgeInsets = NSEdgeInsets(top: 14, left: 0, bottom: 14, right: 0)
-        text.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        text.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        text.spacing = 4
         control.setContentHuggingPriority(.required, for: .horizontal)
         control.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+        let wide = control.fittingSize.width > Self.besideLimit
+        let row = NSStackView()
+        if wide {
+            row.orientation = .vertical
+            row.alignment = .leading
+            row.spacing = 12
+            row.addArrangedSubview(text)
+            row.addArrangedSubview(control)
+            about.preferredMaxLayoutWidth = Self.textWidth + Self.besideLimit
+        } else {
+            row.addView(text, in: .leading)
+            row.addView(control, in: .trailing)
+            row.alignment = .centerY
+            row.spacing = 24
+            text.setContentHuggingPriority(.defaultLow, for: .horizontal)
+            // The words keep their width; the row grows taller instead.
+            about.preferredMaxLayoutWidth = Self.textWidth
+            text.widthAnchor.constraint(greaterThanOrEqualToConstant: Self.textWidth).isActive = true
+        }
+        row.edgeInsets = NSEdgeInsets(top: 16, left: 0, bottom: 16, right: 0)
+        row.heightAnchor.constraint(greaterThanOrEqualToConstant: Self.rowHeight).isActive = true
         let line = NSBox()
         line.boxType = .separator
         let box = NSStackView(views: [row, line])
@@ -323,8 +342,21 @@ final class SettingsWindowController: NSWindowController {
         box.spacing = 0
         row.widthAnchor.constraint(equalTo: box.widthAnchor).isActive = true
         line.widthAnchor.constraint(equalTo: box.widthAnchor).isActive = true
+        rows.append(row)
         return box
     }
+
+    /// Every row's height, as laid out (tests).
+    var rowHeightsForTest: [CGFloat] {
+        window?.contentView?.layoutSubtreeIfNeeded()
+        return rows.map(\.frame.height)
+    }
+    private var rows: [NSView] = []
+
+    /// Room for the words of a row, and how wide a control can be beside them.
+    private static let textWidth: CGFloat = 300
+    private static let besideLimit: CGFloat = 220
+    private static let rowHeight: CGFloat = 68
 
     private func note(_ text: String) -> NSView {
         let n = NSTextField(wrappingLabelWithString: text)

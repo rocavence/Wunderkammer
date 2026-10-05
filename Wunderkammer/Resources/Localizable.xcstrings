@@ -2009,6 +2009,12 @@
             "value" : "Previous"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anterior"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2019,12 +2025,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "이전"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anterior"
           }
         },
         "pt-BR" : {
@@ -2449,6 +2449,12 @@
             "value" : "Next"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siguiente"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2459,12 +2465,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "다음"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Siguiente"
           }
         },
         "pt-BR" : {
@@ -3009,6 +3009,12 @@
             "value" : "Find it again with ⌘K"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encuéntralo luego con ⌘K"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3019,12 +3025,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "나중에 ⌘K로 다시 찾으세요"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Encuéntralo luego con ⌘K"
           }
         },
         "pt-BR" : {
@@ -4049,6 +4049,12 @@
             "value" : "Pinch with two fingers, or scroll."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pellizca con dos dedos o desplázate."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4059,12 +4065,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "두 손가락으로 오므리거나 스크롤하세요."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pellizca con dos dedos o desplázate."
           }
         },
         "pt-BR" : {
@@ -4197,6 +4197,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "再試一次"
+          }
+        }
+      }
+    },
+    "冰川藍" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glacier"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グレイシャー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "글레이셔"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glaciar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glacial"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "冰川藍"
           }
         }
       }
@@ -5809,6 +5849,12 @@
             "value" : "Words in pictures, colors and years are all searchable. No need to decide where it goes."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se pueden buscar las palabras de las imágenes, los colores y los años. No hace falta decidir dónde va."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5819,12 +5865,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "사진 속 글자, 색상, 연도까지 검색됩니다. 어디에 둘지 고민할 필요 없어요."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Se pueden buscar las palabras de las imágenes, los colores y los años. No hace falta decidir dónde va."
           }
         },
         "pt-BR" : {
@@ -6449,6 +6489,12 @@
             "value" : "Save the layout"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar la disposición"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6459,12 +6505,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "배치 저장"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Guardar la disposición"
           }
         },
         "pt-BR" : {
@@ -7289,6 +7329,12 @@
             "value" : "Space tips"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consejos de la mesa de trabajo"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7299,12 +7345,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "작업대 도움말"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Consejos de la mesa de trabajo"
           }
         },
         "pt-BR" : {
@@ -8929,6 +8969,12 @@
             "value" : "Hold ⌥ and drag from one piece to another."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantén ⌥ y arrastra de una pieza a otra."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8939,12 +8985,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "⌥를 누른 채 한 항목에서 다른 항목으로 끌어 놓으세요."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mantén ⌥ y arrastra de una pieza a otra."
           }
         },
         "pt-BR" : {
@@ -8969,6 +9009,12 @@
             "value" : "Hold Space and drag, or hold ⌥ and drag an empty spot."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantén la barra espaciadora y arrastra, o mantén ⌥ y arrastra un hueco."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8979,12 +9025,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "스페이스 바를 누른 채 끌거나, ⌥를 누르고 빈 곳을 끄세요."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mantén la barra espaciadora y arrastra, o mantén ⌥ y arrastra un hueco."
           }
         },
         "pt-BR" : {
@@ -9969,6 +10009,12 @@
             "value" : "Zoom"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9979,12 +10025,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "확대·축소"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zoom"
           }
         },
         "pt-BR" : {
@@ -11089,6 +11129,12 @@
             "value" : "Select a few, drag them to an empty spot: a new pile."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecciona unas cuantas y arrástralas a un hueco: un montón nuevo."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11099,12 +11145,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "몇 개를 드래그로 선택해 빈 곳에 놓으면 새 묶음이 됩니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Selecciona unas cuantas y arrástralas a un hueco: un montón nuevo."
           }
         },
         "pt-BR" : {
@@ -12681,6 +12721,46 @@
         }
       }
     },
+    "玫瑰色" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rose"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ローズ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "로즈"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rosa"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rosa"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "玫瑰色"
+          }
+        }
+      }
+    },
     "用中文描述找圖，需要系統的中文 → 英文翻譯語言" : {
       "localizations" : {
         "en" : {
@@ -13641,52 +13721,18 @@
         }
       }
     },
-    "石墨色" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Graphite"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grafito"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "グラファイト"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "그래파이트"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grafite"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "石墨色"
-          }
-        }
-      }
-    },
     "移動畫布" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Move around"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moverse"
           }
         },
         "ja" : {
@@ -13699,12 +13745,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "캔버스 이동"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Moverse"
           }
         },
         "pt-BR" : {
@@ -14761,6 +14801,46 @@
         }
       }
     },
+    "翠綠" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emerald"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "エメラルド"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "에메랄드"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esmeralda"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esmeralda"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翠綠"
+          }
+        }
+      }
+    },
     "聲音" : {
       "localizations" : {
         "en" : {
@@ -14809,6 +14889,12 @@
             "value" : "Make a pile"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haz un montón"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14819,12 +14905,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "직접 묶기"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Haz un montón"
           }
         },
         "pt-BR" : {
@@ -16049,6 +16129,12 @@
             "value" : "Connect"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectar"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16059,12 +16145,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "연결하기"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Conectar"
           }
         },
         "pt-BR" : {
@@ -17329,6 +17409,12 @@
             "value" : "Close tips"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar consejos"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17339,12 +17425,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "도움말 닫기"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cerrar consejos"
           }
         },
         "pt-BR" : {
@@ -18409,6 +18489,12 @@
             "value" : "Click an empty slot at the bottom right to save; click it again to come back."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haz clic en un hueco abajo a la derecha para guardar; vuelve a hacer clic para regresar."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18419,12 +18505,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "오른쪽 아래 빈 칸을 클릭해 저장하고, 다시 클릭하면 이 배치로 돌아옵니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Haz clic en un hueco abajo a la derecha para guardar; vuelve a hacer clic para regresar."
           }
         },
         "pt-BR" : {

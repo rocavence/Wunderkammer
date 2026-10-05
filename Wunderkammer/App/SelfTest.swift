@@ -212,6 +212,8 @@ final class SelfTest {
                     ui.showSettingsTabForTest(tab)
                     await wait(0.3)
                     shot(name, windowNumber: w.windowNumber)
+                    let gaps = ui.settingsRowHeightsForTest
+                    check(gaps.allSatisfy { $0 >= 68 }, "settings rows keep their height in \(name) (\(gaps.map { Int($0) }))")
                 }
                 ui.showSettingsTabForTest(.general)
                 let was = Accent.current
@@ -1848,6 +1850,7 @@ protocol SelfTestUI: AnyObject {
     func hoverViewBarForTest() -> String?
     var snapshotBarForTest: SnapshotBar { get }
     var canvasTipsForTest: CanvasTips? { get }
+    var settingsRowHeightsForTest: [CGFloat] { get }
     var barsCompactForTest: Bool { get }
     var slotsShownForTest: Bool { get }
     var isSearchExpanded: Bool { get }
