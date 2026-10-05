@@ -251,6 +251,8 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
 
     var debugLinkCount: Int { links.count }
     var hasRelations: Bool { !relationLinks.isEmpty }
+    /// The connections between pieces have been worked out (the bar's button can wake).
+    var onRelationsFound: (() -> Void)?
 
     @objc func arrange(_ sender: Any?) {
         let sizes = groups.map { groupFrames[$0.id]?.size ?? .zero }
@@ -280,6 +282,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
             guard let self, !Task.isCancelled else { return }
             self.relationLinks = found
             self.renderLines()
+            self.onRelationsFound?()
         }
     }
 

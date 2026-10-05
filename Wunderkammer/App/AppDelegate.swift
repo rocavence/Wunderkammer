@@ -242,6 +242,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         }
         grid.onDropHover = hover
         canvas.onDropHover = hover
+        canvas.onRelationsFound = { [weak self] in
+            if self?.mode == .canvas { self?.updateViewBar() }
+        }
         edgeFade.translatesAutoresizingMaskIntoConstraints = false
         content.addSubview(edgeFade, positioned: .below, relativeTo: answerBanner)
         NSLayoutConstraint.activate([
@@ -1301,6 +1304,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     func openSearchForTest() { focusSearch() }
     var spacesControlForTest: NSView { topBar.spaces }
     var topBarSearchCapsuleForTest: NSView? { topBar.searchCapsuleForTest }
+    func viewBarEnabledForTest(_ tip: String) -> Bool? { viewBar.enabledForTest(tip) }
     var contentAreaForTest: NSView? { contentArea }
     var topBarOverlapsForTest: Bool { topBar.layoutSubtreeIfNeeded(); return topBar.controlsOverlap }
     var sidebarToggleForTest: NSView { topBar.sidebarButton }

@@ -73,6 +73,10 @@ final class ViewBar: NSView {
         isHidden = sections.isEmpty
     }
 
+    func enabledForTest(_ tip: String) -> Bool? {
+        stack.arrangedSubviews.compactMap { $0 as? BarButton }.first { $0.tool.tip == tip }?.isEnabled
+    }
+
     /// Points at the bar's first button the way the pointer would; returns
     /// what the bubble says (tests).
     func hoverFirstForTest() -> String? {

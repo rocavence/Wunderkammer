@@ -41,6 +41,8 @@ final class Cabinets {
                 return e
             }
             currentID = stored.entries.contains { $0.id == stored.current } ? stored.current : stored.entries[0].id
+            // A renamed default is written back, so it stays renamed.
+            if entries != stored.entries { save() }
         } else {
             let first = Entry(id: UUID(), name: String(localized: "展室"), folder: "")
             entries = [first]

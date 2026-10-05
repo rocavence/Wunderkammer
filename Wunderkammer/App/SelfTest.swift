@@ -761,8 +761,13 @@ final class SelfTest {
         // A tap, no drag: the preview, as before.
         // One clear of the bar at the foot.
         // Clear of both bars: the view bar below, the top bar above.
-        let clearBand = 140...(window.contentLayoutRect.height - 20)
-        if let picture = library.items.first(where: { $0.kind == .image && clearBand.contains(canvas.rectInWindow(for: $0.id)?.midY ?? 0) }),
+        let clearBand = 140...(window.contentLayoutRect.height - TopBar.chrome)
+        let across = 60...(canvas.bounds.width - 60)
+        if let picture = library.items.first(where: {
+            guard $0.kind == .image, let r = canvas.rectInWindow(for: $0.id) else { return false }
+            let local = canvas.convert(r, from: nil)
+            return clearBand.contains(r.midY) && across.contains(local.midX)
+        }),
            let p = center(of: picture.id, in: canvas) {
             click(canvas, p)
             keyEvent(.keyDown, 49, " ")
@@ -887,6 +892,10 @@ final class SelfTest {
         await wait(0.6)
         check(ui.viewBarTipsForTest.contains("依主題分堆") && ui.viewBarTipsForTest.contains("重設擺放…"), "the canvas's tools are in the bar (\(ui.viewBarTipsForTest))")
         shot("space-map-canvas")
+        await wait(2)
+        if ui.canvas.hasRelations {
+            check(ui.viewBarEnabledForTest("依關聯分堆") == true, "pile by connection wakes once connections are found")
+        }
         await spacePanCheck()
         check(ui.hoverViewBarForTest() == "依主題分堆", "pointing at a bar button names it (\(ui.hoverViewBarForTest() ?? "nothing"))")
         await wait(0.3)
@@ -1544,6 +1553,7 @@ protocol SelfTestUI: AnyObject {
     func hoverViewBarForTest() -> String?
     var isSearchExpanded: Bool { get }
     var topBarSearchCapsuleForTest: NSView? { get }
+    func viewBarEnabledForTest(_ tip: String) -> Bool?
     func openSearchForTest()
     var spacesControlForTest: NSView { get }
     var contentAreaForTest: NSView? { get }
