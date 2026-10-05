@@ -893,6 +893,16 @@ final class SelfTest {
         check(ui.viewBarTipsForTest.contains("重設擺放…"), "the canvas's tools are in the bar (\(ui.viewBarTipsForTest))")
         check(ui.viewBarTipsForTest.first == "分堆", "one 分堆 button leads the bar (\(ui.viewBarTipsForTest))")
         check(ui.viewBarChoicesForTest("分堆") == ["依格式分堆", "依分類分堆", "依主題分堆", "依顏色分堆"], "its choices follow the sidebar's sections (\(ui.viewBarChoicesForTest("分堆")))")
+        if let open = ui.openViewBarChoicesForTest("分堆") {
+            await wait(0.3)
+            shot("pile-choices")
+            check(open.rows.count == 4 && open.rowHeight >= 34, "分堆 opens a roomy panel of four (\(open.rows), \(open.rowHeight)pt rows)")
+            check(open.frame.minY > open.bar.maxY && open.frame.width < 220, "the panel sits above the bar and hugs its words (\(open.frame))")
+            ui.closeViewBarChoicesForTest()
+            await wait(0.2)
+        } else {
+            check(false, "分堆 opens a panel")
+        }
         ui.canvas.clusterByColor(nil)
         await wait(0.6)
         let colourTitles = Set(Colours.all.map(\.title) + [CanvasLayout.otherPile])
@@ -1568,6 +1578,8 @@ protocol SelfTestUI: AnyObject {
     var watchedFoldersForTest: [URL] { get }
     var viewBarTipsForTest: [String] { get }
     func viewBarChoicesForTest(_ tip: String) -> [String]
+    func openViewBarChoicesForTest(_ tip: String) -> (rows: [String], rowHeight: CGFloat, frame: NSRect, bar: NSRect)?
+    func closeViewBarChoicesForTest()
     func hoverViewBarForTest() -> String?
     var snapshotBarForTest: SnapshotBar { get }
     var isSearchExpanded: Bool { get }

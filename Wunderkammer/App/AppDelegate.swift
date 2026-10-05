@@ -1396,6 +1396,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     }
     var viewBarTipsForTest: [String] { viewBar.isHidden ? [] : viewBar.tips }
     func viewBarChoicesForTest(_ tip: String) -> [String] { viewBar.choicesForTest(tip) }
+    func openViewBarChoicesForTest(_ tip: String) -> (rows: [String], rowHeight: CGFloat, frame: NSRect, bar: NSRect)? { viewBar.openChoicesForTest(tip) }
+    func closeViewBarChoicesForTest() { viewBar.closeChoicesForTest() }
     var watchedFoldersForTest: [URL] { cabinets.watched(cabinets.currentID) }
     func unwatchFolderForTest(_ folder: URL) { cabinets.unwatch(folder, in: cabinets.currentID); cabinetsChanged() }
     func canDeleteCabinet(_ id: UUID) -> Bool { cabinets.canDelete(id) }

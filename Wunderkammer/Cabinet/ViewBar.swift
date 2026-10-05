@@ -10,7 +10,7 @@ final class ViewBar: NSView {
         var tip: String
         var enabled = true
         var destructive = false
-        /// When set, the button opens these as a menu instead of acting.
+        /// When set, the button opens these in a panel above the bar instead of acting.
         var choices: [Tool] = []
         var action: () -> Void = {}
     }
@@ -44,7 +44,7 @@ final class ViewBar: NSView {
     required init?(coder: NSCoder) { fatalError() }
 
     override var isHidden: Bool {
-        didSet { if isHidden { bubble.hide() } }
+        didSet { if isHidden { bubble.hide(); panel?.close() } }
     }
 
     /// The space's layouts (only when there's more than one), then the tools
@@ -52,6 +52,7 @@ final class ViewBar: NSView {
     func show(layouts: [ViewMode], current: ViewMode, tools: [[Tool]]) {
         stack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         bubble.hide()
+        panel?.close()
         tips = []
         var sections: [[NSView]] = []
         if layouts.count > 1 {
@@ -90,6 +91,30 @@ final class ViewBar: NSView {
         hover(b)
         return bubble.text
     }
+
+    private var panel: ChoicePanel?
+
+    /// Opens a button's choices above the bar, or closes them if they're open.
+    fileprivate func toggleChoices(of button: BarButton) {
+        if let open = panel {
+            open.close()
+            if open.owner === button { return }
+        }
+        guard let host = superview else { return }
+        let next = ChoicePanel(button.tool.choices, owner: button)
+        next.onClose = { [weak self, weak next] in if self?.panel === next { self?.panel = nil } }
+        next.show(above: self, at: button, in: host)
+        panel = next
+    }
+
+    func openChoicesForTest(_ tip: String) -> (rows: [String], rowHeight: CGFloat, frame: NSRect, bar: NSRect)? {
+        guard let b = stack.arrangedSubviews.compactMap({ $0 as? BarButton }).first(where: { $0.tool.tip == tip }) else { return nil }
+        toggleChoices(of: b)
+        guard let panel else { return nil }
+        return (panel.rowTitles, panel.rowHeight, panel.frame, frame)
+    }
+
+    func closeChoicesForTest() { panel?.close() }
 
     fileprivate func hover(_ button: BarButton?) {
         guard let button, let host = superview else { return bubble.hide() }
@@ -179,23 +204,7 @@ private final class BarButton: NSButton {
     @objc private func run() {
         bar?.hover(nil)
         guard !tool.choices.isEmpty else { return tool.action() }
-        let menu = NSMenu()
-        menu.minimumWidth = 200
-        for choice in tool.choices {
-            let item = ClosureMenuItem(choice.tip) { choice.action() }
-            // A menu row is as tall as its image: padding the icon gives roomier rows at the usual text size.
-            let icon = Icon.optical(choice.icon, size: 18)
-            let padded = NSImage(size: NSSize(width: icon.size.width, height: 32), flipped: false) { rect in
-                icon.draw(in: NSRect(x: 0, y: (rect.height - icon.size.height) / 2, width: icon.size.width, height: icon.size.height))
-                return true
-            }
-            padded.isTemplate = icon.isTemplate
-            item.image = padded
-            menu.addItem(item)
-        }
-        // Opens upward, its bottom just above the button.
-        let top = bounds.height + 6 + menu.size.height
-        menu.popUp(positioning: nil, at: NSPoint(x: 0, y: isFlipped ? -6 - menu.size.height : top), in: self)
+        bar?.toggleChoices(of: self)
     }
 }
 
@@ -250,6 +259,158 @@ private final class TipBubble: NSView {
             ctx.duration = 0.1
             animator().alphaValue = 0
         }
+    }
+}
+
+/// A tool's choices in a glass panel just above the bar, in the bar's own
+/// look. Closes on a choice, a click elsewhere, or Esc.
+@MainActor
+private final class ChoicePanel: NSView {
+    let rowHeight: CGFloat = 36
+    weak var owner: NSView?
+    var onClose: (() -> Void)?
+    private(set) var rowTitles: [String] = []
+    private var monitor: Any?
+
+    init(_ choices: [ViewBar.Tool], owner: NSView) {
+        self.owner = owner
+        super.init(frame: .zero)
+        let glass = Glass(cornerRadius: 14)
+        glass.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(glass)
+        let rows = choices.map { choice in
+            ChoiceRow(choice, height: rowHeight) { [weak self] in
+                self?.close()
+                choice.action()
+            }
+        }
+        rowTitles = choices.map(\.tip)
+        let stack = NSStackView(views: rows)
+        stack.orientation = .vertical
+        stack.alignment = .width
+        stack.spacing = 2
+        stack.edgeInsets = NSEdgeInsets(top: 6, left: 6, bottom: 6, right: 6)
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(stack)
+        NSLayoutConstraint.activate([
+            glass.leadingAnchor.constraint(equalTo: leadingAnchor),
+            glass.trailingAnchor.constraint(equalTo: trailingAnchor),
+            glass.topAnchor.constraint(equalTo: topAnchor),
+            glass.bottomAnchor.constraint(equalTo: bottomAnchor),
+            stack.leadingAnchor.constraint(equalTo: leadingAnchor),
+            stack.trailingAnchor.constraint(equalTo: trailingAnchor),
+            stack.topAnchor.constraint(equalTo: topAnchor),
+            stack.bottomAnchor.constraint(equalTo: bottomAnchor),
+        ])
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    func show(above bar: NSView, at button: NSView, in host: NSView) {
+        host.addSubview(self)
+        let size = fittingSize
+        let b = host.convert(button.bounds, from: button)
+        let top = host.convert(bar.bounds, from: bar)
+        // Its left edge lines up with the button's; it sits just above the bar.
+        var x = b.minX - 6
+        x = min(max(x, 8), host.bounds.width - size.width - 8)
+        let y = host.isFlipped ? top.minY - size.height - 8 : top.maxY + 8
+        frame = NSRect(origin: NSPoint(x: x, y: y), size: size)
+        alphaValue = 0
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.12
+            animator().alphaValue = 1
+        }
+        monitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .keyDown]) { [weak self] event in
+            guard let self else { return event }
+            if event.type == .keyDown {
+                guard event.keyCode == 53 else { return event }
+                self.close()
+                return nil
+            }
+            guard event.window === self.window else { self.close(); return event }
+            let p = event.locationInWindow
+            let inside = self.bounds.contains(self.convert(p, from: nil))
+            let onOwner = self.owner.map { $0.bounds.contains($0.convert(p, from: nil)) } ?? false
+            // A click on the owning button is left to it, so it can close the panel itself.
+            if !inside && !onOwner { self.close() }
+            return event
+        }
+    }
+
+    func close() {
+        if let monitor { NSEvent.removeMonitor(monitor) }
+        monitor = nil
+        guard superview != nil else { return }
+        onClose?()
+        NSAnimationContext.runAnimationGroup({ ctx in
+            ctx.duration = 0.1
+            animator().alphaValue = 0
+        }, completionHandler: { [weak self] in
+            MainActor.assumeIsolated { self?.removeFromSuperview() }
+        })
+    }
+}
+
+/// One choice: its icon and name, a ground under the pointer.
+@MainActor
+private final class ChoiceRow: NSView {
+    private let action: () -> Void
+    private let icon = NSImageView()
+    private let label: NSTextField
+    private var hovering = false { didSet { updateLook() } }
+
+    init(_ tool: ViewBar.Tool, height: CGFloat, action: @escaping () -> Void) {
+        self.action = action
+        label = NSTextField(labelWithString: tool.tip)
+        super.init(frame: .zero)
+        wantsLayer = true
+        layer?.cornerRadius = 9
+        icon.image = Icon.optical(tool.icon, size: 18)
+        label.font = .systemFont(ofSize: 13)
+        setAccessibilityRole(.button)
+        setAccessibilityLabel(tool.tip)
+        for v in [icon, label] as [NSView] {
+            v.translatesAutoresizingMaskIntoConstraints = false
+            addSubview(v)
+        }
+        NSLayoutConstraint.activate([
+            heightAnchor.constraint(equalToConstant: height),
+            icon.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
+            icon.centerYAnchor.constraint(equalTo: centerYAnchor),
+            icon.widthAnchor.constraint(equalToConstant: 18),
+            icon.heightAnchor.constraint(equalToConstant: 18),
+            label.leadingAnchor.constraint(equalTo: icon.trailingAnchor, constant: 10),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            label.centerYAnchor.constraint(equalTo: centerYAnchor),
+        ])
+        updateLook()
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateLook()
+    }
+
+    private func updateLook() {
+        layer?.backgroundColor = hovering ? resolved(NSColor.labelColor.withAlphaComponent(0.1)) : nil
+        icon.contentTintColor = hovering ? .labelColor : .secondaryLabelColor
+        label.textColor = .labelColor
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        trackingAreas.forEach(removeTrackingArea)
+        addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+    }
+
+    override func mouseEntered(with event: NSEvent) { hovering = true }
+    override func mouseExited(with event: NSEvent) { hovering = false }
+    override func mouseDown(with event: NSEvent) {}
+    override func mouseUp(with event: NSEvent) {
+        if bounds.contains(convert(event.locationInWindow, from: nil)) { action() }
     }
 }
 
