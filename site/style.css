@@ -300,7 +300,6 @@ main { padding: 0 20px; }
   border-radius: 0;
   box-shadow: none;
   transform: rotate(-4deg);
-  filter: drop-shadow(0 14px 22px #00000033);
 }
 .hero h1 img {
   width: .86em;

@@ -15,7 +15,7 @@
 <link rel="icon" href="{{root}}assets/favicon.png">
 <link rel="apple-touch-icon" href="{{root}}assets/icon.png">
 {{alternates}}
-<link rel="preload" href="{{root}}assets/wall.json" as="fetch" crossorigin>
+<link rel="preload" href="{{root}}assets/wall.json?v={{wall_v}}" as="fetch" crossorigin>
 <link rel="stylesheet" href="{{root}}style.css?v={{css_v}}">
 <script>
   (function () {
@@ -58,13 +58,13 @@
 <main id="top">
   <section class="stage" aria-label="{{tab_wander}}">
     <div class="stage-pin">
-      <div class="wall" data-root="{{root}}" aria-hidden="true">
+      <div class="wall" data-root="{{root}}" data-v="{{wall_v}}" aria-hidden="true">
         <div class="wall-track"></div>
       </div>
       <div class="chrome" aria-hidden="true">
         <div class="c-side">
           <div class="c-lights"><i></i><i></i><i></i></div>
-          <div class="c-room"><img src="{{root}}assets/wall/02.jpg" alt=""><span><b>{{room}}</b><small>44</small></span></div>
+          <div class="c-room"><img src="{{wall:02}}" alt=""><span><b>{{room}}</b><small>{{wall_count}}</small></span></div>
           <ul>
 {{side_items}}
           </ul>
@@ -114,8 +114,8 @@
         <svg class="db-wifi" viewBox="0 0 18 14"><path d="M1 5a12 12 0 0 1 16 0M4 8a7.5 7.5 0 0 1 10 0M7 11a3 3 0 0 1 4 0"/></svg>
         <span>10:24</span>
       </div>
-      <div class="db-card"><img src="{{root}}assets/wall/03.jpg" alt=""><svg class="db-cursor" viewBox="0 0 16 22"><path d="M1 1v17l4.5-4.2 3 6.7 2.6-1.2-3-6.6H14z"/></svg></div>
-      <div class="db-toast"><img src="{{root}}assets/wall/03.jpg" alt=""><span><b>{{toast_title}}</b>{{room}}</span></div>
+      <div class="db-card"><img src="{{wall:46}}" alt=""><svg class="db-cursor" viewBox="0 0 16 22"><path d="M1 1v17l4.5-4.2 3 6.7 2.6-1.2-3-6.6H14z"/></svg></div>
+      <div class="db-toast"><img src="{{wall:46}}" alt=""><span><b>{{toast_title}}</b>{{room}}</span></div>
     </figure>
     <p class="try">{{try_collect}}</p>
   </section>
@@ -151,20 +151,20 @@
       <article class="fo rise">
         <div class="fo-scene watch" aria-hidden="true">
           <div class="fo-folder"><svg class="fd" viewBox="0 0 64 52"><path d="M3 9a4 4 0 0 1 4-4h15l5 6h30a4 4 0 0 1 4 4v30a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path class="fd-front" d="M3 18h58v26a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/></svg><span>{{watch_folder}}</span></div>
-          <img class="fo-file f1" src="{{root}}assets/wall/03.jpg" alt="">
-          <img class="fo-file f2" src="{{root}}assets/wall/08.jpg" alt="">
-          <img class="fo-file f3" src="{{root}}assets/wall/31.jpg" alt="">
-          <div class="fo-room"><b>{{room}}</b><i><img src="{{root}}assets/wall/01.jpg" alt=""></i><i><img src="{{root}}assets/wall/14.jpg" alt=""></i><i><img src="{{root}}assets/wall/45.jpg" alt=""></i><i class="n1"><img src="{{root}}assets/wall/03.jpg" alt=""></i><i class="n2"><img src="{{root}}assets/wall/08.jpg" alt=""></i><i class="n3"><img src="{{root}}assets/wall/31.jpg" alt=""></i></div>
+          <img class="fo-file f1" src="{{wall:54}}" alt="">
+          <img class="fo-file f2" src="{{wall:13}}" alt="">
+          <img class="fo-file f3" src="{{wall:40}}" alt="">
+          <div class="fo-room"><b>{{room}}</b><i><img src="{{wall:00}}" alt=""></i><i><img src="{{wall:26}}" alt=""></i><i><img src="{{wall:57}}" alt=""></i><i class="n1"><img src="{{wall:54}}" alt=""></i><i class="n2"><img src="{{wall:13}}" alt=""></i><i class="n3"><img src="{{wall:40}}" alt=""></i></div>
         </div>
         <h4>{{watch_title}}</h4>
         <p>{{watch_p}}</p>
       </article>
       <article class="fo rise">
         <div class="fo-scene vault" aria-hidden="true">
-          <div class="fo-room"><b>{{room}}</b><i><img src="{{root}}assets/wall/22.jpg" alt=""></i><i><img src="{{root}}assets/wall/36.jpg" alt=""></i><i><img src="{{root}}assets/wall/57.jpg" alt=""></i><i class="n1"><img src="{{root}}assets/wall/12.jpg" alt=""></i><i class="n2"><img src="{{root}}assets/wall/40.jpg" alt=""></i><i class="n3"><img src="{{root}}assets/wall/52.jpg" alt=""></i></div>
-          <img class="fo-file f1" src="{{root}}assets/wall/12.jpg" alt="">
-          <img class="fo-file f2" src="{{root}}assets/wall/40.jpg" alt="">
-          <img class="fo-file f3" src="{{root}}assets/wall/52.jpg" alt="">
+          <div class="fo-room"><b>{{room}}</b><i><img src="{{wall:19}}" alt=""></i><i><img src="{{wall:48}}" alt=""></i><i><img src="{{wall:62}}" alt=""></i><i class="n1"><img src="{{wall:02}}" alt=""></i><i class="n2"><img src="{{wall:30}}" alt=""></i><i class="n3"><img src="{{wall:69}}" alt=""></i></div>
+          <img class="fo-file f1" src="{{wall:02}}" alt="">
+          <img class="fo-file f2" src="{{wall:30}}" alt="">
+          <img class="fo-file f3" src="{{wall:69}}" alt="">
           <div class="fo-folder"><svg class="fd" viewBox="0 0 64 52"><path d="M3 9a4 4 0 0 1 4-4h15l5 6h30a4 4 0 0 1 4 4v30a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path class="fd-front" d="M3 18h58v26a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/></svg><span>{{vault_folder}}</span></div>
         </div>
         <h4>{{vault_title}}</h4>

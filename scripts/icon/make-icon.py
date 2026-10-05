@@ -13,7 +13,15 @@ FILL = 0.78  # 主體佔底板的比例
 RAISE = 0.02  # 主體往上移，佔底板高度的比例
 
 out = sys.argv[1]
-art = Image.open("scripts/icon/cards-1024.png")
+def without_shadow(art):
+    """Only the cards: the soft shadow kept from the cut-out goes, the edges stay smooth."""
+    solid = art.getchannel("A").point(lambda v: 255 if v > 200 else 0).filter(ImageFilter.MaxFilter(5))
+    alpha = Image.composite(art.getchannel("A"), Image.new("L", art.size, 0), solid)
+    art.putalpha(alpha)
+    return art
+
+
+art = without_shadow(Image.open("scripts/icon/cards-1024.png").convert("RGBA"))
 art = art.crop(art.getchannel("A").point(lambda v: 255 if v > 200 else 0).getbbox())
 scale = FILL * (BODY[2] - BODY[0]) / max(art.size)
 art = art.resize((round(art.size[0] * scale), round(art.size[1] * scale)), Image.LANCZOS)
@@ -25,9 +33,6 @@ canvas.paste(Image.new("RGBA", (SIDE, SIDE), (0, 0, 0, 255)), (0, 0), shade.filt
 
 tile = Image.new("RGBA", (SIDE, SIDE), CREAM)
 ox, oy = (SIDE - art.size[0]) // 2, (SIDE - art.size[1]) // 2 - round(RAISE * (BODY[3] - BODY[1]))
-under = Image.new("L", (SIDE, SIDE), 0)
-under.paste(art.getchannel("A").point(lambda v: int(v * 0.35)), (ox, oy + 18))
-tile.paste(Image.new("RGBA", (SIDE, SIDE), (90, 50, 20, 255)), (0, 0), under.filter(ImageFilter.GaussianBlur(22)))
 tile.alpha_composite(art, (ox, oy))
 
 mask = Image.new("L", (SIDE, SIDE), 0)

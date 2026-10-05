@@ -2,7 +2,7 @@
 """把 6 × 5 的拼貼圖（無版權）切成一件一張：極簡家電是預設圖組，咖啡豆、交通標誌、旅遊物件是示範展室。
 
 用法：scripts/samples/cut-sheet.py <拼貼圖> <組名>   輸出 build/samples/<組名>/（含 credits.json）
-組名：products、products2（兩組合起來是預設圖組）、coffee、signs、travel
+組名：nordic（預設圖組）、products、products2、coffee、signs、travel
 """
 import json
 import sys
@@ -28,7 +28,29 @@ PRODUCTS2 = [
     ("Ashtray", "home"), ("Thermometer", "home"), ("Cake Stand", "kitchen"), ("Watering Can", "home"), ("Flashlight", "light"), ("Storage Jar", "kitchen"),
     ("Wall Hooks", "home"), ("Pen Holders", "desk"), ("Lint Brush", "care"), ("Desk Organizer", "desk"), ("Mirror", "care"), ("Pedal Bin", "home"),
 ]
+_S, _T, _K, _B, _L, _D, _P, _C, _X = "seating", "table", "storage", "bed", "light", "decor", "plant", "kitchen", "textile"
+NORDIC = [
+    ("Wooden Chair", _S), ("Dining Chair", _S), ("Armchair", _S), ("Sofa", _S), ("Sectional Sofa", _S),
+    ("Coffee Table", _T), ("Side Table", _T), ("Stool", _S), ("Stacking Stools", _S), ("Side Table", _T),
+    ("Dining Table", _T), ("Dining Table", _T), ("Pedestal Table", _T), ("Armchair", _S), ("Swivel Chair", _S),
+    ("Lounge Chair", _S), ("Pouf", _S), ("Pouf", _S), ("Bench", _T), ("Sideboard", _K),
+    ("Sideboard", _K), ("Dresser", _K), ("Cabinet", _K), ("Dresser", _K), ("Shelf", _K),
+    ("Shelf", _K), ("Cube Shelf", _K), ("Cube Shelf", _K), ("Bookcase", _K), ("Storage Shelf", _K),
+    ("Bed", _B), ("Bed", _B), ("Bed", _B), ("Nightstand", _B), ("Nightstand", _B),
+    ("Nightstand", _B), ("Office Chair", _S), ("Chair", _S), ("Chair", _S), ("Folding Chair", _S),
+    ("Table Lamp", _L), ("Table Lamp", _L), ("Desk Lamp", _L), ("Desk Lamp", _L), ("Table Lamp", _L),
+    ("Floor Lamp", _L), ("Pendant Lamp", _L), ("Pendant Lamp", _L), ("Pendant Lamp", _L), ("Pendant Lamp", _L),
+    ("Wall Clock", _D), ("Mirror", _D), ("Art Print", _D), ("Vase", _D), ("Plant", _P),
+    ("Plant", _P), ("Plant", _P), ("Plant", _P), ("Plant", _P), ("Branches in a Vase", _P),
+    ("Dishes", _C), ("Mugs", _C), ("Utensil Holder", _C), ("Storage Jars", _C), ("Bath Set", _D), ("Diffuser", _D),
+    ("Vases", _D), ("Blankets", _X), ("Cushions", _X), ("Cushion", _X), ("Knot Pillow", _X),
+    ("Basket", _K), ("Laundry Bag", _K), ("Pegboard", _K), ("Trolley", _K), ("Step Stool", _S), ("Watering Can", _P),
+    ("Tissue Box", _D), ("Bookends", _D), ("Bookends", _D), ("Glass Vase", _D), ("Vase", _D),
+]
+# Sheets whose rows have different numbers of cells: the lines are found row by row.
+FREE_GRID = {"nordic"}
 SETS = {
+    "nordic": NORDIC,
     "products": PRODUCTS,
     "products2": PRODUCTS2,
     "coffee": [("Coffee Beans", "coffee")] * 30,
@@ -77,6 +99,35 @@ def lines(sheet, count, axis):
     return edges + [length]
 
 
+def runs(flags, merge=10):
+    """Stretches of True, close ones joined, as (start, end)."""
+    out = []
+    for i, on in enumerate(flags):
+        if not on:
+            continue
+        if out and i - out[-1][1] <= merge:
+            out[-1][1] = i
+        else:
+            out.append([i, i])
+    return out
+
+
+def free_cells(sheet):
+    """Every cell, row by row, from the white lines between them."""
+    grey = sheet.convert("L")
+    px = grey.load()
+    w, h = grey.size
+    rows = runs([sum(px[x, y] >= 250 for x in range(0, w, 2)) / (w / 2) > 0.6 for y in range(h)], merge=2)
+    cuts = [0] + [(a + b) // 2 for a, b in rows if 20 < a < h - 20] + [h]
+    cells = []
+    for top, bottom in zip(cuts, cuts[1:]):
+        y0, y1 = top + 6, bottom - 6
+        cols = runs([sum(px[x, y] >= 250 for y in range(y0, y1, 2)) / ((y1 - y0) / 2) > 0.85 for x in range(w)])
+        edges = [b for a, b in cols[:1]] + [(a + b) // 2 for a, b in cols[1:-1]] + [a for a, b in cols[-1:]]
+        cells += [(left + 3, top + 3, right - 3, bottom - 3) for left, right in zip(edges, edges[1:])]
+    return cells
+
+
 def main():
     sheet = Image.open(sys.argv[1]).convert("RGB")
     name = sys.argv[2]
@@ -85,12 +136,16 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     for old in out.glob("*"):
         old.unlink()
-    xs, ys = lines(sheet, COLS, "cols"), lines(sheet, ROWS, "rows")
+    if name in FREE_GRID:
+        boxes = free_cells(sheet)
+    else:
+        xs, ys = lines(sheet, COLS, "cols"), lines(sheet, ROWS, "rows")
+        # Inside each cell, clear of the thin lines between cells.
+        boxes = [(xs[i % COLS] + 4, ys[i // COLS] + 4, xs[i % COLS + 1] - 4, ys[i // COLS + 1] - 4) for i in range(len(pieces))]
+    assert len(boxes) == len(pieces), f"{len(boxes)} cells for {len(pieces)} pieces"
     credits = []
     for i, (title, kind) in enumerate(pieces):
-        col, row = i % COLS, i // COLS
-        # Inside the cell, clear of the thin lines between cells.
-        cell = sheet.crop((xs[col] + 4, ys[row] + 4, xs[col + 1] - 4, ys[row + 1] - 4))
+        cell = sheet.crop(boxes[i])
         box = (0, 0, *cell.size)
         if name in TRIM:
             # The piece itself, with even room around it.

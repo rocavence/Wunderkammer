@@ -6,6 +6,7 @@
 import hashlib
 import html
 import json
+import re
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -77,6 +78,7 @@ def render(page, pages, template, wall):
     fill["root"] = root
     fill["css_v"] = stamp("style.css")
     fill["js_v"] = stamp("app.js")
+    fill["wall_v"] = stamp("assets/wall.json")
     fill["url"] = BASE + page["path"]
     fill["description"] = attr(page["description"])
     fill["lede_plain"] = attr(page["lede_plain"])
@@ -121,7 +123,8 @@ def render(page, pages, template, wall):
     fill["faq"] = "\n".join(
         f'    <details{" id=" + chr(34) + item[2] + chr(34) if len(item) > 2 else ""}>\n'
         f"      <summary>{item[0]}</summary>\n      {item[1]}\n    </details>" for item in page["faq"])
-    out = template
+    fill["wall_count"] = str(len(wall))
+    out = re.sub(r"\{\{wall:(\d+)\}\}", lambda m: f'{root}assets/{wall[int(m.group(1))]["src"]}', template)
     for key, value in fill.items():
         out = out.replace("{{" + key + "}}", value)
     assert "{{" not in out, out[out.index("{{"):out.index("{{") + 40]
@@ -129,13 +132,14 @@ def render(page, pages, template, wall):
 
 
 # The demo rooms: cover pictures (site/assets/rooms/, from scripts/site/wall.py), count, synced.
-ROOMS = [("default", 30, False), ("coffee", 126, False), ("signs", 74, True), ("travel", 57, False), ("documents", 89, True)]
+ROOMS = [("default", 82, False), ("coffee", 126, False), ("signs", 74, True), ("travel", 57, False), ("documents", 89, True)]
 
 
 def room_cards(page, root):
+    covers = json.loads((SITE / "assets/rooms.json").read_text())
     cards = []
     for i, ((key, count, cloud), name) in enumerate(zip(ROOMS, page["rooms"])):
-        mosaic = "".join(f'<img src="{root}assets/rooms/{key}-{n}.jpg" alt="" loading="lazy">' for n in range(4))
+        mosaic = "".join(f'<img src="{root}assets/rooms/{name}" alt="" loading="lazy">' for name in covers[key])
         badges = (f'<em class="now">{page["rooms_current"]}</em>' if i == 0 else "") + ("<em>iCloud</em>" if cloud else "")
         cards.append(f'      <li class="rise{" on" if i == 0 else ""}"><div class="cover">{mosaic}<span>{badges}</span></div>'
                      f'<b>{name}</b><small>{page["rooms_count"].replace("{n}", str(count))}</small></li>')
@@ -146,15 +150,15 @@ def room_cards(page, root):
 # a few quotes, pages and PDFs show that piles are about more than pictures.
 PILE_CARDS = [
     ("text", "book", "quote", "white", "“Less, but better.”"),
-    ("text", "book", "quote", "white", "“Good design is honest.”"),
-    ("text", "book", "quote", "white", "“As little design as possible.”"),
-    ("web", "place", "audio", "silver", "vitsoe.com"),
-    ("web", "book", "kitchen", "silver", "wikipedia.org/Bauhaus"),
-    ("web", "place", "clock", "silver", "designmuseum.org"),
-    ("pdf", "book", "desk", "white", "ten-principles.pdf"),
-    ("pdf", "book", "audio", "white", "catalogue-1965.pdf"),
+    ("text", "book", "quote", "white", "“Home is where the plants are.”"),
+    ("text", "book", "quote", "white", "“Hygge.”"),
+    ("web", "place", "seating", "silver", "fritzhansen.com"),
+    ("web", "book", "storage", "silver", "wikipedia.org/Bauhaus"),
+    ("web", "place", "light", "silver", "louispoulsen.com"),
+    ("pdf", "book", "table", "white", "floor-plan.pdf"),
+    ("pdf", "book", "textile", "white", "catalogue-2026.pdf"),
 ]
-PILE_PICKS = [("audio", 4), ("clock", 3), ("kitchen", 3), ("care", 1), ("desk", 2), ("light", 1)]
+PILE_PICKS = [("seating", 4), ("table", 2), ("storage", 3), ("light", 3), ("plant", 2), ("textile", 2), ("bed", 1)]
 EXTRA_KIND = {"signs": "sign", "coffee": "coffee", "travel": "travel"}
 
 

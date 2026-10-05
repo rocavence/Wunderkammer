@@ -401,7 +401,7 @@
   }
 
   // ── Start ────────────────────────────────────────────────────────
-  fetch(`${wall.dataset.root}assets/wall.json`).then((r) => r.json()).then((data) => {
+  fetch(`${wall.dataset.root}assets/wall.json?v=${wall.dataset.v}`).then((r) => r.json()).then((data) => {
     items = data;
     layout();
     morph();

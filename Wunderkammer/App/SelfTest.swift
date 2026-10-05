@@ -1499,7 +1499,7 @@ final class SelfTest {
         await wait(1.5)
         ui.sidebar.clearHighlightForTest()
         shot("showcase-2-masonry")
-        ui.search("clock")
+        ui.search("chair")
         await wait(2)
         ui.sidebar.clearHighlightForTest()
         shot("showcase-3-search")
@@ -1512,7 +1512,7 @@ final class SelfTest {
         shot("showcase-4-theme")
             ui.sidebar.select(.all)
         }
-        if let pick = library.items.first(where: { $0.originalFilename.contains("Record Player") }) {
+        if let pick = library.items.first(where: { $0.originalFilename.contains("Armchair") }) {
             ui.toggleInspectorForTest()
             ui.inspectForTest(pick.id)
             ui.grid.reveal(pick.id)

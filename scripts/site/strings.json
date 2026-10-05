@@ -22,7 +22,7 @@
     "cta": "download for mac",
     "fine": "free · 4 MB · macOS 14 or later",
     "fine_open": "first time opening it?",
-    "alt_collection": "Wunder showing a collection of minimal household products in a grid, with the sidebar sorted into formats, themes and colors.",
+    "alt_collection": "Wunder showing a collection of Nordic furniture and homeware in a grid, with the sidebar sorted into formats, themes and colors.",
     "s1_label": "what it is",
     "s1_title": "a room for everything you want to keep",
     "s1_p1": "pictures, links, quotes, screenshots, files. press <kbd>⌘⇧C</kbd> and it's in. no folder to pick, no name to type.",
@@ -184,28 +184,28 @@
     "finder_title": "describe it, and it's there",
     "finder_queries": [
       [
-        "a clock",
-        "clock"
-      ],
-      [
-        "record players",
-        "turntable"
-      ],
-      [
-        "in the kitchen",
-        "kitchen"
+        "a chair",
+        "chair"
       ],
       [
         "lamps",
-        "lamp"
+        "light"
       ],
       [
-        "radios",
-        "radio"
+        "plants",
+        "plant"
       ],
       [
-        "something black",
-        "color:black"
+        "something green",
+        "color:green"
+      ],
+      [
+        "beds",
+        "bed"
+      ],
+      [
+        "storage",
+        "storage"
       ]
     ],
     "finder_found": "{n} found",
@@ -354,7 +354,14 @@
       "coffee": "coffee",
       "travel": "travel",
       "brown": "brown",
-      "yellow": "yellow"
+      "yellow": "yellow",
+      "seating": "seating",
+      "table": "tables",
+      "storage": "storage",
+      "bed": "bedroom",
+      "decor": "decor",
+      "plant": "plants",
+      "textile": "textiles"
     },
     "folders_kicker": "folders",
     "folders_title": "two ways to bring files in",
@@ -390,7 +397,7 @@
     "cta": "下載 Mac 版",
     "fine": "免費 · 4 MB · macOS 14 以上",
     "fine_open": "第一次打不開？",
-    "alt_collection": "Wunder 以格狀排出一批極簡家電，側欄依格式、主題與顏色自動分好。",
+    "alt_collection": "Wunder 以格狀排出一批北歐風家具與家居小物，側欄依格式、主題與顏色自動分好。",
     "s1_label": "這是什麼",
     "s1_title": "一個房間，放你想留下的東西",
     "s1_p1": "圖片、連結、一段話、截圖、檔案。按 <kbd>⌘⇧C</kbd> 就收進來，不用選資料夾，也不用取名字。",
@@ -552,28 +559,28 @@
     "finder_title": "用說的，就找得到",
     "finder_queries": [
       [
-        "時鐘",
-        "clock"
-      ],
-      [
-        "唱盤",
-        "turntable"
-      ],
-      [
-        "廚房用品",
-        "kitchen"
+        "椅子",
+        "chair"
       ],
       [
         "燈",
-        "lamp"
+        "light"
       ],
       [
-        "收音機",
-        "radio"
+        "植物",
+        "plant"
       ],
       [
-        "黑色的東西",
-        "color:black"
+        "綠色的東西",
+        "color:green"
+      ],
+      [
+        "床",
+        "bed"
+      ],
+      [
+        "收納",
+        "storage"
       ]
     ],
     "finder_found": "找到 {n} 件",
@@ -722,7 +729,14 @@
       "coffee": "咖啡",
       "travel": "旅行",
       "brown": "棕色",
-      "yellow": "黃色"
+      "yellow": "黃色",
+      "seating": "座椅",
+      "table": "桌子",
+      "storage": "收納",
+      "bed": "臥室",
+      "decor": "擺飾",
+      "plant": "植物",
+      "textile": "布品"
     },
     "folders_kicker": "資料夾",
     "folders_title": "兩種收法，看你習慣",
@@ -758,7 +772,7 @@
     "cta": "Mac 版をダウンロード",
     "fine": "無料 · 4 MB · macOS 14 以降",
     "fine_open": "初めて開くときは？",
-    "alt_collection": "ミニマルな家電のコレクションをグリッドで表示した Wunder。サイドバーは形式、テーマ、色で自動的に分かれています。",
+    "alt_collection": "北欧風の家具と雑貨のコレクションをグリッドで表示した Wunder。サイドバーは形式、テーマ、色で自動的に分かれています。",
     "s1_label": "Wunder とは",
     "s1_title": "取っておきたいもののための部屋",
     "s1_p1": "画像、リンク、引用、スクリーンショット、ファイル。<kbd>⌘⇧C</kbd> を押せば入ります。フォルダを選ぶことも、名前を付けることもありません。",
@@ -920,28 +934,28 @@
     "finder_title": "言葉にすれば、見つかる",
     "finder_queries": [
       [
-        "時計",
-        "clock"
-      ],
-      [
-        "レコードプレーヤー",
-        "turntable"
-      ],
-      [
-        "キッチン",
-        "kitchen"
+        "椅子",
+        "chair"
       ],
       [
         "ランプ",
-        "lamp"
+        "light"
       ],
       [
-        "ラジオ",
-        "radio"
+        "植物",
+        "plant"
       ],
       [
-        "黒いもの",
-        "color:black"
+        "緑のもの",
+        "color:green"
+      ],
+      [
+        "ベッド",
+        "bed"
+      ],
+      [
+        "収納",
+        "storage"
       ]
     ],
     "finder_found": "{n} 件",
@@ -1090,7 +1104,14 @@
       "coffee": "コーヒー",
       "travel": "旅",
       "brown": "茶色",
-      "yellow": "黄色"
+      "yellow": "黄色",
+      "seating": "椅子",
+      "table": "テーブル",
+      "storage": "収納",
+      "bed": "寝室",
+      "decor": "インテリア小物",
+      "plant": "植物",
+      "textile": "ファブリック"
     },
     "folders_kicker": "フォルダ",
     "folders_title": "ファイルの取り込み方は 2 通り",
@@ -1126,7 +1147,7 @@
     "cta": "Mac용 다운로드",
     "fine": "무료 · 4MB · macOS 14 이상",
     "fine_open": "처음 열 때는?",
-    "alt_collection": "미니멀한 가전 컬렉션을 격자로 보여 주는 Wunder. 사이드바는 형식, 주제, 색상별로 자동 정리되어 있습니다.",
+    "alt_collection": "북유럽풍 가구와 생활 소품 컬렉션을 격자로 보여 주는 Wunder. 사이드바는 형식, 주제, 색상별로 자동 정리되어 있습니다.",
     "s1_label": "Wunder란",
     "s1_title": "간직하고 싶은 모든 것을 위한 방",
     "s1_p1": "사진, 링크, 인용문, 스크린샷, 파일. <kbd>⌘⇧C</kbd>를 누르면 들어옵니다. 폴더를 고를 필요도, 이름을 붙일 필요도 없어요.",
@@ -1288,28 +1309,28 @@
     "finder_title": "말하면, 찾아집니다",
     "finder_queries": [
       [
-        "시계",
-        "clock"
+        "의자",
+        "chair"
       ],
       [
-        "턴테이블",
-        "turntable"
+        "조명",
+        "light"
       ],
       [
-        "주방",
-        "kitchen"
+        "식물",
+        "plant"
       ],
       [
-        "램프",
-        "lamp"
+        "초록색인 것",
+        "color:green"
       ],
       [
-        "라디오",
-        "radio"
+        "침대",
+        "bed"
       ],
       [
-        "검은색인 것",
-        "color:black"
+        "수납",
+        "storage"
       ]
     ],
     "finder_found": "{n}개 찾음",
@@ -1458,7 +1479,14 @@
       "coffee": "커피",
       "travel": "여행",
       "brown": "갈색",
-      "yellow": "노랑"
+      "yellow": "노랑",
+      "seating": "의자",
+      "table": "테이블",
+      "storage": "수납",
+      "bed": "침실",
+      "decor": "소품",
+      "plant": "식물",
+      "textile": "패브릭"
     },
     "folders_kicker": "폴더",
     "folders_title": "파일을 들이는 두 가지 방법",
@@ -1494,7 +1522,7 @@
     "cta": "Descargar para Mac",
     "fine": "Gratis · 4 MB · macOS 14 o posterior",
     "fine_open": "¿Es la primera vez que lo abres?",
-    "alt_collection": "Wunder muestra una colección de electrodomésticos minimalistas en cuadrícula, con la barra lateral ordenada por formatos, temas y colores.",
+    "alt_collection": "Wunder muestra una colección de muebles y objetos nórdicos en cuadrícula, con la barra lateral ordenada por formatos, temas y colores.",
     "s1_label": "Qué es",
     "s1_title": "Una sala para todo lo que quieres conservar",
     "s1_p1": "Imágenes, enlaces, citas, capturas, archivos. Pulsa <kbd>⌘⇧C</kbd> y ya está dentro. Sin carpeta que elegir, sin nombre que escribir.",
@@ -1656,28 +1684,28 @@
     "finder_title": "Descríbelo, y ahí está",
     "finder_queries": [
       [
-        "un reloj",
-        "clock"
-      ],
-      [
-        "tocadiscos",
-        "turntable"
-      ],
-      [
-        "en la cocina",
-        "kitchen"
+        "una silla",
+        "chair"
       ],
       [
         "lámparas",
-        "lamp"
+        "light"
       ],
       [
-        "radios",
-        "radio"
+        "plantas",
+        "plant"
       ],
       [
-        "algo negro",
-        "color:black"
+        "algo verde",
+        "color:green"
+      ],
+      [
+        "camas",
+        "bed"
+      ],
+      [
+        "almacenaje",
+        "storage"
       ]
     ],
     "finder_found": "{n} encontrados",
@@ -1826,7 +1854,14 @@
       "coffee": "Café",
       "travel": "Viajes",
       "brown": "Marrón",
-      "yellow": "Amarillo"
+      "yellow": "Amarillo",
+      "seating": "Asientos",
+      "table": "Mesas",
+      "storage": "Almacenaje",
+      "bed": "Dormitorio",
+      "decor": "Decoración",
+      "plant": "Plantas",
+      "textile": "Textiles"
     },
     "folders_kicker": "Carpetas",
     "folders_title": "Dos formas de traer archivos",
@@ -1862,7 +1897,7 @@
     "cta": "Baixar para Mac",
     "fine": "Grátis · 4 MB · macOS 14 ou posterior",
     "fine_open": "Abrindo pela primeira vez?",
-    "alt_collection": "O Wunder mostrando uma coleção de eletrodomésticos minimalistas em grade, com a barra lateral organizada por formatos, temas e cores.",
+    "alt_collection": "O Wunder mostrando uma coleção de móveis e objetos nórdicos em grade, com a barra lateral organizada por formatos, temas e cores.",
     "s1_label": "O que é",
     "s1_title": "Uma sala para tudo o que você quer guardar",
     "s1_p1": "Imagens, links, citações, capturas de tela, arquivos. Pressione <kbd>⌘⇧C</kbd> e pronto. Nenhuma pasta para escolher, nenhum nome para digitar.",
@@ -2024,28 +2059,28 @@
     "finder_title": "Descreva, e lá está",
     "finder_queries": [
       [
-        "um relógio",
-        "clock"
-      ],
-      [
-        "toca-discos",
-        "turntable"
-      ],
-      [
-        "na cozinha",
-        "kitchen"
+        "uma cadeira",
+        "chair"
       ],
       [
         "luminárias",
-        "lamp"
+        "light"
       ],
       [
-        "rádios",
-        "radio"
+        "plantas",
+        "plant"
       ],
       [
-        "algo preto",
-        "color:black"
+        "algo verde",
+        "color:green"
+      ],
+      [
+        "camas",
+        "bed"
+      ],
+      [
+        "armazenamento",
+        "storage"
       ]
     ],
     "finder_found": "{n} encontrados",
@@ -2194,7 +2229,14 @@
       "coffee": "Café",
       "travel": "Viagem",
       "brown": "Marrom",
-      "yellow": "Amarelo"
+      "yellow": "Amarelo",
+      "seating": "Assentos",
+      "table": "Mesas",
+      "storage": "Armazenamento",
+      "bed": "Quarto",
+      "decor": "Decoração",
+      "plant": "Plantas",
+      "textile": "Têxteis"
     },
     "folders_kicker": "Pastas",
     "folders_title": "Duas formas de trazer arquivos",
