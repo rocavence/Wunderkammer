@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw, ImageFilter
 
 CREAM = (0xF3, 0xE9, 0xD9, 255)
 SIDE, BODY, RADIUS = 1024, (100, 100, 924, 924), 185
-FILL = 0.9  # 主體佔底板的比例
+FILL = 0.76  # 主體佔底板的比例
 
 out = sys.argv[1]
 art = Image.open("scripts/icon/cards-1024.png")
