@@ -374,7 +374,7 @@
     "foot_by": "Designed and built by ",
     "foot_icons": "Icons by",
     "why_kicker": "Why Wunder",
-    "why_p1": "I’ve used plenty of apps like this. Many of them aren’t cheap, and what they do is simple, saving things and finding them again, yet none were nice to use. Some were bare-bones; others tried to do everything, menu after menu, until just learning them wore me out. In the end I stopped opening them.",
+    "why_p1": "I’ve used plenty of apps like this, and many of them aren’t cheap. But they just never felt good to use, and the thing I spent the most time on was, of all things, organizing!",
     "why_p2": "You probably won’t open Wunder every day either, and that’s just right. It sorts your curiosities and hangs them on the wall, so whenever you do open it, there’s a comfortable room waiting. Wander around; no tidying needed, really!"
   },
   "zh-Hant": {
@@ -752,7 +752,7 @@
     "foot_by": "設計與開發：",
     "foot_icons": "圖示來自",
     "why_kicker": "為什麼做 Wunder",
-    "why_p1": "同類的 app 我用過不少。很多都很不便宜，可是它們做的事，收東西、找東西，但是都不好用，有些功能陽春，另一些什麼都想做，選單一層接一層，光是學怎麼用就累了，最後我乾脆不打開。",
+    "why_p1": "同類的 App 我用過不少，很多其實都不便宜。但用下來就是覺得不好用，而且花最多時間的竟然是整理！",
     "why_p2": "Wunder 你大概也不會天天打開，這樣剛好，它會把你的「珍奇」分門別類擺好掛上牆，哪天想到再打開，就是一個舒服的展室，你就隨意逛逛，不整理也完全沒問題！"
   },
   "ja": {
@@ -1130,7 +1130,7 @@
     "foot_by": "デザインと開発：",
     "foot_icons": "アイコン：",
     "why_kicker": "Wunder をつくった理由",
-    "why_p1": "同じような app はたくさん使ってきました。どれも安くはないのに、やることは集めて、探すだけ。それなのに使いにくい。機能が物足りないものもあれば、何でもやろうとしてメニューが何層も続き、使い方を覚えるだけで疲れるものも。結局、開かなくなりました。",
+    "why_p1": "同じような App はたくさん使ってきました。実は安くないものばかり。でも使ってみると使いにくくて、いちばん時間を取られたのは、なんと整理でした！",
     "why_p2": "Wunder もたぶん毎日は開かないでしょう。それでちょうどいいんです。あなたの「珍品」を分類して壁に飾っておくので、思い出して開けば、そこは居心地のいい展示室。気ままに見て回るだけで、整理しなくてもまったく大丈夫！"
   },
   "ko": {
@@ -1508,7 +1508,7 @@
     "foot_by": "디자인과 개발: ",
     "foot_icons": "아이콘:",
     "why_kicker": "Wunder를 만든 이유",
-    "why_p1": "비슷한 앱을 꽤 써 봤습니다. 대부분 싸지 않은데, 하는 일은 담고 찾는 것뿐인데도 쓰기 불편했어요. 기능이 너무 단출한 것도 있고, 뭐든 다 하려다 메뉴가 겹겹이 쌓여 사용법을 익히는 것만으로 지치는 것도 있었죠. 결국 아예 열지 않게 됐습니다.",
+    "why_p1": "비슷한 앱을 꽤 써 봤는데, 사실 싼 게 별로 없었어요. 그런데 써 보면 영 불편했고, 가장 많은 시간을 쓴 게 하필 정리였어요!",
     "why_p2": "Wunder도 아마 매일 열지는 않겠죠. 그게 딱 좋아요. 당신의 ‘진기한 것들’을 분류해 벽에 걸어 두니까, 생각날 때 열면 편안한 전시실이 기다립니다. 마음 가는 대로 둘러보세요. 정리 안 해도 전혀 문제없어요!"
   },
   "es": {
@@ -1886,7 +1886,7 @@
     "foot_by": "Diseño y desarrollo: ",
     "foot_icons": "Iconos de",
     "why_kicker": "Por qué Wunder",
-    "why_p1": "He usado muchas apps así. Muchas no son baratas, y lo que hacen es sencillo, guardar cosas y encontrarlas, pero ninguna era cómoda. Unas se quedaban cortas; otras querían hacerlo todo, menú tras menú, y aprender a usarlas ya cansaba. Al final dejé de abrirlas.",
+    "why_p1": "He usado muchas apps así, y muchas no son nada baratas. Pero usarlas nunca era cómodo, y en lo que más tiempo se me iba era, nada menos, ¡en ordenar!",
     "why_p2": "Seguramente tampoco abrirás Wunder cada día, y está bien así. Ordena tus «curiosidades» y las cuelga en la pared, así que cuando lo abras te espera una sala acogedora. Pasea sin prisa; ¡no hace falta ordenar nada!"
   },
   "pt-BR": {
@@ -2264,7 +2264,7 @@
     "foot_by": "Design e desenvolvimento: ",
     "foot_icons": "Ícones de",
     "why_kicker": "Por que Wunder",
-    "why_p1": "Já usei vários apps assim. Muitos não são baratos, e o que fazem é simples, guardar coisas e achar de novo, mas nenhum era bom de usar. Uns eram básicos demais; outros queriam fazer tudo, menu atrás de menu, e só aprender a usar já cansava. No fim, parei de abrir.",
+    "why_p1": "Já usei vários apps assim, e muitos nem são baratos. Mas no uso nunca eram bons, e o que mais tomava meu tempo era, imagine só, organizar!",
     "why_p2": "Você provavelmente também não vai abrir o Wunder todo dia, e tudo bem. Ele separa suas “curiosidades” e pendura na parede, então quando abrir, vai encontrar uma sala aconchegante. É só passear; não precisa arrumar nada!"
   }
 }
