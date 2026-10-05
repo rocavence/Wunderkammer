@@ -235,9 +235,16 @@
 </main>
 
 <footer>
-  <span>© 2026 {{name}}</span>
-  <a href="https://github.com/rocavence/Wunderkammer">GitHub</a>
-  <a href="https://github.com/rocavence/Wunderkammer/releases">{{footer_releases}}</a>
+  <div class="by">
+    <img src="{{root}}assets/avatar.png" alt="" width="22" height="22" loading="lazy" decoding="async">
+    <span>{{foot_by}}<a href="https://github.com/rocavence" target="_blank" rel="noopener">@rocavence</a></span>
+  </div>
+  <p class="foot-links">
+    <span>© 2026 {{name}}</span>
+    <a href="https://github.com/rocavence/Wunderkammer">GitHub</a>
+    <a href="https://github.com/rocavence/Wunderkammer/releases">{{footer_releases}}</a>
+    <span>{{foot_icons}} <a href="https://iconoir.com" target="_blank" rel="noopener">Iconoir</a></span>
+  </p>
 </footer>
 
 <div class="toast" role="status" aria-live="polite">

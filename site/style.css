@@ -891,12 +891,17 @@ footer {
   margin: 0 auto;
   padding: 50px 20px 60px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 18px;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   color: var(--faint);
   font-size: 14px;
 }
+footer .by { display: flex; align-items: center; gap: 8px; color: var(--soft); }
+footer .by img { width: 22px; height: 22px; border-radius: 50%; }
+footer .by a { color: var(--ink); text-decoration: none; }
+footer .by a:hover { text-decoration: underline; }
+.foot-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; margin: 0; }
 footer a { color: var(--soft); text-decoration: none; }
 footer a:hover { color: var(--ink); }
 
