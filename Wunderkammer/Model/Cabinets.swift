@@ -9,7 +9,8 @@ final class Cabinets {
     struct Entry: Codable, Equatable, Identifiable, Sendable {
         var id: UUID
         var name: String
-        /// Relative to the base folder; "" is the base itself (the original library).
+        /// Relative to the base folder; "" is the base itself (the original
+        /// library). A full path is a 展室 kept in iCloud Drive.
         var folder: String
         /// Folders whose files come in by themselves (and leave with them).
         var watched: [String]? = nil
@@ -54,7 +55,96 @@ final class Cabinets {
     var current: Entry { entries.first { $0.id == currentID } ?? entries[0] }
 
     func root(of entry: Entry) -> URL {
-        entry.folder.isEmpty ? base : base.appendingPathComponent(entry.folder, isDirectory: true)
+        if entry.folder.hasPrefix("/") { return URL(fileURLWithPath: entry.folder, isDirectory: true) }
+        return entry.folder.isEmpty ? base : base.appendingPathComponent(entry.folder, isDirectory: true)
+    }
+
+    // MARK: iCloud
+
+    /// Wunder's folder in iCloud Drive; nil when iCloud Drive is off on this Mac.
+    static var cloudBase: URL? {
+        if let test = ProcessInfo.processInfo.environment["WK_CLOUD_BASE"] { return URL(fileURLWithPath: test, isDirectory: true) }
+        let drive = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Mobile Documents/com~apple~CloudDocs")
+        guard FileManager.default.fileExists(atPath: drive.path) else { return nil }
+        return drive.appendingPathComponent("Wunder", isDirectory: true)
+    }
+
+    func isInCloud(_ id: UUID) -> Bool { entries.first { $0.id == id }?.folder.hasPrefix("/") == true }
+
+    /// What a 展室 is made of; the rest of its folder is work to redo (caches) or other 展室.
+    private static let parts = ["library.json", "originals", "thumbnails", "archives", "cover.jpg"]
+    /// Worked out again on each Mac, so not sent to iCloud.
+    private static let caches = ["featureprints", "embeddings", "backups", "trail.json"]
+
+    private func cacheDir(_ id: UUID) -> URL {
+        Library.defaultRoot.appendingPathComponent("Caches/\(id.uuidString)", isDirectory: true)
+    }
+
+    /// Into iCloud Drive: the 展室's files move there and sync to your other
+    /// Macs; its caches stay on this one. The caller reopens it if it's open.
+    func moveToCloud(_ id: UUID) throws {
+        guard let cloud = Self.cloudBase, let i = entries.firstIndex(where: { $0.id == id }), !isInCloud(id) else { return }
+        let fm = FileManager.default
+        let from = root(of: entries[i]), to = cloud.appendingPathComponent(id.uuidString, isDirectory: true)
+        try fm.createDirectory(at: to, withIntermediateDirectories: true)
+        try fm.createDirectory(at: cacheDir(id), withIntermediateDirectories: true)
+        for part in Self.parts where fm.fileExists(atPath: from.appendingPathComponent(part).path) {
+            try fm.moveItem(at: from.appendingPathComponent(part), to: to.appendingPathComponent(part))
+        }
+        for cache in Self.caches where fm.fileExists(atPath: from.appendingPathComponent(cache).path) {
+            try? fm.moveItem(at: from.appendingPathComponent(cache), to: cacheDir(id).appendingPathComponent(cache))
+        }
+        if !entries[i].folder.isEmpty { try? fm.removeItem(at: from) }
+        entries[i].folder = to.path
+        writeRoomFile(entries[i])
+        save()
+    }
+
+    /// Back to this Mac only: the files come out of iCloud Drive, which takes
+    /// them off your other Macs too.
+    func moveToLocal(_ id: UUID) throws {
+        guard let i = entries.firstIndex(where: { $0.id == id }), isInCloud(id) else { return }
+        let fm = FileManager.default
+        let from = root(of: entries[i]), folder = "Cabinets/\(id.uuidString)"
+        let to = base.appendingPathComponent(folder, isDirectory: true)
+        try fm.createDirectory(at: to, withIntermediateDirectories: true)
+        for part in Self.parts where fm.fileExists(atPath: from.appendingPathComponent(part).path) {
+            try fm.moveItem(at: from.appendingPathComponent(part), to: to.appendingPathComponent(part))
+        }
+        for cache in Self.caches where fm.fileExists(atPath: cacheDir(id).appendingPathComponent(cache).path) {
+            try? fm.moveItem(at: cacheDir(id).appendingPathComponent(cache), to: to.appendingPathComponent(cache))
+        }
+        try? fm.removeItem(at: from)
+        try? fm.removeItem(at: cacheDir(id))
+        entries[i].folder = folder
+        save()
+    }
+
+    /// 展室 in iCloud Drive that this Mac hasn't joined yet (made on another Mac).
+    func cloudRooms() -> [(id: UUID, name: String, folder: URL)] {
+        guard let cloud = Self.cloudBase else { return [] }
+        let mine = Set(entries.map(\.id))
+        return ((try? FileManager.default.contentsOfDirectory(at: cloud, includingPropertiesForKeys: nil)) ?? []).compactMap { dir in
+            guard let data = try? Data(contentsOf: dir.appendingPathComponent("room.json")),
+                  let room = try? JSONDecoder().decode(RoomFile.self, from: data), !mine.contains(room.id) else { return nil }
+            return (room.id, room.name, dir)
+        }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+
+    @discardableResult
+    func join(_ id: UUID, name: String, folder: URL) -> Entry {
+        let entry = Entry(id: id, name: name, folder: folder.standardizedFileURL.path)
+        entries.append(entry)
+        save()
+        return entry
+    }
+
+    /// Lets another Mac see what the 展室 is called before opening it.
+    private struct RoomFile: Codable { var id: UUID; var name: String }
+
+    private func writeRoomFile(_ entry: Entry) {
+        guard entry.folder.hasPrefix("/"), let data = try? JSONEncoder().encode(RoomFile(id: entry.id, name: entry.name)) else { return }
+        try? data.write(to: root(of: entry).appendingPathComponent("room.json"), options: .atomic)
     }
 
     @discardableResult
@@ -70,6 +160,7 @@ final class Cabinets {
     func rename(_ id: UUID, to name: String) {
         guard let i = entries.firstIndex(where: { $0.id == id }), !Self.clean(name).isEmpty else { return }
         entries[i].name = Self.clean(name)
+        writeRoomFile(entries[i])
         save()
     }
 
@@ -80,9 +171,10 @@ final class Cabinets {
     }
 
     /// Out of the list, and its folder to the Trash (recoverable from there).
+    /// One in iCloud only leaves this Mac's list: your other Macs keep it.
     func delete(_ id: UUID) {
         guard canDelete(id), let e = entries.first(where: { $0.id == id }) else { return }
-        try? FileManager.default.trashItem(at: root(of: e), resultingItemURL: nil)
+        if !isInCloud(id) { try? FileManager.default.trashItem(at: root(of: e), resultingItemURL: nil) }
         entries.removeAll { $0.id == id }
         save()
     }

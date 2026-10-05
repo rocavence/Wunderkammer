@@ -26,6 +26,8 @@ xcodebuild -project Wunderkammer.xcodeproj -scheme Wunderkammer -configuration D
   -derivedDataPath build build | grep -E "error:|BUILD FAILED" || true
 APP=build/Build/Products/Debug/Wunder.app/Contents/MacOS/Wunder
 
+# 同步測試用的假 iCloud 雲碟
+[[ "${1:-}" == cloud ]] && export WK_CLOUD_BASE="$PWD/$OUT/cloud" && mkdir -p "$WK_CLOUD_BASE"
 WK_FIXTURE=$FIXTURE WK_APPEARANCE="${WK_APPEARANCE:-}" WK_SELFTEST_ONLY="${1:-}" WK_SELFTEST="$OUT/shots" WK_LIBRARY_ROOT="$OUT/library" "$APP" -AppleLanguages "(\"${WK_LANG:-zh-Hant}\")" > "$OUT/log" 2>&1 &
 PID=$!
 for _ in {1..${WK_SELFTEST_TIMEOUT:-120}}; do

@@ -74,6 +74,8 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
     // Interaction
     var viewCount: Int
     var lastViewed: Date?
+    /// The last change made to it, so two Macs sharing a 展室 keep the later one.
+    var modified: Date?
 
     init(id: UUID = UUID(), kind: Kind, dateAdded: Date = Date(), originalFilename: String,
          pixelWidth: Int, pixelHeight: Int, contentHash: String) {
@@ -130,6 +132,7 @@ struct Item: Codable, Identifiable, Hashable, Sendable {
         analysisVersion = try c.decodeIfPresent(Int.self, forKey: .analysisVersion) ?? 0
         viewCount = try c.decodeIfPresent(Int.self, forKey: .viewCount) ?? 0
         lastViewed = try c.decodeIfPresent(Date.self, forKey: .lastViewed)
+        modified = try c.decodeIfPresent(Date.self, forKey: .modified)
     }
 
     enum Thing: String, Codable, CaseIterable, Sendable {

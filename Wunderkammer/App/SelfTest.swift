@@ -291,6 +291,9 @@ final class SelfTest {
         case "cabinets":
             await cabinetsCheck()
             return finish()
+        case "cloud":
+            await cloudCheck()
+            return finish()
         case "watch":
             await watchCheck()
             return finish()
@@ -1389,6 +1392,81 @@ final class SelfTest {
     }
 
     /// Stage 2: words in pictures, what's in them, similar and related things.
+    /// A 展室 in iCloud Drive (WK_CLOUD_BASE stands in for it): in, a change
+    /// from another Mac merged, a room from another Mac joined, and back out.
+    private func cloudCheck() async {
+        guard let cloud = ProcessInfo.processInfo.environment["WK_CLOUD_BASE"].map({ URL(fileURLWithPath: $0) }) else {
+            return check(false, "WK_CLOUD_BASE is set")
+        }
+        let fm = FileManager.default
+        let id = ui.createCabinetForTest("雲端測試")
+        ui.switchCabinet(to: id)
+        await wait(0.5)
+        await library.capture([.text("A moth pinned in 1887.", origin: nil), .text("A shell from the Indian Ocean.", origin: nil)])
+        await wait(0.6)
+        do { try ui.moveCabinetForTest(id, toCloud: true) } catch { check(false, "moved into iCloud: \(error)") }
+        await wait(0.6)
+        let room = cloud.appendingPathComponent(id.uuidString)
+        check(library.root.standardizedFileURL == room.standardizedFileURL && library.syncs, "the open room now lives in iCloud Drive")
+        check(fm.fileExists(atPath: room.appendingPathComponent("library.json").path) && fm.fileExists(atPath: room.appendingPathComponent("room.json").path),
+              "its library and name are there")
+        check(!fm.fileExists(atPath: room.appendingPathComponent("embeddings").path), "caches stay on this Mac")
+        check(library.items.count == 2, "nothing lost in the move (\(library.items.count))")
+
+        // Another Mac adds something and saves.
+        let json = room.appendingPathComponent("library.json")
+        if let data = try? Data(contentsOf: json), var stored = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           var items = stored["items"] as? [[String: Any]], var copy = items.first {
+            copy["id"] = UUID().uuidString
+            copy["text"] = "Added on the other Mac."
+            copy["title"] = "Added on the other Mac."
+            items.insert(copy, at: 0)
+            stored["items"] = items
+            try? JSONSerialization.data(withJSONObject: stored).write(to: json)
+        }
+        library.mergeFromDisk()
+        await wait(0.4)
+        check(library.items.contains { $0.title == "Added on the other Mac." } && library.items.count == 3,
+              "what the other Mac added shows up here (\(library.items.count))")
+
+        // A room made on another Mac, waiting to be joined.
+        let otherID = UUID()
+        let other = cloud.appendingPathComponent(otherID.uuidString)
+        try? fm.createDirectory(at: other, withIntermediateDirectories: true)
+        try? #"{"id":"\#(otherID.uuidString)","name":"另一台的展室"}"#.write(to: other.appendingPathComponent("room.json"), atomically: true, encoding: .utf8)
+        try? fm.copyItem(at: json, to: other.appendingPathComponent("library.json"))
+        let waiting = ui.cloudRoomsForTest
+        check(waiting.map(\.name) == ["另一台的展室"], "a room from another Mac is offered (\(waiting.map(\.name)))")
+        ui.joinCloudRoomForTest(otherID, name: "另一台的展室", folder: other)
+        ui.switchCabinet(to: otherID)
+        await wait(0.5)
+        check(library.syncs && library.items.count == 3, "joined, it opens with its things (\(library.items.count))")
+        check(ui.cloudRoomsForTest.isEmpty, "and is no longer offered")
+
+        // Back to this Mac only.
+        ui.switchCabinet(to: id)
+        await wait(0.4)
+        do { try ui.moveCabinetForTest(id, toCloud: false) } catch { check(false, "moved back: \(error)") }
+        await wait(0.5)
+        check(!library.syncs && !fm.fileExists(atPath: room.path) && library.items.count == 3,
+              "back on this Mac, out of iCloud Drive, all there (\(library.items.count))")
+        check(ui.cabinetRootForTest(id).map { fm.fileExists(atPath: $0.appendingPathComponent("library.json").path) } == true, "its library is in the local folder")
+
+        // The first 展室 shares its folder with the others: only its own files go, and come back.
+        guard let first = ui.cabinetID(named: "展室") else { return check(false, "the default room is there") }
+        ui.switchCabinet(to: first)
+        await wait(0.5)
+        let before = library.items.count, base = library.root
+        do { try ui.moveCabinetForTest(first, toCloud: true) } catch { check(false, "default room into iCloud: \(error)") }
+        await wait(0.5)
+        check(library.syncs && library.items.count == before && fm.fileExists(atPath: base.appendingPathComponent("cabinets.json").path)
+              && !fm.fileExists(atPath: base.appendingPathComponent("library.json").path),
+              "the default room moves alone, the list of rooms stays (\(library.items.count)/\(before))")
+        do { try ui.moveCabinetForTest(first, toCloud: false) } catch { check(false, "default room back: \(error)") }
+        await wait(0.5)
+        check(!library.syncs && library.items.count == before, "and comes back whole (\(library.items.count)/\(before))")
+    }
+
     private func showcase() async {
         let fm = FileManager.default
         guard let dir = ProcessInfo.processInfo.environment["WK_SAMPLES_DIR"].map({ URL(fileURLWithPath: $0) }),
@@ -1698,6 +1776,10 @@ protocol SelfTestUI: AnyObject {
     var watchedFoldersForTest: [URL] { get }
     var viewBarTipsForTest: [String] { get }
     func viewBarChoicesForTest(_ tip: String) -> [String]
+    func moveCabinetForTest(_ id: UUID, toCloud: Bool) throws
+    var cloudRoomsForTest: [(id: UUID, name: String, folder: URL)] { get }
+    func joinCloudRoomForTest(_ id: UUID, name: String, folder: URL)
+    func cabinetRootForTest(_ id: UUID) -> URL?
     var semanticOfferForTest: String? { get }
     var semanticLoadedForTest: Bool { get }
     func installSemanticForTest()

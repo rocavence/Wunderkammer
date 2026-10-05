@@ -9,6 +9,9 @@ final class CabinetsPanel: NSObject {
     var onSwitch: ((UUID) -> Void)?
     /// A 展室 was added, renamed or removed.
     var onChange: (() -> Void)?
+    /// A 展室's files are about to move (into or out of iCloud Drive), and then have.
+    var onWillMove: ((UUID) -> Void)?
+    var onMoved: ((UUID) -> Void)?
 
     private let cabinets: Cabinets
     private let count: (Cabinets.Entry) -> Int
@@ -107,7 +110,7 @@ final class CabinetsPanel: NSObject {
             let card = CabinetCard(name: entry.name, count: count(entry), isCurrent: entry.id == cabinets.currentID,
                                    isDefault: entry.folder.isEmpty, canDelete: cabinets.canDelete(entry.id),
                                    cover: cover(of: entry),
-                                   watching: watched.count, vault: vault)
+                                   watching: watched.count, vault: vault, cloud: cabinets.isInCloud(entry.id))
             card.onOpen = { [weak self] in self?.open(entry.id) }
             card.onEdit = { [weak self] in self?.openSettings(entry.id) }
             card.onDelete = { [weak self] in self?.delete(entry) }
@@ -115,6 +118,19 @@ final class CabinetsPanel: NSObject {
             if entry.id == flipped { card.turnAway(animated: false) }
             cardsByID[entry.id] = card
             return card
+        }
+        // Made on another Mac and waiting in iCloud Drive: a click joins and opens it.
+        for room in cabinets.cloudRooms() {
+            let card = CabinetCard(name: room.name, count: Library.storedCount(at: room.folder), isCurrent: false, isDefault: false,
+                                   canDelete: false, cover: CabinetCover.mosaic(Library.storedCovers(at: room.folder), seed: room.id),
+                                   joinable: true)
+            card.onOpen = { [weak self] in
+                guard let self else { return }
+                self.cabinets.join(room.id, name: room.name, folder: room.folder)
+                self.onChange?()
+                self.open(room.id)
+            }
+            cards.append(card)
         }
         if drafting {
             let draft = CabinetCard(name: "", count: 0, isCurrent: false, isDefault: false, canDelete: false,
@@ -206,7 +222,8 @@ final class CabinetsPanel: NSObject {
     private func refreshSettings() {
         guard let id = flipped, let entry = cabinets.entries.first(where: { $0.id == id }) else { return }
         settings.show(name: entry.name, count: count(entry), cover: cover(of: entry, size: CGSize(width: 152, height: 152)), customCover: cabinets.coverURL(id) != nil,
-                      folders: cabinets.watched(id), vault: cabinets.vault(id), maxFolders: Cabinets.maxWatched)
+                      folders: cabinets.watched(id), vault: cabinets.vault(id), maxFolders: Cabinets.maxWatched,
+                      cloud: Cabinets.cloudBase == nil ? nil : cabinets.isInCloud(id))
     }
 
     /// The chosen picture (filling the frame), else the newest pieces.
@@ -256,6 +273,10 @@ final class CabinetsPanel: NSObject {
             self.cabinets.unwatch(folder, in: id)
             self.layoutCardsKeepingScroll()
             self.onChange?()
+        }
+        settings.onCloud = { [weak self] on in
+            guard let self, let id = self.flipped, let entry = self.cabinets.entries.first(where: { $0.id == id }) else { return }
+            self.confirmCloud(on, for: entry)
         }
         settings.onKeepFiles = { [weak self] keep in
             guard let self, let id = self.flipped, let entry = self.cabinets.entries.first(where: { $0.id == id }) else { return }
@@ -343,6 +364,44 @@ final class CabinetsPanel: NSObject {
         }
     }
 
+    // MARK: iCloud
+
+    private func confirmCloud(_ on: Bool, for entry: Cabinets.Entry) {
+        let alert = NSAlert()
+        if on {
+            alert.messageText = String(localized: "在 iCloud 同步「\(entry.name)」？")
+            var lines = [String(localized: "展室會搬到 iCloud 雲碟的 Wunder 資料夾，你登入同一個 Apple 帳號的 Mac 都能打開。")]
+            if referenced(entry) > 0 || !cabinets.watched(entry.id).isEmpty || cabinets.vault(entry.id) != nil {
+                lines.append(String(localized: "留在原處的檔案不會搬：其他 Mac 看得到縮圖，打開原檔要回到這台。"))
+            }
+            alert.informativeText = lines.joined(separator: "\n")
+            alert.addButton(withTitle: String(localized: "開始同步"))
+        } else {
+            alert.messageText = String(localized: "「\(entry.name)」改回只存在這台 Mac？")
+            alert.informativeText = String(localized: "展室會從 iCloud 雲碟搬回這台 Mac，其他 Mac 上就看不到了。")
+            alert.addButton(withTitle: String(localized: "搬回這台 Mac"))
+        }
+        alert.addButton(withTitle: String(localized: "取消"))
+        alert.beginSheetModal(for: sheet) { [weak self] response in
+            guard let self else { return }
+            if response == .alertFirstButtonReturn {
+                self.onWillMove?(entry.id)
+                do {
+                    if on { try self.cabinets.moveToCloud(entry.id) } else { try self.cabinets.moveToLocal(entry.id) }
+                } catch {
+                    let failed = NSAlert()
+                    failed.messageText = String(localized: "沒有搬成")
+                    failed.informativeText = error.localizedDescription
+                    failed.beginSheetModal(for: self.sheet)
+                }
+                self.onMoved?(entry.id)
+                self.onChange?()
+            }
+            self.refreshSettings()
+            self.layoutCardsKeepingScroll()
+        }
+    }
+
     private func addFolder(to id: UUID) {
         let open = NSOpenPanel()
         open.canChooseDirectories = true
@@ -367,9 +426,11 @@ final class CabinetsPanel: NSObject {
     private func delete(_ entry: Cabinets.Entry) {
         guard cabinets.canDelete(entry.id) else { return }
         let alert = NSAlert()
-        alert.messageText = String(localized: "刪除「\(entry.name)」？")
-        alert.informativeText = String(localized: "裡面的 \(count(entry)) 件收藏會一起移到垃圾桶，清空垃圾桶前都還能找回來。")
-        alert.addButton(withTitle: String(localized: "刪除"))
+        let cloud = cabinets.isInCloud(entry.id)
+        alert.messageText = cloud ? String(localized: "從這台 Mac 移除「\(entry.name)」？") : String(localized: "刪除「\(entry.name)」？")
+        alert.informativeText = cloud ? String(localized: "它還在 iCloud 雲碟，其他 Mac 照常使用；之後可以在展室裡重新加入。")
+            : String(localized: "裡面的 \(count(entry)) 件收藏會一起移到垃圾桶，清空垃圾桶前都還能找回來。")
+        alert.addButton(withTitle: cloud ? String(localized: "移除") : String(localized: "刪除"))
         alert.addButton(withTitle: String(localized: "取消"))
         alert.buttons.first?.hasDestructiveAction = true
         alert.beginSheetModal(for: sheet) { [weak self] response in
@@ -419,11 +480,12 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
     private var finish: ((String?) -> Void)?
 
     init(name: String, count: Int, isCurrent: Bool, isDefault: Bool, canDelete: Bool, cover: CGImage?,
-         watching: Int = 0, vault: URL? = nil, isDraft: Bool = false) {
+         watching: Int = 0, vault: URL? = nil, isDraft: Bool = false, cloud: Bool = false, joinable: Bool = false) {
         self.originalName = name
         let held = count == 0 ? String(localized: "還沒有收藏") : String(localized: "\(count) 件收藏")
         let files = vault.map { String(localized: " · 收進「\($0.lastPathComponent)」") } ?? (watching > 0 ? String(localized: " · 連結 \(watching) 個資料夾") : "")
-        detail = NSTextField(labelWithString: isDraft ? String(localized: "按 Return 建立，Esc 取消") : held + files)
+        detail = NSTextField(labelWithString: isDraft ? String(localized: "按 Return 建立，Esc 取消")
+                             : joinable ? String(localized: "在別台 Mac 建立 · 點一下加入") : held + files)
         super.init(frame: .zero)
         wantsLayer = true
         layer?.cornerRadius = 16
@@ -461,6 +523,7 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
         var badges: [NSView] = []
         if isCurrent { badges.append(Self.pill(String(localized: "目前"), fill: .accent, text: .white)) }
         if isDefault { badges.append(Self.pill(String(localized: "預設"), fill: NSColor.black.withAlphaComponent(0.5), text: .white)) }
+        if cloud || joinable { badges.append(Self.pill("iCloud", fill: NSColor.black.withAlphaComponent(0.5), text: .white)) }
         let badgeRow = NSStackView(views: badges)
         badgeRow.spacing = 6
         views.append(badgeRow)
@@ -468,10 +531,11 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
         // Rename and remove, always in view beside the name. The default
         // 展室 has no remove; the open one can't be removed while open.
         var tools: [NSView] = []
-        if !isDraft {
+        if !isDraft && !joinable {
             tools.append(CardTool(icon: .edit, tip: String(localized: "編輯：名稱與檔案"), destructive: false) { [weak self] in self?.onEdit?() })
             if !isDefault {
-                let trash = CardTool(icon: .trash, tip: canDelete ? String(localized: "刪除") : String(localized: "要先打開別的展室，才能刪除這個"),
+                let trash = CardTool(icon: .trash, tip: !canDelete ? String(localized: "要先打開別的展室，才能刪除這個")
+                                     : cloud ? String(localized: "從這台 Mac 移除") : String(localized: "刪除"),
                                      destructive: true) { [weak self] in self?.onDelete?() }
                 trash.isEnabled = canDelete
                 tools.append(trash)
@@ -505,7 +569,11 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
             toolRow.centerYAnchor.constraint(equalTo: nameField.centerYAnchor),
             detail.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -14),
         ])
-        if !isDraft {
+        if joinable {
+            setAccessibilityElement(true)
+            setAccessibilityRole(.button)
+            setAccessibilityLabel(String(localized: "加入 iCloud 上的「\(name)」"))
+        } else if !isDraft {
             setAccessibilityElement(true)
             setAccessibilityRole(.button)
             setAccessibilityLabel(String(localized: "\(name)，\(count) 件收藏") + (isCurrent ? String(localized: "，目前開著") : ""))
@@ -889,6 +957,8 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
     var onKeepFiles: ((Bool) -> Void)?
     var onChooseCover: (() -> Void)?
     var onResetCover: (() -> Void)?
+    /// true: into iCloud Drive; false: back to this Mac.
+    var onCloud: ((Bool) -> Void)?
 
     static let width: CGFloat = 480
     private static let pad: CGFloat = 28
@@ -901,6 +971,7 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
     private let linkTile = ChoiceTile(icon: .link, title: String(localized: "連結資料夾"), detail: String(localized: "檔案留在原處。連結的資料夾裡有新檔案，會自動收進來。"))
     private let keepTile = ChoiceTile(icon: .box, title: String(localized: "收進展室"), detail: String(localized: "每個收進來的檔案，都複製一份到你選的資料夾。"))
     private let detail = NSStackView()
+    private let cloudRow = NSStackView()
     private var currentName = ""
 
     init() {
@@ -956,14 +1027,19 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
         let footer = NSStackView(views: [NSView(), done])
         footer.distribution = .fill
 
-        let body = NSStackView(views: [header, Self.caption(String(localized: "名稱")), nameField, Self.caption(String(localized: "收藏的檔案")), tiles, detail, footer])
+        cloudRow.orientation = .horizontal
+        cloudRow.alignment = .centerY
+        cloudRow.spacing = 12
+        let body = NSStackView(views: [header, Self.caption(String(localized: "名稱")), nameField, Self.caption(String(localized: "收藏的檔案")), tiles, detail,
+                                       Self.caption(String(localized: "同步")), cloudRow, footer])
         body.orientation = .vertical
         body.alignment = .leading
         body.spacing = 8
         body.setCustomSpacing(24, after: header)
         body.setCustomSpacing(22, after: nameField)
         body.setCustomSpacing(14, after: tiles)
-        body.setCustomSpacing(24, after: detail)
+        body.setCustomSpacing(22, after: detail)
+        body.setCustomSpacing(24, after: cloudRow)
         body.edgeInsets = NSEdgeInsets(top: Self.pad, left: Self.pad, bottom: 22, right: Self.pad)
         body.translatesAutoresizingMaskIntoConstraints = false
         addSubview(body)
@@ -979,6 +1055,7 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
             nameField.widthAnchor.constraint(equalToConstant: inner),
             tiles.widthAnchor.constraint(equalToConstant: inner),
             detail.widthAnchor.constraint(equalToConstant: inner),
+            cloudRow.widthAnchor.constraint(equalToConstant: inner),
             footer.widthAnchor.constraint(equalToConstant: inner),
             heading.widthAnchor.constraint(lessThanOrEqualToConstant: inner - 70),
         ])
@@ -1010,7 +1087,19 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
         return t
     }
 
-    func show(name: String, count: Int, cover: CGImage?, customCover: Bool, folders: [URL], vault: URL?, maxFolders: Int) {
+    /// `cloud`: nil when iCloud Drive is off on this Mac.
+    func show(name: String, count: Int, cover: CGImage?, customCover: Bool, folders: [URL], vault: URL?, maxFolders: Int, cloud: Bool?) {
+        cloudRow.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        let about = NSTextField(wrappingLabelWithString: cloud == nil
+            ? String(localized: "這台 Mac 沒有開啟 iCloud 雲碟。到「系統設定 → Apple 帳號 → iCloud」打開後，就能在你的 Mac 之間同步。")
+            : String(localized: "在你登入同一個 Apple 帳號的 Mac 之間同步這個展室。"))
+        about.font = .systemFont(ofSize: 12)
+        about.textColor = .secondaryLabelColor
+        about.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        cloudRow.addArrangedSubview(about)
+        if let cloud {
+            cloudRow.addArrangedSubview(PillSwitch(on: cloud) { [weak self] on in self?.onCloud?(on) })
+        }
         coverActions.arrangedSubviews.forEach { $0.removeFromSuperview() }
         coverActions.addArrangedSubview(Self.link(String(localized: "更換封面…")) { [weak self] in self?.onChooseCover?() })
         if customCover { coverActions.addArrangedSubview(Self.link(String(localized: "恢復自動")) { [weak self] in self?.onResetCover?() }) }

@@ -165,9 +165,9 @@ final class Understanding {
 
     init(library: Library) {
         self.library = library
-        printsDir = library.root.appendingPathComponent("featureprints")
+        printsDir = library.cacheRoot.appendingPathComponent("featureprints")
         try? FileManager.default.createDirectory(at: printsDir, withIntermediateDirectories: true)
-        embeddingsDir = library.root.appendingPathComponent("embeddings")
+        embeddingsDir = library.cacheRoot.appendingPathComponent("embeddings")
         try? FileManager.default.createDirectory(at: embeddingsDir, withIntermediateDirectories: true)
         semantic = SemanticIndex(modelsDir: Self.modelsDir)
         embeddingFiles = Set((try? FileManager.default.contentsOfDirectory(atPath: embeddingsDir.path)) ?? [])
@@ -188,8 +188,8 @@ final class Understanding {
 
     /// The library opened another cabinet: its own fingerprints and embeddings.
     func libraryChanged() {
-        printsDir = library.root.appendingPathComponent("featureprints")
-        embeddingsDir = library.root.appendingPathComponent("embeddings")
+        printsDir = library.cacheRoot.appendingPathComponent("featureprints")
+        embeddingsDir = library.cacheRoot.appendingPathComponent("embeddings")
         for dir in [printsDir, embeddingsDir] { try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true) }
         prints = [:]
         embeddings = [:]

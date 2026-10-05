@@ -71,6 +71,18 @@ final class Library {
         save()
     }
     private var byID: [UUID: Int] = [:]
+
+    /// Kept in iCloud Drive: read and written with file coordination, and
+    /// merged with whatever the other Mac saved (LibrarySync).
+    private(set) var syncs = false
+    /// What was on disk when this Mac last read or wrote it (items and boards).
+    private var known: Set<UUID> = []
+    /// library.json as this Mac last read or wrote it, to tell when the other Mac saved.
+    private var lastOnDisk: Data?
+    private var presenter: LibraryFilePresenter?
+    /// Fingerprints, meaning vectors and backups: worked out again on each
+    /// Mac, so a synced 展室 keeps them here rather than in iCloud.
+    private(set) var cacheRoot: URL
     /// Visually similar items, supplied by the understanding layer.
     var similarity: ((UUID) -> [Item])?
     /// The trail's most recent items, newest first.
@@ -81,8 +93,10 @@ final class Library {
     static let defaultRoot = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         .appendingPathComponent("Wunderkammer")
 
-    init(root: URL = defaultRoot) {
+    init(root: URL = defaultRoot, syncs: Bool = false) {
         self.root = root
+        self.syncs = syncs
+        cacheRoot = Self.cacheRoot(for: root, syncs: syncs)
         originalsDir = root.appendingPathComponent("originals")
         thumbnailsDir = root.appendingPathComponent("thumbnails")
         archivesDir = root.appendingPathComponent("archives")
@@ -90,6 +104,14 @@ final class Library {
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         }
         load()
+        watchCloud()
+    }
+
+    private static func cacheRoot(for root: URL, syncs: Bool) -> URL {
+        guard syncs else { return root }
+        let dir = defaultRoot.appendingPathComponent("Caches/\(root.lastPathComponent)", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
     }
 
     /// The newest few pictures of the library at `root`, for a cover, without opening it.
@@ -114,9 +136,15 @@ final class Library {
 
     /// Another cabinet: this one is saved as it is, then everything is read
     /// from `newRoot`. Views follow through didChange.
-    func open(root newRoot: URL) {
-        guard newRoot.standardizedFileURL != root.standardizedFileURL else { return }
-        save()
+    /// `saveFirst` false: the files already moved away, so nothing is written to the old place.
+    func open(root newRoot: URL, syncs newSyncs: Bool = false, saveFirst: Bool = true) {
+        guard newRoot.standardizedFileURL != root.standardizedFileURL || newSyncs != syncs else { return }
+        if saveFirst { save() } else { saveWork?.cancel(); saveWork = nil }
+        stopWatchingCloud()
+        syncs = newSyncs
+        cacheRoot = Self.cacheRoot(for: newRoot, syncs: newSyncs)
+        known = []
+        lastOnDisk = nil
         items = []
         collections = []
         canvases = [:]
@@ -132,6 +160,7 @@ final class Library {
         }
         load()
         reindex()
+        watchCloud()
         NotificationCenter.default.post(name: Self.didChange, object: self)
     }
 
@@ -150,7 +179,7 @@ final class Library {
     private(set) var loadFailed = false
 
     private func load() {
-        guard let data = try? Data(contentsOf: jsonURL) else { return }
+        guard let data = read(jsonURL) else { return }
         let stored: Stored
         do {
             stored = try JSONDecoder().decode(Stored.self, from: data)
@@ -167,12 +196,17 @@ final class Library {
         canvases = stored.canvases ?? [:]
         canvasLinks = stored.links ?? [:]
         canvasSnapshots = stored.snapshots ?? [:]
+        known = Set(items.map(\.id) + collections.map(\.id))
         reindex()
+        if syncs {
+            lastOnDisk = data
+            mergeConflicts()
+        }
     }
 
     /// One copy of library.json per day in backups/, the last 7 kept.
     private func backUp(_ data: Data) {
-        let dir = root.appendingPathComponent("backups")
+        let dir = cacheRoot.appendingPathComponent("backups")
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         let f = DateFormatter()
         f.dateFormat = "yyyy-MM-dd"
@@ -182,14 +216,100 @@ final class Library {
         for old in all.dropLast(7) { try? FileManager.default.removeItem(at: dir.appendingPathComponent(old)) }
     }
 
+    private func encoded() -> Data? {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        return try? encoder.encode(Stored(items: items, collections: collections, canvases: canvases, links: canvasLinks,
+                                          snapshots: canvasSnapshots))
+    }
+
     func save() {
         saveWork?.cancel()
         saveWork = nil
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        if let data = try? encoder.encode(Stored(items: items, collections: collections, canvases: canvases, links: canvasLinks,
-                                                  snapshots: canvasSnapshots)) {
-            try? data.write(to: jsonURL, options: .atomic)
+        // Synced: whatever the other Mac saved since is taken in first, so
+        // writing never drops it; and nothing is written if nothing differs.
+        let onDisk = syncs ? read(jsonURL) : nil
+        if let onDisk, onDisk != lastOnDisk, let theirs = try? JSONDecoder().decode(Stored.self, from: onDisk) { absorb(theirs) }
+        guard let data = encoded() else { return }
+        if data != onDisk { write(data, to: jsonURL) }
+        lastOnDisk = syncs ? data : nil
+        known = Set(items.map(\.id) + collections.map(\.id))
+    }
+
+    // MARK: iCloud
+
+    private func read(_ url: URL) -> Data? {
+        guard syncs else { return try? Data(contentsOf: url) }
+        var data: Data?
+        NSFileCoordinator(filePresenter: presenter).coordinate(readingItemAt: url, options: [], error: nil) { data = try? Data(contentsOf: $0) }
+        return data
+    }
+
+    private func write(_ data: Data, to url: URL) {
+        guard syncs else { try? data.write(to: url, options: .atomic); return }
+        NSFileCoordinator(filePresenter: presenter).coordinate(writingItemAt: url, options: .forReplacing, error: nil) {
+            try? data.write(to: $0, options: .atomic)
+        }
+    }
+
+    private func watchCloud() {
+        guard syncs else { return }
+        let p = LibraryFilePresenter(jsonURL) { [weak self] in self?.mergeFromDisk() }
+        NSFileCoordinator.addFilePresenter(p)
+        presenter = p
+        fetchFromCloud()
+    }
+
+    private func stopWatchingCloud() {
+        if let presenter { NSFileCoordinator.removeFilePresenter(presenter) }
+        presenter = nil
+    }
+
+    /// The other Mac saved: put its copy together with this one, then save the result.
+    func mergeFromDisk() {
+        guard syncs else { return }
+        mergeConflicts()
+        save()
+        fetchFromCloud()
+    }
+
+    /// Puts the other copy together with this one, in memory.
+    private func absorb(_ theirs: Stored) {
+        let before = items
+        items = LibrarySync.merge(local: items, remote: theirs.items, known: known)
+        collections = LibrarySync.merge(local: collections, remote: theirs.collections ?? [], known: known)
+        canvases = LibrarySync.merge(local: canvases, remote: theirs.canvases ?? [:])
+        canvasLinks = LibrarySync.merge(local: canvasLinks, remote: theirs.links ?? [:])
+        canvasSnapshots = LibrarySync.merge(local: canvasSnapshots, remote: theirs.snapshots ?? [:])
+        reindex()
+        if items != before { NotificationCenter.default.post(name: Self.didChange, object: self) }
+    }
+
+    /// iCloud keeps both copies when two Macs saved at once; each is merged in, then let go.
+    private func mergeConflicts() {
+        for version in NSFileVersion.unresolvedConflictVersionsOfItem(at: jsonURL) ?? [] {
+            if let data = try? Data(contentsOf: version.url), let theirs = try? JSONDecoder().decode(Stored.self, from: data) {
+                absorb(theirs)
+            }
+            version.isResolved = true
+        }
+        try? NSFileVersion.removeOtherVersionsOfItem(at: jsonURL)
+    }
+
+    /// Pictures iCloud hasn't brought to this Mac yet (or put away to save
+    /// space) are asked for; the views redraw as they arrive.
+    private func fetchFromCloud() {
+        let fm = FileManager.default
+        var asked = 0
+        for dir in [thumbnailsDir, originalsDir, archivesDir] {
+            for name in (try? fm.contentsOfDirectory(atPath: dir.path)) ?? [] where name.hasPrefix(".") && name.hasSuffix(".icloud") {
+                let real = dir.appendingPathComponent(String(name.dropFirst().dropLast(".icloud".count)))
+                if (try? fm.startDownloadingUbiquitousItem(at: real)) != nil { asked += 1 }
+            }
+        }
+        guard asked > 0 else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in
+            MainActor.assumeIsolated { NotificationCenter.default.post(name: Self.didChange, object: self) }
         }
     }
 
@@ -242,6 +362,7 @@ final class Library {
     func update(_ id: UUID, notify: Bool = true, _ change: (inout Item) -> Void) {
         guard let i = byID[id] else { return }
         change(&items[i])
+        items[i].modified = Date()
         saveSoon()
         if notify { NotificationCenter.default.post(name: Self.didChange, object: self) }
     }
@@ -384,6 +505,13 @@ final class Library {
                 try? fm.removeItem(at: thumbnailsDir.appendingPathComponent(file))
             }
         }
+    }
+
+    /// Puts an item in as it is (tests).
+    func addForTest(_ item: Item) {
+        items.insert(item, at: 0)
+        reindex()
+        save()
     }
 
     // MARK: Canvas

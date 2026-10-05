@@ -47,7 +47,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     /// The 展室 on this Mac; the library is whichever one is open.
     private let cabinets = Cabinets(base: ProcessInfo.processInfo.environment["WK_LIBRARY_ROOT"].map { URL(fileURLWithPath: $0) }
         ?? Library.defaultRoot)
-    private lazy var library = Library(root: cabinets.root(of: cabinets.current))
+    private lazy var library = Library(root: cabinets.root(of: cabinets.current), syncs: cabinets.isInCloud(cabinets.currentID))
     private lazy var folderWatcher = FolderWatcher(library: library)
     private let thumbnailer = Thumbnailer()
     private(set) var sidebar: SidebarViewController!
@@ -90,7 +90,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private var forwardTo: NSRunningApplication?
     private let quickLook = QuickLookHost()
     private var understanding: Understanding!
-    private lazy var trail = Trail(root: library.root)
+    private lazy var trail = Trail(root: library.cacheRoot)
     /// How the next opened item was reached (set by R, related clicks…).
     private var pendingVia: Trail.Via?
     private var spotlight: SpotlightIndexer?
@@ -1339,6 +1339,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
                                   referenced: { [weak self] entry in self?.referencedCount(of: entry) ?? 0 })
         panel.onSwitch = { [weak self] id in self?.switchCabinet(to: id) }
         panel.onChange = { [weak self] in self?.cabinetsChanged() }
+        panel.onWillMove = { [weak self] id in self?.cabinetWillMove(id) }
+        panel.onMoved = { [weak self] id in self?.cabinetMoved(id) }
         cabinetsPanel = panel
         panel.present(on: window)
     }
@@ -1361,6 +1363,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         return library.items.sorted { $0.dateAdded > $1.dateAdded }.prefix(4).map(library.thumbnailURL)
     }
 
+    /// The open 展室's files are about to move: everything is written first.
+    private func cabinetWillMove(_ id: UUID) {
+        guard id == cabinets.currentID else { return }
+        library.save()
+        trail.save()
+    }
+
+    /// …and have moved: it's read again from its new place.
+    private func cabinetMoved(_ id: UUID) {
+        guard id == cabinets.currentID else { return }
+        library.open(root: cabinets.root(of: cabinets.current), syncs: cabinets.isInCloud(id), saveFirst: false)
+        trail = Trail(root: library.cacheRoot)
+        understanding.libraryChanged()
+    }
+
     /// Opens another cabinet in place: the same window, its own things.
     func switchCabinet(to id: UUID) {
         guard id != cabinets.currentID, let entry = cabinets.entries.first(where: { $0.id == id }) else { return }
@@ -1368,9 +1385,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         hideAnswerBanner()
         trail.save()
         cabinets.select(id)
-        library.open(root: cabinets.root(of: entry))
+        library.open(root: cabinets.root(of: entry), syncs: cabinets.isInCloud(entry.id))
         library.renameColours()
-        trail = Trail(root: library.root)
+        trail = Trail(root: library.cacheRoot)
         understanding.libraryChanged()
         topBar.searchField.stringValue = ""
         setSearchExpanded(false)
@@ -1405,6 +1422,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     // Tests switch cabinets the way the menu does.
     var cabinetNames: [String] { cabinets.entries.map(\.name) }
     func createCabinetForTest(_ name: String) -> UUID { cabinets.create(named: name).id }
+    func moveCabinetForTest(_ id: UUID, toCloud: Bool) throws {
+        cabinetWillMove(id)
+        if toCloud { try cabinets.moveToCloud(id) } else { try cabinets.moveToLocal(id) }
+        cabinetMoved(id)
+    }
+    var cloudRoomsForTest: [(id: UUID, name: String, folder: URL)] { cabinets.cloudRooms() }
+    func joinCloudRoomForTest(_ id: UUID, name: String, folder: URL) { cabinets.join(id, name: name, folder: folder) }
+    func cabinetRootForTest(_ id: UUID) -> URL? { cabinets.entries.first { $0.id == id }.map(cabinets.root(of:)) }
     var currentCabinet: UUID { cabinets.currentID }
     func closeCabinetsForTest() { cabinetsPanel?.closeForTest() }
     var cabinetsWindowNumber: Int? { cabinetsPanel?.windowNumber }
