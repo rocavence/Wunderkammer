@@ -844,8 +844,15 @@ final class SelfTest {
         ui.leaveEmptySearchForTest()
         window.setFrame(roomy, display: true)
         await wait(0.4)
+        // On a small screen the sidebar can be drawn in to 180.
+        ui.dragSidebarForTest(to: 150)
+        await wait(0.4)
+        check(abs(ui.sidebar.view.frame.width - 180) < 1, "the sidebar can be drawn in to 180 (\(Int(ui.sidebar.view.frame.width)))")
+        shot("sidebar-narrow")
+        ui.dragSidebarForTest(to: 0.21 * window.frame.width)
+        await wait(0.4)
         let sideWidth = ui.sidebar.view.frame.width
-        check((240...320).contains(sideWidth), "the sidebar starts at a fifth or so of the window (\(Int(sideWidth)) of \(Int(window.frame.width)))")
+        check((180...320).contains(sideWidth), "the sidebar starts at a fifth or so of the window (\(Int(sideWidth)) of \(Int(window.frame.width)))")
         // The sidebar's switch beside the lights, on the bar's line.
         let toggle = ui.sidebarToggleForTest
         let toggleY = toggle.convert(toggle.bounds, to: nil).midY, barY = spaces.convert(spaces.bounds, to: nil).midY
@@ -1826,6 +1833,7 @@ protocol SelfTestUI: AnyObject {
     func search(_ text: String)
     @discardableResult func showRandom() -> Item?
     func toggleInspectorForTest()
+    func dragSidebarForTest(to width: CGFloat)
     func inspectForTest(_ id: UUID)
     func ask(_ question: String)
     func openForTest(_ id: UUID)

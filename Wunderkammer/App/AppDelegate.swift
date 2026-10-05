@@ -428,16 +428,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         splitController = split
         let sideItem = NSSplitViewItem(sidebarWithViewController: sidebar)
         // About a fifth of the window: the sidebar holds its own beside the
-        // content without crowding it.
-        sideItem.minimumThickness = 240
+        // content without crowding it; on a small screen it can be drawn in
+        // further.
+        sideItem.minimumThickness = 180
         sideItem.maximumThickness = 320
         sideItem.preferredThicknessFraction = 0.21
         sidebarItem = sideItem
         split.addSplitViewItem(sideItem)
         split.addSplitViewItem(NSSplitViewItem(viewController: contentVC))
         inspectorItem = NSSplitViewItem(inspectorWithViewController: inspector)
-        // The same as the sidebar: the same default share, the same range.
-        inspectorItem.minimumThickness = sideItem.minimumThickness
+        // The same default share as the sidebar; it needs 240 for its thumbnails.
+        inspectorItem.minimumThickness = 240
         inspectorItem.maximumThickness = sideItem.maximumThickness
         inspectorItem.preferredThicknessFraction = sideItem.preferredThicknessFraction
         inspectorItem.isCollapsed = true
@@ -1206,6 +1207,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     }
 
     func toggleInspectorForTest() { toggleInspector() }
+    func dragSidebarForTest(to width: CGFloat) { splitController.splitView.setPosition(width, ofDividerAt: 0) }
     func inspectForTest(_ id: UUID) { inspector.show(id) }
     var inspectorViewForTest: NSView? { inspector.view.superview }
 
