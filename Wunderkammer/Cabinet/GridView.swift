@@ -867,6 +867,7 @@ private final class HeadingBand: CALayer {
     /// Under a pinned band: the pictures fade in rather than being cut off.
     private let fade = CAGradientLayer()
     private let pill = CALayer()
+    private static let pillPad: CGFloat = 14
     private(set) var title = ""
     private(set) var isPinned = false
 
@@ -901,7 +902,9 @@ private final class HeadingBand: CALayer {
         let lineHeight = ceil(serif.ascender - serif.descender + serif.leading)
         let titleWidth = ceil(titleText.size().width) + 2
         let titleY = (bounds.height - lineHeight) / 2
-        titleLayer.frame = CGRect(x: inset + 2, y: titleY, width: min(titleWidth, bounds.width - inset * 2), height: lineHeight)
+        // Pinned, the words move in so the pill (not the words) lines up with the tiles' edge.
+        let lead: CGFloat = pinned ? inset + Self.pillPad : inset + 2
+        titleLayer.frame = CGRect(x: lead, y: titleY, width: min(titleWidth, bounds.width - inset * 2), height: lineHeight)
         let baseline = titleY + serif.ascender
         let detailHeight = ceil(small.ascender - small.descender) + 2
         detailLayer.frame = CGRect(x: titleLayer.frame.maxX + 10, y: baseline - small.ascender - 1,
@@ -915,7 +918,7 @@ private final class HeadingBand: CALayer {
             let words = titleLayer.frame.union(detailLayer.frame.width > 0 && !detail.isEmpty
                 ? CGRect(x: detailLayer.frame.minX, y: detailLayer.frame.minY, width: ceil(detailLayer.preferredFrameSize().width), height: detailLayer.frame.height)
                 : titleLayer.frame)
-            pill.frame = words.insetBy(dx: -14, dy: -5).integral
+            pill.frame = CGRect(x: inset, y: words.minY - 5, width: words.maxX + Self.pillPad - inset, height: words.height + 10).integral
             pill.cornerRadius = pill.frame.height / 2
             pill.backgroundColor = colors.band.copy(alpha: 0.86)
             pill.borderColor = colors.detail.copy(alpha: 0.25)
