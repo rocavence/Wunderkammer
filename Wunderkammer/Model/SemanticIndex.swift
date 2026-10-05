@@ -5,7 +5,7 @@ import ImageIO
 /// Search by meaning: MobileCLIP puts pictures and sentences in the same
 /// space, so "a cat at a dinner table" finds the picture even if no word in
 /// it says so. Runs locally with Core ML; the models live next to the
-/// library (`models/`), installed by scripts/models/fetch-mobileclip.sh.
+/// library (`models/`), fetched the first time they are wanted (ModelInstaller).
 final class SemanticIndex: @unchecked Sendable {
     static let modelFiles = ["mobileclip_s0_image.mlmodelc", "mobileclip_s0_text.mlmodelc", "bpe_simple_vocab_16e6.txt"]
 

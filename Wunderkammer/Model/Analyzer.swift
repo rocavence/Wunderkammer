@@ -151,7 +151,7 @@ final class Understanding {
     private var printsDir: URL
     private var prints: [UUID: VNFeaturePrintObservation] = [:]
     /// Meaning vectors (MobileCLIP), when the models are installed.
-    let semantic: SemanticIndex?
+    private(set) var semantic: SemanticIndex?
     private var embeddingsDir: URL
     /// Vectors in memory, keyed like their files: "<id>-v<representation version>",
     /// so a new representation (a page's preview arriving) gets a new vector.
@@ -178,6 +178,13 @@ final class Understanding {
     }
 
     var pending: Int { library.items.filter { !$0.analyzed }.count }
+
+    /// The models just arrived: load them and start giving everything a meaning vector.
+    func loadSemantic() {
+        guard semantic == nil else { return }
+        semantic = SemanticIndex(modelsDir: Self.modelsDir)
+        start()
+    }
 
     /// The library opened another cabinet: its own fingerprints and embeddings.
     func libraryChanged() {

@@ -12,6 +12,14 @@ final class SettingsWindowController: NSWindowController {
     var onRecording: ((Bool) -> Void)?
     var onSpotlightChanged: ((Bool) -> Void)?
     var semanticReady: () -> Bool = { false }
+    var semanticState: () -> ModelInstaller.State = { .idle }
+    var onInstallSemantic: (() -> Void)?
+
+    /// Redraws the page in front, for a status that changed while it was open.
+    func refresh() {
+        guard window?.isVisible == true else { return }
+        show(tab)
+    }
 
     /// Opens the system's Chinese → English language download (AppDelegate).
     var onEnableChinese: (() -> Void)?
@@ -223,8 +231,8 @@ final class SettingsWindowController: NSWindowController {
         if #available(macOS 26.0, *) { asking = Asker.isAvailable }
         let chinese = PillButton(String(localized: "下載…")) { [weak self] in self?.onEnableChinese?() }
         return [
-            row(String(localized: "用描述找圖"), String(localized: "例如「a cat at a dinner table」，用本機的 MobileCLIP 模型"),
-                status(semanticReady(), ready: String(localized: "已安裝"), missing: String(localized: "未安裝"))),
+            row(String(localized: "用描述找圖"), String(localized: "例如「a cat at a dinner table」，用本機的 MobileCLIP 模型（約 106 MB）"),
+                semanticControl()),
             row(String(localized: "對收藏提問"), String(localized: "在搜尋框輸入問句後按 Return，或對 Siri 說 Ask Wunder"),
                 status(asking, ready: String(localized: "Apple Intelligence 可用"), missing: String(localized: "需要 Apple Intelligence"))),
             row(String(localized: "中文描述"), String(localized: "用中文描述找圖，需要系統的中文 → 英文翻譯語言"), chinese),
@@ -307,6 +315,18 @@ final class SettingsWindowController: NSWindowController {
         let box = NSStackView(views: [n])
         box.edgeInsets = NSEdgeInsets(top: 12, left: 0, bottom: 0, right: 0)
         return box
+    }
+
+    private func semanticControl() -> NSView {
+        if semanticReady() { return status(true, ready: String(localized: "已安裝"), missing: "") }
+        switch semanticState() {
+        case .downloading(let done):
+            return status(false, ready: "", missing: String(localized: "正在下載… \(Int(done * 100))%"))
+        case .failed:
+            return PillButton(String(localized: "再試一次")) { [weak self] in self?.onInstallSemantic?() }
+        case .idle:
+            return PillButton(String(localized: "下載")) { [weak self] in self?.onInstallSemantic?() }
+        }
     }
 
     private func status(_ ok: Bool, ready: String, missing: String) -> NSView {

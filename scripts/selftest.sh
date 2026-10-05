@@ -6,11 +6,17 @@ cd "$(dirname "$0")/.."
 
 OUT=build/selftest
 rm -rf "$OUT" && mkdir -p "$OUT/shots"
-cp -R "$HOME/Library/Application Support/Wunderkammer" "$OUT/library"
+# 需要已知內容的項目從空圖庫開始，由 app 放入固定的測試資料；其他項目用你圖庫的複本
+case "${1:-}" in
+  understand|semantic|relations|intents|trail|models) FIXTURE=1; mkdir -p "$OUT/library" ;;
+  *) FIXTURE=0; cp -R "$HOME/Library/Application Support/Wunderkammer" "$OUT/library" ;;
+esac
 # 從乾淨的 board 與 canvas 狀態開始
 python3 - "$OUT/library/library.json" <<'PY'
-import json, sys
-p = sys.argv[1]; d = json.load(open(p))
+import json, os, sys
+p = sys.argv[1]
+if not os.path.exists(p): sys.exit()
+d = json.load(open(p))
 d["collections"] = []; d["canvases"] = {}
 json.dump(d, open(p, "w"))
 PY
@@ -19,7 +25,7 @@ xcodebuild -project Wunderkammer.xcodeproj -scheme Wunderkammer -configuration D
   -derivedDataPath build build | grep -E "error:|BUILD FAILED" || true
 APP=build/Build/Products/Debug/Wunder.app/Contents/MacOS/Wunder
 
-WK_APPEARANCE="${WK_APPEARANCE:-}" WK_SELFTEST_ONLY="${1:-}" WK_SELFTEST="$OUT/shots" WK_LIBRARY_ROOT="$OUT/library" "$APP" -AppleLanguages "(\"${WK_LANG:-zh-Hant}\")" > "$OUT/log" 2>&1 &
+WK_FIXTURE=$FIXTURE WK_APPEARANCE="${WK_APPEARANCE:-}" WK_SELFTEST_ONLY="${1:-}" WK_SELFTEST="$OUT/shots" WK_LIBRARY_ROOT="$OUT/library" "$APP" -AppleLanguages "(\"${WK_LANG:-zh-Hant}\")" > "$OUT/log" 2>&1 &
 PID=$!
 for _ in {1..${WK_SELFTEST_TIMEOUT:-120}}; do
   sleep 1

@@ -2481,6 +2481,46 @@
         }
       }
     },
+    "下載沒有完成，請確認網路後再試一次。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The download didn't finish. Check your connection and try again."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダウンロードが完了しませんでした。ネットワークを確認してもう一度お試しください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다운로드를 완료하지 못했습니다. 네트워크를 확인한 뒤 다시 시도하세요."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La descarga no terminó. Revisa la conexión e inténtalo de nuevo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O download não terminou. Verifique a conexão e tente de novo."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載沒有完成，請確認網路後再試一次。"
+          }
+        }
+      }
+    },
     "不再連結這個資料夾" : {
       "localizations" : {
         "en" : {
@@ -2517,6 +2557,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "不再連結這個資料夾"
+          }
+        }
+      }
+    },
+    "不用了" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not Now"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今はしない"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "나중에"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahora no"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agora não"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不用了"
           }
         }
       }
@@ -3081,42 +3161,42 @@
         }
       }
     },
-    "例如「a cat at a dinner table」，用本機的 MobileCLIP 模型" : {
+    "例如「a cat at a dinner table」，用本機的 MobileCLIP 模型（約 106 MB）" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Such as “a cat at a dinner table”, using the on-device MobileCLIP model"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Por ejemplo, “a cat at a dinner table”, con el modelo MobileCLIP local"
+            "value" : "Like “a cat at a dinner table”, with the MobileCLIP model on this Mac (about 106 MB)"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "例：「a cat at a dinner table」。このMacの MobileCLIP モデルを使用します"
+            "value" : "例：「a cat at a dinner table」。この Mac の MobileCLIP モデルを使用（約 106 MB）"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "예: ‘a cat at a dinner table’, 이 Mac의 MobileCLIP 모델 사용"
+            "value" : "예: “a cat at a dinner table”. 이 Mac의 MobileCLIP 모델 사용(약 106MB)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por ejemplo, “a cat at a dinner table”, con el modelo MobileCLIP en este Mac (unos 106 MB)"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Por exemplo, “a cat at a dinner table”, com o modelo MobileCLIP local"
+            "value" : "Por exemplo, “a cat at a dinner table”, com o modelo MobileCLIP neste Mac (cerca de 106 MB)"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "例如「a cat at a dinner table」，用本機的 MobileCLIP 模型"
+            "value" : "例如「a cat at a dinner table」，用本機的 MobileCLIP 模型（約 106 MB）"
           }
         }
       }
@@ -3681,6 +3761,46 @@
         }
       }
     },
+    "再試一次" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try Again"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再試行"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시 시도"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reintentar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tentar de novo"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再試一次"
+          }
+        }
+      }
+    },
     "出了" : {
       "localizations" : {
         "en" : {
@@ -3729,6 +3849,12 @@
             "value" : "Pile"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrupar"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3739,12 +3865,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "묶기"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Agrupar"
           }
         },
         "pt-BR" : {
@@ -6841,6 +6961,46 @@
         }
       }
     },
+    "想用描述找圖？下載語意模型（約 106 MB），只在這台 Mac 上執行。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find pictures by describing them? Download the meaning model (about 106 MB). It runs only on this Mac."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "説明で画像を探しますか？意味検索モデル（約 106 MB）をダウンロードします。この Mac 上だけで動作します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설명으로 사진을 찾을까요? 의미 검색 모델(약 106MB)을 다운로드합니다. 이 Mac에서만 실행됩니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Buscar imágenes describiéndolas? Descarga el modelo de significado (unos 106 MB). Solo se ejecuta en este Mac."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encontrar imagens descrevendo-as? Baixe o modelo de significado (cerca de 106 MB). Ele roda só neste Mac."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "想用描述找圖？下載語意模型（約 106 MB），只在這台 Mac 上執行。"
+          }
+        }
+      }
+    },
     "截圖" : {
       "localizations" : {
         "en" : {
@@ -9601,46 +9761,6 @@
         }
       }
     },
-    "未安裝" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not installed"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No instalado"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未インストール"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "설치되지 않음"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Não instalado"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未安裝"
-          }
-        }
-      }
-    },
     "格式" : {
       "localizations" : {
         "en" : {
@@ -10037,6 +10157,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "檔案留在原處。連結的資料夾裡有新檔案，會自動收進來。"
+          }
+        }
+      }
+    },
+    "正在下載… %lld%%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Downloading… %lld%%"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダウンロード中… %lld%%"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다운로드 중… %lld%%"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descargando… %lld%%"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baixando… %lld%%"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在下載… %lld%%"
+          }
+        }
+      }
+    },
+    "正在下載語意模型… %lld%%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Downloading the meaning model… %lld%%"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "意味検索モデルをダウンロード中… %lld%%"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "의미 검색 모델 다운로드 중… %lld%%"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descargando el modelo de significado… %lld%%"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baixando o modelo de significado… %lld%%"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在下載語意模型… %lld%%"
           }
         }
       }

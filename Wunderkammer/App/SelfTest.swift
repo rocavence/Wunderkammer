@@ -98,6 +98,7 @@ final class SelfTest {
     func run() async {
         await wait(1.5)
         log("window key: \(window.isKeyWindow)")
+        if ProcessInfo.processInfo.environment["WK_FIXTURE"] == "1" { await seedFixtures() }
         switch ProcessInfo.processInfo.environment["WK_SELFTEST_ONLY"] {
         case "infinity-close":
             await infinityCloseCheck()
@@ -149,8 +150,8 @@ final class SelfTest {
             var waited = 0.0
             while library.items.contains(where: { !$0.analyzed }), waited < 60 { await wait(0.5); waited += 0.5 }
             await wait(4) // embeddings come after the analysis pass
-            let cases = [("a man in an orange jacket", "Drake"), ("astronauts in space", "Always Has Been"),
-                         ("a car swerving off the highway", "Left Exit"), ("an old man with raised hands", "Absolute Cinema")]
+            let cases = [("an owl", "Owl"), ("a zebra", "Zebra"), ("a field of sunflowers", "Sunflower"),
+                         ("a grand piano", "Piano"), ("a penguin", "Penguin")]
             for (query, expected) in cases {
                 ui.search(query)
                 await wait(1.5)
@@ -158,6 +159,22 @@ final class SelfTest {
                 check(first.contains(expected), "by meaning: “\(query)” → \(first)")
             }
             shot("semantic-search")
+            ui.search("")
+            return finish()
+        case "models":
+            // Run with WK_MODELS_DIR pointing at an empty folder: the first search offers the models.
+            ui.search("a cat")
+            await wait(0.6)
+            check(ui.semanticOfferForTest?.contains("106 MB") == true, "a search without the models offers them (\(ui.semanticOfferForTest ?? "nothing"))")
+            shot("models-offer")
+            ui.installSemanticForTest()
+            await wait(3)
+            shot("models-downloading")
+            log("downloading: \(ui.semanticOfferForTest ?? "–")")
+            var waited = 0.0
+            while !ui.semanticLoadedForTest, waited < 300 { await wait(1); waited += 1 }
+            check(ui.semanticLoadedForTest, "the models download, compile and load (\(Int(waited)) s)")
+            check(ui.semanticOfferForTest == nil, "the offer goes once they're in")
             ui.search("")
             return finish()
         case "empty":
@@ -950,9 +967,9 @@ final class SelfTest {
         let chinese = await ui.answerForIntent("我收過哪些王家衛的電影？")
         log("ask zh: \(chinese.replacingOccurrences(of: "\n", with: " ⏎ "))")
         check(QueryTranslator.needsTranslation(chinese) && chinese.contains("Chungking"), "asked in Chinese, answered in Chinese")
-        let found = ui.searchForIntent("Khruangbin")
+        let found = ui.searchForIntent("Chungking")
         await wait(0.6)
-        check(found == 3 && ui.grid.shownItems.count == 3, "search shows what it found (\(found))")
+        check(found >= 1 && ui.grid.shownItems.count >= found, "search shows what it found, then what it means (\(found), shown \(ui.grid.shownItems.map(\.displayTitle)))")
         shot("intents-search")
         ui.search("")
         let picked = ui.randomForIntent()
@@ -1042,7 +1059,7 @@ final class SelfTest {
         ui.setMode(.canvas)
         let canvas: CanvasView = ui.canvas
         for _ in 0..<40 where canvas.debugRelationCount == 0 { await wait(0.25) }
-        check(canvas.debugRelationCount >= 10, "the canvas finds the relations (\(canvas.debugRelationCount))")
+        check(canvas.debugRelationCount >= 3, "the canvas finds the relations (\(canvas.debugRelationCount))")
         shot("relations-canvas-lines")
 
         log("titles: " + canvas.debugTitleFrames.joined(separator: " | "))
@@ -1360,6 +1377,43 @@ final class SelfTest {
     }
 
     /// Stage 2: words in pictures, what's in them, similar and related things.
+    /// A known library for the suites that need one: macOS's own pictures, a
+    /// picture with words in it, a few notes and pages (pages need the network).
+    private func seedFixtures() async {
+        let fm = FileManager.default
+        let pictures = URL(fileURLWithPath: "/Library/User Pictures")
+        var files: [URL] = []
+        for folder in (try? fm.contentsOfDirectory(at: pictures, includingPropertiesForKeys: nil)) ?? [] {
+            files += ((try? fm.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []).filter { $0.pathExtension == "heic" }
+        }
+        let sign = fm.temporaryDirectory.appendingPathComponent("trade-offer.png")
+        let image = NSImage(size: NSSize(width: 1200, height: 800), flipped: false) { rect in
+            NSColor.white.setFill()
+            rect.fill()
+            let attrs: [NSAttributedString.Key: Any] = [.font: NSFont.systemFont(ofSize: 64, weight: .bold), .foregroundColor: NSColor.black]
+            for (i, line) in ["TRADE OFFER", "I receive: your attention", "You receive: curiosities"].enumerated() {
+                (line as NSString).draw(at: NSPoint(x: 80, y: 600 - CGFloat(i) * 160), withAttributes: attrs)
+            }
+            return true
+        }
+        if let tiff = image.tiffRepresentation, let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) {
+            try? png.write(to: sign)
+            files.append(sign)
+        }
+        await library.capture(files.map { .file($0) })
+        await library.capture([
+            .text("Ole Worm kept a cabinet of curiosities in Copenhagen: fossils, horns, a stuffed bird.", origin: nil),
+            .text("Chungking Express is the film I keep going back to.", origin: nil),
+        ])
+        let pages = ["https://en.wikipedia.org/wiki/Cabinet_of_curiosities", "https://en.wikipedia.org/wiki/Ole_Worm",
+                     "https://letterboxd.com/film/chungking-express/", "https://letterboxd.com/film/in-the-mood-for-love/",
+                     "https://letterboxd.com/film/the-matrix/", "https://www.moma.org/", "https://whitney.org/"]
+        await library.capture(pages.compactMap(URL.init).map { .web($0, title: nil) })
+        var waited = 0.0
+        while library.items.contains(where: { $0.kind == .web && $0.title == nil }), waited < 30 { await wait(0.5); waited += 0.5 }
+        log("fixtures: \(library.items.count) items (pages read in \(Int(waited)) s)")
+    }
+
     private func understandingCheck() async {
         var waited = 0.0
         while library.items.contains(where: { !$0.analyzed }), waited < 90 {
@@ -1370,19 +1424,18 @@ final class SelfTest {
         check(analyzed == library.items.count, "every item understood (\(analyzed)/\(library.items.count) in \(Int(waited))s)")
         let labelled = library.items.filter { !($0.labels ?? []).isEmpty }.count
         check(labelled >= library.items.count * 3 / 4, "labels for most items (\(labelled))")
-        let bernie = library.items.first { $0.originalFilename.contains("Bernie") }
-        check(bernie?.ocrText?.lowercased().contains("asking") == true, "OCR reads meme text (\(bernie?.ocrText?.prefix(40) ?? "–"))")
-        // "receive" is only in the picture, not in the file name.
-        let trade = library.items.first { $0.originalFilename.contains("Trade Offer") }
-        ui.search("receive")
+        let sign = library.items.first { $0.originalFilename.contains("trade-offer") }
+        check(sign?.ocrText?.lowercased().contains("receive") == true, "OCR reads the words in a picture (\(sign?.ocrText?.prefix(40) ?? "–"))")
+        // "attention" is only in the picture, not in the file name.
+        ui.search("attention")
         await wait(0.8)
-        check(trade != nil && ui.grid.shownItems.first?.id == trade?.id, "search finds words inside pictures (\(trade?.ocrText?.replacingOccurrences(of: "\n", with: " ").prefix(40) ?? "–"))")
+        check(sign != nil && ui.grid.shownItems.first?.id == sign?.id, "search finds words inside pictures (\(sign?.ocrText?.replacingOccurrences(of: "\n", with: " ").prefix(40) ?? "–"))")
         shot("understand-search-ocr")
         ui.search("")
-        if let drake = library.items.first(where: { $0.originalFilename.contains("Drake") }) {
-            ui.sidebar.select(.similar(drake.id))
+        if let rose = library.items.first(where: { $0.originalFilename.contains("Red Rose") }) {
+            ui.sidebar.select(.similar(rose.id))
             await wait(0.8)
-            check(ui.grid.shownItems.count > 3 && ui.grid.shownItems.first?.id == drake.id, "similar view: the item, then look-alikes")
+            check(ui.grid.shownItems.count > 3 && ui.grid.shownItems.first?.id == rose.id, "similar view: the item, then look-alikes")
             shot("understand-similar")
             ui.sidebar.select(.all)
             await wait(0.5)
@@ -1578,6 +1631,9 @@ protocol SelfTestUI: AnyObject {
     var watchedFoldersForTest: [URL] { get }
     var viewBarTipsForTest: [String] { get }
     func viewBarChoicesForTest(_ tip: String) -> [String]
+    var semanticOfferForTest: String? { get }
+    var semanticLoadedForTest: Bool { get }
+    func installSemanticForTest()
     func openViewBarChoicesForTest(_ tip: String) -> (rows: [String], rowHeight: CGFloat, frame: NSRect, bar: NSRect)?
     func closeViewBarChoicesForTest()
     func hoverViewBarForTest() -> String?

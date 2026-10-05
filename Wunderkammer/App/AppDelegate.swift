@@ -73,6 +73,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private(set) var scope = Scope()
     private var capture: CaptureController!
     private let answerBanner = AnswerBanner()
+    private let modelInstaller = ModelInstaller()
+    private let semanticOffer = SemanticOffer()
+    private static let semanticOfferKey = "semanticOfferDismissed"
     private var trailView: TrailView!
     /// The question the cabinet is showing the answer to, for the trail.
     private var lastQuestion = ""
@@ -109,6 +112,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
             if !on { SpotlightIndexer.clear() }
         }
         s.semanticReady = { [weak self] in self?.understanding.semantic != nil }
+        s.semanticState = { [weak self] in self?.modelInstaller.state ?? .idle }
+        s.onInstallSemantic = { [weak self] in self?.installSemantic() }
         s.onEnableChinese = { [weak self] in self?.enableChineseDescriptions() }
         return s
     }()
@@ -292,6 +297,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
             self.updateSnapshots()
         }
         canvas.onArrangementChange = { [weak self] in self?.updateSnapshots() }
+        semanticOffer.isHidden = true
+        semanticOffer.translatesAutoresizingMaskIntoConstraints = false
+        content.addSubview(semanticOffer, positioned: .below, relativeTo: emptyCabinet)
+        NSLayoutConstraint.activate([
+            semanticOffer.centerXAnchor.constraint(equalTo: content.centerXAnchor),
+            semanticOffer.bottomAnchor.constraint(equalTo: viewBar.topAnchor, constant: -10),
+            semanticOffer.widthAnchor.constraint(lessThanOrEqualTo: content.widthAnchor, constant: -28),
+        ])
+        semanticOffer.onDownload = { [weak self] in self?.installSemantic() }
+        semanticOffer.onDismiss = { [weak self] in
+            UserDefaults.standard.set(true, forKey: Self.semanticOfferKey)
+            self?.semanticOffer.isHidden = true
+        }
+        modelInstaller.onChange = { [weak self] state in
+            self?.semanticOffer.show(state)
+            self?.settings.refresh()
+        }
         NSLayoutConstraint.activate([
             answerBanner.topAnchor.constraint(equalTo: content.topAnchor, constant: TopBar.chrome + 8),
             answerBanner.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 14),
@@ -850,6 +872,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     /// newer query cancels an older one.
     private func searchByMeaning(_ text: String) {
         meaningTask?.cancel()
+        updateSemanticOffer()
         guard scope.isSearching, let semantic = understanding.semantic else { return }
         meaningTask = Task { [weak self] in
             try? await Task.sleep(for: .milliseconds(250))
@@ -864,6 +887,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
             self.scope.semantic = hits
             self.grid.show(scope: self.scope)
             self.updateTitle()
+        }
+    }
+
+    /// The first search without the meaning models offers them, once; after a
+    /// "no", they're still in Settings → 理解.
+    private func updateSemanticOffer() {
+        let wanted = scope.isSearching && understanding.semantic == nil
+            && !UserDefaults.standard.bool(forKey: Self.semanticOfferKey)
+        if wanted && semanticOffer.isHidden { semanticOffer.show(modelInstaller.state) }
+        // A download under way stays in sight until it's done.
+        if case .downloading = modelInstaller.state { return }
+        semanticOffer.isHidden = !wanted
+    }
+
+    private func installSemantic() {
+        modelInstaller.install { [weak self] in
+            guard let self else { return }
+            self.understanding.loadSemantic()
+            self.semanticOffer.isHidden = true
+            self.settings.refresh()
+            self.search(self.scope.search)
         }
     }
 
@@ -1396,6 +1440,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     }
     var viewBarTipsForTest: [String] { viewBar.isHidden ? [] : viewBar.tips }
     func viewBarChoicesForTest(_ tip: String) -> [String] { viewBar.choicesForTest(tip) }
+    var semanticOfferForTest: String? { semanticOffer.isHidden ? nil : semanticOffer.textForTest }
+    var semanticLoadedForTest: Bool { understanding.semantic != nil }
+    func installSemanticForTest() { installSemantic() }
     func openViewBarChoicesForTest(_ tip: String) -> (rows: [String], rowHeight: CGFloat, frame: NSRect, bar: NSRect)? { viewBar.openChoicesForTest(tip) }
     func closeViewBarChoicesForTest() { viewBar.closeChoicesForTest() }
     var watchedFoldersForTest: [URL] { cabinets.watched(cabinets.currentID) }
