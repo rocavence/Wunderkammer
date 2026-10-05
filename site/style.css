@@ -282,6 +282,8 @@ kbd {
 .compare td:first-child, .compare th:first-child { text-align: left; color: var(--ink); }
 .compare td.us { background: var(--accent-tint); }
 .yes { color: var(--accent); font-weight: 700; }
+.compare td b { font-weight: 700; }
+.compare .source { margin: 10px 4px 0; color: var(--faint); font-size: 13px; text-align: right; }
 .no { color: var(--faint); }
 
 /* FAQ */
