@@ -14,7 +14,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     var onManageCabinets: (() -> Void)?
     /// The open 展室's settings (the button at the foot, left).
     var onCabinetSettings: (() -> Void)?
-    private let roomSettings = NSButton()
+    private let roomSettings = FootButton(image: FootButton.arch(), title: String(localized: "佈置展室"))
     /// Which 展室 is open, shown on the card at the top.
     var cabinetName = String(localized: "展室") { didSet { if cabinetName != oldValue { reload() } } }
     var cabinetID: UUID? { didSet { if cabinetID != oldValue { coverIDs = [] ; reload() } } }
@@ -73,16 +73,13 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         // The card above already clears the title bar.
         scroll.automaticallyAdjustsContentInsets = false
 
-        let add = NSButton(image: Icon.image(.plus), target: self, action: #selector(newBoard(_:)))
-        add.isBordered = false
+        let add = FootButton(image: Icon.image(.plus), title: nil)
+        add.target = self
+        add.action = #selector(newBoard(_:))
         add.toolTip = String(localized: "新增釘選版")
-        add.contentTintColor = .secondaryLabelColor
-        // The open 展室's settings, at the other end of the foot.
-        roomSettings.image = Icon.image(.setting)
-        roomSettings.isBordered = false
+        add.setAccessibilityLabel(String(localized: "新增釘選版"))
+        // The open 展室's own settings, under its doorway: the arch.
         roomSettings.toolTip = String(localized: "展室設定")
-        roomSettings.setAccessibilityLabel(String(localized: "展室設定"))
-        roomSettings.contentTintColor = .secondaryLabelColor
         roomSettings.target = self
         roomSettings.action = #selector(openCabinetSettings)
 
@@ -103,10 +100,11 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             scroll.leadingAnchor.constraint(equalTo: container.leadingAnchor),
             scroll.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             scroll.bottomAnchor.constraint(equalTo: add.topAnchor, constant: -6),
-            roomSettings.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 14),
+            roomSettings.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 10),
             roomSettings.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -10),
-            add.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -14),
-            add.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -10),
+            roomSettings.trailingAnchor.constraint(lessThanOrEqualTo: add.leadingAnchor, constant: -8),
+            add.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -10),
+            add.centerYAnchor.constraint(equalTo: roomSettings.centerYAnchor),
         ])
         view = container
 
@@ -653,5 +651,82 @@ final class CabinetHeader: NSControl {
     override func accessibilityPerformPress() -> Bool {
         sendAction(action, to: target)
         return true
+    }
+}
+
+/// A quiet control at the sidebar's foot: a glyph, maybe a word, in grey that
+/// darkens with a soft fill under the pointer and deepens while pressed.
+@MainActor
+final class FootButton: NSButton {
+    private var hovering = false { didSet { paint() } }
+
+    init(image: NSImage, title: String?) {
+        super.init(frame: .zero)
+        isBordered = false
+        wantsLayer = true
+        layer?.cornerRadius = 8
+        layer?.cornerCurve = .continuous
+        self.image = image
+        imagePosition = title == nil ? .imageOnly : .imageLeading
+        imageHugsTitle = true
+        self.title = title ?? ""
+        font = .systemFont(ofSize: 12.5, weight: .medium)
+        translatesAutoresizingMaskIntoConstraints = false
+        heightAnchor.constraint(equalToConstant: 30).isActive = true
+        if title == nil { widthAnchor.constraint(equalToConstant: 30).isActive = true }
+        addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+        paint()
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override var intrinsicContentSize: NSSize {
+        let size = super.intrinsicContentSize
+        return NSSize(width: imagePosition == .imageOnly ? 30 : size.width + 22, height: 30)
+    }
+
+    override func mouseEntered(with event: NSEvent) { hovering = true }
+    override func mouseExited(with event: NSEvent) { hovering = false }
+
+    override func mouseDown(with event: NSEvent) {
+        layer?.backgroundColor = resolved(NSColor.labelColor.withAlphaComponent(0.12))
+        super.mouseDown(with: event)
+        paint()
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        paint()
+    }
+
+    private func paint() {
+        let ink: NSColor = hovering ? .labelColor : .secondaryLabelColor
+        contentTintColor = ink
+        if !title.isEmpty {
+            attributedTitle = NSAttributedString(string: title, attributes: [
+                .font: NSFont.systemFont(ofSize: 12.5, weight: .medium), .foregroundColor: ink,
+            ])
+        }
+        layer?.backgroundColor = hovering ? resolved(NSColor.labelColor.withAlphaComponent(0.07)) : nil
+    }
+
+    /// Wunder's arch, the doorway of a 展室, drawn at the weight of the
+    /// sidebar's other glyphs.
+    static func arch() -> NSImage {
+        let image = NSImage(size: NSSize(width: 16, height: 16), flipped: false) { _ in
+            let w: CGFloat = 9, inset = (16 - w) / 2, r = w / 2, top: CGFloat = 14.5, legs: CGFloat = 1.5
+            let path = NSBezierPath()
+            path.move(to: NSPoint(x: inset, y: legs))
+            path.line(to: NSPoint(x: inset, y: top - r))
+            path.appendArc(withCenter: NSPoint(x: 8, y: top - r), radius: r, startAngle: 180, endAngle: 0, clockwise: true)
+            path.line(to: NSPoint(x: 16 - inset, y: legs))
+            path.lineWidth = 1.6
+            path.lineCapStyle = .round
+            NSColor.black.setStroke()
+            path.stroke()
+            return true
+        }
+        image.isTemplate = true
+        return image
     }
 }
