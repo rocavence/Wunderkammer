@@ -970,6 +970,17 @@ final class SelfTest {
 
         // Tips: on the 工作台 only; five of them; closed, they stay closed for this run.
         if let tips = ui.canvasTipsForTest {
+            let size = tips.frame.size
+            var picked: Set<String> = []
+            for _ in 0..<6 {
+                ui.setSpace(.cabinet)
+                await wait(0.2)
+                ui.setSpace(.map)
+                await wait(0.3)
+                picked.insert(ui.canvasTipsForTest?.textForTest ?? "")
+                check(ui.canvasTipsForTest?.frame.size == size, "the tips card keeps its size (\(ui.canvasTipsForTest?.frame.size ?? .zero))")
+            }
+            check(picked.count >= 2, "coming back to the 工作台 shows a tip at random (\(picked))")
             var seen: [String] = []
             for _ in 0..<5 { seen.append(tips.textForTest); tips.step(1) }
             check(Set(seen).count == 5 && tips.textForTest == seen[0], "the 工作台 tips go through five and come round (\(seen))")

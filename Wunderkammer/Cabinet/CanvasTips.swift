@@ -44,6 +44,7 @@ final class CanvasTips: NSView {
         detail.font = .systemFont(ofSize: 12.5)
         detail.textColor = .secondaryLabelColor
         detail.preferredMaxLayoutWidth = 220
+        detail.maximumNumberOfLines = 3
         counter.font = .monospacedDigitSystemFont(ofSize: 11, weight: .regular)
         counter.textColor = .tertiaryLabelColor
         keys.spacing = 4
@@ -65,12 +66,10 @@ final class CanvasTips: NSView {
             v.translatesAutoresizingMaskIntoConstraints = false
             addSubview(v)
         }
-        // The card gives way before the window's columns do.
-        let width = widthAnchor.constraint(equalToConstant: 264)
-        width.priority = .defaultLow
+        // Always the same size, whichever tip it shows.
         NSLayoutConstraint.activate([
-            width,
-            widthAnchor.constraint(lessThanOrEqualToConstant: 264),
+            widthAnchor.constraint(equalToConstant: 264),
+            heightAnchor.constraint(equalToConstant: 128),
             glass.leadingAnchor.constraint(equalTo: leadingAnchor),
             glass.trailingAnchor.constraint(equalTo: trailingAnchor),
             glass.topAnchor.constraint(equalTo: topAnchor),
@@ -78,7 +77,7 @@ final class CanvasTips: NSView {
             body.leadingAnchor.constraint(equalTo: leadingAnchor),
             body.trailingAnchor.constraint(equalTo: trailingAnchor),
             body.topAnchor.constraint(equalTo: topAnchor),
-            body.bottomAnchor.constraint(equalTo: bottomAnchor),
+            body.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor),
             head.widthAnchor.constraint(equalTo: body.widthAnchor, constant: -22),
             foot.widthAnchor.constraint(equalTo: body.widthAnchor, constant: -22),
             detail.widthAnchor.constraint(equalTo: body.widthAnchor, constant: -28),
@@ -94,6 +93,12 @@ final class CanvasTips: NSView {
     required init?(coder: NSCoder) { fatalError() }
 
     var textForTest: String { title.stringValue }
+
+    /// A different tip from the one last shown, picked at random.
+    func showRandom() {
+        let others = Self.tips.indices.filter { $0 != index }
+        show(others.randomElement() ?? 0)
+    }
 
     func step(_ by: Int) {
         show((index + by + Self.tips.count) % Self.tips.count)

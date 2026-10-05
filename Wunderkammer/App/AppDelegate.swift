@@ -325,7 +325,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         content.addSubview(canvasTips, positioned: .below, relativeTo: emptyCabinet)
         NSLayoutConstraint.activate([
             canvasTips.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -18),
-            canvasTips.leadingAnchor.constraint(greaterThanOrEqualTo: content.leadingAnchor, constant: 18),
             canvasTips.bottomAnchor.constraint(equalTo: viewBar.topAnchor, constant: -12),
         ])
         canvasTips.onClose = { [weak self] in
@@ -769,7 +768,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     var slotsShownForTest: Bool { !snapshotBar.isHidden }
 
     private func updateSnapshots() {
-        canvasTips.isHidden = canvasTipsClosed || !tipsFit || mode != .canvas || viewBar.isHidden
+        let showTips = !canvasTipsClosed && tipsFit && mode == .canvas && !viewBar.isHidden
+        // Each time the 工作台 comes into view, a tip picked at random.
+        if showTips && canvasTips.isHidden { canvasTips.showRandom() }
+        canvasTips.isHidden = !showTips
         guard mode == .canvas, !viewBar.isHidden, slotsFit else { snapshotBar.isHidden = true; return }
         snapshotBar.isHidden = false
         let size = CGSize(width: 22, height: 18)
