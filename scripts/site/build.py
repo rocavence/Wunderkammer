@@ -146,7 +146,8 @@ PILE_CARDS = [
     ("pdf", "book", "desk", "white", "ten-principles.pdf"),
     ("pdf", "book", "audio", "white", "catalogue-1965.pdf"),
 ]
-PILE_PICKS = [("audio", 5), ("clock", 3), ("kitchen", 4), ("care", 2), ("desk", 1), ("light", 1)]
+PILE_PICKS = [("audio", 4), ("clock", 3), ("kitchen", 3), ("care", 1), ("desk", 2), ("light", 1)]
+EXTRA_KIND = {"signs": "sign", "coffee": "coffee", "travel": "travel"}
 
 
 def pile_tiles(root, wall):
@@ -156,6 +157,10 @@ def pile_tiles(root, wall):
             used.add(w["src"])
             tiles.append(f'<div class="pt" data-format="image" data-kind="product" data-theme="{theme}" data-color="{w["color"]}">'
                          f'<img src="{root}assets/{w["src"]}" alt="" loading="lazy"></div>')
+    for e in json.loads((SITE / "assets/pile.json").read_text()):
+        kind = EXTRA_KIND[e["set"]]
+        tiles.append(f'<div class="pt" data-format="image" data-kind="{kind}" data-theme="{kind}" data-color="{e["color"]}">'
+                     f'<img src="{root}assets/{e["src"]}" alt="" loading="lazy"></div>')
     for fmt, kind, theme, color, text in PILE_CARDS:
         tiles.append(f'<div class="pt card {fmt}" data-format="{fmt}" data-kind="{kind}" data-theme="{theme}" data-color="{color}">'
                      f'<span>{html.escape(text)}</span></div>')

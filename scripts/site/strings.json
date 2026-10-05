@@ -24,7 +24,7 @@
     "fine_open": "first time opening it?",
     "alt_collection": "Wunder showing a collection of minimal household products in a grid, with the sidebar sorted into formats, themes and colors.",
     "s1_label": "what it is",
-    "s1_title": "a room for everything you want to keep.",
+    "s1_title": "a room for everything you want to keep",
     "s1_p1": "pictures, links, quotes, screenshots, files. press <kbd>⌘⇧C</kbd> and it's in. no folder to pick, no name to type.",
     "s1_p2": "wunder looks at what you keep: the words in a picture, what's in it, its colors. so you can find it later without ever having filed it.",
     "s2_label": "why it's different",
@@ -65,27 +65,27 @@
     "features": [
       [
         "Collection",
-        "everything, at a glance.",
+        "everything, at a glance",
         "browse it as a grid, a wall or a timeline. the sidebar fills itself in with formats, kinds, themes and colors.",
         "inspector",
         "A sculpture selected, with what Wunder noticed about it and related pieces in the side panel."
       ],
       [
         "Wunder",
-        "wander, and find it again.",
+        "wander, and find it again",
         "a wall that drifts on its own. “for today” picks a dozen things you'd forgotten, and says why.",
         "wander",
         "An endless wall of collected pieces to wander through."
       ],
       [
         "Space",
-        "a workbench for thinking.",
+        "a workbench for thinking",
         "pile things by format, kind, theme or color. move them around, draw lines between them, and keep three layouts to come back to.",
         "workbench",
         "Pieces sorted into named piles on a canvas, connected by a line."
       ]
     ],
-    "big": "keep what <em>catches</em> your eye.",
+    "big": "keep what <em>catches</em> your eye",
     "compare": [
       [
         "price",
@@ -131,7 +131,7 @@
       ]
     ],
     "compare_source": "based on each app's website, october 2026.",
-    "faq_title": "questions, answered.",
+    "faq_title": "questions, answered",
     "faq": [
       [
         "what is wunder?",
@@ -163,7 +163,7 @@
         "<p>yes. the source is on <a href=\"https://github.com/rocavence/Wunderkammer\">github</a>.</p>"
       ]
     ],
-    "closing_title": "start your cabinet.",
+    "closing_title": "start your cabinet",
     "closing_p": "free for mac. no account, no setup.",
     "footer_releases": "releases",
     "hint": "scroll",
@@ -181,7 +181,7 @@
     ],
     "try_collect": "try it here: press <kbd>⌘⇧C</kbd>, or click the key above.",
     "finder_kicker": "search",
-    "finder_title": "describe it, and it's there.",
+    "finder_title": "describe it, and it's there",
     "finder_queries": [
       [
         "a clock",
@@ -211,7 +211,7 @@
     "finder_found": "{n} found",
     "toast_title": "Collected",
     "kinds_kicker": "what fits",
-    "kinds_title": "what goes in? anything.",
+    "kinds_title": "what goes in? anything",
     "kinds": [
       [
         "image",
@@ -297,7 +297,7 @@
       ]
     ],
     "rooms_kicker": "rooms",
-    "rooms_title": "a room for every project.",
+    "rooms_title": "a room for every project",
     "rooms_p": "open a room for each project, client or mood. each has its own collection, cover and folders: point it at folders to watch and new files come in by themselves, or let it file everything into a folder of its own. rooms can sync between your macs through iCloud.",
     "rooms_count": "{n} items",
     "rooms_current": "current",
@@ -309,7 +309,7 @@
       "references"
     ],
     "piles_kicker": "space",
-    "piles_title": "one click, a new order.",
+    "piles_title": "one click, a new order",
     "piles_p": "pile the same things by format, kind, theme or color. everything flies to where it belongs, and you can switch back any time.",
     "piles_modes": [
       "by format",
@@ -349,7 +349,12 @@
       "home": "home",
       "white": "white",
       "silver": "silver",
-      "black": "black"
+      "black": "black",
+      "sign": "signs",
+      "coffee": "coffee",
+      "travel": "travel",
+      "brown": "brown",
+      "yellow": "yellow"
     }
   },
   "zh-Hant": {
@@ -377,7 +382,7 @@
     "fine_open": "第一次打不開？",
     "alt_collection": "Wunder 以格狀排出一批極簡家電，側欄依格式、主題與顏色自動分好。",
     "s1_label": "這是什麼",
-    "s1_title": "一個房間，放你想留下的東西。",
+    "s1_title": "一個房間，放你想留下的東西",
     "s1_p1": "圖片、連結、一段話、截圖、檔案。按 <kbd>⌘⇧C</kbd> 就收進來，不用選資料夾，也不用取名字。",
     "s1_p2": "Wunder 會自己看：圖裡寫了什麼字、拍到什麼、是什麼顏色。所以就算從沒整理過，之後也找得回來。",
     "s2_label": "有什麼不同",
@@ -516,7 +521,7 @@
         "<p>免費。原始碼在 <a href=\"https://github.com/rocavence/Wunderkammer\">GitHub</a>。</p>"
       ]
     ],
-    "closing_title": "開始你的珍奇室。",
+    "closing_title": "開始你的珍奇室",
     "closing_p": "Mac 版免費下載，不用帳號，不用設定。",
     "footer_releases": "所有版本",
     "hint": "往下捲",
@@ -534,7 +539,7 @@
     ],
     "try_collect": "在這裡試試：按 <kbd>⌘⇧C</kbd>，或點上面的按鍵。",
     "finder_kicker": "搜尋",
-    "finder_title": "用說的，就找得到。",
+    "finder_title": "用說的，就找得到",
     "finder_queries": [
       [
         "時鐘",
@@ -564,7 +569,7 @@
     "finder_found": "找到 {n} 件",
     "toast_title": "已收藏",
     "kinds_kicker": "能放什麼",
-    "kinds_title": "放什麼都行。",
+    "kinds_title": "放什麼都行",
     "kinds": [
       [
         "image",
@@ -650,7 +655,7 @@
       ]
     ],
     "rooms_kicker": "展室",
-    "rooms_title": "每個專案，一個展室。",
+    "rooms_title": "每個專案，一個展室",
     "rooms_p": "依照專案、情境或心情開不同的展室。每個展室有自己的收藏、封面和資料夾：可以自動監看指定的資料夾，新檔案自己收進來；也可以自訂歸檔，把檔案存進展室自己的資料夾。還能用 iCloud 在你的 Mac 之間同步。",
     "rooms_count": "{n} 件收藏",
     "rooms_current": "目前",
@@ -662,7 +667,7 @@
       "文獻"
     ],
     "piles_kicker": "工作台",
-    "piles_title": "一鍵分堆，換個角度看。",
+    "piles_title": "一鍵分堆，換個角度看",
     "piles_p": "同一批收藏，依格式、分類、主題或顏色重新分堆。每件東西自己飛到該去的那一堆，隨時都能切回來。",
     "piles_modes": [
       "格式",
@@ -702,7 +707,12 @@
       "home": "居家",
       "white": "白色",
       "silver": "銀灰",
-      "black": "黑色"
+      "black": "黑色",
+      "sign": "標誌",
+      "coffee": "咖啡",
+      "travel": "旅行",
+      "brown": "棕色",
+      "yellow": "黃色"
     }
   },
   "ja": {
@@ -730,7 +740,7 @@
     "fine_open": "初めて開くときは？",
     "alt_collection": "ミニマルな家電のコレクションをグリッドで表示した Wunder。サイドバーは形式、テーマ、色で自動的に分かれています。",
     "s1_label": "Wunder とは",
-    "s1_title": "取っておきたいもののための部屋。",
+    "s1_title": "取っておきたいもののための部屋",
     "s1_p1": "画像、リンク、引用、スクリーンショット、ファイル。<kbd>⌘⇧C</kbd> を押せば入ります。フォルダを選ぶことも、名前を付けることもありません。",
     "s1_p2": "Wunder は集めたものを見ています。画像の中の文字、写っているもの、色。だから整理したことがなくても、あとで見つけられます。",
     "s2_label": "何が違うのか",
@@ -771,27 +781,27 @@
     "features": [
       [
         "コレクション",
-        "すべてをひと目で。",
+        "すべてをひと目で",
         "グリッド、メイソンリー、タイムラインで眺められます。サイドバーには形式、種類、テーマ、色が自動で並びます。",
         "inspector",
         "彫刻を選ぶと、Wunder が気づいたことと関連する作品がサイドパネルに表示されます。"
       ],
       [
         "ワンダー",
-        "歩き回って、また出会う。",
+        "歩き回って、また出会う",
         "ひとりでに漂う壁。「今日のおすすめ」は忘れかけていたものを毎日 12 点選び、その理由も添えます。",
         "wander",
         "集めた作品の中を歩き回れる果てしない壁。"
       ],
       [
         "作業台",
-        "考えるための作業台。",
+        "考えるための作業台",
         "形式、種類、テーマ、色で積み分け、動かして、線でつなぐ。戻ってこられる並べ方を 3 つ保存できます。",
         "workbench",
         "キャンバスの上で名前付きの山に分けられた作品と、それをつなぐ線。"
       ]
     ],
-    "big": "<em>心ひかれた</em>ものを、取っておこう。",
+    "big": "<em>心ひかれた</em>ものを、取っておこう",
     "compare": [
       [
         "価格",
@@ -869,7 +879,7 @@
         "<p>はい。ソースは <a href=\"https://github.com/rocavence/Wunderkammer\">GitHub</a> にあります。</p>"
       ]
     ],
-    "closing_title": "あなたの驚異の部屋を。",
+    "closing_title": "あなたの驚異の部屋を",
     "closing_p": "Mac 版は無料。アカウントも設定もいりません。",
     "footer_releases": "リリース",
     "hint": "スクロール",
@@ -887,7 +897,7 @@
     ],
     "try_collect": "ここで試せます：<kbd>⌘⇧C</kbd> を押すか、上のキーをクリック。",
     "finder_kicker": "検索",
-    "finder_title": "言葉にすれば、見つかる。",
+    "finder_title": "言葉にすれば、見つかる",
     "finder_queries": [
       [
         "時計",
@@ -917,7 +927,7 @@
     "finder_found": "{n} 件",
     "toast_title": "集めました",
     "kinds_kicker": "入れられるもの",
-    "kinds_title": "何でも入ります。",
+    "kinds_title": "何でも入ります",
     "kinds": [
       [
         "image",
@@ -1003,7 +1013,7 @@
       ]
     ],
     "rooms_kicker": "展示室",
-    "rooms_title": "プロジェクトごとに、ひとつの展示室。",
+    "rooms_title": "プロジェクトごとに、ひとつの展示室",
     "rooms_p": "プロジェクト、場面、気分ごとに展示室を分けられます。それぞれにコレクション、カバー、フォルダがあり、指定したフォルダを自動で見張って新しいファイルを取り込むことも、展示室専用のフォルダにファイルを保管することもできます。iCloud で Mac 間の同期も。",
     "rooms_count": "{n} 件",
     "rooms_current": "現在",
@@ -1015,7 +1025,7 @@
       "資料"
     ],
     "piles_kicker": "作業台",
-    "piles_title": "ワンクリックで、新しい並び。",
+    "piles_title": "ワンクリックで、新しい並び",
     "piles_p": "同じものを形式、分類、テーマ、色で積み分け。それぞれが行くべき山へ飛んでいき、いつでも戻せます。",
     "piles_modes": [
       "形式",
@@ -1055,7 +1065,12 @@
       "home": "住まい",
       "white": "白",
       "silver": "シルバー",
-      "black": "黒"
+      "black": "黒",
+      "sign": "標識",
+      "coffee": "コーヒー",
+      "travel": "旅",
+      "brown": "茶色",
+      "yellow": "黄色"
     }
   },
   "ko": {
@@ -1083,7 +1098,7 @@
     "fine_open": "처음 열 때는?",
     "alt_collection": "미니멀한 가전 컬렉션을 격자로 보여 주는 Wunder. 사이드바는 형식, 주제, 색상별로 자동 정리되어 있습니다.",
     "s1_label": "Wunder란",
-    "s1_title": "간직하고 싶은 모든 것을 위한 방.",
+    "s1_title": "간직하고 싶은 모든 것을 위한 방",
     "s1_p1": "사진, 링크, 인용문, 스크린샷, 파일. <kbd>⌘⇧C</kbd>를 누르면 들어옵니다. 폴더를 고를 필요도, 이름을 붙일 필요도 없어요.",
     "s1_p2": "Wunder는 모은 것을 살펴봅니다. 사진 속 글자, 무엇이 찍혔는지, 어떤 색인지. 그래서 정리한 적이 없어도 나중에 찾을 수 있습니다.",
     "s2_label": "무엇이 다른가요",
@@ -1124,27 +1139,27 @@
     "features": [
       [
         "컬렉션",
-        "모든 것을 한눈에.",
+        "모든 것을 한눈에",
         "격자, 벽돌형, 타임라인으로 둘러보세요. 사이드바에는 형식, 종류, 주제, 색상이 저절로 채워집니다.",
         "inspector",
         "조각상을 선택하면 Wunder가 알아본 내용과 관련 작품이 옆 패널에 나타납니다."
       ],
       [
         "둘러보기",
-        "거닐다가, 다시 만나기.",
+        "거닐다가, 다시 만나기",
         "저절로 흘러가는 벽. ‘오늘의 추천’은 잊고 있던 것을 매일 12점 골라 이유와 함께 보여 줍니다.",
         "wander",
         "모은 작품 사이를 거닐 수 있는 끝없는 벽."
       ],
       [
         "작업대",
-        "생각하기 위한 작업대.",
+        "생각하기 위한 작업대",
         "형식, 종류, 주제, 색상별로 묶고, 옮기고, 선으로 이어 보세요. 다시 돌아올 배치를 3개까지 저장할 수 있습니다.",
         "workbench",
         "캔버스 위에서 이름 붙은 묶음으로 나뉜 작품과 그 사이를 잇는 선."
       ]
     ],
-    "big": "<em>눈길을 끈</em> 것을 간직하세요.",
+    "big": "<em>눈길을 끈</em> 것을 간직하세요",
     "compare": [
       [
         "가격",
@@ -1222,7 +1237,7 @@
         "<p>네. 소스는 <a href=\"https://github.com/rocavence/Wunderkammer\">GitHub</a>에 있습니다.</p>"
       ]
     ],
-    "closing_title": "나만의 호기심의 방을 시작하세요.",
+    "closing_title": "나만의 호기심의 방을 시작하세요",
     "closing_p": "Mac용 무료. 계정도, 설정도 필요 없습니다.",
     "footer_releases": "릴리스",
     "hint": "스크롤",
@@ -1240,7 +1255,7 @@
     ],
     "try_collect": "여기서 해 보세요: <kbd>⌘⇧C</kbd>를 누르거나 위의 키를 클릭하세요.",
     "finder_kicker": "검색",
-    "finder_title": "말하면, 찾아집니다.",
+    "finder_title": "말하면, 찾아집니다",
     "finder_queries": [
       [
         "시계",
@@ -1270,7 +1285,7 @@
     "finder_found": "{n}개 찾음",
     "toast_title": "모았습니다",
     "kinds_kicker": "넣을 수 있는 것",
-    "kinds_title": "무엇이든 들어갑니다.",
+    "kinds_title": "무엇이든 들어갑니다",
     "kinds": [
       [
         "image",
@@ -1356,7 +1371,7 @@
       ]
     ],
     "rooms_kicker": "전시실",
-    "rooms_title": "프로젝트마다 전시실 하나.",
+    "rooms_title": "프로젝트마다 전시실 하나",
     "rooms_p": "프로젝트, 상황, 기분에 따라 전시실을 나눠 보세요. 전시실마다 컬렉션, 표지, 폴더가 따로 있고, 지정한 폴더를 자동으로 지켜보다가 새 파일을 가져오거나, 파일을 전시실 전용 폴더에 보관할 수도 있습니다. iCloud로 Mac 간에 동기화도 됩니다.",
     "rooms_count": "{n}개",
     "rooms_current": "현재",
@@ -1368,7 +1383,7 @@
       "자료"
     ],
     "piles_kicker": "작업대",
-    "piles_title": "클릭 한 번에, 새로운 배치.",
+    "piles_title": "클릭 한 번에, 새로운 배치",
     "piles_p": "같은 것들을 형식, 분류, 테마, 색상으로 다시 묶어 보세요. 각각 제자리로 날아가고, 언제든 되돌릴 수 있습니다.",
     "piles_modes": [
       "형식",
@@ -1408,7 +1423,12 @@
       "home": "생활",
       "white": "흰색",
       "silver": "은색",
-      "black": "검정"
+      "black": "검정",
+      "sign": "표지판",
+      "coffee": "커피",
+      "travel": "여행",
+      "brown": "갈색",
+      "yellow": "노랑"
     }
   },
   "es": {
@@ -1436,7 +1456,7 @@
     "fine_open": "¿Es la primera vez que lo abres?",
     "alt_collection": "Wunder muestra una colección de electrodomésticos minimalistas en cuadrícula, con la barra lateral ordenada por formatos, temas y colores.",
     "s1_label": "Qué es",
-    "s1_title": "Una sala para todo lo que quieres conservar.",
+    "s1_title": "Una sala para todo lo que quieres conservar",
     "s1_p1": "Imágenes, enlaces, citas, capturas, archivos. Pulsa <kbd>⌘⇧C</kbd> y ya está dentro. Sin carpeta que elegir, sin nombre que escribir.",
     "s1_p2": "Wunder mira lo que guardas: las palabras de una imagen, lo que aparece en ella, sus colores. Así lo encuentras después sin haberlo archivado nunca.",
     "s2_label": "Por qué es distinto",
@@ -1477,27 +1497,27 @@
     "features": [
       [
         "Colección",
-        "Todo, de un vistazo.",
+        "Todo, de un vistazo",
         "Recórrela en cuadrícula, en mosaico o en línea de tiempo. La barra lateral se llena sola con formatos, tipos, temas y colores.",
         "inspector",
         "Una escultura seleccionada, con lo que Wunder ha visto en ella y piezas relacionadas en el panel lateral."
       ],
       [
         "Deambular",
-        "Pasea y vuelve a encontrarlo.",
+        "Pasea y vuelve a encontrarlo",
         "Una pared que se desliza sola. «Para hoy» elige cada día doce cosas que habías olvidado, y te dice por qué.",
         "wander",
         "Una pared infinita de piezas guardadas para pasear entre ellas."
       ],
       [
         "Mesa de trabajo",
-        "Un banco de trabajo para pensar.",
+        "Un banco de trabajo para pensar",
         "Agrupa por formato, tipo, tema o color. Mueve las cosas, traza líneas entre ellas y guarda tres disposiciones a las que volver.",
         "workbench",
         "Piezas ordenadas en montones con nombre sobre un lienzo, unidas por una línea."
       ]
     ],
-    "big": "Guarda lo que te <em>llama</em> la atención.",
+    "big": "Guarda lo que te <em>llama</em> la atención",
     "compare": [
       [
         "Precio",
@@ -1575,7 +1595,7 @@
         "<p>Sí. El código está en <a href=\"https://github.com/rocavence/Wunderkammer\">GitHub</a>.</p>"
       ]
     ],
-    "closing_title": "Empieza tu gabinete.",
+    "closing_title": "Empieza tu gabinete",
     "closing_p": "Gratis para Mac. Sin cuenta, sin configuración.",
     "footer_releases": "versiones",
     "hint": "desplázate",
@@ -1593,7 +1613,7 @@
     ],
     "try_collect": "Pruébalo aquí: pulsa <kbd>⌘⇧C</kbd> o haz clic en la tecla de arriba.",
     "finder_kicker": "Búsqueda",
-    "finder_title": "Descríbelo, y ahí está.",
+    "finder_title": "Descríbelo, y ahí está",
     "finder_queries": [
       [
         "un reloj",
@@ -1623,7 +1643,7 @@
     "finder_found": "{n} encontrados",
     "toast_title": "Guardado",
     "kinds_kicker": "Qué cabe",
-    "kinds_title": "¿Qué puedes guardar? Lo que sea.",
+    "kinds_title": "¿Qué puedes guardar? Lo que sea",
     "kinds": [
       [
         "image",
@@ -1709,7 +1729,7 @@
       ]
     ],
     "rooms_kicker": "Salas",
-    "rooms_title": "Una sala para cada proyecto.",
+    "rooms_title": "Una sala para cada proyecto",
     "rooms_p": "Abre una sala para cada proyecto, cliente o estado de ánimo. Cada una tiene su colección, su portada y sus carpetas: puede vigilar las carpetas que elijas y traer sola los archivos nuevos, o guardar cada archivo en una carpeta propia. Las salas se sincronizan entre tus Mac con iCloud.",
     "rooms_count": "{n} elementos",
     "rooms_current": "Actual",
@@ -1721,7 +1741,7 @@
       "Documentos"
     ],
     "piles_kicker": "Mesa de trabajo",
-    "piles_title": "Un clic, un orden nuevo.",
+    "piles_title": "Un clic, un orden nuevo",
     "piles_p": "Agrupa lo mismo por formato, tipo, tema o color. Cada cosa vuela a su montón, y puedes volver cuando quieras.",
     "piles_modes": [
       "Formato",
@@ -1761,7 +1781,12 @@
       "home": "Hogar",
       "white": "Blanco",
       "silver": "Plata",
-      "black": "Negro"
+      "black": "Negro",
+      "sign": "Señales",
+      "coffee": "Café",
+      "travel": "Viajes",
+      "brown": "Marrón",
+      "yellow": "Amarillo"
     }
   },
   "pt-BR": {
@@ -1789,7 +1814,7 @@
     "fine_open": "Abrindo pela primeira vez?",
     "alt_collection": "O Wunder mostrando uma coleção de eletrodomésticos minimalistas em grade, com a barra lateral organizada por formatos, temas e cores.",
     "s1_label": "O que é",
-    "s1_title": "Uma sala para tudo o que você quer guardar.",
+    "s1_title": "Uma sala para tudo o que você quer guardar",
     "s1_p1": "Imagens, links, citações, capturas de tela, arquivos. Pressione <kbd>⌘⇧C</kbd> e pronto. Nenhuma pasta para escolher, nenhum nome para digitar.",
     "s1_p2": "O Wunder olha o que você guarda: as palavras numa imagem, o que aparece nela, as cores. Assim você encontra depois sem nunca ter arquivado.",
     "s2_label": "Por que é diferente",
@@ -1830,27 +1855,27 @@
     "features": [
       [
         "Coleção",
-        "Tudo, num relance.",
+        "Tudo, num relance",
         "Navegue em grade, em mosaico ou numa linha do tempo. A barra lateral se preenche sozinha com formatos, tipos, temas e cores.",
         "inspector",
         "Uma escultura selecionada, com o que o Wunder percebeu nela e peças relacionadas no painel lateral."
       ],
       [
         "Passeio",
-        "Passeie e reencontre.",
+        "Passeie e reencontre",
         "Uma parede que desliza sozinha. “Para hoje” escolhe todo dia doze coisas que você tinha esquecido, e diz por quê.",
         "wander",
         "Uma parede sem fim de peças guardadas para passear."
       ],
       [
         "Bancada",
-        "Uma mesa de trabalho para pensar.",
+        "Uma mesa de trabalho para pensar",
         "Agrupe por formato, tipo, tema ou cor. Mova as coisas, ligue-as com linhas e guarde três arranjos para voltar depois.",
         "workbench",
         "Peças separadas em grupos com nome numa tela, ligadas por uma linha."
       ]
     ],
-    "big": "Guarde o que <em>chama</em> sua atenção.",
+    "big": "Guarde o que <em>chama</em> sua atenção",
     "compare": [
       [
         "Preço",
@@ -1928,7 +1953,7 @@
         "<p>Sim. O código está no <a href=\"https://github.com/rocavence/Wunderkammer\">GitHub</a>.</p>"
       ]
     ],
-    "closing_title": "Comece o seu gabinete.",
+    "closing_title": "Comece o seu gabinete",
     "closing_p": "Grátis para Mac. Sem conta, sem configuração.",
     "footer_releases": "versões",
     "hint": "role a página",
@@ -1946,7 +1971,7 @@
     ],
     "try_collect": "Experimente aqui: pressione <kbd>⌘⇧C</kbd> ou clique na tecla acima.",
     "finder_kicker": "Busca",
-    "finder_title": "Descreva, e lá está.",
+    "finder_title": "Descreva, e lá está",
     "finder_queries": [
       [
         "um relógio",
@@ -1976,7 +2001,7 @@
     "finder_found": "{n} encontrados",
     "toast_title": "Guardado",
     "kinds_kicker": "O que cabe",
-    "kinds_title": "O que dá para guardar? Qualquer coisa.",
+    "kinds_title": "O que dá para guardar? Qualquer coisa",
     "kinds": [
       [
         "image",
@@ -2062,7 +2087,7 @@
       ]
     ],
     "rooms_kicker": "Salas",
-    "rooms_title": "Uma sala para cada projeto.",
+    "rooms_title": "Uma sala para cada projeto",
     "rooms_p": "Abra uma sala para cada projeto, cliente ou clima. Cada uma tem sua coleção, capa e pastas: pode vigiar as pastas que você escolher e trazer sozinha os arquivos novos, ou guardar cada arquivo numa pasta própria. As salas sincronizam entre seus Macs pelo iCloud.",
     "rooms_count": "{n} itens",
     "rooms_current": "Atual",
@@ -2074,7 +2099,7 @@
       "Documentos"
     ],
     "piles_kicker": "Bancada",
-    "piles_title": "Um clique, uma nova ordem.",
+    "piles_title": "Um clique, uma nova ordem",
     "piles_p": "Agrupe as mesmas coisas por formato, tipo, tema ou cor. Cada uma voa para o seu grupo, e dá para voltar quando quiser.",
     "piles_modes": [
       "Formato",
@@ -2114,7 +2139,12 @@
       "home": "Casa",
       "white": "Branco",
       "silver": "Prata",
-      "black": "Preto"
+      "black": "Preto",
+      "sign": "Placas",
+      "coffee": "Café",
+      "travel": "Viagem",
+      "brown": "Marrom",
+      "yellow": "Amarelo"
     }
   }
 }

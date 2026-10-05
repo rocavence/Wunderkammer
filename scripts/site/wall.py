@@ -24,6 +24,8 @@ NAMES = {"record player": "turntable", "turntable": "turntable", "radio": "radio
          "lamp": "lamp", "clock": "clock", "watch": "clock"}
 # The demo rooms: their covers come from these sets.
 ROOMS = {"default": "products", "coffee": "coffee", "signs": "signs", "travel": "travel", "documents": "documents"}
+# The pile demo borrows a few pieces from the other rooms, so colours have more to sort.
+PILE_EXTRAS = {"signs": [0, 3, 8, 25, 23], "coffee": [0, 6, 12], "travel": [0, 7, 18, 12]}
 # Which pieces make each cover (by position in the sheet), where the first four aren't the best.
 COVERS = {"coffee": [0, 6, 12, 13], "signs": [0, 3, 8, 25], "travel": [2, 8, 11, 25]}
 
@@ -37,14 +39,14 @@ def colour(img):
         if v > 0.9 and s < 0.1:
             continue
         values.append(v)
-        if s < 0.3 or v < 0.25:
+        if s < 0.3 or v < 0.18:
             continue
         deg = h * 360
-        name = ("red" if deg < 18 or deg >= 340 else "orange" if deg < 45 else "gold" if deg < 65
-                else "green" if deg < 170 else "blue" if deg < 255 else "purple")
+        name = ("red" if deg < 14 or deg >= 340 else ("brown" if v < 0.62 else "orange") if deg < 36
+                else "yellow" if deg < 68 else "green" if deg < 170 else "blue" if deg < 255 else "purple")
         buckets[name] = buckets.get(name, 0) + s * v
     name, weight = max(buckets.items(), key=lambda kv: kv[1], default=("", 0))
-    if weight > 0.12 * max(len(values), 1):
+    if weight > 0.06 * max(len(values), 1):
         return name
     mean = sum(values) / max(len(values), 1)
     return "black" if mean < 0.38 else "white" if mean > 0.72 else "silver"
@@ -84,6 +86,19 @@ def main():
         picks = [found[n] for n in COVERS[room]] if room in COVERS else found[:4]
         for i, c in enumerate(picks):
             thumb(SAMPLES / sample / c["file"], rooms / f"{room}-{i}.jpg", 320)
+    piles = ROOT / "site/assets/pile"
+    piles.mkdir(parents=True, exist_ok=True)
+    for old in piles.glob("*.jpg"):
+        old.unlink()
+    extras = []
+    for sample, picks in PILE_EXTRAS.items():
+        found = json.loads((SAMPLES / sample / "credits.json").read_text())
+        for n in picks:
+            file = f"{sample}-{n}.jpg"
+            img = thumb(SAMPLES / sample / found[n]["file"], piles / file, 240)
+            extras.append({"src": f"pile/{file}", "set": sample, "color": colour(img)})
+    (ROOT / "site/assets/pile.json").write_text(json.dumps(extras, separators=(",", ":")))
+    print(f"分堆示範：{len(extras)} 張，顏色 {sorted({e['color'] for e in extras})}")
     print(f"展室封面：{len(list(rooms.glob('*.jpg')))} 張")
 
 
