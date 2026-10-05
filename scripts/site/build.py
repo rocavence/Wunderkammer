@@ -96,6 +96,7 @@ def render(page, pages, template, wall):
         for i, label in enumerate(page["side"]))
     fill["rooms_cards"] = room_cards(page, root)
     fill["pile_tiles"] = pile_tiles(root, wall)
+    fill["door_salon"] = door_salon(root, wall)
     fill["piles_names"] = attr(json.dumps(page["piles_names"], ensure_ascii=False))
     fill["piles_buttons"] = "\n".join(
         f'      <button type="button" data-mode="{m}"{" class=" + chr(34) + "on" + chr(34) if i == 0 else ""}>{label}</button>'
@@ -160,6 +161,13 @@ PILE_CARDS = [
 ]
 PILE_PICKS = [("seating", 4), ("table", 2), ("storage", 3), ("light", 3), ("plant", 2), ("textile", 2), ("bed", 1)]
 EXTRA_KIND = {"signs": "sign", "coffee": "coffee", "travel": "travel"}
+
+
+# Behind the arch in the closing story: the collection hung salon-style,
+# frame to frame, every third picture of the wall.
+def door_salon(root, wall):
+    picks = [w for i, w in enumerate(wall) if i % 3 == 0][:28]
+    return "\n".join(f'            <img src="{root}assets/{w["src"]}" alt="" loading="lazy">' for w in picks)
 
 
 def pile_tiles(root, wall):

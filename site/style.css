@@ -951,19 +951,23 @@ footer a:hover { color: var(--ink); }
   background: radial-gradient(75% 60% at 50% 42%, #fff7ec, #ffd6a6 38%, #f39a52 72%, #cf5222);
   box-shadow: 0 0 calc(30px + var(--open) * 110px) calc(var(--open) * 18px) rgba(255, 128, 48, calc(.18 + var(--open) * .4));
 }
-.door-light img {
+/* The collection hung salon-style, frame to frame, filling the arch. */
+.salon {
   position: absolute;
-  height: auto;
-  padding: 4px;
-  background: #fffaf3;
-  box-shadow: 0 8px 18px -8px #7a2a0c99;
+  inset: -14px -18px;
+  columns: 4 52px;
+  column-gap: 6px;
   transform: translate(calc(var(--mx) * -14px), calc(var(--my) * -10px));
 }
-.door-light .f1 { left: 26px; top: 112px; width: 70px; }
-.door-light .f2 { left: 108px; top: 86px; width: 52px; }
-.door-light .f3 { left: 170px; top: 110px; width: 58px; }
-.door-light .f4 { left: 62px; top: 214px; width: 48px; }
-.door-light .f5 { left: 126px; top: 206px; width: 72px; }
+.salon img {
+  display: block;
+  width: 100%;
+  margin: 0 0 6px;
+  padding: 3px;
+  background: #fffaf3;
+  box-shadow: 0 6px 12px -6px #7a2a0caa;
+  break-inside: avoid;
+}
 .door-light::after {
   content: "";
   position: absolute;
