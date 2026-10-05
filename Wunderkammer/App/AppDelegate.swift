@@ -1551,6 +1551,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     func showSettingsTabForTest(_ tab: SettingsWindowController.Tab) { settings.showForTest(tab) }
     func flipCabinetForTest() { cabinetsPanel?.flipForTest(cabinets.currentID) }
     func cabinetSettingsForTest() { sidebar.cabinetSettingsButtonForTest.performClick(nil) }
+    func hoverAddBoardForTest(_ on: Bool) -> String {
+        sidebar.addBoardButtonForTest?.hoverForTest(on)
+        return sidebar.addBoardButtonForTest?.title ?? ""
+    }
     func hoverCabinetSettingsForTest(_ on: Bool) -> CGFloat {
         sidebar.cabinetSettingsButtonForTest.hoverForTest(on)
         sidebar.view.layoutSubtreeIfNeeded()

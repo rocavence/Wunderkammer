@@ -734,6 +734,11 @@ final class SelfTest {
         shot("sidebar-foot-hover")
         check(rest <= 30 && pointed > 60, "the arch says 展室設定 only while pointed at (\(Int(rest)) → \(Int(pointed)))")
         _ = ui.hoverCabinetSettingsForTest(false)
+        let says = ui.hoverAddBoardForTest(true)
+        await wait(0.3)
+        shot("sidebar-foot-add")
+        check(says == "新增釘選版", "the + says it makes a 釘選版, not a 展室 (\(says))")
+        _ = ui.hoverAddBoardForTest(false)
         ui.cabinetSettingsForTest()
         await wait(0.6)
         check(ui.cabinetSettingsShownForTest, "the sidebar's settings button opens this 展室's settings")
@@ -1881,6 +1886,7 @@ protocol SelfTestUI: AnyObject {
     func manageCabinets()
     func cabinetSettingsForTest()
     func hoverCabinetSettingsForTest(_ on: Bool) -> CGFloat
+    func hoverAddBoardForTest(_ on: Bool) -> String
     var cabinetSettingsShownForTest: Bool { get }
     func closeCabinetsForTest()
     var cabinetsWindowNumber: Int? { get }

@@ -20,8 +20,12 @@ final class StatusDrop: NSObject, NSWindowDelegate, NSDraggingDestination {
 
     /// An arch, ∩, as a menu bar template: outlined, or filled while a drop
     /// hovers. Lit, it's outlined in the menu bar's ink with Rams orange inside.
-    static func arch(filled: Bool, lit: Bool = false) -> NSImage {
-        let image = NSImage(size: NSSize(width: 18, height: 18), flipped: false) { _ in
+    /// `side`: drawn smaller elsewhere (the sidebar's foot), the same shape.
+    static func arch(filled: Bool, lit: Bool = false, side: CGFloat = 18) -> NSImage {
+        let image = NSImage(size: NSSize(width: side, height: side), flipped: false) { _ in
+            let scale = NSAffineTransform()
+            scale.scale(by: side / 18)
+            scale.concat()
             let w: CGFloat = 11, legs: CGFloat = 4, top: CGFloat = 14.5, inset = (18 - w) / 2
             let r = w / 2
             let path = NSBezierPath()

@@ -14,7 +14,8 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     var onManageCabinets: (() -> Void)?
     /// The open 展室's settings (the button at the foot, left).
     var onCabinetSettings: (() -> Void)?
-    private let roomSettings = FootButton(image: FootButton.arch(), title: nil, reveals: String(localized: "展室設定"))
+    // The menu bar's arch, at the size of the + beside it.
+    private let roomSettings = FootButton(image: StatusDrop.arch(filled: false, side: 13), title: nil, reveals: String(localized: "展室設定"))
     /// Which 展室 is open, shown on the card at the top.
     var cabinetName = String(localized: "展室") { didSet { if cabinetName != oldValue { reload() } } }
     var cabinetID: UUID? { didSet { if cabinetID != oldValue { coverIDs = [] ; reload() } } }
@@ -73,7 +74,8 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         // The card above already clears the title bar.
         scroll.automaticallyAdjustsContentInsets = false
 
-        let add = FootButton(image: Icon.image(.plus), title: nil)
+        let add = FootButton(image: Icon.image(.plus), title: nil, reveals: String(localized: "新增釘選版"), trailing: true)
+        addBoard = add
         add.target = self
         add.action = #selector(newBoard(_:))
         add.toolTip = String(localized: "新增釘選版")
@@ -516,6 +518,8 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     @objc private func manageCabinets() { onManageCabinets?() }
     @objc private func openCabinetSettings() { onCabinetSettings?() }
     var cabinetSettingsButtonForTest: FootButton { roomSettings }
+    var addBoardButtonForTest: FootButton? { addBoard }
+    private weak var addBoard: FootButton?
 
     @objc func newBoard(_ sender: Any?) {
         let n = library.collections.count + 1
@@ -661,9 +665,12 @@ final class CabinetHeader: NSControl {
 final class FootButton: NSButton {
     private var hovering = false { didSet { paint() } }
     private let reveals: String?
+    /// The glyph after the word, for the one at the right edge, so it stays put.
+    private let trailing: Bool
 
-    init(image: NSImage, title: String?, reveals: String? = nil) {
+    init(image: NSImage, title: String?, reveals: String? = nil, trailing: Bool = false) {
         self.reveals = reveals
+        self.trailing = trailing
         super.init(frame: .zero)
         isBordered = false
         wantsLayer = true
@@ -697,7 +704,7 @@ final class FootButton: NSButton {
         hovering = on
         guard let reveals else { return }
         title = on ? reveals : ""
-        imagePosition = on ? .imageLeading : .imageOnly
+        imagePosition = on ? (trailing ? .imageTrailing : .imageLeading) : .imageOnly
         paint()
         invalidateIntrinsicContentSize()
         NSAnimationContext.runAnimationGroup { ctx in
@@ -727,25 +734,5 @@ final class FootButton: NSButton {
             ])
         }
         layer?.backgroundColor = hovering ? resolved(NSColor.labelColor.withAlphaComponent(0.07)) : nil
-    }
-
-    /// Wunder's arch, the doorway of a 展室, drawn at the weight of the
-    /// sidebar's other glyphs.
-    static func arch() -> NSImage {
-        let image = NSImage(size: NSSize(width: 16, height: 16), flipped: false) { _ in
-            let w: CGFloat = 9, inset = (16 - w) / 2, r = w / 2, top: CGFloat = 14.5, legs: CGFloat = 1.5
-            let path = NSBezierPath()
-            path.move(to: NSPoint(x: inset, y: legs))
-            path.line(to: NSPoint(x: inset, y: top - r))
-            path.appendArc(withCenter: NSPoint(x: 8, y: top - r), radius: r, startAngle: 180, endAngle: 0, clockwise: true)
-            path.line(to: NSPoint(x: 16 - inset, y: legs))
-            path.lineWidth = 1.6
-            path.lineCapStyle = .round
-            NSColor.black.setStroke()
-            path.stroke()
-            return true
-        }
-        image.isTemplate = true
-        return image
     }
 }
