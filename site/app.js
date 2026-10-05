@@ -410,6 +410,108 @@
     requestAnimationFrame(tick);
     finderStart();
   });
+  // ── The glowing door ──────────────────────────────────────────────
+  // Swings open as the story arrives, wider under the pointer; a click
+  // throws it open and it settles back on a spring. Dust drifts in the light.
+  const why = document.querySelector(".why");
+  if (why) {
+    const scene = why.querySelector(".why-scene");
+    const world = why.querySelector(".door-world");
+    const seam = why.querySelector(".door-seam");
+    const dust = why.querySelector(".door-dust");
+    const pen = dust.getContext("2d");
+    let open = 0, speed = 0, boost = 0, rx = 0, ry = 0, tx = 0, ty = 0;
+    let live = false, scale = 1, w = 0, h = 0, ratio = 1, px = -999, py = -999, mote = "255,196,140";
+    const motes = [];
+
+    const size = () => {
+      ratio = Math.min(2, devicePixelRatio || 1);
+      w = scene.clientWidth; h = scene.clientHeight;
+      dust.width = w * ratio; dust.height = h * ratio;
+      const css = getComputedStyle(scene);
+      scale = parseFloat(css.getPropertyValue("--s")) || 1;
+      mote = getComputedStyle(why).getPropertyValue("--mote").trim() || mote;
+    };
+    const arrived = () => {
+      // Shut as the doorway comes into view, open by the time it's in the middle.
+      const r = scene.getBoundingClientRect();
+      return clamp((innerHeight - r.top - 60) / (innerHeight * 0.6));
+    };
+    const pose = () => {
+      world.style.setProperty("--open", open.toFixed(4));
+      world.style.transform = `scale(${scale}) rotateX(${rx.toFixed(3)}deg) rotateY(${ry.toFixed(3)}deg)`;
+    };
+
+    scene.addEventListener("pointermove", (e) => {
+      const r = scene.getBoundingClientRect();
+      tx = (e.clientX - r.left) / r.width - 0.5;
+      ty = (e.clientY - r.top) / r.height - 0.5;
+      px = e.clientX - r.left; py = e.clientY - r.top;
+      boost = 0.16;
+    });
+    scene.addEventListener("pointerleave", () => { tx = ty = 0; boost = 0; px = py = -999; });
+    scene.addEventListener("click", () => { speed += 0.09; });
+
+    function drift(now) {
+      pen.setTransform(ratio, 0, 0, ratio, 0, 0);
+      pen.clearRect(0, 0, w, h);
+      const d = seam.getBoundingClientRect(), s = scene.getBoundingClientRect();
+      const left = d.left - s.left, top = d.top - s.top, mid = left + d.width / 2;
+      const room = Math.round(90 * clamp(open));
+      while (motes.length < room) {
+        motes.push({
+          x: left + Math.random() * d.width,
+          y: top + d.height * (0.25 + Math.random() * 0.75),
+          vx: (Math.random() - 0.5) * 0.2, vy: -(0.12 + Math.random() * 0.32),
+          r: 0.5 + Math.random() * 1.7, age: 0, life: 220 + Math.random() * 320, seed: Math.random() * 1000,
+        });
+      }
+      pen.globalCompositeOperation = "lighter";
+      for (let i = motes.length - 1; i >= 0; i--) {
+        const m = motes[i];
+        m.age++;
+        // Out through the doorway, wandering a little, shy of the pointer.
+        m.vx += (m.x - mid) * 0.00004 + Math.sin((m.age + m.seed) / 37) * 0.004;
+        const dx = m.x - px, dy = m.y - py, near = dx * dx + dy * dy;
+        if (near < 3600) { m.vx += dx / near * 1.6; m.vy += dy / near * 1.6; }
+        m.vx *= 0.985; m.vy *= 0.995;
+        m.x += m.vx; m.y += m.vy;
+        if (m.age > m.life || (motes.length > room && Math.random() < 0.02)) { motes.splice(i, 1); continue; }
+        const a = Math.sin(Math.PI * m.age / m.life) * clamp(open) * (0.55 + 0.45 * Math.sin((now + m.seed * 40) / 260));
+        pen.fillStyle = `rgba(${mote},${(a * 0.9).toFixed(3)})`;
+        pen.beginPath();
+        pen.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+        pen.fill();
+      }
+    }
+
+    function swing(now) {
+      if (!live) return;
+      const want = clamp(ease(arrived()) * 0.68 + boost, 0, 1.06);
+      speed += (want - open) * 0.05;
+      speed *= 0.86;
+      open += speed;
+      rx = lerp(rx, -ty * 9 + Math.sin(now / 2700) * 1.4, 0.06);
+      ry = lerp(ry, tx * 18 + Math.sin(now / 3600) * 2.4, 0.06);
+      pose();
+      drift(now);
+      requestAnimationFrame(swing);
+    }
+
+    size();
+    addEventListener("resize", size);
+    if (still.matches) {
+      open = 0.82;
+      pose();
+    } else {
+      new IntersectionObserver(([e]) => {
+        const was = live;
+        live = e.isIntersecting;
+        if (live && !was) requestAnimationFrame(swing);
+      }).observe(scene);
+    }
+  }
+
   let resizing = 0;
   addEventListener("resize", () => {
     morph();
