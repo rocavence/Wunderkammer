@@ -56,10 +56,19 @@ final class SettingsWindowController: NSWindowController {
     private let sidebar = NSStackView()
     private let heading = NSTextField(labelWithString: "")
     private let page = FlippedView()
-    private let scroll = NSScrollView()
+    private let scroll = FadingScrollView()
+
+    /// Flione's settings card: 900 × 600, 32 all round, a 184-wide column of
+    /// sections, a hairline, then the page 24 in from it.
+    private static let size = NSSize(width: 900, height: 600)
+    private static let margin: CGFloat = 32
+    private static let sidebarWidth: CGFloat = 184
+    private static let gutter: CGFloat = 24
+    /// Room for a row: the card less the column, the hairline and the margins.
+    private static let rowWidth = size.width - margin * 2 - sidebarWidth - 16 - 1 - gutter
 
     convenience init() {
-        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 820, height: 520),
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: Self.size.width, height: Self.size.height),
                               styleMask: [.titled, .closable, .fullSizeContentView], backing: .buffered, defer: false)
         window.title = String(localized: "設定")
         window.titleVisibility = .hidden
@@ -88,52 +97,41 @@ final class SettingsWindowController: NSWindowController {
     // MARK: Frame: sections on the left, the chosen one on the right
 
     private func buildFrame() {
-        let left = NSVisualEffectView()
-        left.material = .sidebar
-        left.blendingMode = .behindWindow
-        left.state = .followsWindowActiveState
         let title = NSTextField(labelWithString: String(localized: "設定"))
-        title.font = Typography.display(22) ?? .systemFont(ofSize: 22, weight: .semibold)
+        title.attributedStringValue = Self.text(title.stringValue, size: 28, weight: .semibold, tracking: -0.6)
         sidebar.orientation = .vertical
         sidebar.alignment = .leading
         sidebar.spacing = 2
-        for v in [title, sidebar] as [NSView] {
-            v.translatesAutoresizingMaskIntoConstraints = false
-            left.addSubview(v)
-        }
-        let line = NSBox()
-        line.boxType = .separator
-        heading.font = Typography.display(24) ?? .systemFont(ofSize: 24, weight: .semibold)
+        let line = NSView()
+        line.wantsLayer = true
+        line.layer?.backgroundColor = NSColor.separatorColor.cgColor
         page.translatesAutoresizingMaskIntoConstraints = false
         scroll.documentView = page
         scroll.drawsBackground = false
-        scroll.hasVerticalScroller = true
-        scroll.autohidesScrollers = true
-        scroll.scrollerStyle = .overlay
-        let root = NSView()
-        for v in [left, line, heading, scroll] as [NSView] {
+        scroll.hasVerticalScroller = false
+        let root = SettingsBackground()
+        for v in [title, sidebar, line, heading, scroll] as [NSView] {
             v.translatesAutoresizingMaskIntoConstraints = false
             root.addSubview(v)
         }
+        // The traffic lights sit in the top margin, so the columns start a little lower.
+        let top = Self.margin + 8
         NSLayoutConstraint.activate([
-            left.topAnchor.constraint(equalTo: root.topAnchor),
-            left.bottomAnchor.constraint(equalTo: root.bottomAnchor),
-            left.leadingAnchor.constraint(equalTo: root.leadingAnchor),
-            left.widthAnchor.constraint(equalToConstant: 220),
-            title.topAnchor.constraint(equalTo: left.topAnchor, constant: 52),
-            title.leadingAnchor.constraint(equalTo: left.leadingAnchor, constant: 22),
-            sidebar.topAnchor.constraint(equalTo: title.bottomAnchor, constant: 18),
-            sidebar.leadingAnchor.constraint(equalTo: left.leadingAnchor, constant: 12),
-            sidebar.trailingAnchor.constraint(equalTo: left.trailingAnchor, constant: -12),
+            title.topAnchor.constraint(equalTo: root.topAnchor, constant: top),
+            title.leadingAnchor.constraint(equalTo: root.leadingAnchor, constant: Self.margin + 8),
+            sidebar.topAnchor.constraint(equalTo: title.bottomAnchor, constant: 20),
+            sidebar.leadingAnchor.constraint(equalTo: root.leadingAnchor, constant: Self.margin),
+            sidebar.widthAnchor.constraint(equalToConstant: Self.sidebarWidth),
             line.topAnchor.constraint(equalTo: root.topAnchor),
             line.bottomAnchor.constraint(equalTo: root.bottomAnchor),
-            line.leadingAnchor.constraint(equalTo: left.trailingAnchor),
+            line.leadingAnchor.constraint(equalTo: sidebar.trailingAnchor, constant: 16),
             line.widthAnchor.constraint(equalToConstant: 1),
-            heading.topAnchor.constraint(equalTo: root.topAnchor, constant: 48),
-            heading.leadingAnchor.constraint(equalTo: line.trailingAnchor, constant: 32),
-            scroll.topAnchor.constraint(equalTo: heading.bottomAnchor, constant: 16),
-            scroll.leadingAnchor.constraint(equalTo: line.trailingAnchor),
-            scroll.trailingAnchor.constraint(equalTo: root.trailingAnchor),
+            heading.topAnchor.constraint(equalTo: root.topAnchor, constant: top),
+            heading.leadingAnchor.constraint(equalTo: line.trailingAnchor, constant: Self.gutter),
+            heading.heightAnchor.constraint(equalToConstant: 36),
+            scroll.topAnchor.constraint(equalTo: heading.bottomAnchor, constant: 4),
+            scroll.leadingAnchor.constraint(equalTo: line.trailingAnchor, constant: Self.gutter),
+            scroll.trailingAnchor.constraint(equalTo: root.trailingAnchor, constant: -Self.margin),
             scroll.bottomAnchor.constraint(equalTo: root.bottomAnchor),
             page.leadingAnchor.constraint(equalTo: scroll.contentView.leadingAnchor),
             page.trailingAnchor.constraint(equalTo: scroll.contentView.trailingAnchor),
@@ -150,7 +148,7 @@ final class SettingsWindowController: NSWindowController {
             sidebar.addArrangedSubview(row)
             row.widthAnchor.constraint(equalTo: sidebar.widthAnchor).isActive = true
         }
-        heading.stringValue = tab.title
+        heading.attributedStringValue = Self.text(tab.title, size: 19, weight: .semibold, tracking: -0.3)
         page.subviews.forEach { $0.removeFromSuperview() }
         self.rows = []
         let rows: [NSView]
@@ -165,7 +163,7 @@ final class SettingsWindowController: NSWindowController {
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = 0
-        stack.edgeInsets = NSEdgeInsets(top: 0, left: 32, bottom: 32, right: 32)
+        stack.edgeInsets = NSEdgeInsets(top: 0, left: 0, bottom: Self.margin, right: 0)
         stack.translatesAutoresizingMaskIntoConstraints = false
         page.addSubview(stack)
         NSLayoutConstraint.activate([
@@ -174,42 +172,34 @@ final class SettingsWindowController: NSWindowController {
             stack.trailingAnchor.constraint(equalTo: page.trailingAnchor),
             stack.bottomAnchor.constraint(equalTo: page.bottomAnchor),
         ])
-        for r in rows { r.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: -64).isActive = true }
+        for r in rows { r.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true }
     }
 
     // MARK: Sections
 
     private func generalRows() -> [NSView] {
         // Language: takes effect on the next launch, with a restart offered.
-        let language = NSPopUpButton()
-        for l in AppLanguage.allCases {
-            language.addItem(withTitle: l.title)
-            language.lastItem?.representedObject = l.rawValue
+        let language = PillMenu(AppLanguage.allCases.map(\.title),
+                                selected: AppLanguage.allCases.firstIndex(of: AppLanguage.saved) ?? 0) { [weak self] i in
+            AppLanguage.save(AppLanguage.allCases[i])
+            self?.show(.general)
         }
-        language.selectItem(at: AppLanguage.allCases.firstIndex(of: AppLanguage.saved) ?? 0)
-        language.target = self
-        language.action = #selector(languagePicked(_:))
         let restart = PillButton(String(localized: "重新開啟")) { AppLanguage.relaunch() }
         restart.isHidden = AppLanguage.saved == AppLanguage.launched
         let languageControl = NSStackView(views: [restart, language])
         languageControl.spacing = 8
         let pending = AppLanguage.saved != AppLanguage.launched
 
-        let look = NSPopUpButton()
-        for a in AppAppearance.allCases { look.addItem(withTitle: a.title) }
-        look.selectItem(at: AppAppearance.allCases.firstIndex(of: AppAppearance.saved) ?? 0)
-        look.target = self
-        look.action = #selector(appearancePicked(_:))
+        let look = PillMenu(AppAppearance.allCases.map(\.title),
+                            selected: AppAppearance.allCases.firstIndex(of: AppAppearance.saved) ?? 0) { i in
+            AppAppearance.apply(AppAppearance.allCases[i])
+        }
 
         let swatches = NSStackView(views: Accent.allCases.map { a in
             Swatch(a, selected: a == Accent.current) { Accent.apply(a) }
         })
-        swatches.spacing = 6
-        let chosen = NSTextField(labelWithString: Accent.current.title)
-        chosen.font = .systemFont(ofSize: 12, weight: .medium)
-        chosen.textColor = .secondaryLabelColor
-        swatches.addArrangedSubview(chosen)
-        swatches.setCustomSpacing(14, after: swatches.arrangedSubviews[swatches.arrangedSubviews.count - 2])
+        swatches.spacing = 10
+        swatches.alignment = .top
         return [
             row(String(localized: "語言"),
                 pending ? String(localized: "重新開啟 Wunder 後換成新的語言。") : String(localized: "選單、按鈕與訊息使用的語言。"),
@@ -264,54 +254,48 @@ final class SettingsWindowController: NSWindowController {
     private func about() -> NSView {
         let icon = NSImageView(image: NSApp.applicationIconImage ?? NSImage())
         icon.imageScaling = .scaleProportionallyUpOrDown
-        let name = NSTextField(labelWithString: "Wunder")
-        name.font = Typography.display(26) ?? .systemFont(ofSize: 26, weight: .semibold)
+        let name = Self.label("Wunder", size: 14, weight: .medium)
+        let tagline = Self.label(String(localized: "收進來就好，不必整理。看到喜歡的東西就收，系統負責理解、搜尋與重新發現。"),
+                                 size: 13, color: .secondaryLabelColor, wraps: true)
+        tagline.preferredMaxLayoutWidth = Self.rowWidth - 64 - 16
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
-        let detail = NSTextField(labelWithString: String(localized: "版本 \(version)"))
-        detail.font = .systemFont(ofSize: 12)
-        detail.textColor = .secondaryLabelColor
-        let tagline = NSTextField(wrappingLabelWithString: String(localized: "收進來就好，不必整理。看到喜歡的東西就收，系統負責理解、搜尋與重新發現。"))
-        tagline.font = .systemFont(ofSize: 13)
-        tagline.textColor = .secondaryLabelColor
+        let detail = Self.label(String(localized: "版本 \(version)"), size: 11, color: .tertiaryLabelColor)
         let updateRow = NSStackView()
-        updateRow.spacing = 10
+        updateRow.spacing = 8
         if let release = update() {
             updateRow.addArrangedSubview(PillButton(String(localized: "下載新版本 \(release.version)")) { NSWorkspace.shared.open(release.page) })
         } else {
             updateRow.addArrangedSubview(PillButton(String(localized: "檢查更新")) { [weak self] in self?.onCheckUpdate?() })
             if updateResult == false {
-                let latest = NSTextField(labelWithString: String(localized: "已經是最新版本"))
-                latest.font = .systemFont(ofSize: 12)
-                latest.textColor = .secondaryLabelColor
-                updateRow.addArrangedSubview(latest)
+                updateRow.addArrangedSubview(Self.label(String(localized: "已經是最新版本"), size: 11, color: .secondaryLabelColor))
             }
         }
-        let stack = NSStackView(views: [icon, name, detail, tagline, updateRow])
-        stack.orientation = .vertical
-        stack.alignment = .leading
-        stack.spacing = 6
-        stack.setCustomSpacing(14, after: icon)
-        stack.setCustomSpacing(16, after: tagline)
-        stack.edgeInsets = NSEdgeInsets(top: 12, left: 0, bottom: 0, right: 0)
-        icon.widthAnchor.constraint(equalToConstant: 96).isActive = true
-        icon.heightAnchor.constraint(equalToConstant: 96).isActive = true
+        let words = NSStackView(views: [name, tagline, detail, updateRow])
+        words.orientation = .vertical
+        words.alignment = .leading
+        words.spacing = 4
+        words.setCustomSpacing(10, after: detail)
+        let stack = NSStackView(views: [icon, words])
+        stack.alignment = .top
+        stack.spacing = 16
+        stack.edgeInsets = NSEdgeInsets(top: 16, left: 0, bottom: 0, right: 0)
+        icon.widthAnchor.constraint(equalToConstant: 64).isActive = true
+        icon.heightAnchor.constraint(equalToConstant: 64).isActive = true
         return stack
     }
 
     // MARK: Pieces
 
-    /// One setting: its name and what it does, the control beside them, a
-    /// hairline under it. Every row is at least the same height with the same
-    /// room around it; a wide control (the colour swatches) goes under the
-    /// words instead of squeezing them.
+    /// One setting, as Flione's: its name and what it does on the left, the
+    /// control at the right, 16 above and below, a hairline under it. A wide
+    /// control (the colour swatches) goes under the words instead.
     private func row(_ title: String, _ detail: String, _ control: NSView) -> NSView {
-        let name = NSTextField(labelWithString: title)
-        name.font = .systemFont(ofSize: 13.5, weight: .medium)
-        let about = Self.small(detail)
+        let name = Self.label(title, size: 14, weight: .medium)
+        let about = Self.label(detail, size: 13, color: .secondaryLabelColor, wraps: true)
         let text = NSStackView(views: [name, about])
         text.orientation = .vertical
         text.alignment = .leading
-        text.spacing = 3
+        text.spacing = 4
         control.setContentHuggingPriority(.required, for: .horizontal)
         control.setContentCompressionResistancePriority(.required, for: .horizontal)
 
@@ -323,22 +307,21 @@ final class SettingsWindowController: NSWindowController {
             row.spacing = 12
             row.addArrangedSubview(text)
             row.addArrangedSubview(control)
-            about.preferredMaxLayoutWidth = Self.textWidth
+            about.preferredMaxLayoutWidth = Self.rowWidth
         } else {
             row.addView(text, in: .leading)
             row.addView(control, in: .trailing)
             row.alignment = .centerY
-            row.spacing = 24
+            row.spacing = Self.gutter
             text.setContentHuggingPriority(.defaultLow, for: .horizontal)
-            // The words keep one measure; the row grows taller instead.
-            let width = min(Self.textWidth, Self.rowWidth - control.fittingSize.width - row.spacing)
-            about.preferredMaxLayoutWidth = width
-            text.widthAnchor.constraint(equalToConstant: width).isActive = true
+            about.preferredMaxLayoutWidth = Self.rowWidth - control.fittingSize.width - row.spacing
         }
         row.edgeInsets = NSEdgeInsets(top: 16, left: 0, bottom: 16, right: 0)
         row.heightAnchor.constraint(greaterThanOrEqualToConstant: Self.rowHeight).isActive = true
-        let line = NSBox()
-        line.boxType = .separator
+        let line = NSView()
+        line.wantsLayer = true
+        line.layer?.backgroundColor = NSColor.separatorColor.cgColor
+        line.heightAnchor.constraint(equalToConstant: 1).isActive = true
         let box = NSStackView(views: [row, line])
         box.orientation = .vertical
         box.spacing = 0
@@ -355,31 +338,34 @@ final class SettingsWindowController: NSWindowController {
     }
     private var rows: [NSView] = []
 
-    /// The measure for the words of a row, the room a row has (the window
-    /// less the sidebar and margins), and how wide a control can be beside them.
-    private static let textWidth: CGFloat = 340
-    private static let rowWidth: CGFloat = 820 - 221 - 64
+    /// How wide a control can be beside the words.
     private static let besideLimit: CGFloat = 220
     private static let rowHeight: CGFloat = 68
 
-    /// A row's explanation: 12 pt, grey, with room between the lines.
-    private static func small(_ text: String) -> NSTextField {
+    /// Flione's type: 28 and 19 semibold for titles, 14 medium for a
+    /// setting's name, 13 for words, 11 for small print.
+    static func text(_ string: String, size: CGFloat, weight: NSFont.Weight = .regular,
+                     color: NSColor = .labelColor, tracking: CGFloat = 0) -> NSAttributedString {
         let style = NSMutableParagraphStyle()
-        style.minimumLineHeight = 18
-        style.maximumLineHeight = 18
         style.lineBreakStrategy = .standard
-        let label = NSTextField(wrappingLabelWithString: "")
-        label.attributedStringValue = NSAttributedString(string: text, attributes: [
-            .font: NSFont.systemFont(ofSize: 12), .foregroundColor: NSColor.secondaryLabelColor, .paragraphStyle: style,
+        return NSAttributedString(string: string, attributes: [
+            .font: NSFont.systemFont(ofSize: size, weight: weight), .foregroundColor: color, .kern: tracking,
+            .paragraphStyle: style,
         ])
+    }
+
+    static func label(_ string: String, size: CGFloat, weight: NSFont.Weight = .regular,
+                      color: NSColor = .labelColor, wraps: Bool = false) -> NSTextField {
+        let label = wraps ? NSTextField(wrappingLabelWithString: "") : NSTextField(labelWithString: "")
+        label.attributedStringValue = text(string, size: size, weight: weight, color: color)
         return label
     }
 
     private func note(_ text: String) -> NSView {
-        let n = Self.small(text)
+        let n = Self.label(text, size: 13, color: .secondaryLabelColor, wraps: true)
         n.preferredMaxLayoutWidth = Self.rowWidth
         let box = NSStackView(views: [n])
-        box.edgeInsets = NSEdgeInsets(top: 12, left: 0, bottom: 0, right: 0)
+        box.edgeInsets = NSEdgeInsets(top: 16, left: 0, bottom: 0, right: 0)
         return box
     }
 
@@ -396,53 +382,49 @@ final class SettingsWindowController: NSWindowController {
     }
 
     private func status(_ ok: Bool, ready: String, missing: String) -> NSView {
-        let t = NSTextField(labelWithString: (ok ? "● " : "○ ") + (ok ? ready : missing))
-        t.font = .systemFont(ofSize: 12)
-        t.textColor = ok ? .systemGreen : .secondaryLabelColor
-        return t
-    }
-
-    @objc private func languagePicked(_ sender: NSPopUpButton) {
-        guard let raw = sender.selectedItem?.representedObject as? String, let l = AppLanguage(rawValue: raw) else { return }
-        AppLanguage.save(l)
-        show(.general)
-    }
-
-    @objc private func appearancePicked(_ sender: NSPopUpButton) {
-        AppAppearance.apply(AppAppearance.allCases[max(0, sender.indexOfSelectedItem)])
+        Self.label((ok ? "● " : "○ ") + (ok ? ready : missing), size: 13, weight: .medium,
+                   color: ok ? .systemGreen : .secondaryLabelColor)
     }
 
     // Tests.
     func showForTest(_ tab: Tab) { show(tab) }
 }
 
-/// A section in the settings' sidebar: icon and name, filled with the accent when chosen.
+/// A section in the settings' sidebar, as Flione's: icon and name, filled
+/// with the accent when chosen, a faint fill under the pointer.
 @MainActor
 private final class TabRow: NSView {
     private let action: () -> Void
+    private let selected: Bool
 
     init(_ title: String, icon: Reicon, selected: Bool, action: @escaping () -> Void) {
         self.action = action
+        self.selected = selected
         super.init(frame: .zero)
         wantsLayer = true
         layer?.cornerRadius = 8
+        layer?.cornerCurve = .continuous
+        let ink = selected ? NSColor.white : NSColor.labelColor.withAlphaComponent(0.82)
         let image = NSImageView(image: Icon.optical(icon, size: 16))
-        image.contentTintColor = selected ? .white : .secondaryLabelColor
-        let label = NSTextField(labelWithString: title)
-        label.font = .systemFont(ofSize: 13, weight: selected ? .medium : .regular)
-        label.textColor = selected ? .white : .labelColor
+        image.contentTintColor = ink
+        let label = SettingsWindowController.label(title, size: 13, weight: selected ? .medium : .regular, color: ink)
+        label.lineBreakMode = .byTruncatingTail
+        label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         for v in [image, label] as [NSView] {
             v.translatesAutoresizingMaskIntoConstraints = false
             addSubview(v)
         }
         NSLayoutConstraint.activate([
             heightAnchor.constraint(equalToConstant: 32),
-            image.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
+            image.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+            image.widthAnchor.constraint(equalToConstant: 20),
             image.centerYAnchor.constraint(equalTo: centerYAnchor),
-            label.leadingAnchor.constraint(equalTo: image.trailingAnchor, constant: 9),
+            label.leadingAnchor.constraint(equalTo: image.trailingAnchor, constant: 8),
+            label.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -8),
             label.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
         if selected { layer?.backgroundColor = NSColor.accent.cgColor }
+        addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
         setAccessibilityElement(true)
         setAccessibilityRole(.button)
         setAccessibilityLabel(title)
@@ -450,12 +432,21 @@ private final class TabRow: NSView {
 
     required init?(coder: NSCoder) { fatalError() }
 
+    override func mouseEntered(with event: NSEvent) {
+        if !selected { layer?.backgroundColor = resolved(NSColor.labelColor.withAlphaComponent(0.06)) }
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        if !selected { layer?.backgroundColor = nil }
+    }
+
     override func mouseUp(with event: NSEvent) {
         if bounds.contains(convert(event.locationInWindow, from: nil)) { action() }
     }
 }
 
-/// One accent to choose: a disc of the colour, ringed when chosen; its name on hover.
+/// One accent to choose, as Flione's theme swatches: a disc of the colour,
+/// ringed when chosen, its name under it.
 @MainActor
 private final class Swatch: NSView {
     private let action: () -> Void
@@ -485,13 +476,17 @@ private final class Swatch: NSView {
         ring.layer?.cornerRadius = 17
         ring.layer?.borderWidth = selected ? 2 : 0
         ring.layer?.borderColor = (accent == .system ? NSColor.controlAccentColor : accent.color).cgColor
-        for v in [ring, disc] as [NSView] {
+        let name = SettingsWindowController.label(accent.title, size: selected ? 12 : 11, weight: selected ? .medium : .regular,
+                                                  color: selected ? .labelColor : .secondaryLabelColor, wraps: true)
+        name.alignment = .center
+        name.maximumNumberOfLines = 2
+        name.preferredMaxLayoutWidth = Self.width
+        for v in [ring, disc, name] as [NSView] {
             v.translatesAutoresizingMaskIntoConstraints = false
             addSubview(v)
         }
         NSLayoutConstraint.activate([
-            widthAnchor.constraint(equalToConstant: 34),
-            heightAnchor.constraint(equalToConstant: 34),
+            widthAnchor.constraint(equalToConstant: Self.width),
             ring.topAnchor.constraint(equalTo: topAnchor),
             ring.centerXAnchor.constraint(equalTo: centerXAnchor),
             ring.widthAnchor.constraint(equalToConstant: 34),
@@ -500,6 +495,10 @@ private final class Swatch: NSView {
             disc.centerYAnchor.constraint(equalTo: ring.centerYAnchor),
             disc.widthAnchor.constraint(equalToConstant: 26),
             disc.heightAnchor.constraint(equalToConstant: 26),
+            name.topAnchor.constraint(equalTo: ring.bottomAnchor, constant: 6),
+            name.widthAnchor.constraint(equalToConstant: Self.width),
+            name.centerXAnchor.constraint(equalTo: centerXAnchor),
+            name.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
         toolTip = accent.title
         setAccessibilityElement(true)
@@ -508,6 +507,9 @@ private final class Swatch: NSView {
         setAccessibilityValue(selected)
     }
 
+    /// Wide enough for a two-word name on two lines; eight fit a row.
+    static let width: CGFloat = 64
+
     required init?(coder: NSCoder) { fatalError() }
 
     override func mouseUp(with event: NSEvent) {
@@ -515,9 +517,10 @@ private final class Swatch: NSView {
     }
 }
 
-/// A rounded button tinted with the accent, as Flione's.
+/// A rounded button tinted with the accent, as Flione's: 32 high, a faint
+/// accent fill that deepens under the pointer.
 @MainActor
-final class PillButton: NSButton {
+class PillButton: NSButton {
     private let run: () -> Void
 
     init(_ title: String, action: @escaping () -> Void) {
@@ -525,21 +528,75 @@ final class PillButton: NSButton {
         super.init(frame: .zero)
         isBordered = false
         wantsLayer = true
-        layer?.cornerRadius = 12
-        layer?.backgroundColor = NSColor.accent.withAlphaComponent(0.14).cgColor
-        attributedTitle = NSAttributedString(string: title, attributes: [
-            .font: NSFont.systemFont(ofSize: 12, weight: .semibold), .foregroundColor: NSColor.accent,
-        ])
+        layer?.cornerRadius = 8
+        layer?.cornerCurve = .continuous
+        setLabel(title)
         target = self
         self.action = #selector(fire)
         translatesAutoresizingMaskIntoConstraints = false
-        heightAnchor.constraint(equalToConstant: 24).isActive = true
-        widthAnchor.constraint(greaterThanOrEqualToConstant: intrinsicContentSize.width + 24).isActive = true
+        heightAnchor.constraint(equalToConstant: 32).isActive = true
+        addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+        tint(0.12)
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
+    /// The words on it, in the accent.
+    func setLabel(_ title: String) {
+        attributedTitle = NSAttributedString(string: title, attributes: [
+            .font: NSFont.systemFont(ofSize: 13, weight: .medium), .foregroundColor: NSColor.accent,
+        ])
+        invalidateIntrinsicContentSize()
+    }
+
+    override var intrinsicContentSize: NSSize {
+        NSSize(width: ceil(attributedTitle.size().width) + 32, height: 32)
+    }
+
+    private func tint(_ alpha: CGFloat) { layer?.backgroundColor = NSColor.accent.withAlphaComponent(alpha).cgColor }
+    override func mouseEntered(with event: NSEvent) { tint(0.2) }
+    override func mouseExited(with event: NSEvent) { tint(0.12) }
+
     @objc private func fire() { run() }
+}
+
+/// A choice from a list, as Flione's menu: the current one and a chevron on a
+/// pill; a click opens the list with the current one ticked.
+@MainActor
+final class PillMenu: PillButton {
+    init(_ titles: [String], selected: Int, picked: @escaping (Int) -> Void) {
+        let menu = NSMenu()
+        for (i, title) in titles.enumerated() {
+            let item = NSMenuItem(title: title, action: #selector(ActionBox.run), keyEquivalent: "")
+            item.target = ActionBox.make(item) { picked(i) }
+            item.state = i == selected ? .on : .off
+            menu.addItem(item)
+        }
+        weak var weakSelf: PillMenu?
+        super.init(titles[selected]) {
+            guard let button = weakSelf else { return }
+            menu.popUp(positioning: menu.item(at: selected), at: NSPoint(x: 6, y: button.bounds.height - 9), in: button)
+        }
+        weakSelf = self
+        // The chevron goes into the words, so both sit centred on the pill.
+        let chevron = NSTextAttachment()
+        let glyph = Icon.optical(.chevronDown, size: 11)
+        chevron.image = NSImage(size: glyph.size, flipped: false) { rect in
+            glyph.draw(in: rect)
+            NSColor.accent.set()
+            rect.fill(using: .sourceAtop)
+            return true
+        }
+        chevron.bounds = CGRect(x: 0, y: -1, width: glyph.size.width, height: glyph.size.height)
+        let title = NSMutableAttributedString(attributedString: attributedTitle)
+        title.append(NSAttributedString(string: "  "))
+        title.append(NSAttributedString(attachment: chevron))
+        attributedTitle = title
+        invalidateIntrinsicContentSize()
+        setAccessibilityRole(.popUpButton)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
 }
 
 /// A switch that keeps its colour when the window isn't in front (the
@@ -605,14 +662,27 @@ final class ShortcutField: NSButton {
         self.current = current
         self.fallback = fallback
         super.init(frame: .zero)
-        bezelStyle = .rounded
-        title = current.display
+        isBordered = false
+        wantsLayer = true
+        layer?.cornerRadius = 8
+        layer?.cornerCurve = .continuous
+        show(current.display)
         target = self
         action = #selector(record)
         widthAnchor.constraint(equalToConstant: 140).isActive = true
+        heightAnchor.constraint(equalToConstant: 32).isActive = true
     }
 
     required init?(coder: NSCoder) { fatalError() }
+
+    /// The keys on a pill like the other controls; in the accent while it listens.
+    private func show(_ text: String, recording: Bool = false) {
+        attributedTitle = NSAttributedString(string: text, attributes: [
+            .font: NSFont.systemFont(ofSize: 13, weight: .medium), .foregroundColor: recording ? NSColor.accent : NSColor.labelColor,
+        ])
+        layer?.backgroundColor = recording ? NSColor.accent.withAlphaComponent(0.12).cgColor
+                                           : resolved(NSColor.labelColor.withAlphaComponent(0.06))
+    }
 
     /// The field currently waiting for a combination (never more than one).
     static weak var active: ShortcutField?
@@ -621,7 +691,7 @@ final class ShortcutField: NSButton {
         guard monitor == nil else { return }
         Self.active?.cancel()
         Self.active = self
-        title = String(localized: "按下組合鍵…")
+        show(String(localized: "按下組合鍵…"), recording: true)
         onRecording?(true)
         monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             // Only keystrokes aimed at Settings; everything else passes through.
@@ -636,7 +706,7 @@ final class ShortcutField: NSButton {
         guard let monitor else { return }
         NSEvent.removeMonitor(monitor)
         self.monitor = nil
-        title = current.display
+        show(current.display)
         if Self.active === self { Self.active = nil }
         onRecording?(false)
     }
@@ -662,8 +732,66 @@ final class ShortcutField: NSButton {
         if let monitor { NSEvent.removeMonitor(monitor) }
         monitor = nil
         if Self.active === self { Self.active = nil }
-        title = current.display
+        show(current.display)
         onRecording?(false)
         onChange?()
+    }
+}
+
+/// The card's ground, as Flione's: a faint glow of the accent from the top and
+/// of violet from the bottom right.
+@MainActor
+private final class SettingsBackground: NSView {
+    private let top = CAGradientLayer()
+    private let corner = CAGradientLayer()
+
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        wantsLayer = true
+        for g in [top, corner] {
+            g.type = .radial
+            layer?.addSublayer(g)
+        }
+        NotificationCenter.default.addObserver(forName: Accent.didChange, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.needsDisplay = true }
+        }
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override var wantsUpdateLayer: Bool { true }
+
+    override func updateLayer() {
+        layer?.backgroundColor = resolved(.windowBackgroundColor)
+        top.colors = [NSColor.accent.withAlphaComponent(0.08).cgColor, NSColor.clear.cgColor]
+        corner.colors = [Accent.purple.color.withAlphaComponent(0.08).cgColor, NSColor.clear.cgColor]
+    }
+
+    override func layout() {
+        super.layout()
+        let w = max(bounds.width, 1), h = max(bounds.height, 1)
+        for (g, centre, radius) in [(top, CGPoint(x: 0.5, y: 1), 420.0), (corner, CGPoint(x: 1, y: 0), 360.0)] {
+            g.frame = bounds
+            g.startPoint = centre
+            g.endPoint = CGPoint(x: centre.x + radius / w, y: centre.y + (centre.y > 0.5 ? -1 : 1) * radius / h)
+        }
+    }
+}
+
+/// A scroll view whose content fades out over its last 28 points, in place
+/// of a scroller, as Flione's.
+@MainActor
+private final class FadingScrollView: NSScrollView {
+    private let fade = CAGradientLayer()
+
+    override func layout() {
+        super.layout()
+        wantsLayer = true
+        layer?.mask = fade
+        fade.frame = bounds
+        fade.colors = [NSColor.clear.cgColor, NSColor.black.cgColor, NSColor.black.cgColor]
+        fade.startPoint = CGPoint(x: 0.5, y: 0)
+        fade.endPoint = CGPoint(x: 0.5, y: 1)
+        fade.locations = [0, NSNumber(value: Double(28 / max(bounds.height, 28))), 1]
     }
 }
