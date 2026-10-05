@@ -5846,7 +5846,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Workbench"
+            "value": "Space"
           }
         },
         "es": {
@@ -10366,7 +10366,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wander"
+            "value": "Wunder"
           }
         },
         "es": {
@@ -14406,7 +14406,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Reset Workbench Layout…"
+            "value": "Reset Space Layout…"
           }
         },
         "es": {
@@ -14446,7 +14446,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Reset the Workbench layout?"
+            "value": "Reset the Space layout?"
           }
         },
         "es": {
