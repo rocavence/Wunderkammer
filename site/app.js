@@ -411,8 +411,8 @@
     finderStart();
   });
   // ── The glowing door ──────────────────────────────────────────────
-  // Shut as it comes into view, open by the middle, wider under the pointer;
-  // a click throws it open and it settles back. Dust drifts in the light.
+  // Dim as it comes into view, bright by the middle, brighter under the
+  // pointer; a click flares it and it settles back. Dust drifts in the light.
   const why = document.querySelector(".why");
   if (why) {
     const scene = why.querySelector(".why-scene");
@@ -458,7 +458,7 @@
       const room = Math.round(70 * clamp(open));
       while (motes.length < room) {
         motes.push({
-          x: left + d.width * (0.35 + Math.random() * 0.65),
+          x: left + Math.random() * d.width,
           y: top + d.height * (0.25 + Math.random() * 0.75),
           vx: (Math.random() - 0.5) * 0.2, vy: -(0.12 + Math.random() * 0.3),
           r: 0.5 + Math.random() * 1.6, age: 0, life: 220 + Math.random() * 300, seed: Math.random() * 1000,

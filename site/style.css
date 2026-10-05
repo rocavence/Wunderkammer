@@ -909,8 +909,6 @@ footer a:hover { color: var(--ink); }
    open as you arrive, light spills onto the floor, dust drifts in the beam. */
 .why {
   --jamb: #e6ddd0;
-  --leaf: #2b2520;
-  --leaf-hi: #4a3f36;
   --mote: 240, 112, 26;
   max-width: 1120px;
   margin: 150px auto 0;
@@ -920,8 +918,8 @@ footer a:hover { color: var(--ink); }
   align-items: center;
   gap: 40px;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .why { --jamb: #26221f; --leaf: #171412; --leaf-hi: #2e2823; --mote: 255, 196, 140; } }
-:root[data-theme="dark"] .why { --jamb: #26221f; --leaf: #171412; --leaf-hi: #2e2823; --mote: 255, 196, 140; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .why { --jamb: #26221f; --mote: 255, 196, 140; } }
+:root[data-theme="dark"] .why { --jamb: #26221f; --mote: 255, 196, 140; }
 
 .why-scene {
   --s: 1;
@@ -930,8 +928,8 @@ footer a:hover { color: var(--ink); }
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
-/* One arch, drawn flat: the lit room behind, the door in front of it
-   turning on its own perspective, a frame round both. Nothing nested in 3D. */
+/* One arch, drawn flat: a lit room with the collection on its wall, a frame
+   round it, light on the floor. It brightens as you arrive. */
 .door {
   --open: 0;
   --mx: 0;
@@ -946,7 +944,7 @@ footer a:hover { color: var(--ink); }
   height: var(--h);
   transform: translate(-50%, -50%) scale(var(--s));
 }
-.door-light, .door-leaf, .door-frame { position: absolute; border-radius: var(--arch); }
+.door-light, .door-frame { position: absolute; border-radius: var(--arch); }
 .door-light {
   inset: 0;
   overflow: hidden;
@@ -972,30 +970,6 @@ footer a:hover { color: var(--ink); }
   inset: auto 0 0;
   height: 32%;
   background: linear-gradient(to bottom, transparent, #c4491b66);
-}
-.door-leaf {
-  inset: 3px 3px 0;
-  transform-origin: left center;
-  transform: perspective(900px) rotateY(calc(var(--open) * -88deg));
-  background:
-    repeating-linear-gradient(90deg, transparent 0 21px, #00000024 21px 22px),
-    linear-gradient(180deg, var(--leaf-hi), var(--leaf));
-  box-shadow: inset 0 0 0 1px #ffffff12, 18px 0 30px -10px #00000066;
-  filter: brightness(calc(1 - var(--open) * .35));
-}
-.door-leaf::before {
-  content: "";
-  position: absolute;
-  inset: 26px 24px 30px;
-  border-radius: 999px 999px 4px 4px;
-  border: 1px solid #ffffff1c;
-}
-.leaf-knob {
-  position: absolute;
-  right: 22px; top: 58%;
-  width: 12px; height: 12px; border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #fff0c8, #d9a441 45%, #7a5216);
-  box-shadow: 0 3px 6px #00000066;
 }
 .door-frame { inset: -7px -7px 0; border: 7px solid var(--jamb); border-bottom: 0; box-shadow: inset 0 0 0 1px #00000014; pointer-events: none; }
 .door-floor {
