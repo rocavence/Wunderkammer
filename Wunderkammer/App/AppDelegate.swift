@@ -1549,6 +1549,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     var sidebarToggleForTest: NSView { topBar.sidebarButton }
     var isSidebarCollapsed: Bool { sidebarItem.isCollapsed }
     func showSettingsTabForTest(_ tab: SettingsWindowController.Tab) { settings.showForTest(tab) }
+    func scrollSettingsToEndForTest() { settings.scrollToEndForTest() }
     func flipCabinetForTest() { cabinetsPanel?.flipForTest(cabinets.currentID) }
     func cabinetSettingsForTest() { sidebar.cabinetSettingsButtonForTest.performClick(nil) }
     func hoverAddBoardForTest(_ on: Bool) -> String {

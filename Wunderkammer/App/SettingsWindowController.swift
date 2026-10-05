@@ -469,6 +469,10 @@ final class SettingsWindowController: NSWindowController {
 
     // Tests.
     func showForTest(_ tab: Tab) { show(tab) }
+    func scrollToEndForTest() {
+        window?.contentView?.layoutSubtreeIfNeeded()
+        page.scroll(NSPoint(x: 0, y: max(0, page.frame.height - scroll.contentView.bounds.height)))
+    }
 }
 
 /// A section in the settings' sidebar, as Flione's: icon and name, filled

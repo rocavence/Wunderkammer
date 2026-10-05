@@ -215,6 +215,9 @@ final class SelfTest {
                     let gaps = ui.settingsRowHeightsForTest
                     check(gaps.allSatisfy { $0 >= 68 }, "settings rows keep their height in \(name) (\(gaps.map { Int($0) }))")
                 }
+                ui.scrollSettingsToEndForTest()
+                await wait(0.3)
+                shot("settings-about-end", windowNumber: w.windowNumber)
                 ui.showSettingsTabForTest(.general)
                 let was = Accent.current
                 Accent.apply(.blue)
@@ -1884,6 +1887,7 @@ protocol SelfTestUI: AnyObject {
     func switchCabinet(to id: UUID)
     func createCabinetForTest(_ name: String) -> UUID
     func manageCabinets()
+    func scrollSettingsToEndForTest()
     func cabinetSettingsForTest()
     func hoverCabinetSettingsForTest(_ on: Bool) -> CGFloat
     func hoverAddBoardForTest(_ on: Bool) -> String
