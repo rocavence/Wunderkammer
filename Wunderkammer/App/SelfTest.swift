@@ -1477,7 +1477,7 @@ final class SelfTest {
     private func showcase() async {
         let fm = FileManager.default
         guard let dir = ProcessInfo.processInfo.environment["WK_SAMPLES_DIR"].map({ URL(fileURLWithPath: $0) }),
-              let files = try? fm.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil).filter({ $0.pathExtension == "jpg" })
+              let files = try? fm.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil).filter({ ["jpg", "png"].contains($0.pathExtension) })
         else { return check(false, "WK_SAMPLES_DIR has the sample pictures") }
         await library.capture(files.sorted { $0.lastPathComponent < $1.lastPathComponent }.map { .file($0) })
         await library.capture([
@@ -1499,7 +1499,7 @@ final class SelfTest {
         await wait(1.5)
         ui.sidebar.clearHighlightForTest()
         shot("showcase-2-masonry")
-        ui.search("butterfly")
+        ui.search("clock")
         await wait(2)
         ui.sidebar.clearHighlightForTest()
         shot("showcase-3-search")
@@ -1512,7 +1512,7 @@ final class SelfTest {
         shot("showcase-4-theme")
             ui.sidebar.select(.all)
         }
-        if let pick = library.items.first(where: { $0.originalFilename.hasPrefix("Butterfly") }) {
+        if let pick = library.items.first(where: { $0.originalFilename.contains("Record Player") }) {
             ui.toggleInspectorForTest()
             ui.inspectForTest(pick.id)
             ui.grid.reveal(pick.id)

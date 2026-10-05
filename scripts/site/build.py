@@ -73,7 +73,7 @@ def render(page, pages, template, wall):
     fill["description"] = attr(page["description"])
     fill["lede_plain"] = attr(page["lede_plain"])
     fill["theme_label"] = page["theme_auto"]
-    fill["h1"] = page["h1"].replace("{icon}", f'<img src="{root}assets/icon.png" alt="" width="96" height="96">')
+    fill["h1"] = page["h1"].replace("{icon}", f'<img class="mark" src="{root}assets/mark.png" alt="" width="180" height="172">')
     fill["alternates"] = "\n".join(
         [f'<link rel="alternate" hreflang="{p["lang"]}" href="{BASE}{p["path"]}">' for p in pages]
         + [f'<link rel="alternate" hreflang="x-default" href="{BASE}">'])
@@ -84,7 +84,12 @@ def render(page, pages, template, wall):
     fill["side_items"] = "\n".join(
         f'            <li{" class=" + chr(34) + "on" + chr(34) if i == 1 else ""}><svg viewBox="0 0 16 16"><path d="{SIDE_ICONS[i]}"/></svg>{label}</li>'
         for i, label in enumerate(page["side"]))
-    fill["rooms_cards"] = room_cards(page, root, wall)
+    fill["rooms_cards"] = room_cards(page, root)
+    fill["pile_tiles"] = pile_tiles(root, wall)
+    fill["piles_names"] = attr(json.dumps(page["piles_names"], ensure_ascii=False))
+    fill["piles_buttons"] = "\n".join(
+        f'      <button type="button" data-mode="{m}"{" class=" + chr(34) + "on" + chr(34) if i == 0 else ""}>{label}</button>'
+        for i, (m, label) in enumerate(zip(["format", "kind", "theme", "color"], page["piles_modes"])))
     fill["kinds"] = "\n".join(
         f'      <li class="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="{KIND_ICONS[icon]}"/></svg>'
         f'<b>{name}</b><p>{detail}</p><span>{"".join(f"<i>{c}</i>" for c in chips)}</span></li>'
@@ -115,23 +120,46 @@ def render(page, pages, template, wall):
     return out
 
 
-# Each sample room's cover: pieces whose titles fit what the room is for.
-ROOMS = [(["teapot", "vase"], 128, False), (["map"], 86, True), (["butterfly", "flower"], 412, False), (["moon", "fish", "bird"], 57, False)]
+# The demo rooms: cover pictures (site/assets/rooms/, from scripts/site/wall.py), count, synced.
+ROOMS = [("default", 30, False), ("coffee", 126, False), ("signs", 74, True), ("travel", 57, False), ("documents", 89, True)]
 
 
-def room_cards(page, root, wall):
+def room_cards(page, root):
     cards = []
-    for i, ((tags, count, cloud), name) in enumerate(zip(ROOMS, page["rooms"])):
-        picks = []
-        for tag in tags:
-            picks += [w for w in wall if tag in w["tags"] and w not in picks]
-        picks = picks[:4]
-        picks += [w for w in wall if w not in picks][: 4 - len(picks)]
-        mosaic = "".join(f'<img src="{root}assets/{w["src"]}" alt="" loading="lazy">' for w in picks)
+    for i, ((key, count, cloud), name) in enumerate(zip(ROOMS, page["rooms"])):
+        mosaic = "".join(f'<img src="{root}assets/rooms/{key}-{n}.jpg" alt="" loading="lazy">' for n in range(4))
         badges = (f'<em class="now">{page["rooms_current"]}</em>' if i == 0 else "") + ("<em>iCloud</em>" if cloud else "")
         cards.append(f'      <li class="rise{" on" if i == 0 else ""}"><div class="cover">{mosaic}<span>{badges}</span></div>'
                      f'<b>{name}</b><small>{page["rooms_count"].replace("{n}", str(count))}</small></li>')
     return "\n".join(cards)
+
+
+# The pile demo: the same things, piled four ways. Pictures come from the wall;
+# a few quotes, pages and PDFs show that piles are about more than pictures.
+PILE_CARDS = [
+    ("text", "book", "quote", "white", "“Less, but better.”"),
+    ("text", "book", "quote", "white", "“Good design is honest.”"),
+    ("text", "book", "quote", "white", "“As little design as possible.”"),
+    ("web", "place", "audio", "silver", "vitsoe.com"),
+    ("web", "book", "kitchen", "silver", "wikipedia.org/Bauhaus"),
+    ("web", "place", "clock", "silver", "designmuseum.org"),
+    ("pdf", "book", "desk", "white", "ten-principles.pdf"),
+    ("pdf", "book", "audio", "white", "catalogue-1965.pdf"),
+]
+PILE_PICKS = [("audio", 5), ("clock", 3), ("kitchen", 4), ("care", 2), ("desk", 1), ("light", 1)]
+
+
+def pile_tiles(root, wall):
+    tiles, used = [], set()
+    for theme, want in PILE_PICKS:
+        for w in [w for w in wall if theme in w["tags"] and w["src"] not in used][:want]:
+            used.add(w["src"])
+            tiles.append(f'<div class="pt" data-format="image" data-kind="product" data-theme="{theme}" data-color="{w["color"]}">'
+                         f'<img src="{root}assets/{w["src"]}" alt="" loading="lazy"></div>')
+    for fmt, kind, theme, color, text in PILE_CARDS:
+        tiles.append(f'<div class="pt card {fmt}" data-format="{fmt}" data-kind="{kind}" data-theme="{theme}" data-color="{color}">'
+                     f'<span>{html.escape(text)}</span></div>')
+    return "\n".join("      " + t for t in tiles)
 
 
 def main():

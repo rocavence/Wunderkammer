@@ -5,12 +5,11 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 OUT=site/assets
 mkdir -p "$OUT"
-rm -f "$OUT"/*.jpg
 for lang in en zh ja ko es pt; do
   prefix=$([[ $lang == en ]] && echo "" || echo "$lang-")
   for look in light dark; do
     for name in collection inspector wander workbench; do
-      shot=(build/shots/$lang-$look/showcase-*-$name.png)
+      shot=(build/shots/$lang-$look/showcase-*-$name.png(N))
       [[ -f "$shot" ]] || continue
       sips -s format jpeg -s formatOptions 72 -Z 1600 "$shot" --out "$OUT/$prefix$name-$look.jpg" >/dev/null
     done

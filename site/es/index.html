@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Wunder: un gabinete de curiosidades para tu Mac</title>
 <meta name="description" content="Guarda cualquier cosa, no organices nada. Wunder guarda imágenes, enlaces, textos y archivos, los entiende en tu Mac y te los devuelve cuando ya los habías olvidado.">
-<meta name="theme-color" content="#f4f2ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#faf6f0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)">
 <meta property="og:title" content="Wunder: un gabinete de curiosidades para tu Mac">
 <meta property="og:description" content="Guarda cualquier cosa, no organices nada.">
@@ -69,7 +69,7 @@
 <main id="top">
   <section class="stage" aria-label="Deambular">
     <div class="stage-pin">
-      <div class="wall" data-root="../" title="arrastra para pasear · haz clic para ver de cerca">
+      <div class="wall" data-root="../" aria-hidden="true">
         <div class="wall-track"></div>
       </div>
       <div class="chrome" aria-hidden="true">
@@ -88,7 +88,7 @@
         <div class="c-tabs"><span>Colección</span><span class="on">Deambular</span><span>Mesa de trabajo</span></div>
       </div>
       <div class="hero">
-        <h1><img src="../assets/icon.png" alt="" width="96" height="96"> <span>Wunder<span class="dot">.</span></span></h1>
+        <h1><img class="mark" src="../assets/mark.png" alt="" width="180" height="172"> <span>Wunder<span class="dot">.</span></span></h1>
         <p class="lede">Un gabinete de curiosidades para tu Mac. <b>Guarda</b> cualquier cosa, no <b>organices</b> nada.</p>
         <a class="cta" id="download" href="https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip">
           <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 16.5V8a5 5 0 0 1 10 0v8.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
@@ -96,7 +96,7 @@
         </a>
         <p class="fine">Gratis · 4 MB · macOS 14 o posterior · <a href="#open">¿Es la primera vez que lo abres?</a></p>
       </div>
-      <p class="cue" aria-hidden="true"><span>arrastra para pasear · haz clic para ver de cerca</span></p>
+      <p class="cue" aria-hidden="true"><span>desplázate</span></p>
     </div>
   </section>
 
@@ -113,7 +113,7 @@
     <p>Wunder se ordena solo, por formato, tipo, tema y color. Y te devuelve lo antiguo, para que lo que guardaste no se quede ahí quieto.</p>
     <div class="stats">
       <div class="stat"><b>0</b><span>carpetas que crear</span></div>
-      <div class="stat"><b>1.303</b><span>temas que reconoce</span></div>
+      <div class="stat"><b>1.300+</b><span>temas que reconoce</span></div>
       <div class="stat"><b>100 %</b><span>en tu Mac</span></div>
     </div>
   </section>
@@ -125,6 +125,18 @@
       <li>O arrastras lo que sea al arco de la barra de menús.</li>
       <li>Más tarde lo encuentras por su contenido, o dejas que Wunder te lo traiga.</li>
     </ol>
+    <figure class="drop-demo" aria-hidden="true">
+      <div class="db-bar">
+        <svg class="db-apple" viewBox="0 0 14 17"><path d="M11.6 9c0-2 1.6-2.9 1.7-3-1-1.4-2.4-1.6-2.9-1.6-1.2-.1-2.4.7-3 .7s-1.6-.7-2.6-.7C3.4 4.4 2 5.2 1.3 6.6c-1.5 2.6-.4 6.4 1 8.5.7 1 1.5 2.2 2.6 2.1 1-.1 1.4-.7 2.7-.7 1.2 0 1.6.7 2.7.6 1.1 0 1.8-1 2.5-2.1.8-1.2 1.1-2.3 1.1-2.4 0 0-2.3-.9-2.3-3.6zM9.7 3c.6-.7 1-1.6.9-2.6-.8 0-1.8.5-2.4 1.2-.5.6-1 1.6-.9 2.5.9.1 1.8-.4 2.4-1.1z"/></svg>
+        <b>Finder</b>
+        <i></i>
+        <svg class="db-arch" viewBox="0 0 18 18"><path d="M3.5 16V9a5.5 5.5 0 0 1 11 0v7"/></svg>
+        <svg class="db-wifi" viewBox="0 0 18 14"><path d="M1 5a12 12 0 0 1 16 0M4 8a7.5 7.5 0 0 1 10 0M7 11a3 3 0 0 1 4 0"/></svg>
+        <span>10:24</span>
+      </div>
+      <div class="db-card"><img src="../assets/wall/03.jpg" alt=""><svg class="db-cursor" viewBox="0 0 16 22"><path d="M1 1v17l4.5-4.2 3 6.7 2.6-1.2-3-6.6H14z"/></svg></div>
+      <div class="db-toast"><img src="../assets/wall/03.jpg" alt=""><span><b>Guardado</b>Sala</span></div>
+    </figure>
     <p class="try">Pruébalo aquí: pulsa <kbd>⌘⇧C</kbd> o haz clic en la tecla de arriba.</p>
   </section>
 
@@ -161,16 +173,17 @@
   <section class="rooms">
     <p class="kicker rise">Salas</p>
     <h3 class="rise">Una sala para cada proyecto.</h3>
-    <p class="rooms-p rise">Abre una sala para cada proyecto, cliente o estado de ánimo. Cada una tiene su colección, su portada y sus carpetas, y se sincroniza entre tus Mac con iCloud.</p>
+    <p class="rooms-p rise">Abre una sala para cada proyecto, cliente o estado de ánimo. Cada una tiene su colección, su portada y sus carpetas: puede vigilar las carpetas que elijas y traer sola los archivos nuevos, o guardar cada archivo en una carpeta propia. Las salas se sincronizan entre tus Mac con iCloud.</p>
     <ul>
-      <li class="rise on"><div class="cover"><img src="../assets/wall/14.jpg" alt="" loading="lazy"><img src="../assets/wall/34.jpg" alt="" loading="lazy"><img src="../assets/wall/35.jpg" alt="" loading="lazy"><img src="../assets/wall/01.jpg" alt="" loading="lazy"><span><em class="now">Actual</em></span></div><b>Rediseño de la cafetería</b><small>128 elementos</small></li>
-      <li class="rise"><div class="cover"><img src="../assets/wall/24.jpg" alt="" loading="lazy"><img src="../assets/wall/27.jpg" alt="" loading="lazy"><img src="../assets/wall/28.jpg" alt="" loading="lazy"><img src="../assets/wall/00.jpg" alt="" loading="lazy"><span><em>iCloud</em></span></div><b>Referencias de la tesis</b><small>86 elementos</small></li>
-      <li class="rise"><div class="cover"><img src="../assets/wall/07.jpg" alt="" loading="lazy"><img src="../assets/wall/08.jpg" alt="" loading="lazy"><img src="../assets/wall/10.jpg" alt="" loading="lazy"><img src="../assets/wall/12.jpg" alt="" loading="lazy"><span></span></div><b>Cosas que me encantan</b><small>412 elementos</small></li>
-      <li class="rise"><div class="cover"><img src="../assets/wall/26.jpg" alt="" loading="lazy"><img src="../assets/wall/39.jpg" alt="" loading="lazy"><img src="../assets/wall/43.jpg" alt="" loading="lazy"><img src="../assets/wall/06.jpg" alt="" loading="lazy"><span></span></div><b>Viaje a Kioto</b><small>57 elementos</small></li>
+      <li class="rise on"><div class="cover"><img src="../assets/rooms/default-0.jpg" alt="" loading="lazy"><img src="../assets/rooms/default-1.jpg" alt="" loading="lazy"><img src="../assets/rooms/default-2.jpg" alt="" loading="lazy"><img src="../assets/rooms/default-3.jpg" alt="" loading="lazy"><span><em class="now">Actual</em></span></div><b>Predeterminada</b><small>30 elementos</small></li>
+      <li class="rise"><div class="cover"><img src="../assets/rooms/coffee-0.jpg" alt="" loading="lazy"><img src="../assets/rooms/coffee-1.jpg" alt="" loading="lazy"><img src="../assets/rooms/coffee-2.jpg" alt="" loading="lazy"><img src="../assets/rooms/coffee-3.jpg" alt="" loading="lazy"><span></span></div><b>Café</b><small>126 elementos</small></li>
+      <li class="rise"><div class="cover"><img src="../assets/rooms/signs-0.jpg" alt="" loading="lazy"><img src="../assets/rooms/signs-1.jpg" alt="" loading="lazy"><img src="../assets/rooms/signs-2.jpg" alt="" loading="lazy"><img src="../assets/rooms/signs-3.jpg" alt="" loading="lazy"><span><em>iCloud</em></span></div><b>Señales</b><small>74 elementos</small></li>
+      <li class="rise"><div class="cover"><img src="../assets/rooms/travel-0.jpg" alt="" loading="lazy"><img src="../assets/rooms/travel-1.jpg" alt="" loading="lazy"><img src="../assets/rooms/travel-2.jpg" alt="" loading="lazy"><img src="../assets/rooms/travel-3.jpg" alt="" loading="lazy"><span></span></div><b>Recuerdos de viaje</b><small>57 elementos</small></li>
+      <li class="rise"><div class="cover"><img src="../assets/rooms/documents-0.jpg" alt="" loading="lazy"><img src="../assets/rooms/documents-1.jpg" alt="" loading="lazy"><img src="../assets/rooms/documents-2.jpg" alt="" loading="lazy"><img src="../assets/rooms/documents-3.jpg" alt="" loading="lazy"><span><em>iCloud</em></span></div><b>Documentos</b><small>89 elementos</small></li>
     </ul>
   </section>
 
-  <section class="finder rise" data-queries="[[&quot;un pájaro&quot;, &quot;bird&quot;], [&quot;mariposas&quot;, &quot;butterfly&quot;], [&quot;algo naranja&quot;, &quot;color:orange&quot;], [&quot;una tetera&quot;, &quot;teapot&quot;], [&quot;la luna&quot;, &quot;moon&quot;], [&quot;flores&quot;, &quot;flower&quot;]]" data-found="{n} encontrados">
+  <section class="finder rise" data-queries="[[&quot;un reloj&quot;, &quot;clock&quot;], [&quot;tocadiscos&quot;, &quot;turntable&quot;], [&quot;en la cocina&quot;, &quot;kitchen&quot;], [&quot;lámparas&quot;, &quot;lamp&quot;], [&quot;radios&quot;, &quot;radio&quot;], [&quot;algo negro&quot;, &quot;color:black&quot;]]" data-found="{n} encontrados">
     <p class="kicker">Búsqueda</p>
     <h3>Descríbelo, y ahí está.</h3>
     <div class="f-search" aria-hidden="true">
@@ -206,6 +219,44 @@
       <div class="s-shot" data-i="0"><img class="shot-light" src="../assets/es-inspector-light.jpg" width="1600" height="1025" loading="lazy" alt="Una escultura seleccionada, con lo que Wunder ha visto en ella y piezas relacionadas en el panel lateral."><img class="shot-dark" src="../assets/es-inspector-dark.jpg" width="1600" height="1025" loading="lazy" alt="Una escultura seleccionada, con lo que Wunder ha visto en ella y piezas relacionadas en el panel lateral."></div>
       <div class="s-shot" data-i="1"><img class="shot-light" src="../assets/es-wander-light.jpg" width="1600" height="1025" loading="lazy" alt="Una pared infinita de piezas guardadas para pasear entre ellas."><img class="shot-dark" src="../assets/es-wander-dark.jpg" width="1600" height="1025" loading="lazy" alt="Una pared infinita de piezas guardadas para pasear entre ellas."></div>
       <div class="s-shot" data-i="2"><img class="shot-light" src="../assets/es-workbench-light.jpg" width="1600" height="1025" loading="lazy" alt="Piezas ordenadas en montones con nombre sobre un lienzo, unidas por una línea."><img class="shot-dark" src="../assets/es-workbench-dark.jpg" width="1600" height="1025" loading="lazy" alt="Piezas ordenadas en montones con nombre sobre un lienzo, unidas por una línea."></div>
+    </div>
+  </section>
+
+  <section class="piles-demo">
+    <p class="kicker rise">Mesa de trabajo</p>
+    <h3 class="rise">Un clic, un orden nuevo.</h3>
+    <p class="piles-p rise">Agrupa lo mismo por formato, tipo, tema o color. Cada cosa vuela a su montón, y puedes volver cuando quieras.</p>
+    <div class="modes rise" role="tablist">
+      <button type="button" data-mode="format" class="on">Formato</button>
+      <button type="button" data-mode="kind">Tipo</button>
+      <button type="button" data-mode="theme">Tema</button>
+      <button type="button" data-mode="color">Color</button>
+    </div>
+    <div class="piles" data-names="{&quot;image&quot;: &quot;Imágenes&quot;, &quot;web&quot;: &quot;Páginas web&quot;, &quot;text&quot;: &quot;Texto&quot;, &quot;pdf&quot;: &quot;PDF&quot;, &quot;art&quot;: &quot;Obras&quot;, &quot;design&quot;: &quot;Diseño&quot;, &quot;book&quot;: &quot;Libros&quot;, &quot;place&quot;: &quot;Lugares&quot;, &quot;abstract&quot;: &quot;Abstracto&quot;, &quot;glass&quot;: &quot;Vidrio&quot;, &quot;poster&quot;: &quot;Carteles&quot;, &quot;portrait&quot;: &quot;Retratos&quot;, &quot;landscape&quot;: &quot;Paisajes&quot;, &quot;quote&quot;: &quot;Citas&quot;, &quot;red&quot;: &quot;Rojo&quot;, &quot;orange&quot;: &quot;Naranja&quot;, &quot;gold&quot;: &quot;Dorado&quot;, &quot;green&quot;: &quot;Verde&quot;, &quot;blue&quot;: &quot;Azul&quot;, &quot;purple&quot;: &quot;Morado&quot;, &quot;gray&quot;: &quot;Gris&quot;, &quot;product&quot;: &quot;Productos&quot;, &quot;audio&quot;: &quot;Audio&quot;, &quot;clock&quot;: &quot;Relojes&quot;, &quot;kitchen&quot;: &quot;Cocina&quot;, &quot;care&quot;: &quot;Cuidado personal&quot;, &quot;desk&quot;: &quot;Escritorio&quot;, &quot;light&quot;: &quot;Iluminación&quot;, &quot;home&quot;: &quot;Hogar&quot;, &quot;white&quot;: &quot;Blanco&quot;, &quot;silver&quot;: &quot;Plata&quot;, &quot;black&quot;: &quot;Negro&quot;}" aria-hidden="true">
+      <div class="pt" data-format="image" data-kind="product" data-theme="audio" data-color="white"><img src="../assets/wall/00.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="audio" data-color="silver"><img src="../assets/wall/03.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="audio" data-color="white"><img src="../assets/wall/09.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="audio" data-color="silver"><img src="../assets/wall/11.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="audio" data-color="silver"><img src="../assets/wall/12.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="clock" data-color="white"><img src="../assets/wall/01.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="clock" data-color="silver"><img src="../assets/wall/10.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="clock" data-color="black"><img src="../assets/wall/13.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="kitchen" data-color="white"><img src="../assets/wall/06.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="kitchen" data-color="silver"><img src="../assets/wall/07.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="kitchen" data-color="silver"><img src="../assets/wall/08.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="kitchen" data-color="silver"><img src="../assets/wall/19.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="care" data-color="silver"><img src="../assets/wall/16.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="care" data-color="silver"><img src="../assets/wall/18.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="desk" data-color="silver"><img src="../assets/wall/02.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="light" data-color="white"><img src="../assets/wall/04.jpg" alt="" loading="lazy"></div>
+      <div class="pt card text" data-format="text" data-kind="book" data-theme="quote" data-color="white"><span>“Less, but better.”</span></div>
+      <div class="pt card text" data-format="text" data-kind="book" data-theme="quote" data-color="white"><span>“Good design is honest.”</span></div>
+      <div class="pt card text" data-format="text" data-kind="book" data-theme="quote" data-color="white"><span>“As little design as possible.”</span></div>
+      <div class="pt card web" data-format="web" data-kind="place" data-theme="audio" data-color="silver"><span>vitsoe.com</span></div>
+      <div class="pt card web" data-format="web" data-kind="book" data-theme="kitchen" data-color="silver"><span>wikipedia.org/Bauhaus</span></div>
+      <div class="pt card web" data-format="web" data-kind="place" data-theme="clock" data-color="silver"><span>designmuseum.org</span></div>
+      <div class="pt card pdf" data-format="pdf" data-kind="book" data-theme="desk" data-color="white"><span>ten-principles.pdf</span></div>
+      <div class="pt card pdf" data-format="pdf" data-kind="book" data-theme="audio" data-color="white"><span>catalogue-1965.pdf</span></div>
     </div>
   </section>
 
@@ -275,18 +326,7 @@
   <span>© 2026 Wunder</span>
   <a href="https://github.com/rocavence/Wunderkammer">GitHub</a>
   <a href="https://github.com/rocavence/Wunderkammer/releases">versiones</a>
-  <span>Imágenes: <a href="https://www.clevelandart.org/open-access">Cleveland Museum of Art</a>, CC0</span>
 </footer>
-
-<div class="preview" hidden role="dialog" aria-modal="true" aria-label="Vista de cerca">
-  <img alt="">
-  <div class="p-caption">
-    <p class="p-title"></p>
-    <p class="p-meta"></p>
-    <a class="p-link" target="_blank" rel="noopener">verlo en el museo ↗</a>
-  </div>
-  <button class="p-close" type="button">cerrar</button>
-</div>
 
 <div class="toast" role="status" aria-live="polite">
   <img alt="">

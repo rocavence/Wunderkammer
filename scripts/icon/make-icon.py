@@ -7,7 +7,7 @@
 import sys
 from PIL import Image, ImageDraw, ImageFilter
 
-CREAM = (0xF3, 0xE9, 0xD9, 255)
+CREAM = (0xFA, 0xF6, 0xF0, 255)  # #FAF6F0, the site's ground too
 SIDE, BODY, RADIUS = 1024, (100, 100, 924, 924), 185
 FILL = 0.78  # 主體佔底板的比例
 RAISE = 0.02  # 主體往上移，佔底板高度的比例

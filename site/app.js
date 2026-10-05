@@ -68,7 +68,7 @@
   const wall = stage.querySelector(".wall");
   const track = wall.querySelector(".wall-track");
   const tiles = [];
-  let world = { w: 1, h: 1 }, offset = { x: 0, y: 0 }, velocity = { x: -16, y: -9 };
+  let world = { w: 1, heights: [1] }, reach = { x: 0, y: 0 }, offset = { x: 0, y: 0 }, velocity = { x: -16, y: -9 };
   let drag = null, hover = false, frame = { x: 0, y: 0, w: 1, h: 1 }, progress = 0, visible = true;
 
   function picture(item, props = {}) {
@@ -84,36 +84,39 @@
     tiles.length = 0;
     const vw = innerWidth, vh = innerHeight;
     const column = vw < 640 ? 150 : 236, gap = vw < 640 ? 10 : 14;
-    const columns = Math.ceil((vw + 2 * column) / (column + gap)) + 1;
+    // Room around the screen for the tallest piece, plus what shows beyond the
+    // screen once the wall shrinks into the window, so wrapping never shows a gap.
+    const beyond = (1 / 0.5 - 1) / 2;
+    reach = {
+      x: column + gap + Math.ceil(vw * beyond),
+      y: Math.ceil(column * Math.max(...items.map((it) => it.h / it.w))) + gap + Math.ceil(vh * beyond),
+    };
+    const columns = Math.ceil((vw + 2 * reach.x) / (column + gap)) + 1;
     const heights = new Array(columns).fill(0);
-    const goal = vh + 2 * column + 200;
+    const goal = vh + 2 * reach.y + 100;
     let i = 0;
     // Shortest column next, until every column reaches past the screen.
     while (Math.min(...heights) < goal) {
       const item = items[i++ % items.length];
       const c = heights.indexOf(Math.min(...heights));
       const h = Math.round(column * item.h / item.w);
-      const el = document.createElement("button");
+      const el = document.createElement("div");
       el.className = "tile";
-      el.type = "button";
-      el.tabIndex = -1;
       el.style.width = column + "px";
       el.style.height = h + "px";
-      el.setAttribute("aria-label", item.title);
       el.appendChild(picture(item, { decoding: "async", draggable: false }));
-      el.item = item;
       track.appendChild(el);
-      tiles.push({ el, x: c * (column + gap), y: heights[c], w: column, h });
+      tiles.push({ el, x: c * (column + gap), y: heights[c], w: column, h, col: c });
       heights[c] += h + gap;
     }
-    world = { w: columns * (column + gap), h: Math.max(...heights) };
+    // Each column wraps at its own height, so no column leaves a hole at the seam.
+    world = { w: columns * (column + gap), heights };
   }
 
   function place() {
-    const pad = 260;
     for (const t of tiles) {
-      const x = mod(t.x + offset.x + pad, world.w) - pad;
-      const y = mod(t.y + offset.y + pad, world.h) - pad;
+      const x = mod(t.x + offset.x + reach.x, world.w) - reach.x;
+      const y = mod(t.y + offset.y + reach.y, world.heights[t.col]) - reach.y;
       t.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
     }
   }
@@ -157,7 +160,8 @@
   new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(stage);
 
   wall.addEventListener("pointerdown", (e) => {
-    if (e.button !== 0) return;
+    // The first screen is for reading; the wall can be moved once it's the app's window.
+    if (e.button !== 0 || !stage.classList.contains("framed")) return;
     drag = { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, t: performance.now(), moved: false, id: e.pointerId };
     velocity = { x: 0, y: 0 };
   });
@@ -166,7 +170,7 @@
     const dx = e.clientX - drag.x, dy = e.clientY - drag.y, now = performance.now();
     if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 6) {
       drag.moved = true;
-      wall.setPointerCapture(e.pointerId);
+      try { wall.setPointerCapture(e.pointerId); } catch (err) { /* the pointer is already gone */ }
       wall.classList.add("dragging");
     }
     if (!drag.moved) return;
@@ -179,67 +183,15 @@
   });
   addEventListener("pointerup", (e) => {
     if (!drag || e.pointerId !== drag.id) return;
-    const moved = drag.moved;
     drag = null;
     wall.classList.remove("dragging");
-    if (!moved) {
-      const tile = e.target instanceof Element && e.target.closest(".tile");
-      if (tile) open(tile);
-    }
   });
   addEventListener("pointercancel", () => { drag = null; wall.classList.remove("dragging"); });
-  wall.addEventListener("pointerenter", () => { hover = true; });
+  wall.addEventListener("pointerenter", () => { hover = stage.classList.contains("framed"); });
   wall.addEventListener("pointerleave", () => { hover = false; });
 
-  // ── Looking closer: the picture grows out of its tile ─────────────
-  const preview = document.querySelector(".preview");
-  let opened = null;
-
-  function fit(item) {
-    const maxW = innerWidth * 0.82, maxH = innerHeight * 0.72;
-    const s = Math.min(maxW / item.w, maxH / item.h);
-    const w = item.w * s, h = item.h * s;
-    return { x: (innerWidth - w) / 2, y: (innerHeight - h) / 2 - 24, w, h };
-  }
-
-  function open(tile) {
-    if (opened) return;
-    const item = tile.item, from = tile.getBoundingClientRect(), to = fit(item);
-    const img = preview.querySelector("img");
-    img.src = tile.querySelector("img").src;
-    img.alt = item.title;
-    preview.querySelector(".p-title").textContent = item.title;
-    preview.querySelector(".p-meta").textContent = [item.artist && item.artist.split(" (")[0], item.date].filter(Boolean).join(" · ");
-    const link = preview.querySelector(".p-link");
-    link.href = item.url || "https://www.clevelandart.org/open-access";
-    preview.hidden = false;
-    tile.style.visibility = "hidden";
-    opened = { tile, item };
-    Object.assign(img.style, { left: to.x + "px", top: to.y + "px", width: to.w + "px", height: to.h + "px" });
-    const flip = `translate(${from.x - to.x}px, ${from.y - to.y}px) scale(${from.width / to.w}, ${from.height / to.h})`;
-    img.animate([{ transform: flip, borderRadius: "10px" }, { transform: "none", borderRadius: "6px" }],
-      { duration: still.matches ? 1 : 620, easing: "cubic-bezier(.2,.9,.22,1.06)" });
-    preview.animate([{ opacity: 0 }, { opacity: 1 }], { duration: still.matches ? 1 : 280, fill: "forwards" });
-    preview.querySelector(".p-close").focus({ preventScroll: true });
-  }
-
-  function close() {
-    if (!opened) return;
-    const { tile } = opened, img = preview.querySelector("img");
-    const to = img.getBoundingClientRect(), back = tile.getBoundingClientRect();
-    const flip = `translate(${back.x - to.x}px, ${back.y - to.y}px) scale(${back.width / to.width}, ${back.height / to.height})`;
-    const run = img.animate([{ transform: "none" }, { transform: flip }], { duration: still.matches ? 1 : 420, easing: "cubic-bezier(.4,0,.2,1)", fill: "forwards" });
-    preview.animate([{ opacity: 1 }, { opacity: 0 }], { duration: still.matches ? 1 : 380, fill: "forwards" });
-    run.onfinish = () => {
-      preview.hidden = true;
-      tile.style.visibility = "";
-      run.cancel();
-      opened = null;
-    };
-  }
-  preview.addEventListener("click", (e) => { if (!(e.target instanceof Element && e.target.closest(".p-link"))) close(); });
   addEventListener("keydown", (e) => {
-    if (e.key === "Escape") { close(); if (menu.open) menu.open = false; }
+    if (e.key === "Escape" && menu.open) menu.open = false;
   });
 
   // ── ⌘⇧C: what collecting feels like ──────────────────────────────
@@ -322,6 +274,101 @@
       }
     }, { rootMargin: "-45% 0px -45% 0px" });
     steps.forEach((s) => watch.observe(s));
+  }
+
+  // ── Piles: the same things, sorted four ways ─────────────────────
+  const piles = document.querySelector(".piles");
+  if (piles) {
+    const names = JSON.parse(piles.dataset.names);
+    const tiles = [...piles.querySelectorAll(".pt")];
+    const buttons = [...document.querySelectorAll(".modes button")];
+    const order = buttons.map((b) => b.dataset.mode);
+    const labels = new Map();
+    let mode = order[0], auto = true, timer = 0, seen = false;
+
+    function arrange() {
+      const narrow = piles.clientWidth < 640;
+      const size = narrow ? 58 : 74, gap = narrow ? 5 : 7, between = narrow ? 20 : 40, head = 28;
+      const groups = new Map();
+      for (const t of tiles) {
+        const key = t.dataset[mode];
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(t);
+      }
+      const sorted = [...groups.entries()].sort((a, b) => b[1].length - a[1].length);
+      // Piles flow in rows, each row centred.
+      const width = piles.clientWidth, rows = [[]];
+      let x = 0;
+      for (const [key, list] of sorted) {
+        const cols = list.length <= 3 ? list.length : Math.ceil(Math.sqrt(list.length * 1.4));
+        const w = cols * size + (cols - 1) * gap;
+        const h = Math.ceil(list.length / cols) * (size + gap) - gap;
+        if (x > 0 && x + w > width) { rows.push([]); x = 0; }
+        rows[rows.length - 1].push({ key, list, cols, w, h });
+        x += w + between;
+      }
+      let y = 0;
+      const live = new Set();
+      rows.forEach((row) => {
+        const rowWidth = row.reduce((sum, p) => sum + p.w, 0) + (row.length - 1) * between;
+        let px = (width - rowWidth) / 2;
+        const rowHeight = Math.max(...row.map((p) => p.h)) + head;
+        for (const p of row) {
+          p.list.forEach((t, i) => {
+            const tx = px + (i % p.cols) * (size + gap), ty = y + head + Math.floor(i / p.cols) * (size + gap);
+            t.style.width = t.style.height = size + "px";
+            t.style.transitionDelay = still.matches ? "0s" : (Math.random() * 0.18).toFixed(2) + "s";
+            t.style.transform = `translate(${tx}px, ${ty}px)`;
+          });
+          let label = labels.get(mode + p.key);
+          if (!label) {
+            label = document.createElement("p");
+            label.className = "pile-label";
+            label.innerHTML = `<b></b><span>${p.list.length}</span>`;
+            label.firstChild.textContent = names[p.key] || p.key;
+            piles.appendChild(label);
+            labels.set(mode + p.key, label);
+          }
+          label.lastChild.textContent = p.list.length;
+          label.style.transform = `translate(${px}px, ${y}px)`;
+          live.add(label);
+          px += p.w + between;
+        }
+        y += rowHeight + between * 0.7;
+      });
+      for (const label of labels.values()) label.classList.toggle("on", live.has(label));
+      piles.style.height = Math.ceil(y) + "px";
+    }
+
+    function show(next, byHand) {
+      mode = next;
+      buttons.forEach((b) => b.classList.toggle("on", b.dataset.mode === mode));
+      arrange();
+      if (byHand) { auto = false; clearTimeout(timer); timer = setTimeout(() => { auto = true; cycle(); }, 9000); }
+    }
+    function cycle() {
+      clearTimeout(timer);
+      if (!auto || !seen || still.matches) return;
+      timer = setTimeout(() => { show(order[(order.indexOf(mode) + 1) % order.length]); cycle(); }, 3200);
+    }
+    buttons.forEach((b) => b.addEventListener("click", () => show(b.dataset.mode, true)));
+    new IntersectionObserver(([e]) => { seen = e.isIntersecting; if (seen) cycle(); else clearTimeout(timer); }, { threshold: 0.35 }).observe(piles);
+    arrange();
+    requestAnimationFrame(() => piles.classList.add("ready"));
+    addEventListener("resize", arrange);
+  }
+
+  // ── Step two: the card flies to wherever the arch is ─────────────
+  const drop = document.querySelector(".drop-demo");
+  if (drop) {
+    const aim = () => {
+      // From where the card rests (its layout box, not its moving picture) to the arch.
+      const card = drop.querySelector(".db-card"), arch = drop.querySelector(".db-arch").getBoundingClientRect();
+      const archX = arch.left - drop.getBoundingClientRect().left + arch.width / 2;
+      drop.style.setProperty("--to-x", Math.round(archX - (card.offsetLeft + card.offsetWidth / 2)) + "px");
+    };
+    aim();
+    addEventListener("resize", aim);
   }
 
   // ── A button that leans toward you ───────────────────────────────

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Wunder：Mac のための驚異の部屋</title>
 <meta name="description" content="なんでも集めて、整理はしない。Wunder は画像、リンク、テキスト、ファイルを受け取り、Mac の上で内容を理解して、忘れたころにまた見せてくれます。">
-<meta name="theme-color" content="#f4f2ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#faf6f0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)">
 <meta property="og:title" content="Wunder：Mac のための驚異の部屋">
 <meta property="og:description" content="なんでも集めて、整理はしない。">
@@ -69,7 +69,7 @@
 <main id="top">
   <section class="stage" aria-label="ワンダー">
     <div class="stage-pin">
-      <div class="wall" data-root="../" title="ドラッグで歩き回る · クリックで近くで見る">
+      <div class="wall" data-root="../" aria-hidden="true">
         <div class="wall-track"></div>
       </div>
       <div class="chrome" aria-hidden="true">
@@ -88,7 +88,7 @@
         <div class="c-tabs"><span>コレクション</span><span class="on">ワンダー</span><span>作業台</span></div>
       </div>
       <div class="hero">
-        <h1><img src="../assets/icon.png" alt="" width="96" height="96"> <span>Wunder<span class="dot">.</span></span></h1>
+        <h1><img class="mark" src="../assets/mark.png" alt="" width="180" height="172"> <span>Wunder<span class="dot">.</span></span></h1>
         <p class="lede">Mac のための驚異の部屋。<b>なんでも集めて</b>、整理はしない。</p>
         <a class="cta" id="download" href="https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip">
           <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 16.5V8a5 5 0 0 1 10 0v8.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
@@ -96,7 +96,7 @@
         </a>
         <p class="fine">無料 · 4 MB · macOS 14 以降 · <a href="#open">初めて開くときは？</a></p>
       </div>
-      <p class="cue" aria-hidden="true"><span>ドラッグで歩き回る · クリックで近くで見る</span></p>
+      <p class="cue" aria-hidden="true"><span>スクロール</span></p>
     </div>
   </section>
 
@@ -113,7 +113,7 @@
     <p>Wunder は形式、種類、テーマ、色で自分で整理します。昔のものも連れ戻してくれるので、集めたものがしまい込まれたままになりません。</p>
     <div class="stats">
       <div class="stat"><b>0</b><span>作るフォルダの数</span></div>
-      <div class="stat"><b>1,303</b><span>見分けられるテーマ</span></div>
+      <div class="stat"><b>1,300+</b><span>見分けられるテーマ</span></div>
       <div class="stat"><b>100%</b><span>Mac の上で処理</span></div>
     </div>
   </section>
@@ -125,6 +125,18 @@
       <li>またはメニューバーのアーチに何でもドラッグ。</li>
       <li>あとで中身から探すか、Wunder が見せてくれるのを待つだけ。</li>
     </ol>
+    <figure class="drop-demo" aria-hidden="true">
+      <div class="db-bar">
+        <svg class="db-apple" viewBox="0 0 14 17"><path d="M11.6 9c0-2 1.6-2.9 1.7-3-1-1.4-2.4-1.6-2.9-1.6-1.2-.1-2.4.7-3 .7s-1.6-.7-2.6-.7C3.4 4.4 2 5.2 1.3 6.6c-1.5 2.6-.4 6.4 1 8.5.7 1 1.5 2.2 2.6 2.1 1-.1 1.4-.7 2.7-.7 1.2 0 1.6.7 2.7.6 1.1 0 1.8-1 2.5-2.1.8-1.2 1.1-2.3 1.1-2.4 0 0-2.3-.9-2.3-3.6zM9.7 3c.6-.7 1-1.6.9-2.6-.8 0-1.8.5-2.4 1.2-.5.6-1 1.6-.9 2.5.9.1 1.8-.4 2.4-1.1z"/></svg>
+        <b>Finder</b>
+        <i></i>
+        <svg class="db-arch" viewBox="0 0 18 18"><path d="M3.5 16V9a5.5 5.5 0 0 1 11 0v7"/></svg>
+        <svg class="db-wifi" viewBox="0 0 18 14"><path d="M1 5a12 12 0 0 1 16 0M4 8a7.5 7.5 0 0 1 10 0M7 11a3 3 0 0 1 4 0"/></svg>
+        <span>10:24</span>
+      </div>
+      <div class="db-card"><img src="../assets/wall/03.jpg" alt=""><svg class="db-cursor" viewBox="0 0 16 22"><path d="M1 1v17l4.5-4.2 3 6.7 2.6-1.2-3-6.6H14z"/></svg></div>
+      <div class="db-toast"><img src="../assets/wall/03.jpg" alt=""><span><b>集めました</b>展示室</span></div>
+    </figure>
     <p class="try">ここで試せます：<kbd>⌘⇧C</kbd> を押すか、上のキーをクリック。</p>
   </section>
 
@@ -161,16 +173,17 @@
   <section class="rooms">
     <p class="kicker rise">展示室</p>
     <h3 class="rise">プロジェクトごとに、ひとつの展示室。</h3>
-    <p class="rooms-p rise">プロジェクト、場面、気分ごとに展示室を分けられます。それぞれにコレクション、カバー、フォルダがあり、iCloud で Mac 間を同期できます。</p>
+    <p class="rooms-p rise">プロジェクト、場面、気分ごとに展示室を分けられます。それぞれにコレクション、カバー、フォルダがあり、指定したフォルダを自動で見張って新しいファイルを取り込むことも、展示室専用のフォルダにファイルを保管することもできます。iCloud で Mac 間の同期も。</p>
     <ul>
-      <li class="rise on"><div class="cover"><img src="../assets/wall/14.jpg" alt="" loading="lazy"><img src="../assets/wall/34.jpg" alt="" loading="lazy"><img src="../assets/wall/35.jpg" alt="" loading="lazy"><img src="../assets/wall/01.jpg" alt="" loading="lazy"><span><em class="now">現在</em></span></div><b>カフェのリブランド</b><small>128 件</small></li>
-      <li class="rise"><div class="cover"><img src="../assets/wall/24.jpg" alt="" loading="lazy"><img src="../assets/wall/27.jpg" alt="" loading="lazy"><img src="../assets/wall/28.jpg" alt="" loading="lazy"><img src="../assets/wall/00.jpg" alt="" loading="lazy"><span><em>iCloud</em></span></div><b>論文の参考資料</b><small>86 件</small></li>
-      <li class="rise"><div class="cover"><img src="../assets/wall/07.jpg" alt="" loading="lazy"><img src="../assets/wall/08.jpg" alt="" loading="lazy"><img src="../assets/wall/10.jpg" alt="" loading="lazy"><img src="../assets/wall/12.jpg" alt="" loading="lazy"><span></span></div><b>好きなもの</b><small>412 件</small></li>
-      <li class="rise"><div class="cover"><img src="../assets/wall/26.jpg" alt="" loading="lazy"><img src="../assets/wall/39.jpg" alt="" loading="lazy"><img src="../assets/wall/43.jpg" alt="" loading="lazy"><img src="../assets/wall/06.jpg" alt="" loading="lazy"><span></span></div><b>京都の旅</b><small>57 件</small></li>
+      <li class="rise on"><div class="cover"><img src="../assets/rooms/default-0.jpg" alt="" loading="lazy"><img src="../assets/rooms/default-1.jpg" alt="" loading="lazy"><img src="../assets/rooms/default-2.jpg" alt="" loading="lazy"><img src="../assets/rooms/default-3.jpg" alt="" loading="lazy"><span><em class="now">現在</em></span></div><b>デフォルト</b><small>30 件</small></li>
+      <li class="rise"><div class="cover"><img src="../assets/rooms/coffee-0.jpg" alt="" loading="lazy"><img src="../assets/rooms/coffee-1.jpg" alt="" loading="lazy"><img src="../assets/rooms/coffee-2.jpg" alt="" loading="lazy"><img src="../assets/rooms/coffee-3.jpg" alt="" loading="lazy"><span></span></div><b>コーヒー</b><small>126 件</small></li>
+      <li class="rise"><div class="cover"><img src="../assets/rooms/signs-0.jpg" alt="" loading="lazy"><img src="../assets/rooms/signs-1.jpg" alt="" loading="lazy"><img src="../assets/rooms/signs-2.jpg" alt="" loading="lazy"><img src="../assets/rooms/signs-3.jpg" alt="" loading="lazy"><span><em>iCloud</em></span></div><b>標識</b><small>74 件</small></li>
+      <li class="rise"><div class="cover"><img src="../assets/rooms/travel-0.jpg" alt="" loading="lazy"><img src="../assets/rooms/travel-1.jpg" alt="" loading="lazy"><img src="../assets/rooms/travel-2.jpg" alt="" loading="lazy"><img src="../assets/rooms/travel-3.jpg" alt="" loading="lazy"><span></span></div><b>旅の品</b><small>57 件</small></li>
+      <li class="rise"><div class="cover"><img src="../assets/rooms/documents-0.jpg" alt="" loading="lazy"><img src="../assets/rooms/documents-1.jpg" alt="" loading="lazy"><img src="../assets/rooms/documents-2.jpg" alt="" loading="lazy"><img src="../assets/rooms/documents-3.jpg" alt="" loading="lazy"><span><em>iCloud</em></span></div><b>資料</b><small>89 件</small></li>
     </ul>
   </section>
 
-  <section class="finder rise" data-queries="[[&quot;鳥&quot;, &quot;bird&quot;], [&quot;蝶&quot;, &quot;butterfly&quot;], [&quot;オレンジ色のもの&quot;, &quot;color:orange&quot;], [&quot;ティーポット&quot;, &quot;teapot&quot;], [&quot;月&quot;, &quot;moon&quot;], [&quot;花&quot;, &quot;flower&quot;]]" data-found="{n} 件">
+  <section class="finder rise" data-queries="[[&quot;時計&quot;, &quot;clock&quot;], [&quot;レコードプレーヤー&quot;, &quot;turntable&quot;], [&quot;キッチン&quot;, &quot;kitchen&quot;], [&quot;ランプ&quot;, &quot;lamp&quot;], [&quot;ラジオ&quot;, &quot;radio&quot;], [&quot;黒いもの&quot;, &quot;color:black&quot;]]" data-found="{n} 件">
     <p class="kicker">検索</p>
     <h3>言葉にすれば、見つかる。</h3>
     <div class="f-search" aria-hidden="true">
@@ -206,6 +219,44 @@
       <div class="s-shot" data-i="0"><img class="shot-light" src="../assets/ja-inspector-light.jpg" width="1600" height="1025" loading="lazy" alt="彫刻を選ぶと、Wunder が気づいたことと関連する作品がサイドパネルに表示されます。"><img class="shot-dark" src="../assets/ja-inspector-dark.jpg" width="1600" height="1025" loading="lazy" alt="彫刻を選ぶと、Wunder が気づいたことと関連する作品がサイドパネルに表示されます。"></div>
       <div class="s-shot" data-i="1"><img class="shot-light" src="../assets/ja-wander-light.jpg" width="1600" height="1025" loading="lazy" alt="集めた作品の中を歩き回れる果てしない壁。"><img class="shot-dark" src="../assets/ja-wander-dark.jpg" width="1600" height="1025" loading="lazy" alt="集めた作品の中を歩き回れる果てしない壁。"></div>
       <div class="s-shot" data-i="2"><img class="shot-light" src="../assets/ja-workbench-light.jpg" width="1600" height="1025" loading="lazy" alt="キャンバスの上で名前付きの山に分けられた作品と、それをつなぐ線。"><img class="shot-dark" src="../assets/ja-workbench-dark.jpg" width="1600" height="1025" loading="lazy" alt="キャンバスの上で名前付きの山に分けられた作品と、それをつなぐ線。"></div>
+    </div>
+  </section>
+
+  <section class="piles-demo">
+    <p class="kicker rise">作業台</p>
+    <h3 class="rise">ワンクリックで、新しい並び。</h3>
+    <p class="piles-p rise">同じものを形式、分類、テーマ、色で積み分け。それぞれが行くべき山へ飛んでいき、いつでも戻せます。</p>
+    <div class="modes rise" role="tablist">
+      <button type="button" data-mode="format" class="on">形式</button>
+      <button type="button" data-mode="kind">分類</button>
+      <button type="button" data-mode="theme">テーマ</button>
+      <button type="button" data-mode="color">カラー</button>
+    </div>
+    <div class="piles" data-names="{&quot;image&quot;: &quot;画像&quot;, &quot;web&quot;: &quot;Web ページ&quot;, &quot;text&quot;: &quot;テキスト&quot;, &quot;pdf&quot;: &quot;PDF&quot;, &quot;art&quot;: &quot;作品&quot;, &quot;design&quot;: &quot;デザイン&quot;, &quot;book&quot;: &quot;本&quot;, &quot;place&quot;: &quot;場所&quot;, &quot;abstract&quot;: &quot;抽象&quot;, &quot;glass&quot;: &quot;ガラス&quot;, &quot;poster&quot;: &quot;ポスター&quot;, &quot;portrait&quot;: &quot;人物&quot;, &quot;landscape&quot;: &quot;風景&quot;, &quot;quote&quot;: &quot;名言&quot;, &quot;red&quot;: &quot;赤&quot;, &quot;orange&quot;: &quot;オレンジ&quot;, &quot;gold&quot;: &quot;ゴールド&quot;, &quot;green&quot;: &quot;緑&quot;, &quot;blue&quot;: &quot;青&quot;, &quot;purple&quot;: &quot;紫&quot;, &quot;gray&quot;: &quot;グレー&quot;, &quot;product&quot;: &quot;製品&quot;, &quot;audio&quot;: &quot;オーディオ&quot;, &quot;clock&quot;: &quot;時計&quot;, &quot;kitchen&quot;: &quot;キッチン&quot;, &quot;care&quot;: &quot;身だしなみ&quot;, &quot;desk&quot;: &quot;デスク&quot;, &quot;light&quot;: &quot;照明&quot;, &quot;home&quot;: &quot;住まい&quot;, &quot;white&quot;: &quot;白&quot;, &quot;silver&quot;: &quot;シルバー&quot;, &quot;black&quot;: &quot;黒&quot;}" aria-hidden="true">
+      <div class="pt" data-format="image" data-kind="product" data-theme="audio" data-color="white"><img src="../assets/wall/00.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="audio" data-color="silver"><img src="../assets/wall/03.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="audio" data-color="white"><img src="../assets/wall/09.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="audio" data-color="silver"><img src="../assets/wall/11.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="audio" data-color="silver"><img src="../assets/wall/12.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="clock" data-color="white"><img src="../assets/wall/01.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="clock" data-color="silver"><img src="../assets/wall/10.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="clock" data-color="black"><img src="../assets/wall/13.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="kitchen" data-color="white"><img src="../assets/wall/06.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="kitchen" data-color="silver"><img src="../assets/wall/07.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="kitchen" data-color="silver"><img src="../assets/wall/08.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="kitchen" data-color="silver"><img src="../assets/wall/19.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="care" data-color="silver"><img src="../assets/wall/16.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="care" data-color="silver"><img src="../assets/wall/18.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="desk" data-color="silver"><img src="../assets/wall/02.jpg" alt="" loading="lazy"></div>
+      <div class="pt" data-format="image" data-kind="product" data-theme="light" data-color="white"><img src="../assets/wall/04.jpg" alt="" loading="lazy"></div>
+      <div class="pt card text" data-format="text" data-kind="book" data-theme="quote" data-color="white"><span>“Less, but better.”</span></div>
+      <div class="pt card text" data-format="text" data-kind="book" data-theme="quote" data-color="white"><span>“Good design is honest.”</span></div>
+      <div class="pt card text" data-format="text" data-kind="book" data-theme="quote" data-color="white"><span>“As little design as possible.”</span></div>
+      <div class="pt card web" data-format="web" data-kind="place" data-theme="audio" data-color="silver"><span>vitsoe.com</span></div>
+      <div class="pt card web" data-format="web" data-kind="book" data-theme="kitchen" data-color="silver"><span>wikipedia.org/Bauhaus</span></div>
+      <div class="pt card web" data-format="web" data-kind="place" data-theme="clock" data-color="silver"><span>designmuseum.org</span></div>
+      <div class="pt card pdf" data-format="pdf" data-kind="book" data-theme="desk" data-color="white"><span>ten-principles.pdf</span></div>
+      <div class="pt card pdf" data-format="pdf" data-kind="book" data-theme="audio" data-color="white"><span>catalogue-1965.pdf</span></div>
     </div>
   </section>
 
@@ -275,18 +326,7 @@
   <span>© 2026 Wunder</span>
   <a href="https://github.com/rocavence/Wunderkammer">GitHub</a>
   <a href="https://github.com/rocavence/Wunderkammer/releases">リリース</a>
-  <span>画像：<a href="https://www.clevelandart.org/open-access">クリーブランド美術館</a>、CC0</span>
 </footer>
-
-<div class="preview" hidden role="dialog" aria-modal="true" aria-label="近くで見る">
-  <img alt="">
-  <div class="p-caption">
-    <p class="p-title"></p>
-    <p class="p-meta"></p>
-    <a class="p-link" target="_blank" rel="noopener">美術館で見る ↗</a>
-  </div>
-  <button class="p-close" type="button">閉じる</button>
-</div>
 
 <div class="toast" role="status" aria-live="polite">
   <img alt="">
