@@ -387,6 +387,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
 
         buildMenu()
         AppAppearance.apply(AppAppearance.saved)
+        // Following the system: a new accent in System Settings repaints the app too.
+        NotificationCenter.default.addObserver(forName: NSColor.systemColorsDidChangeNotification, object: nil, queue: .main) { _ in
+            MainActor.assumeIsolated {
+                if Accent.current == .system { NotificationCenter.default.post(name: Accent.didChange, object: nil) }
+            }
+        }
         NotificationCenter.default.addObserver(forName: Accent.didChange, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.accentChanged() }
         }

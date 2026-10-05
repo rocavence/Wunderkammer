@@ -197,7 +197,7 @@ final class SettingsWindowController: NSWindowController {
                 pending ? String(localized: "重新開啟 Wunderkammer 後換成新的語言。") : String(localized: "選單、按鈕與訊息使用的語言。"),
                 languageControl),
             row(String(localized: "外觀"), String(localized: "淺色、深色，或跟著系統切換。"), look),
-            row(String(localized: "重點色"), String(localized: "只用在選中與作用中的東西：所在的空間、選取、拖放的目標。顏色都取自圖示的拱門。"),
+            row(String(localized: "重點色"), String(localized: "只用在選中與作用中的東西：所在的空間、選取、拖放的目標。可以跟隨系統，或用取自圖示拱門的顏色。"),
                 swatches),
         ]
     }
@@ -379,13 +379,26 @@ private final class Swatch: NSView {
         super.init(frame: .zero)
         let disc = NSView()
         disc.wantsLayer = true
-        disc.layer?.backgroundColor = accent.color.cgColor
         disc.layer?.cornerRadius = 13
+        disc.layer?.masksToBounds = true
+        if accent == .system {
+            // The system's choice: a wheel of every colour, as in System Settings.
+            let wheel = CAGradientLayer()
+            wheel.type = .conic
+            wheel.startPoint = CGPoint(x: 0.5, y: 0.5)
+            wheel.endPoint = CGPoint(x: 0.5, y: 0)
+            wheel.colors = [NSColor.systemRed, .systemOrange, .systemYellow, .systemGreen, .systemTeal, .systemBlue,
+                            .systemPurple, .systemPink, .systemRed].map(\.cgColor)
+            wheel.frame = CGRect(x: 0, y: 0, width: 26, height: 26)
+            disc.layer?.addSublayer(wheel)
+        } else {
+            disc.layer?.backgroundColor = accent.color.cgColor
+        }
         let ring = NSView()
         ring.wantsLayer = true
         ring.layer?.cornerRadius = 17
         ring.layer?.borderWidth = selected ? 2 : 0
-        ring.layer?.borderColor = accent.color.cgColor
+        ring.layer?.borderColor = (accent == .system ? NSColor.controlAccentColor : accent.color).cgColor
         let name = NSTextField(labelWithString: accent.title)
         name.font = .systemFont(ofSize: 10.5, weight: selected ? .semibold : .regular)
         name.textColor = selected ? .labelColor : .secondaryLabelColor

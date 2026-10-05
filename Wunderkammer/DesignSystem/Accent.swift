@@ -3,12 +3,14 @@ import AppKit
 /// The one colour the app is allowed to choose: the accent. It marks what's
 /// chosen and what's active (the space you're in, a selection, a dropped-on
 /// target) and nothing else; the rest of the palette stays the system's.
-/// Five, all drawn from the arch in the icon; orange by default.
+/// The system's own accent, or one of five drawn from the arch in the icon;
+/// orange by default.
 enum Accent: String, CaseIterable, Sendable {
-    case orange, vermilion, amber, sky, ultramarine
+    case system, orange, vermilion, amber, sky, ultramarine
 
     var hex: UInt32 {
         switch self {
+        case .system: 0x007AFF
         case .orange: 0xFE6911
         case .vermilion: 0xF2361A
         case .amber: 0xF5A021
@@ -19,6 +21,7 @@ enum Accent: String, CaseIterable, Sendable {
 
     var title: String {
         switch self {
+        case .system: String(localized: "跟隨系統")
         case .orange: String(localized: "橘")
         case .vermilion: String(localized: "朱紅")
         case .amber: String(localized: "琥珀")
@@ -28,7 +31,8 @@ enum Accent: String, CaseIterable, Sendable {
     }
 
     var color: NSColor {
-        NSColor(srgbRed: CGFloat((hex >> 16) & 0xFF) / 255, green: CGFloat((hex >> 8) & 0xFF) / 255,
+        if self == .system { return .controlAccentColor }
+        return NSColor(srgbRed: CGFloat((hex >> 16) & 0xFF) / 255, green: CGFloat((hex >> 8) & 0xFF) / 255,
                 blue: CGFloat(hex & 0xFF) / 255, alpha: 1)
     }
 
