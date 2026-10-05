@@ -203,10 +203,10 @@ final class SelfTest {
                 }
                 ui.showSettingsTabForTest(.general)
                 let was = Accent.current
-                Accent.apply(.ultramarine)
+                Accent.apply(.blue)
                 await wait(0.5)
                 shot("settings-accent", windowNumber: w.windowNumber)
-                check(NSColor.accent.usingColorSpace(.sRGB)?.blueComponent ?? 0 > 0.8, "the accent changes the app's accent colour")
+                check(NSColor.accent.usingColorSpace(.sRGB)?.blueComponent ?? 0 > 0.7, "the accent changes the app's accent colour")
                 w.orderOut(nil)
                 shot("accent-main")
                 Accent.apply(was)

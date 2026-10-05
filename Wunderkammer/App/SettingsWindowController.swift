@@ -191,13 +191,13 @@ final class SettingsWindowController: NSWindowController {
         let swatches = NSStackView(views: Accent.allCases.map { a in
             Swatch(a, selected: a == Accent.current) { Accent.apply(a) }
         })
-        swatches.spacing = 10
+        swatches.spacing = 6
         return [
             row(String(localized: "語言"),
                 pending ? String(localized: "重新開啟 Wunderkammer 後換成新的語言。") : String(localized: "選單、按鈕與訊息使用的語言。"),
                 languageControl),
             row(String(localized: "外觀"), String(localized: "淺色、深色，或跟著系統切換。"), look),
-            row(String(localized: "重點色"), String(localized: "只用在選中與作用中的東西：所在的空間、選取、拖放的目標。可以跟隨系統，或用取自圖示拱門的顏色。"),
+            row(String(localized: "重點色"), String(localized: "只用在選中與作用中的東西：所在的空間、選取、拖放的目標。可以跟隨系統，或在這裡另外指定。"),
                 swatches),
         ]
     }
@@ -400,17 +400,16 @@ private final class Swatch: NSView {
         ring.layer?.borderWidth = selected ? 2 : 0
         ring.layer?.borderColor = (accent == .system ? NSColor.controlAccentColor : accent.color).cgColor
         let name = NSTextField(labelWithString: accent.title)
-        name.font = .systemFont(ofSize: 10.5, weight: selected ? .semibold : .regular)
-        name.textColor = selected ? .labelColor : .secondaryLabelColor
+        // Only the chosen one says its name, as in System Settings; the rest on hover.
+        name.font = .systemFont(ofSize: 10.5)
+        name.textColor = .secondaryLabelColor
+        name.isHidden = !selected
         for v in [ring, disc, name] as [NSView] {
             v.translatesAutoresizingMaskIntoConstraints = false
             addSubview(v)
         }
         NSLayoutConstraint.activate([
-            // As wide as its name needs ("Ultramarine" more than 群青).
-            widthAnchor.constraint(greaterThanOrEqualToConstant: 40),
-            name.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor),
-            name.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor),
+            widthAnchor.constraint(equalToConstant: 36),
             ring.topAnchor.constraint(equalTo: topAnchor),
             ring.centerXAnchor.constraint(equalTo: centerXAnchor),
             ring.widthAnchor.constraint(equalToConstant: 34),

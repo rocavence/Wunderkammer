@@ -3,42 +3,47 @@ import AppKit
 /// The one colour the app is allowed to choose: the accent. It marks what's
 /// chosen and what's active (the space you're in, a selection, a dropped-on
 /// target) and nothing else; the rest of the palette stays the system's.
-/// The system's own accent, or one of five drawn from the arch in the icon;
-/// orange by default.
+/// The system's own accent, or one of the same colours System Settings
+/// offers; orange by default.
 enum Accent: String, CaseIterable, Sendable {
-    case system, orange, vermilion, amber, sky, ultramarine
-
-    var hex: UInt32 {
-        switch self {
-        case .system: 0x007AFF
-        case .orange: 0xFE6911
-        case .vermilion: 0xF2361A
-        case .amber: 0xF5A021
-        case .sky: 0x2AA6F2
-        case .ultramarine: 0x1450F5
-        }
-    }
+    case system, blue, purple, pink, red, orange, yellow, green, graphite
 
     var title: String {
         switch self {
         case .system: String(localized: "跟隨系統")
-        case .orange: String(localized: "橘")
-        case .vermilion: String(localized: "朱紅")
-        case .amber: String(localized: "琥珀")
-        case .sky: String(localized: "天藍")
-        case .ultramarine: String(localized: "群青")
+        case .blue: String(localized: "藍色")
+        case .purple: String(localized: "紫色")
+        case .pink: String(localized: "粉紅色")
+        case .red: String(localized: "紅色")
+        case .orange: String(localized: "橙色")
+        case .yellow: String(localized: "黃色")
+        case .green: String(localized: "綠色")
+        case .graphite: String(localized: "石墨色")
         }
     }
 
     var color: NSColor {
-        if self == .system { return .controlAccentColor }
-        return NSColor(srgbRed: CGFloat((hex >> 16) & 0xFF) / 255, green: CGFloat((hex >> 8) & 0xFF) / 255,
-                blue: CGFloat(hex & 0xFF) / 255, alpha: 1)
+        switch self {
+        case .system: .controlAccentColor
+        case .blue: .systemBlue
+        case .purple: .systemPurple
+        case .pink: .systemPink
+        case .red: .systemRed
+        case .orange: .systemOrange
+        case .yellow: .systemYellow
+        case .green: .systemGreen
+        case .graphite: .systemGray
+        }
+    }
+
+    /// Choices from before the system's set, mapped to their nearest.
+    private static func migrated(_ raw: String) -> Accent? {
+        Accent(rawValue: raw) ?? ["vermilion": .red, "amber": .yellow, "sky": .blue, "ultramarine": .blue][raw]
     }
 
     private static let key = "accent"
     nonisolated(unsafe) private(set) static var current: Accent =
-        UserDefaults.standard.string(forKey: key).flatMap(Accent.init) ?? .orange
+        UserDefaults.standard.string(forKey: key).flatMap(migrated) ?? .orange
 
     static let didChange = Notification.Name("AccentDidChange")
 

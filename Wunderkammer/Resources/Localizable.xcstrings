@@ -4321,42 +4321,42 @@
         }
       }
     },
-    "只用在選中與作用中的東西：所在的空間、選取、拖放的目標。可以跟隨系統，或用取自圖示拱門的顏色。": {
+    "只用在選中與作用中的東西：所在的空間、選取、拖放的目標。可以跟隨系統，或在這裡另外指定。": {
       "localizations": {
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "只用在選中與作用中的東西：所在的空間、選取、拖放的目標。可以跟隨系統，或用取自圖示拱門的顏色。"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Used only for selected and active things: the current space, selections and drop targets. Follow the system, or use a color taken from the arch in the icon."
+            "value": "Used only for selected and active things: the current space, selections and drop targets. Follow the system, or choose one here."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "選択中・作業中のものだけに使われます：今いるスペース、選択、ドロップ先。システムに合わせるか、アイコンのアーチから取った色を選べます。"
+            "value": "選択中・作業中のものだけに使われます：今いるスペース、選択、ドロップ先。システムに合わせるか、ここで指定できます。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "선택되거나 활성화된 것에만 쓰입니다: 현재 공간, 선택 항목, 놓을 위치. 시스템을 따르거나 아이콘의 아치에서 가져온 색을 사용할 수 있습니다."
+            "value": "선택되거나 활성화된 것에만 쓰입니다: 현재 공간, 선택 항목, 놓을 위치. 시스템을 따르거나 여기서 따로 지정할 수 있습니다."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Solo se usa en lo seleccionado y activo: el espacio actual, las selecciones y los destinos al soltar. Sigue al sistema o usa un color tomado del arco del icono."
+            "value": "Solo se usa en lo seleccionado y activo: el espacio actual, las selecciones y los destinos al soltar. Sigue al sistema o elige uno aquí."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Usada só no que está selecionado e ativo: o espaço atual, as seleções e os destinos ao soltar. Siga o sistema ou use uma cor tirada do arco do ícone."
+            "value": "Usada só no que está selecionado e ativo: o espaço atual, as seleções e os destinos ao soltar. Siga o sistema ou escolha uma aqui."
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "只用在選中與作用中的東西：所在的空間、選取、拖放的目標。可以跟隨系統，或在這裡另外指定。"
           }
         }
       }
@@ -5357,46 +5357,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "大小"
-          }
-        }
-      }
-    },
-    "天藍": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sky blue"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Celeste"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "スカイブルー"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "하늘색"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Azul-celeste"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "天藍"
           }
         }
       }
@@ -9241,46 +9201,6 @@
         }
       }
     },
-    "朱紅": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vermilion"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bermellón"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "朱色"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "주홍"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vermelhão"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "朱紅"
-          }
-        }
-      }
-    },
     "格式": {
       "localizations": {
         "en": {
@@ -9437,46 +9357,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "棕色"
-          }
-        }
-      }
-    },
-    "橘": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Orange"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Naranja"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "オレンジ"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "주황"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Laranja"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "橘"
           }
         }
       }
@@ -10961,46 +10841,6 @@
         }
       }
     },
-    "琥珀": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Amber"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ámbar"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "琥珀"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "호박색"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Âmbar"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "琥珀"
-          }
-        }
-      }
-    },
     "用中文描述找圖，需要系統的中文 → 英文翻譯語言": {
       "localizations": {
         "en": {
@@ -11757,6 +11597,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "真的要重設嗎？"
+          }
+        }
+      }
+    },
+    "石墨色": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Graphite"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "グラファイト"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "그래파이트"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grafito"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grafite"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "石墨色"
           }
         }
       }
@@ -12797,46 +12677,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "繼續…"
-          }
-        }
-      }
-    },
-    "群青": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ultramarine"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ultramar"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "群青"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "군청"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Azul-ultramar"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "群青"
           }
         }
       }
