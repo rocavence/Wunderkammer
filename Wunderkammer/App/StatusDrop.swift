@@ -40,7 +40,7 @@ final class StatusDrop: NSObject, NSWindowDelegate, NSDraggingDestination {
                 path.close()
                 path.fill()
             } else {
-                path.lineWidth = 2
+                path.lineWidth = 3.4
                 path.lineCapStyle = .round
                 path.lineJoinStyle = .round
                 path.stroke()
