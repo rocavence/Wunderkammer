@@ -754,7 +754,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private func fitBars() {
         guard let host = barHost else { return }
         let width = host.bounds.width
-        let compact = width < 620
+        let compact = width < 800
         viewBar.compact = compact
         snapshotBar.compact = compact
         host.layoutSubtreeIfNeeded()
