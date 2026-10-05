@@ -75,6 +75,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     /// Whether the view is wide enough for the arrangement slots and the tips
     /// beside the view bar (set by fitBars as the window or panels change size).
     private var slotsFit = true
+    private var barCentre: NSLayoutConstraint!
     private var tipsFit = true
     private weak var barHost: NSView?
     private(set) var mode = ViewMode.grid
@@ -310,8 +311,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         viewBar.translatesAutoresizingMaskIntoConstraints = false
         viewBar.onLayout = { [weak self] m in self?.setMode(m) }
         content.addSubview(viewBar, positioned: .below, relativeTo: emptyCabinet)
+        // With the arrangement slots beside it, the pair sits centred, not the bar alone.
+        barCentre = viewBar.centerXAnchor.constraint(equalTo: content.centerXAnchor)
         NSLayoutConstraint.activate([
-            viewBar.centerXAnchor.constraint(equalTo: content.centerXAnchor),
+            barCentre,
             viewBar.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -18),
         ])
         snapshotBar.translatesAutoresizingMaskIntoConstraints = false
@@ -759,8 +762,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         snapshotBar.compact = compact
         host.layoutSubtreeIfNeeded()
         let margin: CGFloat = 16
-        let half = viewBar.fittingSize.width / 2
-        slotsFit = half + 10 + snapshotBar.fittingSize.width <= width / 2 - margin
+        slotsFit = viewBar.fittingSize.width + 10 + snapshotBar.fittingSize.width <= width - margin * 2
         tipsFit = width >= 560
         updateSnapshots()
     }
@@ -773,12 +775,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         // Each time the 工作台 comes into view, a tip picked at random.
         if showTips && canvasTips.isHidden { canvasTips.showRandom() }
         canvasTips.isHidden = !showTips
-        guard mode == .canvas, !viewBar.isHidden, slotsFit else { snapshotBar.isHidden = true; return }
+        guard mode == .canvas, !viewBar.isHidden, slotsFit else {
+            snapshotBar.isHidden = true
+            barCentre.constant = 0
+            return
+        }
         snapshotBar.isHidden = false
         let size = CGSize(width: 22, height: 18)
         snapshotBar.show(library.snapshots(key: canvas.arrangementKey).map { s in
             SnapshotBar.Slot(picture: s.map { canvas.miniature(of: $0, size: size) }, current: s.map(canvas.matches) ?? false)
         })
+        barCentre.constant = -(10 + snapshotBar.fittingSize.width) / 2
     }
 
     @objc private func saveArrangementFromMenu(_ sender: NSMenuItem) { saveArrangement(sender.tag) }

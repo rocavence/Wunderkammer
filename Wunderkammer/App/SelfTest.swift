@@ -999,6 +999,11 @@ final class SelfTest {
         window.setFrame(wide, display: true)
         await wait(0.8)
         check(!ui.barsCompactForTest && ui.slotsShownForTest, "wide again, the regular bar and the slots come back")
+        if let host = ui.contentAreaForTest {
+            let bars = host.subviews.filter { ($0 is ViewBar || $0 is SnapshotBar) && !$0.isHidden }
+            let mid = (bars.map(\.frame.minX).min()! + bars.map(\.frame.maxX).max()!) / 2
+            check(abs(mid - host.bounds.midX) < 2, "the bar and its slots sit centred together (\(Int(mid)) vs \(Int(host.bounds.midX)))")
+        }
         window.setFrame(was, display: true)
 
         // Tips: on the 工作台 only; five of them; closed, they stay closed for this run.
