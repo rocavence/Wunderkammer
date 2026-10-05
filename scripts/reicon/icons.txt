@@ -69,3 +69,7 @@ camera camera
 clipboard paste-clipboard
 inbox-in download-circle
 sunLight sun-light
+chevronLeft nav-arrow-left
+hand drag-hand-gesture
+selection select-window
+save floppy-disk

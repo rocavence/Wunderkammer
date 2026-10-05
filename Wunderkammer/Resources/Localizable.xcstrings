@@ -2001,6 +2001,46 @@
         }
       }
     },
+    "上一則" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前へ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이전"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anterior"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anterior"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上一則"
+          }
+        }
+      }
+    },
     "上次是從 %@ 的收藏來的" : {
       "localizations" : {
         "en" : {
@@ -2401,6 +2441,46 @@
         }
       }
     },
+    "下一則" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次へ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다음"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siguiente"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próxima"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一則"
+          }
+        }
+      }
+    },
     "下載" : {
       "localizations" : {
         "en" : {
@@ -2529,6 +2609,12 @@
             "value" : "Download Version %@"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descargar la versión %@"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2539,12 +2625,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "새 버전 %@ 다운로드"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Descargar la versión %@"
           }
         },
         "pt-BR" : {
@@ -2569,6 +2649,12 @@
             "value" : "Download Version %@…"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descargar la versión %@…"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2579,12 +2665,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "새 버전 %@ 다운로드…"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Descargar la versión %@…"
           }
         },
         "pt-BR" : {
@@ -2921,6 +3001,7 @@
         }
       }
     },
+    "之後按 ⌘K 找回來" : {},
     "之後收進來的檔案也都會存在這裡。" : {
       "localizations" : {
         "en" : {
@@ -3917,6 +3998,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "全部"
+          }
+        }
+      }
+    },
+    "兩指捏合或捲動滾輪。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pinch with two fingers, or scroll."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2 本指でピンチ、またはスクロール。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "두 손가락으로 오므리거나 스크롤하세요."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pellizca con dos dedos o desplázate."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faça pinça com dois dedos ou role."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "兩指捏合或捲動滾輪。"
           }
         }
       }
@@ -5641,6 +5762,7 @@
         }
       }
     },
+    "圖裡的字、顏色、年份都找得到，不用想要放哪裡" : {},
     "在 Finder 中顯示" : {
       "localizations" : {
         "en" : {
@@ -6237,6 +6359,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "好"
+          }
+        }
+      }
+    },
+    "存下排法" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save the layout"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "並びを保存"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "배치 저장"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar la disposición"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvar o arranjo"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "存下排法"
           }
         }
       }
@@ -7041,6 +7203,46 @@
         }
       }
     },
+    "工作台提示" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Space tips"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "作業台のヒント"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "작업대 도움말"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consejos de la mesa de trabajo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dicas da bancada"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "工作台提示"
+          }
+        }
+      }
+    },
     "已安裝" : {
       "localizations" : {
         "en" : {
@@ -7129,6 +7331,12 @@
             "value" : "You’re up to date"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tienes la última versión"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7139,12 +7347,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "최신 버전입니다"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tienes la última versión"
           }
         },
         "pt-BR" : {
@@ -8641,6 +8843,86 @@
         }
       }
     },
+    "按住 ⌥，從一件拖到另一件。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hold ⌥ and drag from one piece to another."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌥ を押したまま、ひとつから別のものへドラッグ。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌥를 누른 채 한 항목에서 다른 항목으로 끌어 놓으세요."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantén ⌥ y arrastra de una pieza a otra."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segure ⌥ e arraste de uma peça para outra."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按住 ⌥，從一件拖到另一件。"
+          }
+        }
+      }
+    },
+    "按住空白鍵拖曳，或按住 ⌥ 拖空白的地方。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hold Space and drag, or hold ⌥ and drag an empty spot."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スペースキーを押したままドラッグ、または ⌥ を押して空いた所をドラッグ。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "스페이스 바를 누른 채 끌거나, ⌥를 누르고 빈 곳을 끄세요."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantén la barra espaciadora y arrastra, o mantén ⌥ y arrastra un hueco."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segure a barra de espaço e arraste, ou segure ⌥ e arraste um espaço vazio."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按住空白鍵拖曳，或按住 ⌥ 拖空白的地方。"
+          }
+        }
+      }
+    },
     "捏合或 ⌘ 加捲動來放大縮小" : {
       "localizations" : {
         "en" : {
@@ -9597,6 +9879,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "放大"
+          }
+        }
+      }
+    },
+    "放大縮小" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拡大・縮小"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "확대·축소"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "放大縮小"
           }
         }
       }
@@ -10681,6 +11003,46 @@
         }
       }
     },
+    "框選幾件，拖到空白處，就成新的一堆。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select a few, drag them to an empty spot: a new pile."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "いくつか囲んで選び、空いた所へドラッグすると新しい山に。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "몇 개를 드래그로 선택해 빈 곳에 놓으면 새 묶음이 됩니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecciona unas cuantas y arrástralas a un hueco: un montón nuevo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecione algumas e arraste para um espaço vazio: um grupo novo."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "框選幾件，拖到空白處，就成新的一堆。"
+          }
+        }
+      }
+    },
     "棕" : {
       "localizations" : {
         "en" : {
@@ -11009,6 +11371,12 @@
             "value" : "Check for Updates"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar actualizaciones"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11019,12 +11387,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "업데이트 확인"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Buscar actualizaciones"
           }
         },
         "pt-BR" : {
@@ -13241,6 +13603,46 @@
         }
       }
     },
+    "移動畫布" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move around"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キャンバスを動かす"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "캔버스 이동"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moverse"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover a tela"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移動畫布"
+          }
+        }
+      }
+    },
     "移除" : {
       "localizations" : {
         "en" : {
@@ -14317,6 +14719,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "聲音"
+          }
+        }
+      }
+    },
+    "自己分一堆" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Make a pile"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自分で山を作る"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "직접 묶기"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haz un montón"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faça um grupo"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自己分一堆"
           }
         }
       }
@@ -15517,6 +15959,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "連結資料夾"
+          }
+        }
+      }
+    },
+    "連起來" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "つなぐ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "연결하기"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectar"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連起來"
           }
         }
       }
@@ -16761,6 +17243,46 @@
         }
       }
     },
+    "關閉提示" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close tips"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ヒントを閉じる"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "도움말 닫기"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar consejos"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fechar dicas"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關閉提示"
+          }
+        }
+      }
+    },
     "關閉視窗" : {
       "localizations" : {
         "en" : {
@@ -17797,6 +18319,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "點一下快捷鍵，再按下新的組合鍵。Esc 取消，Delete 還原預設。也可以把任何東西拖到選單列的拱門。"
+          }
+        }
+      }
+    },
+    "點右下的空格存起來，再點一次回到這個排法。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click an empty slot at the bottom right to save; click it again to come back."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "右下の空いた枠をクリックして保存、もう一度クリックでこの並びに戻ります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오른쪽 아래 빈 칸을 클릭해 저장하고, 다시 클릭하면 이 배치로 돌아옵니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haz clic en un hueco abajo a la derecha para guardar; vuelve a hacer clic para regresar."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clique num espaço vazio no canto inferior direito para salvar; clique de novo para voltar."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "點右下的空格存起來，再點一次回到這個排法。"
           }
         }
       }

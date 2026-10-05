@@ -71,4 +71,8 @@ enum Reicon: String, CaseIterable, Sendable {
     case clipboard = "clipboard"
     case inboxIn = "inbox-in"
     case sunLight = "sunLight"
+    case chevronLeft = "chevronLeft"
+    case hand = "hand"
+    case selection = "selection"
+    case save = "save"
 }

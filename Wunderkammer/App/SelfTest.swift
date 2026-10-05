@@ -951,6 +951,24 @@ final class SelfTest {
         let formatTitles = Set(SidebarViewController.fileKinds.map(\.title) + [CanvasLayout.otherPile])
         check(!ui.canvas.groups.isEmpty && ui.canvas.groups.allSatisfy { formatTitles.contains($0.title ?? "") }, "piling by format names each pile a format (\(ui.canvas.groups.map(\.title)))")
         shot("space-map-canvas")
+        // Tips: on the 工作台 only; five of them; closed, they stay closed for this run.
+        if let tips = ui.canvasTipsForTest {
+            var seen: [String] = []
+            for _ in 0..<5 { seen.append(tips.textForTest); tips.step(1) }
+            check(Set(seen).count == 5 && tips.textForTest == seen[0], "the 工作台 tips go through five and come round (\(seen))")
+            shot("canvas-tips")
+            tips.onClose?()
+            await wait(0.4)
+            ui.setSpace(.cabinet)
+            await wait(0.4)
+            check(ui.canvasTipsForTest == nil, "tips aren't shown away from the 工作台")
+            ui.setSpace(.map)
+            await wait(0.6)
+            check(ui.canvasTipsForTest == nil, "closed, the tips stay away when coming back")
+        } else {
+            check(false, "the 工作台 shows its tips")
+        }
+
         // Saved arrangements: save one, change the canvas, come back to it.
         let slots = ui.snapshotBarForTest
         check(!slots.isHidden && slots.slots.count == 3, "the 工作台 has three arrangement slots")
@@ -1801,6 +1819,7 @@ protocol SelfTestUI: AnyObject {
     func closeViewBarChoicesForTest()
     func hoverViewBarForTest() -> String?
     var snapshotBarForTest: SnapshotBar { get }
+    var canvasTipsForTest: CanvasTips? { get }
     var isSearchExpanded: Bool { get }
     var topBarSearchCapsuleForTest: NSView? { get }
     func viewBarEnabledForTest(_ tip: String) -> Bool?

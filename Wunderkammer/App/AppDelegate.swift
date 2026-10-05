@@ -69,6 +69,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private let viewBar = ViewBar()
     /// The 工作台's saved arrangements, beside the view bar.
     private let snapshotBar = SnapshotBar()
+    private let canvasTips = CanvasTips()
+    /// Closed once, the 工作台's tips stay away until the app is opened again.
+    private var canvasTipsClosed = false
     private(set) var mode = ViewMode.grid
     private(set) var scope = Scope()
     private var capture: CaptureController!
@@ -312,6 +315,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
             snapshotBar.leadingAnchor.constraint(equalTo: viewBar.trailingAnchor, constant: 10),
             snapshotBar.centerYAnchor.constraint(equalTo: viewBar.centerYAnchor),
         ])
+        canvasTips.isHidden = true
+        canvasTips.translatesAutoresizingMaskIntoConstraints = false
+        content.addSubview(canvasTips, positioned: .below, relativeTo: emptyCabinet)
+        NSLayoutConstraint.activate([
+            canvasTips.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -18),
+            canvasTips.bottomAnchor.constraint(equalTo: viewBar.topAnchor, constant: -12),
+        ])
+        canvasTips.onClose = { [weak self] in
+            guard let self else { return }
+            self.canvasTipsClosed = true
+            NSAnimationContext.runAnimationGroup({ ctx in
+                ctx.duration = 0.18
+                self.canvasTips.animator().alphaValue = 0
+            }, completionHandler: { MainActor.assumeIsolated { self.canvasTips.isHidden = true; self.canvasTips.alphaValue = 1 } })
+        }
         snapshotBar.onSave = { [weak self] i in self?.saveArrangement(i) }
         snapshotBar.onRestore = { [weak self] i in self?.restoreArrangement(i) }
         snapshotBar.onClear = { [weak self] i in
@@ -720,6 +738,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
 
     /// The slots for the canvas in view: shown only on the 工作台.
     private func updateSnapshots() {
+        canvasTips.isHidden = canvasTipsClosed || mode != .canvas || viewBar.isHidden
         guard mode == .canvas, !viewBar.isHidden else { snapshotBar.isHidden = true; return }
         snapshotBar.isHidden = false
         let size = CGSize(width: 22, height: 18)
@@ -1468,6 +1487,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     }
     func hoverViewBarForTest() -> String? { viewBar.hoverFirstForTest() }
     var snapshotBarForTest: SnapshotBar { snapshotBar }
+    var canvasTipsForTest: CanvasTips? { canvasTips.isHidden ? nil : canvasTips }
     func openSearchForTest() { focusSearch() }
     var spacesControlForTest: NSView { topBar.spaces }
     var topBarSearchCapsuleForTest: NSView? { topBar.searchCapsuleForTest }
