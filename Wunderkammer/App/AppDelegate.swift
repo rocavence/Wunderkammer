@@ -320,6 +320,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         content.addSubview(canvasTips, positioned: .below, relativeTo: emptyCabinet)
         NSLayoutConstraint.activate([
             canvasTips.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -18),
+            canvasTips.leadingAnchor.constraint(greaterThanOrEqualTo: content.leadingAnchor, constant: 18),
             canvasTips.bottomAnchor.constraint(equalTo: viewBar.topAnchor, constant: -12),
         ])
         canvasTips.onClose = { [weak self] in
@@ -1163,6 +1164,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
                     // Loosened, the split would go back to its own idea of the
                     // width; put the divider where the sidebar's width says.
                     if let split = self.splitController?.splitView, split.arrangedSubviews.count == 3 {
+                        // Its own share of the window would win otherwise when the sidebar is at its narrowest.
+                        self.inspectorItem.preferredThicknessFraction = width / max(split.bounds.width, 1)
                         split.setPosition(split.bounds.width - width - split.dividerThickness, ofDividerAt: 1)
                     }
                 }

@@ -65,8 +65,12 @@ final class CanvasTips: NSView {
             v.translatesAutoresizingMaskIntoConstraints = false
             addSubview(v)
         }
+        // The card gives way before the window's columns do.
+        let width = widthAnchor.constraint(equalToConstant: 264)
+        width.priority = .defaultLow
         NSLayoutConstraint.activate([
-            widthAnchor.constraint(equalToConstant: 264),
+            width,
+            widthAnchor.constraint(lessThanOrEqualToConstant: 264),
             glass.leadingAnchor.constraint(equalTo: leadingAnchor),
             glass.trailingAnchor.constraint(equalTo: trailingAnchor),
             glass.topAnchor.constraint(equalTo: topAnchor),

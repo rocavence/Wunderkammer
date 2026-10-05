@@ -3001,7 +3001,46 @@
         }
       }
     },
-    "之後按 ⌘K 找回來" : {},
+    "之後按 ⌘K 找回來" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find it again with ⌘K"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "あとで ⌘K で見つけられます"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "나중에 ⌘K로 다시 찾으세요"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encuéntralo luego con ⌘K"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encontre depois com ⌘K"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "之後按 ⌘K 找回來"
+          }
+        }
+      }
+    },
     "之後收進來的檔案也都會存在這裡。" : {
       "localizations" : {
         "en" : {
@@ -5762,7 +5801,46 @@
         }
       }
     },
-    "圖裡的字、顏色、年份都找得到，不用想要放哪裡" : {},
+    "圖裡的字、顏色、年份都找得到，不用想要放哪裡" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Words in pictures, colors and years are all searchable. No need to decide where it goes."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像の中の文字、色、年まで検索できます。置き場所を考える必要はありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 속 글자, 색상, 연도까지 검색됩니다. 어디에 둘지 고민할 필요 없어요."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se pueden buscar las palabras de las imágenes, los colores y los años. No hace falta decidir dónde va."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dá para buscar as palavras das imagens, as cores e os anos. Não precisa decidir onde guardar."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "圖裡的字、顏色、年份都找得到，不用想要放哪裡"
+          }
+        }
+      }
+    },
     "在 Finder 中顯示" : {
       "localizations" : {
         "en" : {

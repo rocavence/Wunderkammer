@@ -282,8 +282,9 @@ final class InspectorViewController: NSViewController {
         if let related = related?(item), !related.isEmpty {
             section(String(localized: "相關的收藏"))
             let columns = 3
-            // Three across fit the narrowest the panel gets (the sidebar's minimum).
-            let side: CGFloat = 56
+            // Three across fit the narrowest the panel gets (the sidebar's minimum),
+            // even with a scroller that stays in view (a mouse attached).
+            let side: CGFloat = 52
             let grid = NSGridView(numberOfColumns: columns, rows: 0)
             grid.rowSpacing = 6
             grid.columnSpacing = 6
@@ -468,8 +469,9 @@ final class InspectorViewController: NSViewController {
         l.font = font
         l.textColor = color
         l.isSelectable = true
-        // Wraps at whatever width the panel gives it.
+        // Wraps at whatever width the panel gives it, and never asks for more.
         l.preferredMaxLayoutWidth = 0
+        l.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         return l
     }
 
