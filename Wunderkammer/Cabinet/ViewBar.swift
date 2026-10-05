@@ -180,11 +180,17 @@ private final class BarButton: NSButton {
         bar?.hover(nil)
         guard !tool.choices.isEmpty else { return tool.action() }
         let menu = NSMenu()
-        menu.font = .systemFont(ofSize: 15)
         menu.minimumWidth = 200
         for choice in tool.choices {
             let item = ClosureMenuItem(choice.tip) { choice.action() }
-            item.image = Icon.optical(choice.icon, size: 20)
+            // A menu row is as tall as its image: padding the icon gives roomier rows at the usual text size.
+            let icon = Icon.optical(choice.icon, size: 18)
+            let padded = NSImage(size: NSSize(width: icon.size.width, height: 32), flipped: false) { rect in
+                icon.draw(in: NSRect(x: 0, y: (rect.height - icon.size.height) / 2, width: icon.size.width, height: icon.size.height))
+                return true
+            }
+            padded.isTemplate = icon.isTemplate
+            item.image = padded
             menu.addItem(item)
         }
         // Opens upward, its bottom just above the button.
