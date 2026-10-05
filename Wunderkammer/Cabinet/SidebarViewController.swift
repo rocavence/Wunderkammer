@@ -14,7 +14,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     var onManageCabinets: (() -> Void)?
     /// The open 展室's settings (the button at the foot, left).
     var onCabinetSettings: (() -> Void)?
-    private let roomSettings = FootButton(image: FootButton.arch(), title: String(localized: "佈置展室"))
+    private let roomSettings = FootButton(image: FootButton.arch(), title: nil, reveals: String(localized: "展室設定"))
     /// Which 展室 is open, shown on the card at the top.
     var cabinetName = String(localized: "展室") { didSet { if cabinetName != oldValue { reload() } } }
     var cabinetID: UUID? { didSet { if cabinetID != oldValue { coverIDs = [] ; reload() } } }
@@ -80,6 +80,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         add.setAccessibilityLabel(String(localized: "新增釘選版"))
         // The open 展室's own settings, under its doorway: the arch.
         roomSettings.toolTip = String(localized: "展室設定")
+        roomSettings.setAccessibilityLabel(String(localized: "展室設定"))
         roomSettings.target = self
         roomSettings.action = #selector(openCabinetSettings)
 
@@ -102,7 +103,6 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             scroll.bottomAnchor.constraint(equalTo: add.topAnchor, constant: -6),
             roomSettings.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 10),
             roomSettings.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -10),
-            roomSettings.trailingAnchor.constraint(lessThanOrEqualTo: add.leadingAnchor, constant: -8),
             add.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -10),
             add.centerYAnchor.constraint(equalTo: roomSettings.centerYAnchor),
         ])
@@ -515,7 +515,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
 
     @objc private func manageCabinets() { onManageCabinets?() }
     @objc private func openCabinetSettings() { onCabinetSettings?() }
-    var cabinetSettingsButtonForTest: NSButton { roomSettings }
+    var cabinetSettingsButtonForTest: FootButton { roomSettings }
 
     @objc func newBoard(_ sender: Any?) {
         let n = library.collections.count + 1
@@ -654,13 +654,16 @@ final class CabinetHeader: NSControl {
     }
 }
 
-/// A quiet control at the sidebar's foot: a glyph, maybe a word, in grey that
-/// darkens with a soft fill under the pointer and deepens while pressed.
+/// A quiet control at the sidebar's foot: a glyph in grey that darkens with a
+/// soft fill under the pointer and deepens while pressed. One can carry a
+/// word that slides out beside its glyph only while pointed at.
 @MainActor
 final class FootButton: NSButton {
     private var hovering = false { didSet { paint() } }
+    private let reveals: String?
 
-    init(image: NSImage, title: String?) {
+    init(image: NSImage, title: String?, reveals: String? = nil) {
+        self.reveals = reveals
         super.init(frame: .zero)
         isBordered = false
         wantsLayer = true
@@ -673,7 +676,7 @@ final class FootButton: NSButton {
         font = .systemFont(ofSize: 12.5, weight: .medium)
         translatesAutoresizingMaskIntoConstraints = false
         heightAnchor.constraint(equalToConstant: 30).isActive = true
-        if title == nil { widthAnchor.constraint(equalToConstant: 30).isActive = true }
+
         addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
         paint()
     }
@@ -682,11 +685,27 @@ final class FootButton: NSButton {
 
     override var intrinsicContentSize: NSSize {
         let size = super.intrinsicContentSize
-        return NSSize(width: imagePosition == .imageOnly ? 30 : size.width + 22, height: 30)
+        return NSSize(width: title.isEmpty ? 30 : size.width + 22, height: 30)
     }
 
-    override func mouseEntered(with event: NSEvent) { hovering = true }
-    override func mouseExited(with event: NSEvent) { hovering = false }
+    override func mouseEntered(with event: NSEvent) { hover(true) }
+    override func mouseExited(with event: NSEvent) { hover(false) }
+
+    func hoverForTest(_ on: Bool) { hover(on) }
+
+    private func hover(_ on: Bool) {
+        hovering = on
+        guard let reveals else { return }
+        title = on ? reveals : ""
+        imagePosition = on ? .imageLeading : .imageOnly
+        paint()
+        invalidateIntrinsicContentSize()
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.18
+            ctx.allowsImplicitAnimation = true
+            superview?.layoutSubtreeIfNeeded()
+        }
+    }
 
     override func mouseDown(with event: NSEvent) {
         layer?.backgroundColor = resolved(NSColor.labelColor.withAlphaComponent(0.12))

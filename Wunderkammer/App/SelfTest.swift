@@ -729,6 +729,11 @@ final class SelfTest {
         ui.switchCabinet(to: home)
         await wait(0.4)
         // The settings button at the sidebar's foot: just this 展室's settings.
+        let rest = ui.hoverCabinetSettingsForTest(false), pointed = ui.hoverCabinetSettingsForTest(true)
+        await wait(0.3)
+        shot("sidebar-foot-hover")
+        check(rest <= 30 && pointed > 60, "the arch says 展室設定 only while pointed at (\(Int(rest)) → \(Int(pointed)))")
+        _ = ui.hoverCabinetSettingsForTest(false)
         ui.cabinetSettingsForTest()
         await wait(0.6)
         check(ui.cabinetSettingsShownForTest, "the sidebar's settings button opens this 展室's settings")
@@ -1875,6 +1880,7 @@ protocol SelfTestUI: AnyObject {
     func createCabinetForTest(_ name: String) -> UUID
     func manageCabinets()
     func cabinetSettingsForTest()
+    func hoverCabinetSettingsForTest(_ on: Bool) -> CGFloat
     var cabinetSettingsShownForTest: Bool { get }
     func closeCabinetsForTest()
     var cabinetsWindowNumber: Int? { get }
