@@ -254,13 +254,13 @@ final class SettingsWindowController: NSWindowController {
         ]
     }
 
+    /// As Flione's About: who made it, the app and its version, then why it
+    /// exists — the trouble it answers and how — its name, and thanks.
     private func about() -> NSView {
         let icon = NSImageView(image: NSApp.applicationIconImage ?? NSImage())
         icon.imageScaling = .scaleProportionallyUpOrDown
         let name = Self.label("Wunder", size: 14, weight: .medium)
-        let tagline = Self.label(String(localized: "收進來就好，不必整理。看到喜歡的東西就收，系統負責理解、搜尋與重新發現。"),
-                                 size: 13, color: .secondaryLabelColor, wraps: true)
-        tagline.preferredMaxLayoutWidth = Self.rowWidth - 64 - 16
+        let tagline = Self.label(String(localized: "收進來就好，不必整理。"), size: 13, color: .secondaryLabelColor)
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
         let detail = Self.label(String(localized: "版本 \(version)"), size: 11, color: .tertiaryLabelColor)
         let updateRow = NSStackView()
@@ -278,13 +278,94 @@ final class SettingsWindowController: NSWindowController {
         words.alignment = .leading
         words.spacing = 4
         words.setCustomSpacing(10, after: detail)
-        let stack = NSStackView(views: [icon, words])
-        stack.alignment = .top
-        stack.spacing = 16
-        stack.edgeInsets = NSEdgeInsets(top: 16, left: 0, bottom: 0, right: 0)
+        let app = NSStackView(views: [icon, words])
+        app.alignment = .top
+        app.spacing = 16
         icon.widthAnchor.constraint(equalToConstant: 64).isActive = true
         icon.heightAnchor.constraint(equalToConstant: 64).isActive = true
+
+        let page = NSStackView(views: [
+            AuthorCard(),
+            app,
+            section(String(localized: "為什麼做 Wunder"), [
+                String(localized: "靈感散落各處。截圖躺在桌面，書籤沉在瀏覽器，下載的圖埋在資料夾。真的要用時，記得看過，卻找不到。"),
+                String(localized: "要找得到，就得先整理：建資料夾、取檔名、下標籤。整理比收藏還累，收藏的興致就這樣被磨掉。"),
+                String(localized: "收藏工具大多要訂閱，要把東西上傳到別人的伺服器，還要照它的規則分類。"),
+                String(localized: "收了之後就再也沒打開過。收藏變成倉庫，不再是讓人心動的地方。"),
+            ]),
+            section(String(localized: "Wunder 怎麼解決"), leads: true, [
+                String(localized: "收進來就好。按快捷鍵、拖到選單列的拱門或截圖，一個動作就收好，不問要放哪裡。"),
+                String(localized: "整理交給系統。依格式、分類、主題與顏色自動分好；記不得檔名，用一句話描述也找得到。"),
+                String(localized: "一切留在這台 Mac。文字、物件、相似與描述的辨識都在本機完成，不上傳、不用帳號、不用訂閱。"),
+                String(localized: "讓舊收藏回來找你。漫遊、過去的今天、被遺忘的，把收過的東西一件件再帶回眼前。"),
+            ]),
+            section(String(localized: "名字"), [
+                String(localized: "Wunderkammer 是文藝復興時期的珍奇室：書、標本、畫與地圖放在同一個房間，靠擺放與並置產生意義，而不是靠分類。Wunder 是它的簡稱，德文的「驚奇」。每個展室，都是你自己的珍奇室。"),
+            ]),
+            credits(),
+        ])
+        page.orientation = .vertical
+        page.alignment = .leading
+        page.spacing = 28
+        page.edgeInsets = NSEdgeInsets(top: 16, left: 0, bottom: 0, right: 0)
+        return page
+    }
+
+    /// A small uppercase heading and a few paragraphs, as Flione's. With
+    /// `leads`, each paragraph's first sentence stands out as its point.
+    private func section(_ title: String, leads: Bool = false, _ paragraphs: [String]) -> NSView {
+        let stack = NSStackView(views: [Self.micro(title)] + paragraphs.map { text in
+            let style = NSMutableParagraphStyle()
+            style.lineSpacing = 3
+            style.lineBreakStrategy = .standard
+            let p = NSTextField(wrappingLabelWithString: "")
+            let body = NSMutableAttributedString(string: text, attributes: [
+                .font: NSFont.systemFont(ofSize: 13), .foregroundColor: NSColor.labelColor.withAlphaComponent(0.85), .paragraphStyle: style,
+            ])
+            if leads, let end = text.firstIndex(where: { "。.".contains($0) }) {
+                body.addAttributes([.font: NSFont.systemFont(ofSize: 13, weight: .semibold), .foregroundColor: NSColor.labelColor],
+                                   range: NSRange(text.startIndex...end, in: text))
+            }
+            p.attributedStringValue = body
+            p.preferredMaxLayoutWidth = Self.rowWidth
+            return p
+        })
+        stack.orientation = .vertical
+        stack.alignment = .leading
+        stack.spacing = 8
         return stack
+    }
+
+    private func credits() -> NSView {
+        let entries: [(String, String, String)] = [
+            ("MobileCLIP", "https://github.com/apple/ml-mobileclip", String(localized: "Apple 的圖文模型，讓你用一句話找圖。")),
+            ("Reicon", "https://github.com/dqev/reicon", String(localized: "介面上的圖示都來自 Reicon。")),
+            ("XcodeGen", "https://github.com/yonaskolb/XcodeGen", String(localized: "產生 Xcode 專案。")),
+        ]
+        let stack = NSStackView(views: [Self.micro(String(localized: "致謝"))] + entries.map { name, url, detail in
+            let link = NSButton(title: "", target: nil, action: nil)
+            link.isBordered = false
+            link.attributedTitle = NSAttributedString(string: name + " ↗", attributes: [
+                .font: NSFont.systemFont(ofSize: 13, weight: .medium), .foregroundColor: NSColor.accent,
+            ])
+            link.target = ActionBox.make(link) { if let u = URL(string: url) { NSWorkspace.shared.open(u) } }
+            link.action = #selector(ActionBox.run)
+            let words = Self.label(detail, size: 13, color: .secondaryLabelColor, wraps: true)
+            words.preferredMaxLayoutWidth = Self.rowWidth
+            let one = NSStackView(views: [link, words])
+            one.orientation = .vertical
+            one.alignment = .leading
+            one.spacing = 2
+            return one
+        })
+        stack.orientation = .vertical
+        stack.alignment = .leading
+        stack.spacing = 12
+        return stack
+    }
+
+    private static func micro(_ text: String) -> NSTextField {
+        label(text.uppercased(), size: 10, weight: .medium, color: .secondaryLabelColor).withTracking(0.6)
     }
 
     // MARK: Pieces
@@ -350,9 +431,11 @@ final class SettingsWindowController: NSWindowController {
     /// Flione's type: 28 and 19 semibold for titles, 14 medium for a
     /// setting's name, 13 for words, 11 for small print.
     static func text(_ string: String, size: CGFloat, weight: NSFont.Weight = .regular, color: NSColor = .labelColor,
-                     tracking: CGFloat = 0, alignment: NSTextAlignment = .natural) -> NSAttributedString {
+                     tracking: CGFloat = 0, alignment: NSTextAlignment = .natural, wraps: Bool = false) -> NSAttributedString {
         let style = NSMutableParagraphStyle()
         style.lineBreakStrategy = .standard
+        // A one-line label stays one line, cut short at the end if it must.
+        style.lineBreakMode = wraps ? .byWordWrapping : .byTruncatingTail
         style.alignment = alignment
         return NSAttributedString(string: string, attributes: [
             .font: NSFont.systemFont(ofSize: size, weight: weight), .foregroundColor: color, .kern: tracking,
@@ -363,7 +446,7 @@ final class SettingsWindowController: NSWindowController {
     static func label(_ string: String, size: CGFloat, weight: NSFont.Weight = .regular, color: NSColor = .labelColor,
                       wraps: Bool = false, alignment: NSTextAlignment = .natural) -> NSTextField {
         let label = wraps ? NSTextField(wrappingLabelWithString: "") : NSTextField(labelWithString: "")
-        label.attributedStringValue = text(string, size: size, weight: weight, color: color, alignment: alignment)
+        label.attributedStringValue = text(string, size: size, weight: weight, color: color, alignment: alignment, wraps: wraps)
         return label
     }
 
@@ -817,6 +900,88 @@ private final class SettingsBackground: NSView {
             g.frame = bounds
             g.startPoint = centre
             g.endPoint = CGPoint(x: centre.x + radius / w, y: centre.y + (centre.y > 0.5 ? -1 : 1) * radius / h)
+        }
+    }
+}
+
+private extension NSTextField {
+    func withTracking(_ kern: CGFloat) -> NSTextField {
+        let text = NSMutableAttributedString(attributedString: attributedStringValue)
+        text.addAttribute(.kern, value: kern, range: NSRange(location: 0, length: text.length))
+        attributedStringValue = text
+        return self
+    }
+}
+
+/// Who made it, as Flione's: a capsule with the author's picture and handle
+/// that lifts a little under the pointer; a click opens their GitHub page.
+/// The picture ships with the app, nothing is fetched.
+@MainActor
+private final class AuthorCard: NSView {
+    private var hovering = false { didSet { paint() } }
+
+    init() {
+        super.init(frame: .zero)
+        wantsLayer = true
+        layer?.cornerRadius = 29
+        layer?.borderWidth = 1
+        let face = NSImageView(image: NSImage(named: "DeveloperAvatar") ?? NSImage())
+        face.imageScaling = .scaleProportionallyUpOrDown
+        face.wantsLayer = true
+        face.layer?.cornerRadius = 21
+        face.layer?.masksToBounds = true
+        let handle = SettingsWindowController.label("@rocavence", size: 15, weight: .semibold)
+        let role = SettingsWindowController.label(String(localized: "作者 · GitHub"), size: 12.5, color: .secondaryLabelColor)
+        let words = NSStackView(views: [handle, role])
+        words.orientation = .vertical
+        words.alignment = .leading
+        words.spacing = 2
+        for v in [face, words] as [NSView] {
+            v.translatesAutoresizingMaskIntoConstraints = false
+            addSubview(v)
+        }
+        NSLayoutConstraint.activate([
+            heightAnchor.constraint(equalToConstant: 58),
+            face.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+            face.centerYAnchor.constraint(equalTo: centerYAnchor),
+            face.widthAnchor.constraint(equalToConstant: 42),
+            face.heightAnchor.constraint(equalToConstant: 42),
+            words.leadingAnchor.constraint(equalTo: face.trailingAnchor, constant: 12),
+            words.centerYAnchor.constraint(equalTo: centerYAnchor),
+            words.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -18),
+        ])
+        addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+        setAccessibilityElement(true)
+        setAccessibilityRole(.link)
+        setAccessibilityLabel("rocavence on GitHub")
+        paint()
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func mouseEntered(with event: NSEvent) { hovering = true }
+    override func mouseExited(with event: NSEvent) { hovering = false }
+
+    override func mouseUp(with event: NSEvent) {
+        if bounds.contains(convert(event.locationInWindow, from: nil)), let url = URL(string: "https://github.com/rocavence") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        paint()
+    }
+
+    private func paint() {
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.2
+            layer?.borderColor = resolved(hovering ? NSColor.labelColor.withAlphaComponent(0.2) : .separatorColor)
+            layer?.backgroundColor = hovering ? resolved(.controlBackgroundColor) : nil
+            layer?.shadowOpacity = hovering ? 0.3 : 0
+            layer?.shadowRadius = 16
+            layer?.shadowOffset = CGSize(width: 0, height: -8)
+            layer?.transform = hovering ? CATransform3DMakeTranslation(0, 2, 0) : CATransform3DIdentity
         }
     }
 }
