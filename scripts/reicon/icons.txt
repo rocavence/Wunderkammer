@@ -68,4 +68,3 @@ undo undo
 camera camera
 clipboard paste-clipboard
 inbox-in download-circle
-nodes git-fork

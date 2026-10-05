@@ -4329,6 +4329,12 @@
             "value": "Used only for selected and active things: the current space, selections and drop targets. Follow the system, or choose one here."
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo se usa en lo seleccionado y activo: el espacio actual, las selecciones y los destinos al soltar. Sigue al sistema o elige uno aquí."
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -4339,12 +4345,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "선택되거나 활성화된 것에만 쓰입니다: 현재 공간, 선택 항목, 놓을 위치. 시스템을 따르거나 여기서 따로 지정할 수 있습니다."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Solo se usa en lo seleccionado y activo: el espacio actual, las selecciones y los destinos al soltar. Sigue al sistema o elige uno aquí."
           }
         },
         "pt-BR": {
@@ -4877,46 +4877,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "圖片、網址、文字；在瀏覽器裡直接收目前的頁面"
-          }
-        }
-      }
-    },
-    "圖譜": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Graph"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Grafo"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "グラフ"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "그래프"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Grafo"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "圖譜"
           }
         }
       }
@@ -7721,46 +7681,6 @@
         }
       }
     },
-    "收藏還不夠多，系統還看不出關聯\n收得越多，主題、名字與網站之間的線就會慢慢長出來": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Not enough items yet to see connections\nThe more you collect, the more lines grow between themes, names and sites"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aún no hay suficientes elementos para ver relaciones\nCuanto más guardes, más líneas irán surgiendo entre temas, nombres y sitios"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "アイテムがまだ少なく、関連が見えてきません\n集めるほど、テーマ、名前、サイトのあいだに線が少しずつ伸びていきます"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "아직 항목이 많지 않아 관계를 파악할 수 없습니다\n더 많이 수집할수록 테마, 이름, 사이트 사이의 연결선이 조금씩 늘어납니다"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ainda não há itens suficientes para ver relações\nQuanto mais você coleta, mais surgem linhas entre temas, nomes e sites"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "收藏還不夠多，系統還看不出關聯\n收得越多，主題、名字與網站之間的線就會慢慢長出來"
-          }
-        }
-      }
-    },
     "收起%@": {
       "localizations": {
         "en": {
@@ -8237,46 +8157,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "放開就收進「%@」"
-          }
-        }
-      }
-    },
-    "整個珍奇室的關係，線越粗共有的收藏越多": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Relationships across the whole cabinet. Thicker lines mean more shared items"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Relaciones de todo el gabinete; cuanto más gruesa la línea, más elementos en común"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "キャビネット全体の関係。線が太いほど共通のアイテムが多くなります"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "캐비닛 전체의 관계입니다. 선이 굵을수록 공유하는 항목이 많습니다"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "As relações de todo o gabinete; quanto mais grossa a linha, mais itens em comum"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "整個珍奇室的關係，線越粗共有的收藏越多"
           }
         }
       }
@@ -11609,6 +11489,12 @@
             "value": "Graphite"
           }
         },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grafito"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
@@ -11619,12 +11505,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "그래파이트"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Grafito"
           }
         },
         "pt-BR": {

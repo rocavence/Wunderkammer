@@ -160,22 +160,6 @@ final class SelfTest {
             shot("semantic-search")
             ui.search("")
             return finish()
-        case "graph":
-            var waited = 0.0
-            while library.items.contains(where: { !$0.analyzed }), waited < 60 { await wait(0.5); waited += 0.5 }
-            ui.setMode(.graph)
-            await wait(1.2)
-            let graph = (ui as! AppDelegate).graphForTest.graph
-            check(graph.nodes.count >= 3 && !graph.edges.isEmpty, "culture graph: \(graph.nodes.count) nodes, \(graph.edges.count) links (\(graph.nodes.map(\.title)))")
-            shot("graph")
-            // Clicking a node shows its curiosities.
-            if let theme = graph.nodes.first(where: { $0.kind == .theme }), let view = (ui as! AppDelegate).graphForTest as GraphView?,
-               let r = view.screenPoint(of: theme.id) {
-                click(view, r)
-                await wait(0.8)
-                check(ui.grid.shownItems.count == theme.items.count, "clicking “\(theme.title)” shows its \(theme.items.count) curiosities")
-            }
-            return finish()
         case "empty":
             // A brand-new cabinet: the welcome, then the first capture replaces it.
             await wait(0.5)
@@ -895,31 +879,20 @@ final class SelfTest {
         ui.setSpace(.map)
         await wait(0.8)
         // 地圖 opens on whichever layout was used last; the canvas, for what follows.
-        check(ui.mode == .canvas || ui.mode == .graph, "地圖 opens on a map layout (\(ui.mode))")
+        check(ui.mode == .canvas, "地圖 is the canvas (\(ui.mode))")
         ui.setMode(.canvas)
         await wait(0.6)
         check(ui.viewBarTipsForTest.contains("依主題分堆") && ui.viewBarTipsForTest.contains("重設擺放…"), "the canvas's tools are in the bar (\(ui.viewBarTipsForTest))")
         shot("space-map-canvas")
         await spacePanCheck()
-        ui.setMode(.graph)
-        await wait(0.8)
-        check(ui.hoverViewBarForTest() == "畫布", "pointing at a bar button names it (\(ui.hoverViewBarForTest() ?? "nothing"))")
+        check(ui.hoverViewBarForTest() == "依主題分堆", "pointing at a bar button names it (\(ui.hoverViewBarForTest() ?? "nothing"))")
         await wait(0.3)
-        shot("space-map-graph")
-        // Closer in: the map spreads out and more names show.
-        let graph = ui.graphView!
-        let namesFar = graph.shownNames
-        for _ in 0..<6 { graph.zoom(by: 1.4) }
-        await wait(0.3)
-        check(graph.shownNames > namesFar, "zooming in shows more names (\(namesFar) → \(graph.shownNames))")
-        shot("space-map-graph-near")
-        graph.showAll()
         ui.setSpace(.cabinet)
         await wait(0.4)
         check(ui.mode == .masonry, "收藏 remembers its layout (\(ui.mode))")
         ui.setSpace(.map)
         await wait(0.4)
-        check(ui.mode == .graph, "地圖 remembers its layout (\(ui.mode))")
+        check(ui.mode == .canvas, "地圖 comes back to the canvas (\(ui.mode))")
     }
 
     /// Siri and Shortcuts: what each command does, run in the app. (Collect is
@@ -1579,7 +1552,6 @@ protocol SelfTestUI: AnyObject {
     func setCoverForTest(_ picture: URL?) -> Bool
     func setVaultForTest(_ folder: URL?)
     func leaveEmptySearchForTest()
-    var graphView: GraphView! { get }
     func canDeleteCabinet(_ id: UUID) -> Bool
     func deleteCabinetForTest(_ id: UUID)
     var currentCabinet: UUID { get }

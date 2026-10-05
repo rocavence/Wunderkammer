@@ -5,9 +5,9 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 
 SET=Wunderkammer/Resources/Assets.xcassets/AppIcon.appiconset
-MASTER=build/icon-1024.png
+# 圖示原稿：scripts/icon/cards-source.png（白底），去背後的 1024 版在 cards-1024.png
+MASTER=scripts/icon/cards-1024.png
 mkdir -p build "$SET"
-swift scripts/icon/make-icon.swift "$MASTER"
 
 images=""
 for s in 16 32 128 256 512; do

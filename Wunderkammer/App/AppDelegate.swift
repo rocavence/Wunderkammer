@@ -12,21 +12,21 @@ enum Space: Int, CaseIterable {
         switch self {
         case .cabinet: [.grid, .masonry, .timeline]
         case .wander: [.infinity]
-        case .map: [.canvas, .graph]
+        case .map: [.canvas]
         }
     }
 }
 
 enum ViewMode: Int, CaseIterable {
-    case grid, masonry, timeline, canvas, infinity, graph
+    case grid, masonry, timeline, canvas, infinity
 
-    var title: String { [String(localized: "格狀"), String(localized: "瀑布"), String(localized: "時間軸"), String(localized: "畫布"), String(localized: "無限牆"), String(localized: "圖譜")][rawValue] }
-    var icon: Reicon { [.grid, .kanban, .calendar, .layers, .infinite, .nodes][rawValue] }
+    var title: String { [String(localized: "格狀"), String(localized: "瀑布"), String(localized: "時間軸"), String(localized: "畫布"), String(localized: "無限牆")][rawValue] }
+    var icon: Reicon { [.grid, .kanban, .calendar, .layers, .infinite][rawValue] }
     var space: Space {
         switch self {
         case .grid, .masonry, .timeline: .cabinet
         case .infinity: .wander
-        case .canvas, .graph: .map
+        case .canvas: .map
         }
     }
 
@@ -57,7 +57,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private(set) var grid: GridView!
     private(set) var canvas: CanvasView!
     private(set) var infinity: InfinityView!
-    private(set) var graphView: GraphView!
     private var emptyCabinet: EmptyCabinetView!
     private(set) var preview: PreviewView!
     /// Spaces, search and 資訊, across the top of the content.
@@ -181,12 +180,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         canvas = CanvasView(library: library, thumbnailer: thumbnailer)
         infinity = InfinityView(library: library, thumbnailer: thumbnailer)
         preview = PreviewView(library: library, thumbnailer: thumbnailer)
-        graphView = GraphView(library: library, thumbnailer: thumbnailer)
-        graphView.isHidden = true
-        graphView.onOpenView = { [weak self] base in
-            self?.setMode(.grid)
-            self?.sidebar.select(base)
-        }
 
         for surface in [grid, canvas] as [CabinetSurface] {
             surface.onOpen = { [weak self] id in self?.openPreview(id) }
@@ -217,7 +210,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
             self.sidebar.select(.all)
             self.reveal(id)
         }
-        for v in [scroll!, canvas!, infinity!, graphView!, trailView!, emptyCabinet!, preview!] as [NSView] {
+        for v in [scroll!, canvas!, infinity!, trailView!, emptyCabinet!, preview!] as [NSView] {
             v.frame = content.bounds
             v.autoresizingMask = [.width, .height]
             content.addSubview(v)
@@ -506,7 +499,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
               let s = userActivity.userInfo?[CSSearchableItemActivityIdentifier] as? String,
               let id = UUID(uuidString: s), library.item(id) != nil else { return false }
         window.makeKeyAndOrderFront(nil)
-        if mode == .infinity || mode == .graph { setMode(.grid) }
+        if mode == .infinity { setMode(.grid) }
         reveal(id)
         return true
     }
@@ -594,7 +587,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         }
         canvas.isHidden = new != .canvas
         infinity.isHidden = new != .infinity
-        graphView.isHidden = new != .graph
         // The wall draws this shade itself.
         edgeFade.isHidden = new == .infinity
         updateTrailView()
@@ -644,8 +636,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
                 [.init(icon: .maximize, tip: String(localized: "顯示全部")) { [weak self] in self?.canvas.fit(animated: true) }] + zoom,
                 [.init(icon: .restart, tip: String(localized: "重設擺放…"), destructive: true) { [weak self] in self?.canvas.resetArrangement(nil) }],
             ]
-        case .graph:
-            tools = [[.init(icon: .maximize, tip: String(localized: "顯示全部")) { [weak self] in self?.graphView.showAll() }] + zoom]
         default:
             tools = [zoom]
         }
@@ -659,7 +649,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         switch mode {
         case .canvas: canvas
         case .infinity: infinity
-        case .graph: graphView
         default: grid
         }
     }
@@ -743,8 +732,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         else { NSSound.beep(); return nil }
         recentRandom = Array(([pick.id] + recentRandom).prefix(20))
         if !pool.contains(where: { $0.id == pick.id }) { sidebar.select(.all) }
-        // The wall can show it; the graph can't.
-        if mode == .graph { setMode(.grid) }
         if scope.isSearching { clearSearch() }
         currentSurface.reveal(pick.id)
         let caption = Rediscovery.ageLine(pick) + String(localized: " · R 再抽一件 · Esc 關閉")
@@ -1167,7 +1154,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
             item.target = self
         }
         viewMenu.addItem(.separator())
-        for (i, m) in [ViewMode.grid, .masonry, .timeline, .canvas, .graph].enumerated() {
+        for (i, m) in [ViewMode.grid, .masonry, .timeline, .canvas].enumerated() {
             let item = viewMenu.addItem(withTitle: String(localized: "\(m.space.title)：\(m.title)"), action: #selector(modeFromMenu(_:)), keyEquivalent: "\(i + 1)")
             item.keyEquivalentModifierMask = [.command, .option]
             item.tag = m.rawValue
@@ -1359,7 +1346,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         switch mode {
         case .canvas: canvas.zoom(by: factor)
         case .infinity: infinity.zoom(by: factor)
-        case .graph: graphView.zoom(by: factor)
         default: grid.zoom(by: factor)
         }
     }
@@ -1376,7 +1362,6 @@ protocol CabinetSurface: AnyObject {
 }
 
 extension AppDelegate {
-    var graphForTest: GraphView { graphView }
 }
 
 /// System Quick Look for media and documents: plays video and audio, pages

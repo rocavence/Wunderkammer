@@ -70,5 +70,4 @@ enum Reicon: String, CaseIterable, Sendable {
     case camera = "camera"
     case clipboard = "clipboard"
     case inboxIn = "inbox-in"
-    case nodes = "nodes"
 }
