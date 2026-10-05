@@ -2489,6 +2489,12 @@
             "value" : "The download didn't finish. Check your connection and try again."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La descarga no terminó. Revisa la conexión e inténtalo de nuevo."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2499,12 +2505,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "다운로드를 완료하지 못했습니다. 네트워크를 확인한 뒤 다시 시도하세요."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La descarga no terminó. Revisa la conexión e inténtalo de nuevo."
           }
         },
         "pt-BR" : {
@@ -2569,6 +2569,12 @@
             "value" : "Not Now"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahora no"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2579,12 +2585,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "나중에"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ahora no"
           }
         },
         "pt-BR" : {
@@ -3169,6 +3169,12 @@
             "value" : "Like “a cat at a dinner table”, with the MobileCLIP model on this Mac (about 106 MB)"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por ejemplo, “a cat at a dinner table”, con el modelo MobileCLIP en este Mac (unos 106 MB)"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3179,12 +3185,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "예: “a cat at a dinner table”. 이 Mac의 MobileCLIP 모델 사용(약 106MB)"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Por ejemplo, “a cat at a dinner table”, con el modelo MobileCLIP en este Mac (unos 106 MB)"
           }
         },
         "pt-BR" : {
@@ -3769,6 +3769,12 @@
             "value" : "Try Again"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reintentar"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3779,12 +3785,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "다시 시도"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reintentar"
           }
         },
         "pt-BR" : {
@@ -5481,6 +5481,46 @@
         }
       }
     },
+    "在打開的設定裡允許 Wunder 控制 %@，再按一次 ⌘⇧C" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the Settings that just opened, allow Wunder to control %@, then press ⌘⇧C again"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開いた設定で Wunder に %@ の制御を許可してから、もう一度 ⌘⇧C を押してください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "열린 설정에서 Wunder가 %@을(를) 제어하도록 허용한 뒤 ⌘⇧C를 다시 누르세요"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En los Ajustes que se abrieron, permite que Wunder controle %@ y vuelve a pulsar ⌘⇧C"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nos Ajustes que se abriram, permita que o Wunder controle o %@ e pressione ⌘⇧C de novo"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在打開的設定裡允許 Wunder 控制 %@，再按一次 ⌘⇧C"
+          }
+        }
+      }
+    },
     "在搜尋框問問題，例如：我收過哪些書？" : {
       "localizations" : {
         "en" : {
@@ -6969,6 +7009,12 @@
             "value" : "Find pictures by describing them? Download the meaning model (about 106 MB). It runs only on this Mac."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Buscar imágenes describiéndolas? Descarga el modelo de significado (unos 106 MB). Solo se ejecuta en este Mac."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6979,12 +7025,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "설명으로 사진을 찾을까요? 의미 검색 모델(약 106MB)을 다운로드합니다. 이 Mac에서만 실행됩니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Buscar imágenes describiéndolas? Descarga el modelo de significado (unos 106 MB). Solo se ejecuta en este Mac."
           }
         },
         "pt-BR" : {
@@ -10169,6 +10209,12 @@
             "value" : "Downloading… %lld%%"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descargando… %lld%%"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10179,12 +10225,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "다운로드 중… %lld%%"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Descargando… %lld%%"
           }
         },
         "pt-BR" : {
@@ -10209,6 +10249,12 @@
             "value" : "Downloading the meaning model… %lld%%"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descargando el modelo de significado… %lld%%"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10219,12 +10265,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "의미 검색 모델 다운로드 중… %lld%%"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Descargando el modelo de significado… %lld%%"
           }
         },
         "pt-BR" : {
@@ -11086,13 +11126,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Browser"
+            "value" : "the browser"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Navegador"
+            "value" : "el navegador"
           }
         },
         "ja" : {
@@ -11110,7 +11150,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Navegador"
+            "value" : "o navegador"
           }
         },
         "zh-Hant" : {
@@ -16037,6 +16077,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "需要 Apple Intelligence"
+          }
+        }
+      }
+    },
+    "需要「自動化」權限" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automation permission needed"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「オートメーション」の許可が必要です"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘자동화’ 권한이 필요합니다"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se necesita permiso de Automatización"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "É preciso permissão de Automação"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要「自動化」權限"
           }
         }
       }

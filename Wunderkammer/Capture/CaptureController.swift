@@ -101,6 +101,12 @@ final class CaptureController: NSObject {
             case .failure(let error) where error.reason == .needsAccessibility:
                 toast.show(title: String(localized: "需要「輔助使用」權限"), detail: String(localized: "允許後再按一次 ⌘⇧C，就能收藏這個瀏覽器的網址"), image: nil)
                 return false
+            case .failure(let error) where error.reason == .needsAutomation:
+                let browser = front?.localizedName ?? String(localized: "瀏覽器")
+                toast.show(title: String(localized: "需要「自動化」權限"),
+                           detail: String(localized: "在打開的設定裡允許 Wunder 控制 \(browser)，再按一次 ⌘⇧C"), image: nil)
+                NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation")!)
+                return false
             case .failure:
                 break
             }

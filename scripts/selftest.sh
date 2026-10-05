@@ -9,6 +9,7 @@ rm -rf "$OUT" && mkdir -p "$OUT/shots"
 # 需要已知內容的項目從空圖庫開始，由 app 放入固定的測試資料；其他項目用你圖庫的複本
 case "${1:-}" in
   understand|semantic|relations|intents|trail|models) FIXTURE=1; mkdir -p "$OUT/library" ;;
+  empty) FIXTURE=0; mkdir -p "$OUT/library" ;;
   *) FIXTURE=0; cp -R "$HOME/Library/Application Support/Wunderkammer" "$OUT/library" ;;
 esac
 # 從乾淨的 board 與 canvas 狀態開始

@@ -25,7 +25,7 @@ enum BrowserTab {
         return safari.contains(id) || chromium.contains(id) || firefoxLike.contains(id)
     }
 
-    enum Failure { case notBrowser, needsAccessibility, failed }
+    enum Failure { case notBrowser, needsAccessibility, needsAutomation, failed }
 
     static func current(_ app: NSRunningApplication?) async -> Result<Page, FailureError> {
         guard let app, let id = app.bundleIdentifier else { return .failure(.init(.notBrowser)) }
@@ -50,8 +50,10 @@ enum BrowserTab {
 
     private static func script(_ source: String) -> Result<Page, FailureError> {
         var error: NSDictionary?
-        guard let result = NSAppleScript(source: source)?.executeAndReturnError(&error),
-              result.numberOfItems >= 1,
+        let result = NSAppleScript(source: source)?.executeAndReturnError(&error)
+        // errAEEventNotPermitted: turned off in System Settings → Privacy & Security → Automation.
+        if (error?[NSAppleScript.errorNumber] as? Int) == -1743 { return .failure(.init(.needsAutomation)) }
+        guard let result, result.numberOfItems >= 1,
               let s = result.atIndex(1)?.stringValue, let url = URL(string: s), url.scheme?.hasPrefix("http") == true
         else { return .failure(.init(.failed)) }
         return .success(Page(url: url, title: result.atIndex(2)?.stringValue))
