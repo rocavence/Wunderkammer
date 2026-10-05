@@ -161,6 +161,10 @@ final class SelfTest {
             shot("semantic-search")
             ui.search("")
             return finish()
+        case "showcase":
+            // Screenshots for the site and README: CC0 museum pictures (scripts/samples/fetch-samples.py).
+            await showcase()
+            return finish()
         case "models":
             // Run with WK_MODELS_DIR pointing at an empty folder: the first search offers the models.
             ui.search("a cat")
@@ -1377,6 +1381,61 @@ final class SelfTest {
     }
 
     /// Stage 2: words in pictures, what's in them, similar and related things.
+    private func showcase() async {
+        let fm = FileManager.default
+        guard let dir = ProcessInfo.processInfo.environment["WK_SAMPLES_DIR"].map({ URL(fileURLWithPath: $0) }),
+              let files = try? fm.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil).filter({ $0.pathExtension == "jpg" })
+        else { return check(false, "WK_SAMPLES_DIR has the sample pictures") }
+        await library.capture(files.sorted { $0.lastPathComponent < $1.lastPathComponent }.map { .file($0) })
+        await library.capture([
+            .web(URL(string: "https://en.wikipedia.org/wiki/Cabinet_of_curiosities")!, title: nil),
+            .web(URL(string: "https://en.wikipedia.org/wiki/Ole_Worm")!, title: nil),
+            .text("Collect without organizing. Let the room find its own order.", origin: nil),
+        ])
+        var waited = 0.0
+        while library.items.contains(where: { !$0.analyzed }) || library.items.contains(where: { $0.kind == .web && $0.title == nil }),
+              waited < 150 { await wait(1); waited += 1 }
+        await wait(3)
+        log("showcase: \(library.items.count) items, ready in \(Int(waited)) s")
+        ui.sidebar.select(.all)
+        ui.setMode(.grid)
+        await wait(1.5)
+        shot("showcase-1-collection")
+        ui.setMode(.masonry)
+        await wait(1.5)
+        shot("showcase-2-masonry")
+        ui.search("butterfly")
+        await wait(2)
+        shot("showcase-3-search")
+        ui.search("")
+        ui.setMode(.grid)
+        if let first = Subjects.discover(in: library.items).first {
+            ui.sidebar.select(.subject(first.label))
+            await wait(1.2)
+            shot("showcase-4-theme")
+            ui.sidebar.select(.all)
+        }
+        if let pick = library.items.first(where: { $0.originalFilename.hasPrefix("Butterfly") }) {
+            ui.toggleInspectorForTest()
+            ui.inspectForTest(pick.id)
+            ui.grid.reveal(pick.id)
+            await wait(1.5)
+            shot("showcase-5-inspector")
+            ui.toggleInspectorForTest()
+        }
+        ui.setSpace(.wander)
+        await wait(3)
+        shot("showcase-6-wander")
+        ui.setSpace(.map)
+        await wait(1)
+        ui.canvas.clusterByTheme(nil)
+        await wait(1)
+        ui.canvas.fit(animated: false)
+        await wait(1.5)
+        shot("showcase-7-workbench")
+        ui.setSpace(.cabinet)
+    }
+
     /// A known library for the suites that need one: macOS's own pictures, a
     /// picture with words in it, a few notes and pages (pages need the network).
     private func seedFixtures() async {
