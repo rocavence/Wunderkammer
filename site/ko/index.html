@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wunder: Mac을 위한 호기심의 방</title>
+<meta name="description" content="무엇이든 모으고, 정리는 하지 마세요. Wunder는 사진, 링크, 글, 파일을 받아 Mac에서 내용을 이해하고, 잊을 즈음 다시 보여 줍니다.">
+<meta name="theme-color" content="#f4f2ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)">
+<meta property="og:title" content="Wunder: Mac을 위한 호기심의 방">
+<meta property="og:description" content="무엇이든 모으고, 정리는 하지 마세요.">
+<meta property="og:image" content="https://wunder.rocavence.com/assets/og.png">
+<meta property="og:url" content="https://wunder.rocavence.com/ko/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../assets/favicon.png">
+<link rel="apple-touch-icon" href="../assets/icon.png">
+<link rel="alternate" hreflang="en" href="https://wunder.rocavence.com/">
+<link rel="alternate" hreflang="zh-Hant" href="https://wunder.rocavence.com/zh/">
+<link rel="alternate" hreflang="ja" href="https://wunder.rocavence.com/ja/">
+<link rel="alternate" hreflang="ko" href="https://wunder.rocavence.com/ko/">
+<link rel="alternate" hreflang="es" href="https://wunder.rocavence.com/es/">
+<link rel="alternate" hreflang="pt-BR" href="https://wunder.rocavence.com/pt/">
+<link rel="alternate" hreflang="x-default" href="https://wunder.rocavence.com/">
+<link rel="stylesheet" href="../style.css">
+<script>
+  (function () {
+    var root = document.documentElement, theme = null;
+    root.classList.add("js");
+    try { theme = localStorage.getItem("theme"); } catch (e) {}
+    if (theme === "light" || theme === "dark") root.dataset.theme = theme;
+
+  })();
+</script>
+</head>
+<body>
+<nav class="nav" aria-label="메인 메뉴">
+  <ul>
+    <li><a class="home" href="#top">Wunder</a></li>
+    <li class="wide"><a href="#how">사용법</a></li>
+    <li class="wide"><a href="#faq">자주 묻는 질문</a></li>
+    <li><a class="get" href="#download">다운로드</a></li>
+    <li>
+      <details class="menu">
+        <summary aria-label="언어" title="언어">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2.2 2.3 3.2 4.8 3.2 7.5s-1 5.2-3.2 7.5M10 2.5C7.8 4.8 6.8 7.3 6.8 10s1 5.2 3.2 7.5"/></svg>
+          <span>한</span>
+        </summary>
+        <ul>
+          <li><a href="../" hreflang="en" lang="en">English</a></li>
+          <li><a href="../zh/" hreflang="zh-Hant" lang="zh-Hant">繁體中文</a></li>
+          <li><a href="../ja/" hreflang="ja" lang="ja">日本語</a></li>
+          <li><a href="../ko/" hreflang="ko" lang="ko" aria-current="page">한국어</a></li>
+          <li><a href="../es/" hreflang="es" lang="es">Español</a></li>
+          <li><a href="../pt/" hreflang="pt-BR" lang="pt-BR">Português</a></li>
+        </ul>
+      </details>
+    </li>
+    <li>
+      <button class="theme" type="button" aria-label="화면 모드: 시스템 설정 따르기" title="화면 모드: 시스템 설정 따르기"
+              data-auto="화면 모드: 시스템 설정 따르기" data-light="화면 모드: 라이트" data-dark="화면 모드: 다크">
+        <svg class="i-auto" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 3a7 7 0 0 1 0 14z" class="fill"/></svg>
+        <svg class="i-light" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M10 1.8v2M10 16.2v2M1.8 10h2M16.2 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4"/></svg>
+        <svg class="i-dark" viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 12.2A7 7 0 0 1 7.8 3.5a7 7 0 1 0 8.7 8.7z"/></svg>
+      </button>
+    </li>
+  </ul>
+</nav>
+
+<main id="top">
+  <section class="hero">
+    <h1><img src="../assets/icon.png" alt="" width="96" height="96"> <span>Wunder<span class="dot">.</span></span></h1>
+    <p class="lede">Mac을 위한 호기심의 방. <b>무엇이든 모으고</b>, 정리는 하지 마세요.</p>
+    <a class="cta" id="download" href="https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip">
+      <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 16.5V8a5 5 0 0 1 10 0v8.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      Mac용 다운로드
+    </a>
+    <p class="fine">무료 · 4MB · macOS 14 이상 · <a href="#open">처음 열 때는?</a></p>
+  </section>
+
+  <div class="window shot-hero rise"><img class="shot-light" src="../assets/ko-collection-light.jpg" width="1600" height="1025" alt="박물관 소장품을 격자로 보여 주는 Wunder. 사이드바는 형식, 주제, 색상별로 자동 정리되어 있습니다."><img class="shot-dark" src="../assets/ko-collection-dark.jpg" width="1600" height="1025" loading="lazy" alt="박물관 소장품을 격자로 보여 주는 Wunder. 사이드바는 형식, 주제, 색상별로 자동 정리되어 있습니다."></div>
+
+  <section class="section rise">
+    <p class="label"><span class="n">1</span>Wunder란</p>
+    <h2>간직하고 싶은 모든 것을 위한 방.</h2>
+    <p>사진, 링크, 인용문, 스크린샷, 파일. <kbd>⌘⇧C</kbd>를 누르면 들어옵니다. 폴더를 고를 필요도, 이름을 붙일 필요도 없어요.</p>
+    <p>Wunder는 모은 것을 살펴봅니다. 사진 속 글자, 무엇이 찍혔는지, 어떤 색인지. 그래서 정리한 적이 없어도 나중에 찾을 수 있습니다.</p>
+  </section>
+
+  <section class="section rise">
+    <p class="label"><span class="n">2</span>무엇이 다른가요</p>
+    <p>폴더는 왜 간직했는지 알기도 전에 어디에 둘지부터 정하게 합니다. 그래서 물건은 어디에도 없거나, 여기저기 흩어지게 되죠.</p>
+    <p>Wunder는 형식, 종류, 주제, 색상별로 스스로 정리합니다. 오래된 것도 다시 꺼내 주니, 모은 것이 그냥 묻혀 있지 않아요.</p>
+    <div class="stats">
+      <div class="stat"><b>0</b><span>만들 폴더 수</span></div>
+      <div class="stat"><b>1,303</b><span>알아보는 주제</span></div>
+      <div class="stat"><b>100%</b><span>Mac에서 처리</span></div>
+    </div>
+  </section>
+
+  <section class="section rise" id="how">
+    <p class="label"><span class="n">3</span>사용법</p>
+    <ol class="steps">
+      <li>마음에 드는 것을 보면 <kbd>⌘⇧C</kbd>.</li>
+      <li>또는 메뉴 막대의 아치로 무엇이든 끌어다 놓기.</li>
+      <li>나중에 내용으로 찾거나, Wunder가 다시 보여 주길 기다리세요.</li>
+    </ol>
+  </section>
+
+  <section class="section rise">
+    <p class="label"><span class="n">4</span>할 수 있는 것</p>
+    <ul class="gets">
+      <li>어디서든 모으기: 단축키, 스크린샷, 끌어다 놓기</li>
+      <li>사진 속 글자 검색</li>
+      <li>설명으로 사진 찾기: “나뭇가지 위의 새”</li>
+      <li>Apple Intelligence로 컬렉션에 질문하기</li>
+      <li>스스로 찾아내는 주제와 색상</li>
+      <li>매일 새로 고르는 ‘오늘의 추천’</li>
+      <li>쌓고, 배치하고, 연결하는 작업대. 배치 3개 저장</li>
+      <li>전시실마다 따로인 컬렉션, iCloud로 동기화</li>
+      <li>한국어, English, 繁體中文, 日本語, Español, Português 지원</li>
+    </ul>
+  </section>
+
+  <div class="features">
+    <article class="feature rise">
+      <header>
+        <span class="kicker">컬렉션</span>
+        <h3>모든 것을 한눈에.</h3>
+        <p>격자, 벽돌형, 타임라인으로 둘러보세요. 사이드바에는 형식, 종류, 주제, 색상이 저절로 채워집니다.</p>
+      </header>
+      <div class="window"><img class="shot-light" src="../assets/ko-inspector-light.jpg" width="1600" height="1025" loading="lazy" alt="조각상을 선택하면 Wunder가 알아본 내용과 관련 작품이 옆 패널에 나타납니다."><img class="shot-dark" src="../assets/ko-inspector-dark.jpg" width="1600" height="1025" loading="lazy" alt="조각상을 선택하면 Wunder가 알아본 내용과 관련 작품이 옆 패널에 나타납니다."></div>
+    </article>
+    <article class="feature rise">
+      <header>
+        <span class="kicker">원더</span>
+        <h3>거닐다가, 다시 만나기.</h3>
+        <p>저절로 흘러가는 벽. ‘오늘의 추천’은 잊고 있던 것을 매일 12점 골라 이유와 함께 보여 줍니다.</p>
+      </header>
+      <div class="window"><img class="shot-light" src="../assets/ko-wander-light.jpg" width="1600" height="1025" loading="lazy" alt="모은 작품 사이를 거닐 수 있는 끝없는 벽."><img class="shot-dark" src="../assets/ko-wander-dark.jpg" width="1600" height="1025" loading="lazy" alt="모은 작품 사이를 거닐 수 있는 끝없는 벽."></div>
+    </article>
+    <article class="feature rise">
+      <header>
+        <span class="kicker">스페이스</span>
+        <h3>생각하기 위한 작업대.</h3>
+        <p>형식, 종류, 주제, 색상별로 묶고, 옮기고, 선으로 이어 보세요. 다시 돌아올 배치를 3개까지 저장할 수 있습니다.</p>
+      </header>
+      <div class="window"><img class="shot-light" src="../assets/ko-workbench-light.jpg" width="1600" height="1025" loading="lazy" alt="캔버스 위에서 이름 붙은 묶음으로 나뉜 작품과 그 사이를 잇는 선."><img class="shot-dark" src="../assets/ko-workbench-dark.jpg" width="1600" height="1025" loading="lazy" alt="캔버스 위에서 이름 붙은 묶음으로 나뉜 작품과 그 사이를 잇는 선."></div>
+    </article>
+  </div>
+
+  <p class="big rise"><em>눈길을 끈</em> 것을 간직하세요.</p>
+
+  <div class="compare rise">
+    <table>
+      <thead>
+        <tr><th></th><th class="us">Wunder</th><th>Atlas</th><th>Eagle</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>가격</td><td class="us"><b>무료</b></td><td>US$39</td><td>US$29.95</td></tr>
+        <tr><td>폴더나 태그 없이 스스로 정리</td><td class="us yes">✓</td><td class="no">–</td><td class="no">규칙 설정 필요</td></tr>
+        <tr><td>설명으로 사진 찾기</td><td class="us yes">✓</td><td class="no">–</td><td class="yes">✓</td></tr>
+        <tr><td>매일 오래된 것을 다시 꺼내 줌</td><td class="us yes">✓</td><td class="no">–</td><td class="no">–</td></tr>
+        <tr><td>자유롭게 배치하는 캔버스</td><td class="us yes">✓</td><td class="yes">✓</td><td class="no">–</td></tr>
+        <tr><td>모든 것이 Mac에만 저장</td><td class="us yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+        <tr><td>Windows 버전</td><td class="us no">–</td><td class="no">–</td><td class="yes">✓</td></tr>
+      </tbody>
+    </table>
+    <p class="source">각 앱 공식 웹사이트의 설명을 바탕으로 정리 (2026년 10월).</p>
+  </div>
+
+  <section class="faq" id="faq">
+    <h2>자주 묻는 질문</h2>
+    <details>
+      <summary>Wunder는 무엇인가요?</summary>
+      <p>잃어버리고 싶지 않지만 정리하고 싶지도 않은 것들을 두는 Mac 속 공간입니다. 사진, 웹 페이지, 글, 파일을 받아 내용을 이해하고 다시 찾을 수 있게 도와줍니다.</p>
+    </details>
+    <details id="open">
+      <summary>macOS가 Wunder를 열 수 없다고 하면?</summary>
+      <p>Wunder는 아직 Apple의 공증을 받지 않아 처음에는 macOS가 막습니다. <b>‘시스템 설정 → 개인정보 보호 및 보안’</b>을 열고 아래로 스크롤해 <b>‘그래도 열기’</b>를 클릭하세요. 한 번만 하면 됩니다.</p><p>또는 터미널에서: <code>xattr -dr com.apple.quarantine /Applications/Wunder.app</code></p>
+    </details>
+    <details>
+      <summary>Mac 밖으로 보내지는 것이 있나요?</summary>
+      <p>없습니다. 사진 속 글자 읽기, 찍힌 것 인식, 색상, 비슷한 사진, 질문 답변은 모두 Apple 프레임워크로 Mac에서 처리됩니다. Wunder가 인터넷에 연결하는 경우는 모은 페이지를 읽을 때, 설명 검색 모델(약 106MB, 한 번, 선택 사항)을 내려받을 때, 새 버전을 확인할 때뿐입니다.</p>
+    </details>
+    <details>
+      <summary>파일을 복사하나요?</summary>
+      <p>아니요. 파일 위치를 기억하고, 옮겨도 따라갑니다. 사본을 두고 싶다면 전시실마다 전용 폴더에 모든 파일을 저장하게 할 수 있습니다.</p>
+    </details>
+    <details>
+      <summary>동기화는 어떻게 되나요?</summary>
+      <p>전시실의 동기화를 켜면 iCloud Drive로 옮겨지고, 같은 Apple 계정의 Mac이면 어디서든 열 수 있습니다. 두 대에서 동시에 바꿔도 양쪽 변경이 모두 남습니다.</p>
+    </details>
+    <details>
+      <summary>무엇이 필요한가요?</summary>
+      <p>macOS 14 Sonoma 이상의 Mac. 컬렉션에 질문하려면 Apple Intelligence(macOS 26)가 필요합니다.</p>
+    </details>
+    <details>
+      <summary>무료인가요?</summary>
+      <p>네. 소스는 <a href="https://github.com/rocavence/Wunderkammer">GitHub</a>에 있습니다.</p>
+    </details>
+  </section>
+
+  <section class="closing">
+    <h2>나만의 호기심의 방을 시작하세요.</h2>
+    <p>Mac용 무료. 계정도, 설정도 필요 없습니다.</p>
+    <a class="cta" href="https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip">
+      <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 16.5V8a5 5 0 0 1 10 0v8.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      Mac용 다운로드
+    </a>
+  </section>
+</main>
+
+<footer>
+  <span>© 2026 Wunder</span>
+  <a href="https://github.com/rocavence/Wunderkammer">GitHub</a>
+  <a href="https://github.com/rocavence/Wunderkammer/releases">릴리스</a>
+  <span>이미지: <a href="https://www.clevelandart.org/open-access">클리블랜드 미술관</a>, CC0</span>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+  }, { rootMargin: "0px 0px -8% 0px" });
+  document.querySelectorAll(".rise").forEach((el) => io.observe(el));
+
+  // Follow the system, then light, then dark, and remember the choice.
+  const root = document.documentElement, toggle = document.querySelector(".theme");
+  const order = ["auto", "light", "dark"];
+  const current = () => root.dataset.theme || "auto";
+  const label = () => {
+    const text = toggle.dataset[current()];
+    toggle.setAttribute("aria-label", text);
+    toggle.title = text;
+  };
+  label();
+  toggle.addEventListener("click", () => {
+    const next = order[(order.indexOf(current()) + 1) % order.length];
+    if (next === "auto") delete root.dataset.theme; else root.dataset.theme = next;
+    try { next === "auto" ? localStorage.removeItem("theme") : localStorage.setItem("theme", next); } catch (e) {}
+    label();
+  });
+
+  // A language picked by hand is kept, so the home page stops guessing.
+  document.querySelectorAll(".menu a[hreflang]").forEach((a) => a.addEventListener("click", () => {
+    try { localStorage.setItem("lang", a.getAttribute("hreflang")); } catch (e) {}
+  }));
+  const menu = document.querySelector(".menu");
+  document.addEventListener("click", (e) => { if (menu.open && !menu.contains(e.target)) menu.open = false; });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") menu.open = false; });
+</script>
+</body>
+</html>

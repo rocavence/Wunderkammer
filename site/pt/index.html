@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wunder: um gabinete de curiosidades para o seu Mac</title>
+<meta name="description" content="Guarde qualquer coisa, não organize nada. O Wunder guarda imagens, links, textos e arquivos, entende tudo no seu Mac e traz de volta quando você já tinha esquecido.">
+<meta name="theme-color" content="#f4f2ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)">
+<meta property="og:title" content="Wunder: um gabinete de curiosidades para o seu Mac">
+<meta property="og:description" content="Guarde qualquer coisa, não organize nada.">
+<meta property="og:image" content="https://wunder.rocavence.com/assets/og.png">
+<meta property="og:url" content="https://wunder.rocavence.com/pt/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../assets/favicon.png">
+<link rel="apple-touch-icon" href="../assets/icon.png">
+<link rel="alternate" hreflang="en" href="https://wunder.rocavence.com/">
+<link rel="alternate" hreflang="zh-Hant" href="https://wunder.rocavence.com/zh/">
+<link rel="alternate" hreflang="ja" href="https://wunder.rocavence.com/ja/">
+<link rel="alternate" hreflang="ko" href="https://wunder.rocavence.com/ko/">
+<link rel="alternate" hreflang="es" href="https://wunder.rocavence.com/es/">
+<link rel="alternate" hreflang="pt-BR" href="https://wunder.rocavence.com/pt/">
+<link rel="alternate" hreflang="x-default" href="https://wunder.rocavence.com/">
+<link rel="stylesheet" href="../style.css">
+<script>
+  (function () {
+    var root = document.documentElement, theme = null;
+    root.classList.add("js");
+    try { theme = localStorage.getItem("theme"); } catch (e) {}
+    if (theme === "light" || theme === "dark") root.dataset.theme = theme;
+
+  })();
+</script>
+</head>
+<body>
+<nav class="nav" aria-label="Principal">
+  <ul>
+    <li><a class="home" href="#top">Wunder</a></li>
+    <li class="wide"><a href="#how">como funciona</a></li>
+    <li class="wide"><a href="#faq">perguntas</a></li>
+    <li><a class="get" href="#download">baixar</a></li>
+    <li>
+      <details class="menu">
+        <summary aria-label="Idioma" title="Idioma">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2.2 2.3 3.2 4.8 3.2 7.5s-1 5.2-3.2 7.5M10 2.5C7.8 4.8 6.8 7.3 6.8 10s1 5.2 3.2 7.5"/></svg>
+          <span>PT</span>
+        </summary>
+        <ul>
+          <li><a href="../" hreflang="en" lang="en">English</a></li>
+          <li><a href="../zh/" hreflang="zh-Hant" lang="zh-Hant">繁體中文</a></li>
+          <li><a href="../ja/" hreflang="ja" lang="ja">日本語</a></li>
+          <li><a href="../ko/" hreflang="ko" lang="ko">한국어</a></li>
+          <li><a href="../es/" hreflang="es" lang="es">Español</a></li>
+          <li><a href="../pt/" hreflang="pt-BR" lang="pt-BR" aria-current="page">Português</a></li>
+        </ul>
+      </details>
+    </li>
+    <li>
+      <button class="theme" type="button" aria-label="Aparência: igual ao sistema" title="Aparência: igual ao sistema"
+              data-auto="Aparência: igual ao sistema" data-light="Aparência: clara" data-dark="Aparência: escura">
+        <svg class="i-auto" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 3a7 7 0 0 1 0 14z" class="fill"/></svg>
+        <svg class="i-light" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M10 1.8v2M10 16.2v2M1.8 10h2M16.2 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4"/></svg>
+        <svg class="i-dark" viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 12.2A7 7 0 0 1 7.8 3.5a7 7 0 1 0 8.7 8.7z"/></svg>
+      </button>
+    </li>
+  </ul>
+</nav>
+
+<main id="top">
+  <section class="hero">
+    <h1><img src="../assets/icon.png" alt="" width="96" height="96"> <span>Wunder<span class="dot">.</span></span></h1>
+    <p class="lede">Um gabinete de curiosidades para o seu Mac. <b>Guarde</b> qualquer coisa, não <b>organize</b> nada.</p>
+    <a class="cta" id="download" href="https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip">
+      <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 16.5V8a5 5 0 0 1 10 0v8.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      Baixar para Mac
+    </a>
+    <p class="fine">Grátis · 4 MB · macOS 14 ou posterior · <a href="#open">Abrindo pela primeira vez?</a></p>
+  </section>
+
+  <div class="window shot-hero rise"><img class="shot-light" src="../assets/pt-collection-light.jpg" width="1600" height="1025" alt="O Wunder mostrando uma coleção de objetos de museu em grade, com a barra lateral organizada por formatos, temas e cores."><img class="shot-dark" src="../assets/pt-collection-dark.jpg" width="1600" height="1025" loading="lazy" alt="O Wunder mostrando uma coleção de objetos de museu em grade, com a barra lateral organizada por formatos, temas e cores."></div>
+
+  <section class="section rise">
+    <p class="label"><span class="n">1</span>O que é</p>
+    <h2>Uma sala para tudo o que você quer guardar.</h2>
+    <p>Imagens, links, citações, capturas de tela, arquivos. Pressione <kbd>⌘⇧C</kbd> e pronto. Nenhuma pasta para escolher, nenhum nome para digitar.</p>
+    <p>O Wunder olha o que você guarda: as palavras numa imagem, o que aparece nela, as cores. Assim você encontra depois sem nunca ter arquivado.</p>
+  </section>
+
+  <section class="section rise">
+    <p class="label"><span class="n">2</span>Por que é diferente</p>
+    <p>Pastas pedem que você decida onde algo vai antes de saber por que guardou. E as coisas acabam em lugar nenhum, ou em todo lugar.</p>
+    <p>O Wunder se organiza sozinho, por formato, tipo, tema e cor. E traz de volta o que é antigo, para o que você guardou não ficar só parado.</p>
+    <div class="stats">
+      <div class="stat"><b>0</b><span>pastas para criar</span></div>
+      <div class="stat"><b>1.303</b><span>temas que reconhece</span></div>
+      <div class="stat"><b>100%</b><span>no seu Mac</span></div>
+    </div>
+  </section>
+
+  <section class="section rise" id="how">
+    <p class="label"><span class="n">3</span>Como funciona</p>
+    <ol class="steps">
+      <li>Viu algo de que gostou? Pressione <kbd>⌘⇧C</kbd>.</li>
+      <li>Ou arraste qualquer coisa para o arco na barra de menus.</li>
+      <li>Depois, encontre pelo conteúdo, ou deixe o Wunder trazer de volta.</li>
+    </ol>
+  </section>
+
+  <section class="section rise">
+    <p class="label"><span class="n">4</span>O que você ganha</p>
+    <ul class="gets">
+      <li>Guarde de qualquer lugar: um atalho, uma captura de tela, arrastar e soltar</li>
+      <li>Busque as palavras dentro das imagens</li>
+      <li>Descreva uma imagem para encontrá-la: “um pássaro num galho”</li>
+      <li>Faça perguntas à sua coleção, com a Apple Intelligence</li>
+      <li>Temas e cores que ele encontra sozinho</li>
+      <li>Uma dúzia nova para rever, todo dia</li>
+      <li>Uma mesa de trabalho para agrupar, organizar e ligar, com três arranjos salvos</li>
+      <li>Salas com coleções próprias, sincronizadas pelo iCloud</li>
+      <li>Em português, English, 繁體中文, 日本語, 한국어 e español</li>
+    </ul>
+  </section>
+
+  <div class="features">
+    <article class="feature rise">
+      <header>
+        <span class="kicker">Coleção</span>
+        <h3>Tudo, num relance.</h3>
+        <p>Navegue em grade, em mosaico ou numa linha do tempo. A barra lateral se preenche sozinha com formatos, tipos, temas e cores.</p>
+      </header>
+      <div class="window"><img class="shot-light" src="../assets/pt-inspector-light.jpg" width="1600" height="1025" loading="lazy" alt="Uma escultura selecionada, com o que o Wunder percebeu nela e peças relacionadas no painel lateral."><img class="shot-dark" src="../assets/pt-inspector-dark.jpg" width="1600" height="1025" loading="lazy" alt="Uma escultura selecionada, com o que o Wunder percebeu nela e peças relacionadas no painel lateral."></div>
+    </article>
+    <article class="feature rise">
+      <header>
+        <span class="kicker">Wunder</span>
+        <h3>Passeie e reencontre.</h3>
+        <p>Uma parede que desliza sozinha. “Para hoje” escolhe todo dia doze coisas que você tinha esquecido, e diz por quê.</p>
+      </header>
+      <div class="window"><img class="shot-light" src="../assets/pt-wander-light.jpg" width="1600" height="1025" loading="lazy" alt="Uma parede sem fim de peças guardadas para passear."><img class="shot-dark" src="../assets/pt-wander-dark.jpg" width="1600" height="1025" loading="lazy" alt="Uma parede sem fim de peças guardadas para passear."></div>
+    </article>
+    <article class="feature rise">
+      <header>
+        <span class="kicker">Espaço</span>
+        <h3>Uma mesa de trabalho para pensar.</h3>
+        <p>Agrupe por formato, tipo, tema ou cor. Mova as coisas, ligue-as com linhas e guarde três arranjos para voltar depois.</p>
+      </header>
+      <div class="window"><img class="shot-light" src="../assets/pt-workbench-light.jpg" width="1600" height="1025" loading="lazy" alt="Peças separadas em grupos com nome numa tela, ligadas por uma linha."><img class="shot-dark" src="../assets/pt-workbench-dark.jpg" width="1600" height="1025" loading="lazy" alt="Peças separadas em grupos com nome numa tela, ligadas por uma linha."></div>
+    </article>
+  </div>
+
+  <p class="big rise">Guarde o que <em>chama</em> sua atenção.</p>
+
+  <div class="compare rise">
+    <table>
+      <thead>
+        <tr><th></th><th class="us">Wunder</th><th>Atlas</th><th>Eagle</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Preço</td><td class="us"><b>Grátis</b></td><td>US$ 39</td><td>US$ 29,95</td></tr>
+        <tr><td>Organiza sozinho, sem pastas nem tags</td><td class="us yes">✓</td><td class="no">–</td><td class="no">com regras</td></tr>
+        <tr><td>Encontra uma imagem pela descrição</td><td class="us yes">✓</td><td class="no">–</td><td class="yes">✓</td></tr>
+        <tr><td>Traz de volta o que é antigo todo dia</td><td class="us yes">✓</td><td class="no">–</td><td class="no">–</td></tr>
+        <tr><td>Uma tela para organizar livremente</td><td class="us yes">✓</td><td class="yes">✓</td><td class="no">–</td></tr>
+        <tr><td>Tudo fica no seu Mac</td><td class="us yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+        <tr><td>Também para Windows</td><td class="us no">–</td><td class="no">–</td><td class="yes">✓</td></tr>
+      </tbody>
+    </table>
+    <p class="source">Com base no site de cada app, outubro de 2026.</p>
+  </div>
+
+  <section class="faq" id="faq">
+    <h2>Perguntas frequentes</h2>
+    <details>
+      <summary>O que é o Wunder?</summary>
+      <p>Um lugar no seu Mac para as coisas que você não quer perder, mas também não quer organizar. Ele guarda imagens, páginas web, textos e arquivos, entende o que são e ajuda você a encontrá-los de novo.</p>
+    </details>
+    <details id="open">
+      <summary>O macOS diz que não pode abrir o Wunder. E agora?</summary>
+      <p>O Wunder ainda não foi notarizado pela Apple, então na primeira vez o macOS bloqueia. Abra <b>Ajustes do Sistema → Privacidade e Segurança</b>, role até o fim e clique em <b>Abrir Mesmo Assim</b>. Só é preciso fazer isso uma vez.</p><p>Ou, no Terminal: <code>xattr -dr com.apple.quarantine /Applications/Wunder.app</code></p>
+    </details>
+    <details>
+      <summary>Alguma coisa sai do meu Mac?</summary>
+      <p>Não. Ler o texto das imagens, reconhecer o que aparece, as cores, imagens parecidas e as perguntas são processados no seu Mac com as ferramentas da Apple. O Wunder só se conecta para ler as páginas que você guarda, baixar uma vez o modelo de busca por descrição (cerca de 106 MB, opcional) e verificar se há uma versão nova.</p>
+    </details>
+    <details>
+      <summary>Ele copia meus arquivos?</summary>
+      <p>Não. Ele lembra onde estão e acompanha se você os mover. Se preferir manter cópias, uma sala pode guardar cada arquivo numa pasta própria.</p>
+    </details>
+    <details>
+      <summary>Como funciona a sincronização?</summary>
+      <p>Ative a sincronização de uma sala e ela vai para o iCloud Drive. Qualquer Mac com a sua Conta Apple pode abri-la. Se dois Macs mudarem ao mesmo tempo, as duas mudanças são mantidas.</p>
+    </details>
+    <details>
+      <summary>Do que eu preciso?</summary>
+      <p>Um Mac com macOS 14 Sonoma ou posterior. Fazer perguntas à coleção requer a Apple Intelligence (macOS 26).</p>
+    </details>
+    <details>
+      <summary>É grátis?</summary>
+      <p>Sim. O código está no <a href="https://github.com/rocavence/Wunderkammer">GitHub</a>.</p>
+    </details>
+  </section>
+
+  <section class="closing">
+    <h2>Comece o seu gabinete.</h2>
+    <p>Grátis para Mac. Sem conta, sem configuração.</p>
+    <a class="cta" href="https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip">
+      <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 16.5V8a5 5 0 0 1 10 0v8.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      Baixar para Mac
+    </a>
+  </section>
+</main>
+
+<footer>
+  <span>© 2026 Wunder</span>
+  <a href="https://github.com/rocavence/Wunderkammer">GitHub</a>
+  <a href="https://github.com/rocavence/Wunderkammer/releases">versões</a>
+  <span>Imagens: <a href="https://www.clevelandart.org/open-access">Cleveland Museum of Art</a>, CC0</span>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+  }, { rootMargin: "0px 0px -8% 0px" });
+  document.querySelectorAll(".rise").forEach((el) => io.observe(el));
+
+  // Follow the system, then light, then dark, and remember the choice.
+  const root = document.documentElement, toggle = document.querySelector(".theme");
+  const order = ["auto", "light", "dark"];
+  const current = () => root.dataset.theme || "auto";
+  const label = () => {
+    const text = toggle.dataset[current()];
+    toggle.setAttribute("aria-label", text);
+    toggle.title = text;
+  };
+  label();
+  toggle.addEventListener("click", () => {
+    const next = order[(order.indexOf(current()) + 1) % order.length];
+    if (next === "auto") delete root.dataset.theme; else root.dataset.theme = next;
+    try { next === "auto" ? localStorage.removeItem("theme") : localStorage.setItem("theme", next); } catch (e) {}
+    label();
+  });
+
+  // A language picked by hand is kept, so the home page stops guessing.
+  document.querySelectorAll(".menu a[hreflang]").forEach((a) => a.addEventListener("click", () => {
+    try { localStorage.setItem("lang", a.getAttribute("hreflang")); } catch (e) {}
+  }));
+  const menu = document.querySelector(".menu");
+  document.addEventListener("click", (e) => { if (menu.open && !menu.contains(e.target)) menu.open = false; });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") menu.open = false; });
+</script>
+</body>
+</html>

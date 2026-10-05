@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<meta name="description" content="{{description}}">
+<meta name="theme-color" content="#f4f2ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)">
+<meta property="og:title" content="{{title}}">
+<meta property="og:description" content="{{lede_plain}}">
+<meta property="og:image" content="https://wunder.rocavence.com/assets/og.png">
+<meta property="og:url" content="{{url}}">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="{{root}}assets/favicon.png">
+<link rel="apple-touch-icon" href="{{root}}assets/icon.png">
+{{alternates}}
+<link rel="stylesheet" href="{{root}}style.css">
+<script>
+  (function () {
+    var root = document.documentElement, theme = null;
+    root.classList.add("js");
+    try { theme = localStorage.getItem("theme"); } catch (e) {}
+    if (theme === "light" || theme === "dark") root.dataset.theme = theme;
+{{redirect}}
+  })();
+</script>
+</head>
+<body>
+<nav class="nav" aria-label="{{nav_label}}">
+  <ul>
+    <li><a class="home" href="#top">{{name}}</a></li>
+    <li class="wide"><a href="#how">{{nav_how}}</a></li>
+    <li class="wide"><a href="#faq">{{nav_faq}}</a></li>
+    <li><a class="get" href="#download">{{nav_get}}</a></li>
+    <li>
+      <details class="menu">
+        <summary aria-label="{{language_label}}" title="{{language_label}}">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2.2 2.3 3.2 4.8 3.2 7.5s-1 5.2-3.2 7.5M10 2.5C7.8 4.8 6.8 7.3 6.8 10s1 5.2 3.2 7.5"/></svg>
+          <span>{{short}}</span>
+        </summary>
+        <ul>
+{{languages}}
+        </ul>
+      </details>
+    </li>
+    <li>
+      <button class="theme" type="button" aria-label="{{theme_label}}" title="{{theme_label}}"
+              data-auto="{{theme_auto}}" data-light="{{theme_light}}" data-dark="{{theme_dark}}">
+        <svg class="i-auto" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 3a7 7 0 0 1 0 14z" class="fill"/></svg>
+        <svg class="i-light" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M10 1.8v2M10 16.2v2M1.8 10h2M16.2 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4"/></svg>
+        <svg class="i-dark" viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 12.2A7 7 0 0 1 7.8 3.5a7 7 0 1 0 8.7 8.7z"/></svg>
+      </button>
+    </li>
+  </ul>
+</nav>
+
+<main id="top">
+  <section class="hero">
+    <h1>{{h1}}</h1>
+    <p class="lede">{{lede}}</p>
+    <a class="cta" id="download" href="https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip">
+      <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 16.5V8a5 5 0 0 1 10 0v8.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      {{cta}}
+    </a>
+    <p class="fine">{{fine}} · <a href="#open">{{fine_open}}</a></p>
+  </section>
+
+  <div class="window shot-hero rise">{{shot_collection}}</div>
+
+  <section class="section rise">
+    <p class="label"><span class="n">1</span>{{s1_label}}</p>
+    <h2>{{s1_title}}</h2>
+    <p>{{s1_p1}}</p>
+    <p>{{s1_p2}}</p>
+  </section>
+
+  <section class="section rise">
+    <p class="label"><span class="n">2</span>{{s2_label}}</p>
+    <p>{{s2_p1}}</p>
+    <p>{{s2_p2}}</p>
+    <div class="stats">
+{{stats}}
+    </div>
+  </section>
+
+  <section class="section rise" id="how">
+    <p class="label"><span class="n">3</span>{{s3_label}}</p>
+    <ol class="steps">
+{{steps}}
+    </ol>
+  </section>
+
+  <section class="section rise">
+    <p class="label"><span class="n">4</span>{{s4_label}}</p>
+    <ul class="gets">
+{{gets}}
+    </ul>
+  </section>
+
+  <div class="features">
+{{features}}
+  </div>
+
+  <p class="big rise">{{big}}</p>
+
+  <div class="compare rise">
+    <table>
+      <thead>
+        <tr><th></th><th class="us">{{name}}</th><th>Atlas</th><th>Eagle</th></tr>
+      </thead>
+      <tbody>
+{{compare}}
+      </tbody>
+    </table>
+    <p class="source">{{compare_source}}</p>
+  </div>
+
+  <section class="faq" id="faq">
+    <h2>{{faq_title}}</h2>
+{{faq}}
+  </section>
+
+  <section class="closing">
+    <h2>{{closing_title}}</h2>
+    <p>{{closing_p}}</p>
+    <a class="cta" href="https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip">
+      <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 16.5V8a5 5 0 0 1 10 0v8.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      {{cta}}
+    </a>
+  </section>
+</main>
+
+<footer>
+  <span>© 2026 {{name}}</span>
+  <a href="https://github.com/rocavence/Wunderkammer">GitHub</a>
+  <a href="https://github.com/rocavence/Wunderkammer/releases">{{footer_releases}}</a>
+  <span>{{footer_pictures}}</span>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+  }, { rootMargin: "0px 0px -8% 0px" });
+  document.querySelectorAll(".rise").forEach((el) => io.observe(el));
+
+  // Follow the system, then light, then dark, and remember the choice.
+  const root = document.documentElement, toggle = document.querySelector(".theme");
+  const order = ["auto", "light", "dark"];
+  const current = () => root.dataset.theme || "auto";
+  const label = () => {
+    const text = toggle.dataset[current()];
+    toggle.setAttribute("aria-label", text);
+    toggle.title = text;
+  };
+  label();
+  toggle.addEventListener("click", () => {
+    const next = order[(order.indexOf(current()) + 1) % order.length];
+    if (next === "auto") delete root.dataset.theme; else root.dataset.theme = next;
+    try { next === "auto" ? localStorage.removeItem("theme") : localStorage.setItem("theme", next); } catch (e) {}
+    label();
+  });
+
+  // A language picked by hand is kept, so the home page stops guessing.
+  document.querySelectorAll(".menu a[hreflang]").forEach((a) => a.addEventListener("click", () => {
+    try { localStorage.setItem("lang", a.getAttribute("hreflang")); } catch (e) {}
+  }));
+  const menu = document.querySelector(".menu");
+  document.addEventListener("click", (e) => { if (menu.open && !menu.contains(e.target)) menu.open = false; });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") menu.open = false; });
+</script>
+</body>
+</html>

@@ -86,7 +86,7 @@ a { color: inherit; }
   border-radius: 999px;
   box-shadow: 0 6px 24px -12px #00000040;
 }
-.nav a {
+.nav > ul > li > a {
   display: block;
   padding: 6px 14px;
   border-radius: 999px;
@@ -95,9 +95,62 @@ a { color: inherit; }
   text-decoration: none;
   transition: color .2s, background .2s;
 }
-.nav a:hover { color: var(--ink); }
+.nav > ul > li > a:hover { color: var(--ink); }
 .nav a.home { color: var(--ink); font-weight: 600; background: var(--fill); }
 .nav a.get { color: var(--ink); font-weight: 600; }
+
+.nav li { position: relative; }
+.menu summary, .theme {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 100%;
+  min-height: 32px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--soft);
+  font: 500 14px/1 var(--font);
+  cursor: pointer;
+  list-style: none;
+  transition: color .2s, background .2s;
+}
+.menu summary::-webkit-details-marker { display: none; }
+.menu summary:hover, .theme:hover, .menu[open] summary { color: var(--ink); background: var(--fill); }
+.menu svg, .theme svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+.theme .fill { fill: currentColor; stroke: none; }
+.theme .i-dark { fill: currentColor; stroke: none; }
+.theme svg { display: none; }
+:root:not([data-theme]) .theme .i-auto, :root[data-theme="light"] .theme .i-light, :root[data-theme="dark"] .theme .i-dark { display: block; }
+.menu ul {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: -6px;
+  display: grid;
+  gap: 1px;
+  min-width: 168px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 18px 40px -16px #00000055;
+}
+.menu ul a { display: block; padding: 8px 12px; border-radius: 9px; color: var(--ink); font-size: 14.5px; text-decoration: none; }
+.menu ul a:hover { background: var(--fill); }
+.menu ul a[aria-current] { font-weight: 600; }
+.menu ul a[aria-current]::after { content: "✓"; float: right; color: var(--accent); }
+
+/* Each picture of the app in both looks; the page shows the one that matches. */
+.shot-dark { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .shot-dark { display: block; }
+  :root:not([data-theme="light"]) .shot-light { display: none; }
+}
+:root[data-theme="dark"] .shot-dark { display: block; }
+:root[data-theme="dark"] .shot-light { display: none; }
 
 main { padding: 0 20px; }
 
@@ -128,7 +181,8 @@ main { padding: 0 20px; }
 .hero h1 .dot { color: var(--accent); }
 .lede {
   margin: 22px auto 0;
-  max-width: 30ch;
+  max-width: 520px;
+  word-break: auto-phrase;
   color: var(--soft);
   font-size: clamp(18px, 2.4vw, 21px);
   line-height: 1.45;
@@ -342,7 +396,8 @@ footer a:hover { color: var(--ink); }
 
 @media (max-width: 640px) {
   body { font-size: 16px; }
-  .nav a { padding: 6px 10px; font-size: 14px; }
+  .nav > ul > li > a { padding: 6px 10px; font-size: 14px; }
+  .nav .wide { display: none; }
   .hero { padding-top: 72px; }
   .stats { grid-template-columns: 1fr; }
   .window { border-radius: 10px; }

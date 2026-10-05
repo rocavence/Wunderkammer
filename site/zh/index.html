@@ -15,16 +15,54 @@
 <link rel="icon" href="../assets/favicon.png">
 <link rel="apple-touch-icon" href="../assets/icon.png">
 <link rel="alternate" hreflang="en" href="https://wunder.rocavence.com/">
+<link rel="alternate" hreflang="zh-Hant" href="https://wunder.rocavence.com/zh/">
+<link rel="alternate" hreflang="ja" href="https://wunder.rocavence.com/ja/">
+<link rel="alternate" hreflang="ko" href="https://wunder.rocavence.com/ko/">
+<link rel="alternate" hreflang="es" href="https://wunder.rocavence.com/es/">
+<link rel="alternate" hreflang="pt-BR" href="https://wunder.rocavence.com/pt/">
+<link rel="alternate" hreflang="x-default" href="https://wunder.rocavence.com/">
 <link rel="stylesheet" href="../style.css">
-<script>document.documentElement.classList.add("js")</script>
+<script>
+  (function () {
+    var root = document.documentElement, theme = null;
+    root.classList.add("js");
+    try { theme = localStorage.getItem("theme"); } catch (e) {}
+    if (theme === "light" || theme === "dark") root.dataset.theme = theme;
+
+  })();
+</script>
 </head>
 <body>
 <nav class="nav" aria-label="主選單">
   <ul>
     <li><a class="home" href="#top">Wunder</a></li>
-    <li><a href="#how">怎麼用</a></li>
-    <li><a href="#faq">常見問題</a></li>
+    <li class="wide"><a href="#how">怎麼用</a></li>
+    <li class="wide"><a href="#faq">常見問題</a></li>
     <li><a class="get" href="#download">下載</a></li>
+    <li>
+      <details class="menu">
+        <summary aria-label="語言" title="語言">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2.2 2.3 3.2 4.8 3.2 7.5s-1 5.2-3.2 7.5M10 2.5C7.8 4.8 6.8 7.3 6.8 10s1 5.2 3.2 7.5"/></svg>
+          <span>中</span>
+        </summary>
+        <ul>
+          <li><a href="../" hreflang="en" lang="en">English</a></li>
+          <li><a href="../zh/" hreflang="zh-Hant" lang="zh-Hant" aria-current="page">繁體中文</a></li>
+          <li><a href="../ja/" hreflang="ja" lang="ja">日本語</a></li>
+          <li><a href="../ko/" hreflang="ko" lang="ko">한국어</a></li>
+          <li><a href="../es/" hreflang="es" lang="es">Español</a></li>
+          <li><a href="../pt/" hreflang="pt-BR" lang="pt-BR">Português</a></li>
+        </ul>
+      </details>
+    </li>
+    <li>
+      <button class="theme" type="button" aria-label="外觀：跟隨系統" title="外觀：跟隨系統"
+              data-auto="外觀：跟隨系統" data-light="外觀：淺色" data-dark="外觀：深色">
+        <svg class="i-auto" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 3a7 7 0 0 1 0 14z" class="fill"/></svg>
+        <svg class="i-light" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M10 1.8v2M10 16.2v2M1.8 10h2M16.2 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4"/></svg>
+        <svg class="i-dark" viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 12.2A7 7 0 0 1 7.8 3.5a7 7 0 1 0 8.7 8.7z"/></svg>
+      </button>
+    </li>
   </ul>
 </nav>
 
@@ -39,12 +77,7 @@
     <p class="fine">免費 · 4 MB · macOS 14 以上 · <a href="#open">第一次打不開？</a></p>
   </section>
 
-  <div class="window shot-hero rise">
-    <picture>
-      <source srcset="../assets/zh-collection-dark.jpg" media="(prefers-color-scheme: dark)">
-      <img src="../assets/zh-collection-light.jpg" width="1800" height="1153" alt="Wunder 以格狀排出博物館收藏，側欄依格式、主題與顏色自動分好。">
-    </picture>
-  </div>
+  <div class="window shot-hero rise"><img class="shot-light" src="../assets/zh-collection-light.jpg" width="1600" height="1025" alt="Wunder 以格狀排出博物館收藏，側欄依格式、主題與顏色自動分好。"><img class="shot-dark" src="../assets/zh-collection-dark.jpg" width="1600" height="1025" loading="lazy" alt="Wunder 以格狀排出博物館收藏，側欄依格式、主題與顏色自動分好。"></div>
 
   <section class="section rise">
     <p class="label"><span class="n">1</span>這是什麼</p>
@@ -95,40 +128,23 @@
         <h3>一眼看完全部。</h3>
         <p>格狀、瀑布、時間軸都能看。側欄自己長出格式、分類、主題和顏色。</p>
       </header>
-      <div class="window">
-        <picture>
-          <source srcset="../assets/zh-inspector-dark.jpg" media="(prefers-color-scheme: dark)">
-          <img src="../assets/zh-inspector-light.jpg" width="1800" height="1153" loading="lazy" alt="選取一件雕像，側邊寫著 Wunder 看到的內容和相關收藏。">
-        </picture>
-      </div>
+      <div class="window"><img class="shot-light" src="../assets/zh-inspector-light.jpg" width="1600" height="1025" loading="lazy" alt="選取一件雕像，側邊寫著 Wunder 看到的內容和相關收藏。"><img class="shot-dark" src="../assets/zh-inspector-dark.jpg" width="1600" height="1025" loading="lazy" alt="選取一件雕像，側邊寫著 Wunder 看到的內容和相關收藏。"></div>
     </article>
-
     <article class="feature rise">
       <header>
         <span class="kicker">漫遊</span>
         <h3>隨意逛，再遇見一次。</h3>
         <p>一面會自己慢慢漂的牆。「今天的推薦」每天挑十二件你快忘了的，還告訴你為什麼。</p>
       </header>
-      <div class="window">
-        <picture>
-          <source srcset="../assets/zh-wander-dark.jpg" media="(prefers-color-scheme: dark)">
-          <img src="../assets/zh-wander-light.jpg" width="1800" height="1153" loading="lazy" alt="一面可以隨意漫遊的收藏牆。">
-        </picture>
-      </div>
+      <div class="window"><img class="shot-light" src="../assets/zh-wander-light.jpg" width="1600" height="1025" loading="lazy" alt="一面可以隨意漫遊的收藏牆。"><img class="shot-dark" src="../assets/zh-wander-dark.jpg" width="1600" height="1025" loading="lazy" alt="一面可以隨意漫遊的收藏牆。"></div>
     </article>
-
     <article class="feature rise">
       <header>
         <span class="kicker">工作台</span>
         <h3>拿來想事情的桌面。</h3>
         <p>依格式、分類、主題或顏色分堆，拖來拖去、畫線連起來，存三種排法隨時回來。</p>
       </header>
-      <div class="window">
-        <picture>
-          <source srcset="../assets/zh-workbench-dark.jpg" media="(prefers-color-scheme: dark)">
-          <img src="../assets/zh-workbench-light.jpg" width="1800" height="1153" loading="lazy" alt="收藏在畫布上分成有名字的幾堆，中間有一條連線。">
-        </picture>
-      </div>
+      <div class="window"><img class="shot-light" src="../assets/zh-workbench-light.jpg" width="1600" height="1025" loading="lazy" alt="收藏在畫布上分成有名字的幾堆，中間有一條連線。"><img class="shot-dark" src="../assets/zh-workbench-dark.jpg" width="1600" height="1025" loading="lazy" alt="收藏在畫布上分成有名字的幾堆，中間有一條連線。"></div>
     </article>
   </div>
 
@@ -160,8 +176,7 @@
     </details>
     <details id="open">
       <summary>macOS 說無法打開 Wunder，怎麼辦？</summary>
-      <p>Wunder 還沒經過 Apple 公證，所以第一次會被擋。打開<b>「系統設定 → 隱私權與安全性」</b>，往下捲，按<b>「強制打開」</b>。只要做一次。</p>
-      <p>也可以在「終端機」執行：<code>xattr -dr com.apple.quarantine /Applications/Wunder.app</code></p>
+      <p>Wunder 還沒經過 Apple 公證，所以第一次會被擋。打開<b>「系統設定 → 隱私權與安全性」</b>，往下捲，按<b>「強制打開」</b>。只要做一次。</p><p>也可以在「終端機」執行：<code>xattr -dr com.apple.quarantine /Applications/Wunder.app</code></p>
     </details>
     <details>
       <summary>會把我的東西傳到網路上嗎？</summary>
@@ -199,15 +214,39 @@
   <span>© 2026 Wunder</span>
   <a href="https://github.com/rocavence/Wunderkammer">GitHub</a>
   <a href="https://github.com/rocavence/Wunderkammer/releases">所有版本</a>
-  <a href="../" hreflang="en" lang="en">English</a>
   <span>圖片：<a href="https://www.clevelandart.org/open-access">克里夫蘭美術館</a>，CC0</span>
 </footer>
 
 <script>
   const io = new IntersectionObserver((entries) => {
-    for (const e of entries) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-  }, { rootMargin: '0px 0px -8% 0px' });
-  document.querySelectorAll('.rise').forEach((el) => io.observe(el));
+    for (const e of entries) if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+  }, { rootMargin: "0px 0px -8% 0px" });
+  document.querySelectorAll(".rise").forEach((el) => io.observe(el));
+
+  // Follow the system, then light, then dark, and remember the choice.
+  const root = document.documentElement, toggle = document.querySelector(".theme");
+  const order = ["auto", "light", "dark"];
+  const current = () => root.dataset.theme || "auto";
+  const label = () => {
+    const text = toggle.dataset[current()];
+    toggle.setAttribute("aria-label", text);
+    toggle.title = text;
+  };
+  label();
+  toggle.addEventListener("click", () => {
+    const next = order[(order.indexOf(current()) + 1) % order.length];
+    if (next === "auto") delete root.dataset.theme; else root.dataset.theme = next;
+    try { next === "auto" ? localStorage.removeItem("theme") : localStorage.setItem("theme", next); } catch (e) {}
+    label();
+  });
+
+  // A language picked by hand is kept, so the home page stops guessing.
+  document.querySelectorAll(".menu a[hreflang]").forEach((a) => a.addEventListener("click", () => {
+    try { localStorage.setItem("lang", a.getAttribute("hreflang")); } catch (e) {}
+  }));
+  const menu = document.querySelector(".menu");
+  document.addEventListener("click", (e) => { if (menu.open && !menu.contains(e.target)) menu.open = false; });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") menu.open = false; });
 </script>
 </body>
 </html>
