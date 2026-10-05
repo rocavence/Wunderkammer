@@ -3,6 +3,7 @@
 
 用法：python3 scripts/site/build.py
 """
+import hashlib
 import html
 import json
 from pathlib import Path
@@ -65,10 +66,17 @@ def cell(value, us=False):
     return f'<td class="{classes}">{text}</td>' if classes else f"<td>{text}</td>"
 
 
+def stamp(name):
+    """A short fingerprint of a file, so browsers fetch it again whenever it changes."""
+    return hashlib.sha1((SITE / name).read_bytes()).hexdigest()[:8]
+
+
 def render(page, pages, template, wall):
     root = "../" if page["path"] else ""
     fill = {k: v for k, v in page.items() if isinstance(v, str)}
     fill["root"] = root
+    fill["css_v"] = stamp("style.css")
+    fill["js_v"] = stamp("app.js")
     fill["url"] = BASE + page["path"]
     fill["description"] = attr(page["description"])
     fill["lede_plain"] = attr(page["lede_plain"])

@@ -796,7 +796,7 @@ kbd {
 }
 .modes button:hover { color: var(--ink); }
 .modes button.on { background: var(--accent); color: #fff; box-shadow: 0 4px 16px -4px var(--accent); }
-.piles { position: relative; height: 420px; transition: height .8s var(--ease); }
+.piles { position: relative; height: 420px; transition: height .8s var(--ease); overflow-x: clip; }
 .pt {
   position: absolute;
   left: 0; top: 0;
@@ -936,7 +936,18 @@ footer a:hover { color: var(--ink); }
   .links a { padding: 6px 10px; font-size: 14px; }
   .nav .wide { display: none; }
   .hero { padding-top: 72px; }
-  .stats { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .stat { padding: 12px 10px 10px; }
+  .stat b { font-size: 21px; }
+  .stat span { font-size: 12px; }
+  .kinds ul { grid-template-columns: 1fr !important; gap: 8px; }
+  .kinds li { display: grid; grid-template-columns: 28px 1fr; column-gap: 12px; row-gap: 4px; padding: 14px 16px; }
+  .kinds li svg { grid-row: span 3; margin: 2px 0 0; width: 24px; height: 24px; }
+  .kinds li span { margin-top: 4px; }
+  .f-grid img:nth-child(n+25) { display: none; }
+  .f-grid img { height: 54px; }
+  .big { font-size: clamp(26px, 8.4vw, 40px); margin-top: 90px; }
+  .closing h2 { font-size: clamp(32px, 10vw, 44px); }
   .window { border-radius: 10px; }
   .compare th, .compare td { padding: 11px 8px; font-size: 13.5px; }
 }

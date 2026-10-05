@@ -16,7 +16,7 @@
 <link rel="apple-touch-icon" href="{{root}}assets/icon.png">
 {{alternates}}
 <link rel="preload" href="{{root}}assets/wall.json" as="fetch" crossorigin>
-<link rel="stylesheet" href="{{root}}style.css">
+<link rel="stylesheet" href="{{root}}style.css?v={{css_v}}">
 <script>
   (function () {
     var root = document.documentElement, theme = null;
@@ -26,7 +26,7 @@
 {{redirect}}
   })();
 </script>
-<script src="{{root}}app.js" defer></script>
+<script src="{{root}}app.js?v={{js_v}}" defer></script>
 </head>
 <body>
 <nav class="nav" aria-label="{{nav_label}}">

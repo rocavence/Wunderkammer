@@ -286,6 +286,20 @@
     const labels = new Map();
     let mode = order[0], auto = true, timer = 0, seen = false;
 
+    function label(key, count) {
+      let tag = labels.get(mode + key);
+      if (!tag) {
+        tag = document.createElement("p");
+        tag.className = "pile-label";
+        tag.innerHTML = "<b></b><span></span>";
+        tag.firstChild.textContent = names[key] || key;
+        piles.appendChild(tag);
+        labels.set(mode + key, tag);
+      }
+      tag.lastChild.textContent = count;
+      return tag;
+    }
+
     function arrange() {
       const narrow = piles.clientWidth < 640;
       const size = narrow ? 58 : 74, gap = narrow ? 5 : 7, between = narrow ? 20 : 40, head = 28;
@@ -296,12 +310,14 @@
         groups.get(key).push(t);
       }
       const sorted = [...groups.entries()].sort((a, b) => b[1].length - a[1].length);
-      // Piles flow in rows, each row centred.
+      // Piles flow in rows, each row centred, never wider than the page.
       const width = piles.clientWidth, rows = [[]];
       let x = 0;
       for (const [key, list] of sorted) {
-        const cols = list.length <= 3 ? list.length : Math.ceil(Math.sqrt(list.length * 1.4));
-        const w = cols * size + (cols - 1) * gap;
+        const fits = Math.max(1, Math.floor((width + gap) / (size + gap)));
+        const cols = Math.min(fits, list.length <= 3 ? list.length : Math.ceil(Math.sqrt(list.length * 1.4)));
+        // A pile is at least as wide as its name.
+        const w = Math.min(width, Math.max(cols * size + (cols - 1) * gap, label(key, list.length).offsetWidth));
         const h = Math.ceil(list.length / cols) * (size + gap) - gap;
         if (x > 0 && x + w > width) { rows.push([]); x = 0; }
         rows[rows.length - 1].push({ key, list, cols, w, h });
@@ -320,18 +336,9 @@
             t.style.transitionDelay = still.matches ? "0s" : (Math.random() * 0.18).toFixed(2) + "s";
             t.style.transform = `translate(${tx}px, ${ty}px)`;
           });
-          let label = labels.get(mode + p.key);
-          if (!label) {
-            label = document.createElement("p");
-            label.className = "pile-label";
-            label.innerHTML = `<b></b><span>${p.list.length}</span>`;
-            label.firstChild.textContent = names[p.key] || p.key;
-            piles.appendChild(label);
-            labels.set(mode + p.key, label);
-          }
-          label.lastChild.textContent = p.list.length;
-          label.style.transform = `translate(${px}px, ${y}px)`;
-          live.add(label);
+          const tag = label(p.key, p.list.length);
+          tag.style.transform = `translate(${px}px, ${y}px)`;
+          live.add(tag);
           px += p.w + between;
         }
         y += rowHeight + between * 0.7;
