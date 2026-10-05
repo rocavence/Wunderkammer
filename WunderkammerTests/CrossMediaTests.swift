@@ -58,19 +58,6 @@ struct CrossMediaTests {
         #expect(!CrossMedia.mentions("severance pay", "Severance"))
     }
 
-    @Test func pilesByRelation() {
-        let a = page("Chungking Express", thing: .movie, credits: [(.director, "Wong Kar-Wai")])
-        let b = page("In the Mood for Love", thing: .movie, credits: [(.director, "Wong Kar-Wai")])
-        let c = page("The Museum of Modern Art", thing: .place, city: "New York")
-        let d = page("Whitney Museum of American Art", thing: .place, city: "New York")
-        let lone = page("Something Else Entirely")
-        let items = [a, c, lone, b, d]
-        let piles = CanvasLayout.relationClusters(items, links: CrossMedia.links(among: items))
-        #expect(piles.map(\.title).sorted() == ["New York", "Wong Kar-Wai", "其他"])
-        #expect(piles.last?.title == "其他" && piles.last?.ids == [lone.id])
-        #expect(Set(piles.first { $0.title == "Wong Kar-Wai" }?.ids ?? []) == [a.id, b.id])
-    }
-
     @Test func eachPairOnceForLines() {
         let a = page("Chungking Express", thing: .movie, credits: [(.director, "Wong Kar-Wai")])
         let b = page("In the Mood for Love", thing: .movie, credits: [(.director, "Wong Kar-Wai")])

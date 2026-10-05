@@ -91,38 +91,6 @@ enum CanvasLayout {
         return order.map { ($0, piles[$0]!) }.sorted { $0.ids.count > $1.ids.count }
     }
 
-    /// Sorting a canvas by relation: things connected (the same person, a
-    /// mention, the same city) share a pile, named by what connects most of
-    /// them; the rest stay together. Biggest piles first.
-    static func relationClusters(_ items: [Item], links: [(a: UUID, b: UUID, label: String)]) -> [(title: String, ids: [UUID])] {
-        var parent = Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0.id) })
-        func root(_ id: UUID) -> UUID {
-            var r = id
-            while let p = parent[r], p != r { r = p }
-            return r
-        }
-        for link in links where parent[link.a] != nil && parent[link.b] != nil {
-            parent[root(link.a)] = root(link.b)
-        }
-        var members: [UUID: [UUID]] = [:]
-        for item in items { members[root(item.id), default: []].append(item.id) }
-        var piles: [(title: String, ids: [UUID])] = []
-        var rest: [UUID] = []
-        for ids in members.values {
-            guard ids.count > 1 else { rest += ids; continue }
-            let inside = Set(ids)
-            let labels = links.filter { inside.contains($0.a) }.map(\.label)
-            // A shared person or city names a pile better than a mention.
-            let title = Dictionary(grouping: labels, by: { $0 }).max { a, b in
-                (Relation.mentioned(in: a.key) == nil ? 1 : 0, a.value.count) < (Relation.mentioned(in: b.key) == nil ? 1 : 0, b.value.count)
-            }.map { Relation.mentioned(in: $0.key) ?? $0.key } ?? String(localized: "相關")
-            piles.append((title, ids))
-        }
-        piles.sort { $0.ids.count > $1.ids.count }
-        if !rest.isEmpty { piles.append((otherPile, items.map(\.id).filter(Set(rest).contains))) }
-        return piles
-    }
-
     /// The last pile, of what nothing connects.
     static let otherPile = String(localized: "其他")
 

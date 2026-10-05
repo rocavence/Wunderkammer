@@ -67,6 +67,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     /// The layouts of the current space (格狀/瀑布/時間軸, 畫布/圖譜); hidden when there's one.
     /// The layouts and tools of the view in front, at its foot.
     private let viewBar = ViewBar()
+    /// The 工作台's saved arrangements, beside the view bar.
+    private let snapshotBar = SnapshotBar()
     private(set) var mode = ViewMode.grid
     private(set) var scope = Scope()
     private var capture: CaptureController!
@@ -242,9 +244,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         }
         grid.onDropHover = hover
         canvas.onDropHover = hover
-        canvas.onRelationsFound = { [weak self] in
-            if self?.mode == .canvas { self?.updateViewBar() }
-        }
         edgeFade.translatesAutoresizingMaskIntoConstraints = false
         content.addSubview(edgeFade, positioned: .below, relativeTo: answerBanner)
         NSLayoutConstraint.activate([
@@ -279,6 +278,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
             viewBar.centerXAnchor.constraint(equalTo: content.centerXAnchor),
             viewBar.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -18),
         ])
+        snapshotBar.translatesAutoresizingMaskIntoConstraints = false
+        content.addSubview(snapshotBar, positioned: .below, relativeTo: emptyCabinet)
+        NSLayoutConstraint.activate([
+            snapshotBar.leadingAnchor.constraint(equalTo: viewBar.trailingAnchor, constant: 10),
+            snapshotBar.centerYAnchor.constraint(equalTo: viewBar.centerYAnchor),
+        ])
+        snapshotBar.onSave = { [weak self] i in self?.saveArrangement(i) }
+        snapshotBar.onRestore = { [weak self] i in self?.restoreArrangement(i) }
+        snapshotBar.onClear = { [weak self] i in
+            guard let self else { return }
+            self.library.setSnapshot(nil, slot: i, key: self.canvas.arrangementKey)
+            self.updateSnapshots()
+        }
+        canvas.onArrangementChange = { [weak self] in self?.updateSnapshots() }
         NSLayoutConstraint.activate([
             answerBanner.topAnchor.constraint(equalTo: content.topAnchor, constant: TopBar.chrome + 8),
             answerBanner.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 14),
@@ -631,12 +644,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
             .init(icon: .searchZoomOut, tip: String(localized: "縮小（⌘-）")) { [weak self] in self?.zoomOut() },
             .init(icon: .searchZoomIn, tip: String(localized: "放大（⌘+）")) { [weak self] in self?.zoomIn() },
         ]
+        // As the sidebar's sections run: 格式, 分類, 主題, 顏色.
+        let pileChoices: [ViewBar.Tool] = [
+            .init(icon: .fileText, tip: String(localized: "依格式分堆")) { [weak self] in self?.canvas.clusterByFormat(nil) },
+            .init(icon: .book, tip: String(localized: "依分類分堆")) { [weak self] in self?.canvas.clusterByCategory(nil) },
+            .init(icon: .sparkles, tip: String(localized: "依主題分堆")) { [weak self] in self?.canvas.clusterByTheme(nil) },
+            .init(icon: .palette, tip: String(localized: "依顏色分堆")) { [weak self] in self?.canvas.clusterByColor(nil) },
+        ]
         var tools: [[ViewBar.Tool]]
         switch mode {
         case .canvas:
             tools = [
-                [.init(icon: .sparkles, tip: String(localized: "依主題分堆")) { [weak self] in self?.canvas.clusterByTheme(nil) },
-                 .init(icon: .cube, tip: String(localized: "依關聯分堆"), enabled: canvas.hasRelations) { [weak self] in self?.canvas.clusterByRelation(nil) },
+                [.init(icon: .sparkles, tip: String(localized: "分堆"), choices: pileChoices),
                  .init(icon: .grid2, tip: String(localized: "整理成整齊的排列")) { [weak self] in self?.canvas.arrange(nil) }],
                 [.init(icon: .maximize, tip: String(localized: "顯示全部")) { [weak self] in self?.canvas.fit(animated: true) }] + zoom,
                 [.init(icon: .restart, tip: String(localized: "重設擺放…"), destructive: true) { [weak self] in self?.canvas.resetArrangement(nil) }],
@@ -648,6 +667,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         let trail = trailView.map { !$0.isHidden } ?? false
         let empty = emptyCabinet.map { !$0.isHidden } ?? false
         if trail || empty { viewBar.isHidden = true }
+        updateSnapshots()
+    }
+
+    // MARK: Saved arrangements
+
+    /// The slots for the canvas in view: shown only on the 工作台.
+    private func updateSnapshots() {
+        guard mode == .canvas, !viewBar.isHidden else { snapshotBar.isHidden = true; return }
+        snapshotBar.isHidden = false
+        let size = CGSize(width: 22, height: 18)
+        snapshotBar.show(library.snapshots(key: canvas.arrangementKey).map { s in
+            SnapshotBar.Slot(picture: s.map { canvas.miniature(of: $0, size: size) }, current: s.map(canvas.matches) ?? false)
+        })
+    }
+
+    @objc private func saveArrangementFromMenu(_ sender: NSMenuItem) { saveArrangement(sender.tag) }
+    @objc private func restoreArrangementFromMenu(_ sender: NSMenuItem) { restoreArrangement(sender.tag) }
+
+    private func saveArrangement(_ slot: Int) {
+        guard mode == .canvas else { return }
+        library.setSnapshot(canvas.currentArrangement, slot: slot, key: canvas.arrangementKey)
+        updateSnapshots()
+    }
+
+    private func restoreArrangement(_ slot: Int) {
+        guard mode == .canvas, let s = library.snapshots(key: canvas.arrangementKey)[safe: slot] ?? nil else { return }
+        canvas.restore(s)
     }
 
     private var currentView: NSView {
@@ -1174,7 +1220,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         zoomTwin.allowsKeyEquivalentWhenHidden = true
         viewMenu.addItem(withTitle: String(localized: "縮小"), action: #selector(zoomOut), keyEquivalent: "-").target = self
         viewMenu.addItem(withTitle: String(localized: "整理畫布"), action: #selector(CanvasView.arrange(_:)), keyEquivalent: "")
+        viewMenu.addItem(withTitle: String(localized: "畫布依格式分堆"), action: #selector(CanvasView.clusterByFormat(_:)), keyEquivalent: "")
+        viewMenu.addItem(withTitle: String(localized: "畫布依分類分堆"), action: #selector(CanvasView.clusterByCategory(_:)), keyEquivalent: "")
         viewMenu.addItem(withTitle: String(localized: "畫布依主題分堆"), action: #selector(CanvasView.clusterByTheme(_:)), keyEquivalent: "")
+        viewMenu.addItem(withTitle: String(localized: "畫布依顏色分堆"), action: #selector(CanvasView.clusterByColor(_:)), keyEquivalent: "")
+        // The 工作台's three arrangements: ⌃1–3 back to one, ⌃⇧1–3 to save into one.
+        let arrangements = NSMenuItem(title: String(localized: "工作台排列"), action: nil, keyEquivalent: "")
+        let arrangementMenu = NSMenu()
+        for i in 0..<Library.snapshotSlots {
+            let back = arrangementMenu.addItem(withTitle: String(localized: "回到排列 \(i + 1)"), action: #selector(restoreArrangementFromMenu(_:)), keyEquivalent: "\(i + 1)")
+            back.keyEquivalentModifierMask = [.control]
+            back.tag = i
+            back.target = self
+        }
+        arrangementMenu.addItem(.separator())
+        for i in 0..<Library.snapshotSlots {
+            let save = arrangementMenu.addItem(withTitle: String(localized: "存成排列 \(i + 1)"), action: #selector(saveArrangementFromMenu(_:)), keyEquivalent: "\(i + 1)")
+            save.keyEquivalentModifierMask = [.control, .shift]
+            save.tag = i
+            save.target = self
+        }
+        arrangements.submenu = arrangementMenu
+        viewMenu.addItem(arrangements)
         viewMenu.addItem(withTitle: String(localized: "重設工作台擺放…"), action: #selector(CanvasView.resetArrangement(_:)), keyEquivalent: "")
         viewMenu.addItem(.separator())
         viewMenu.addItem(withTitle: String(localized: "隨機一件"), action: #selector(randomFromMenu), keyEquivalent: "r").keyEquivalentModifierMask = [.command, .option]
@@ -1301,6 +1368,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         return cabinets.watch(folder, in: cabinets.currentID)
     }
     func hoverViewBarForTest() -> String? { viewBar.hoverFirstForTest() }
+    var snapshotBarForTest: SnapshotBar { snapshotBar }
     func openSearchForTest() { focusSearch() }
     var spacesControlForTest: NSView { topBar.spaces }
     var topBarSearchCapsuleForTest: NSView? { topBar.searchCapsuleForTest }
@@ -1327,6 +1395,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         searchFieldDidEndSearching(field)
     }
     var viewBarTipsForTest: [String] { viewBar.isHidden ? [] : viewBar.tips }
+    func viewBarChoicesForTest(_ tip: String) -> [String] { viewBar.choicesForTest(tip) }
     var watchedFoldersForTest: [URL] { cabinets.watched(cabinets.currentID) }
     func unwatchFolderForTest(_ folder: URL) { cabinets.unwatch(folder, in: cabinets.currentID); cabinetsChanged() }
     func canDeleteCabinet(_ id: UUID) -> Bool { cabinets.canDelete(id) }

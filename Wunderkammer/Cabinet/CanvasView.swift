@@ -20,7 +20,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
 
     private(set) var scope = Scope()
     var board: UUID? { scope.board }
-    private var groups: [CanvasGroup] = []
+    private(set) var groups: [CanvasGroup] = []
     private var links: [CanvasLink] = []
     private let linesLayer = CAShapeLayer()
     /// Relations the system found (CrossMedia), dashed under the user's own lines.
@@ -179,6 +179,65 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
 
     private func save() {
         library.setCanvasGroups(groups, key: scope.canvasKey)
+        onArrangementChange?()
+    }
+
+    // MARK: Saved arrangements
+
+    /// The piles were moved, made or unmade (the saved-arrangement slots look again).
+    var onArrangementChange: (() -> Void)?
+    var arrangementKey: String { scope.canvasKey }
+
+    var currentArrangement: CanvasSnapshot { CanvasSnapshot(groups: groups, saved: Date()) }
+
+    /// Whether the canvas is laid out as `snapshot` is: the same piles, in the same places.
+    func matches(_ snapshot: CanvasSnapshot) -> Bool {
+        func shape(_ g: [CanvasGroup]) -> [String] {
+            g.map { "\(Int($0.x.rounded()))|\(Int($0.y.rounded()))|\($0.itemIDs.map(\.uuidString).joined(separator: ","))" }.sorted()
+        }
+        let present = Set(order)
+        let saved = snapshot.groups.map { g -> CanvasGroup in
+            var g = g; g.itemIDs = g.itemIDs.filter(present.contains); return g
+        }.filter { !$0.itemIDs.isEmpty }
+        return shape(saved) == shape(groups)
+    }
+
+    /// Back to a saved arrangement. Pieces added since join the first pile;
+    /// pieces gone since are left out.
+    func restore(_ snapshot: CanvasSnapshot) {
+        library.setCanvasGroups(snapshot.groups, key: scope.canvasKey)
+        selection = Selection()
+        groups = currentGroups()
+        layoutGroups()
+        needsFit = true
+        fit(animated: true)
+        render(animated: true)
+        needsDisplay = true
+        onArrangementChange?()
+    }
+
+    /// A small picture of an arrangement: each pile a block where it sits.
+    func miniature(of snapshot: CanvasSnapshot, size: CGSize) -> NSImage {
+        var rects: [CGRect] = []
+        for g in snapshot.groups {
+            let items = g.itemIDs.compactMap(library.item)
+            guard !items.isEmpty else { continue }
+            let (_, s) = CanvasLayout.pack(items.map(\.aspect))
+            rects.append(CGRect(x: g.x, y: g.y, width: s.width, height: s.height))
+        }
+        let bounds = rects.reduce(CGRect.null) { $0.union($1) }
+        return NSImage(size: size, flipped: true) { frame in
+            guard !bounds.isNull, bounds.width > 0, bounds.height > 0 else { return true }
+            let k = min(frame.width / bounds.width, frame.height / bounds.height)
+            let ox = (frame.width - bounds.width * k) / 2, oy = (frame.height - bounds.height * k) / 2
+            NSColor.black.setFill()
+            for r in rects {
+                let m = CGRect(x: ox + (r.minX - bounds.minX) * k, y: oy + (r.minY - bounds.minY) * k,
+                               width: max(r.width * k, 2), height: max(r.height * k, 2)).insetBy(dx: 0.5, dy: 0.5)
+                NSBezierPath(roundedRect: m, xRadius: 1.2, yRadius: 1.2).fill()
+            }
+            return true
+        }
     }
 
     /// Packs every pile and records world frames for piles and their images.
@@ -251,8 +310,6 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
 
     var debugLinkCount: Int { links.count }
     var hasRelations: Bool { !relationLinks.isEmpty }
-    /// The connections between pieces have been worked out (the bar's button can wake).
-    var onRelationsFound: (() -> Void)?
 
     @objc func arrange(_ sender: Any?) {
         let sizes = groups.map { groupFrames[$0.id]?.size ?? .zero }
@@ -282,7 +339,6 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
             guard let self, !Task.isCancelled else { return }
             self.relationLinks = found
             self.renderLines()
-            self.onRelationsFound?()
         }
     }
 
@@ -294,24 +350,42 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         groups.compactMap { g in titleLayers[g.id].map { "\(g.title ?? "") \($0.frame.integral) hidden \($0.isHidden)" } }
     }
 
-    @objc func clusterByRelation(_ sender: Any?) {
-        let items = order.compactMap(library.item)
-        var clusters = CanvasLayout.relationClusters(items, links: relationLinks)
-        // What nothing connects is still sorted, by theme, rather than one big 其他.
-        if let rest = clusters.last, rest.title == CanvasLayout.otherPile {
-            clusters.removeLast()
-            let leftover = Set(rest.ids)
-            clusters += CanvasLayout.clusters(items.filter { leftover.contains($0.id) },
-                                              subjects: Subjects.discover(in: library.items, limit: 24))
-        }
-        groups = clusters.map { CanvasGroup(id: UUID(), x: 0, y: 0, itemIDs: $0.ids, title: $0.title) }
-        layoutGroups()
-        arrange(nil)
-    }
-
     @objc func clusterByTheme(_ sender: Any?) {
         let items = order.compactMap(library.item)
-        let clusters = CanvasLayout.clusters(items, subjects: Subjects.discover(in: library.items, limit: 24))
+        pile(CanvasLayout.clusters(items, subjects: Subjects.discover(in: library.items, limit: 24)))
+    }
+
+    /// One pile per 格式, as the sidebar lists them.
+    @objc func clusterByFormat(_ sender: Any?) {
+        pile { item in SidebarViewController.fileKinds.first { $0.contains(item) }?.title }
+    }
+
+    /// One pile per 分類 (books, films…); anything that isn't a work goes to 其他.
+    @objc func clusterByCategory(_ sender: Any?) {
+        pile { item in SidebarViewController.pageKinds.first { $0.contains(item) }?.title }
+    }
+
+    /// One pile per main colour, in the spectrum's order.
+    @objc func clusterByColor(_ sender: Any?) {
+        let rank = Dictionary(uniqueKeysWithValues: Colours.all.enumerated().map { ($1.title, $0) })
+        pile({ item in item.colors?.first.map(Colours.title) }) { (rank[$0] ?? .max) < (rank[$1] ?? .max) }
+    }
+
+    /// Piles by `key`, biggest first unless `order` says otherwise; what has no key goes to 其他, last.
+    private func pile(_ key: (Item) -> String?, order sorted: ((String, String) -> Bool)? = nil) {
+        var piles: [String: [UUID]] = [:], titles: [String] = [], rest: [UUID] = []
+        for item in order.compactMap(library.item) {
+            guard let title = key(item) else { rest.append(item.id); continue }
+            if piles[title] == nil { titles.append(title) }
+            piles[title, default: []].append(item.id)
+        }
+        var clusters = titles.map { (title: $0, ids: piles[$0]!) }
+        if let sorted { clusters.sort { sorted($0.title, $1.title) } } else { clusters.sort { $0.ids.count > $1.ids.count } }
+        if !rest.isEmpty { clusters.append((CanvasLayout.otherPile, rest)) }
+        pile(clusters)
+    }
+
+    private func pile(_ clusters: [(title: String, ids: [UUID])]) {
         groups = clusters.map { CanvasGroup(id: UUID(), x: 0, y: 0, itemIDs: $0.ids, title: $0.title) }
         layoutGroups()
         arrange(nil)
@@ -790,10 +864,10 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         }
         guard let id = hit(p) else {
             let menu = NSMenu()
+            menu.addItem(ClosureMenuItem(String(localized: "依格式分堆")) { [weak self] in self?.clusterByFormat(nil) })
+            menu.addItem(ClosureMenuItem(String(localized: "依分類分堆")) { [weak self] in self?.clusterByCategory(nil) })
             menu.addItem(ClosureMenuItem(String(localized: "依主題分堆")) { [weak self] in self?.clusterByTheme(nil) })
-            if !relationLinks.isEmpty {
-                menu.addItem(ClosureMenuItem(String(localized: "依關聯分堆")) { [weak self] in self?.clusterByRelation(nil) })
-            }
+            menu.addItem(ClosureMenuItem(String(localized: "依顏色分堆")) { [weak self] in self?.clusterByColor(nil) })
             menu.addItem(ClosureMenuItem(String(localized: "整理成整齊的排列")) { [weak self] in self?.arrange(nil) })
             menu.addItem(ClosureMenuItem(String(localized: "顯示全部")) { [weak self] in self?.fit(animated: true) })
             menu.addItem(.separator())

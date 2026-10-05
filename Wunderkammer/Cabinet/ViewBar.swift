@@ -10,7 +10,9 @@ final class ViewBar: NSView {
         var tip: String
         var enabled = true
         var destructive = false
-        var action: () -> Void
+        /// When set, the button opens these as a menu instead of acting.
+        var choices: [Tool] = []
+        var action: () -> Void = {}
     }
 
     var onLayout: ((ViewMode) -> Void)?
@@ -71,6 +73,10 @@ final class ViewBar: NSView {
             section.forEach(stack.addArrangedSubview)
         }
         isHidden = sections.isEmpty
+    }
+
+    func choicesForTest(_ tip: String) -> [String] {
+        stack.arrangedSubviews.compactMap { $0 as? BarButton }.first { $0.tool.tip == tip }?.tool.choices.map(\.tip) ?? []
     }
 
     func enabledForTest(_ tip: String) -> Bool? {
@@ -172,7 +178,16 @@ private final class BarButton: NSButton {
 
     @objc private func run() {
         bar?.hover(nil)
-        tool.action()
+        guard !tool.choices.isEmpty else { return tool.action() }
+        let menu = NSMenu()
+        for choice in tool.choices {
+            let item = ClosureMenuItem(choice.tip) { choice.action() }
+            item.image = Icon.optical(choice.icon, size: 16)
+            menu.addItem(item)
+        }
+        // Opens upward, its bottom just above the button.
+        let top = bounds.height + 6 + menu.size.height
+        menu.popUp(positioning: nil, at: NSPoint(x: 0, y: isFlipped ? -6 - menu.size.height : top), in: self)
     }
 }
 
@@ -228,4 +243,186 @@ private final class TipBubble: NSView {
             animator().alphaValue = 0
         }
     }
+}
+
+/// Beside the view bar on the 工作台: three slots for arrangements to come
+/// back to. An empty slot saves the canvas as it is; a full one, a small
+/// picture of its piles, puts the canvas back that way. The one the canvas
+/// matches now wears the accent. Right-click a slot to save over it or clear it.
+@MainActor
+final class SnapshotBar: NSView {
+    struct Slot {
+        var picture: NSImage?
+        var current: Bool
+    }
+
+    var onSave: ((Int) -> Void)?
+    var onRestore: ((Int) -> Void)?
+    var onClear: ((Int) -> Void)?
+
+    private let stack = NSStackView()
+    private let bubble = TipBubble()
+    private(set) var slots: [Slot] = []
+
+    init() {
+        super.init(frame: .zero)
+        let glass = Glass(cornerRadius: 18)
+        glass.frame = bounds
+        glass.autoresizingMask = [.width, .height]
+        addSubview(glass)
+        stack.spacing = 4
+        stack.edgeInsets = NSEdgeInsets(top: 0, left: 7, bottom: 0, right: 7)
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.leadingAnchor.constraint(equalTo: leadingAnchor),
+            stack.trailingAnchor.constraint(equalTo: trailingAnchor),
+            stack.topAnchor.constraint(equalTo: topAnchor),
+            stack.bottomAnchor.constraint(equalTo: bottomAnchor),
+            heightAnchor.constraint(equalToConstant: 54),
+        ])
+        setAccessibilityElement(true)
+        setAccessibilityRole(.group)
+        setAccessibilityLabel(String(localized: "儲存的排列"))
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override var isHidden: Bool {
+        didSet { if isHidden { bubble.hide() } }
+    }
+
+    func show(_ slots: [Slot]) {
+        self.slots = slots
+        stack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        for (i, slot) in slots.enumerated() {
+            let b = SlotButton(index: i, slot: slot, bar: self)
+            stack.addArrangedSubview(b)
+        }
+    }
+
+    fileprivate func tip(for i: Int) -> String {
+        slots[safe: i]?.picture == nil
+            ? String(localized: "存成排列 \(i + 1)（⌃⇧\(i + 1)）")
+            : String(localized: "回到排列 \(i + 1)（⌃\(i + 1)）")
+    }
+
+    fileprivate func hover(_ button: SlotButton?) {
+        guard let button, let host = superview else { return bubble.hide() }
+        bubble.show(tip(for: button.index), above: button, in: host)
+    }
+
+    fileprivate func clicked(_ i: Int) {
+        bubble.hide()
+        if slots[safe: i]?.picture == nil { onSave?(i) } else { onRestore?(i) }
+    }
+
+    fileprivate func menu(for i: Int) -> NSMenu? {
+        guard slots[safe: i]?.picture != nil else { return nil }
+        let menu = NSMenu()
+        menu.addItem(ClosureMenuItem(String(localized: "回到這個排列")) { [weak self] in self?.onRestore?(i) })
+        menu.addItem(ClosureMenuItem(String(localized: "用目前的排列取代")) { [weak self] in self?.onSave?(i) })
+        menu.addItem(.separator())
+        menu.addItem(ClosureMenuItem(String(localized: "清除這一格")) { [weak self] in self?.onClear?(i) })
+        return menu
+    }
+
+    // Tests.
+    func clickForTest(_ i: Int) { clicked(i) }
+}
+
+/// One slot: a dashed ＋ when empty; the arrangement's picture when not.
+@MainActor
+private final class SlotButton: NSView {
+    let index: Int
+    private let slot: SnapshotBar.Slot
+    private weak var bar: SnapshotBar?
+    private let well = CAShapeLayer()
+    private let picture = CALayer()
+    private let plus = NSImageView()
+    private var hovering = false { didSet { updateLook() } }
+
+    init(index: Int, slot: SnapshotBar.Slot, bar: SnapshotBar) {
+        self.index = index
+        self.slot = slot
+        self.bar = bar
+        super.init(frame: .zero)
+        wantsLayer = true
+        layer?.cornerRadius = 11
+        well.fillColor = nil
+        well.lineWidth = 1.2
+        layer?.addSublayer(well)
+        picture.contentsGravity = .resizeAspect
+        layer?.addSublayer(picture)
+        plus.image = Icon.optical(.plus, size: 14)
+        plus.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(plus)
+        translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            widthAnchor.constraint(equalToConstant: 42),
+            heightAnchor.constraint(equalToConstant: 40),
+            plus.centerXAnchor.constraint(equalTo: centerXAnchor),
+            plus.centerYAnchor.constraint(equalTo: centerYAnchor),
+        ])
+        plus.isHidden = slot.picture != nil
+        setAccessibilityElement(true)
+        setAccessibilityRole(.button)
+        setAccessibilityLabel(bar.tip(for: index))
+        updateLook()
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func layout() {
+        super.layout()
+        let r = bounds.insetBy(dx: 8, dy: 9)
+        well.frame = bounds
+        well.path = CGPath(roundedRect: r, cornerWidth: 4, cornerHeight: 4, transform: nil)
+        picture.frame = r.insetBy(dx: 2, dy: 2)
+        updateLook()
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateLook()
+    }
+
+    private func updateLook() {
+        let empty = slot.picture == nil
+        let tint: NSColor = slot.current ? .accent : hovering ? .labelColor : .secondaryLabelColor
+        well.lineDashPattern = empty ? [3, 2.5] : nil
+        well.strokeColor = resolved(empty ? tint.withAlphaComponent(0.7) : tint.withAlphaComponent(slot.current ? 1 : 0.5))
+        layer?.backgroundColor = slot.current ? resolved(NSColor.accent.withAlphaComponent(0.16))
+            : hovering ? resolved(NSColor.labelColor.withAlphaComponent(0.1)) : nil
+        plus.contentTintColor = tint
+        if let image = slot.picture {
+            picture.contents = tinted(image, resolved(tint))
+        }
+    }
+
+    /// The miniature drawn in one colour.
+    private func tinted(_ image: NSImage, _ color: CGColor) -> NSImage {
+        NSImage(size: image.size, flipped: false) { r in
+            image.draw(in: r)
+            NSColor(cgColor: color)?.set()
+            r.fill(using: .sourceIn)
+            return true
+        }
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        trackingAreas.forEach(removeTrackingArea)
+        addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+    }
+
+    override func mouseEntered(with event: NSEvent) { hovering = true; bar?.hover(self) }
+    override func mouseExited(with event: NSEvent) { hovering = false; bar?.hover(nil) }
+    override func mouseDown(with event: NSEvent) {}
+    override func mouseUp(with event: NSEvent) {
+        guard bounds.contains(convert(event.locationInWindow, from: nil)) else { return }
+        bar?.clicked(index)
+    }
+
+    override func menu(for event: NSEvent) -> NSMenu? { bar?.menu(for: index) }
 }

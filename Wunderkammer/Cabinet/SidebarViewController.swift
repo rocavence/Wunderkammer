@@ -107,7 +107,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         reload()
     }
 
-    private static let kindIcons: [Scope.KindView: Reicon] = [
+    static let kindIcons: [Scope.KindView: Reicon] = [
         .images: .image, .web: .globe, .text: .text, .media: .clapperboard, .documents: .fileText,
         .books: .book, .films: .film, .music: .vinyl, .products: .shoppingBag, .places: .mapPoint,
     ]
@@ -165,8 +165,8 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     }
 
     /// Kinds of file first; what a page is about (書, 電影…) sits under 網頁.
-    private static let fileKinds: [Scope.KindView] = [.images, .web, .text, .media, .documents]
-    private static let pageKinds: [Scope.KindView] = [.books, .films, .music, .products, .places]
+    static let fileKinds: [Scope.KindView] = [.images, .web, .text, .media, .documents]
+    static let pageKinds: [Scope.KindView] = [.books, .films, .music, .products, .places]
 
     /// The card shows the open 展室's name, size and newest pieces.
     private func updateHeader() {

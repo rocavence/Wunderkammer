@@ -890,14 +890,38 @@ final class SelfTest {
         check(ui.mode == .canvas, "工作台 is the canvas (\(ui.mode))")
         ui.setMode(.canvas)
         await wait(0.6)
-        check(ui.viewBarTipsForTest.contains("依主題分堆") && ui.viewBarTipsForTest.contains("重設擺放…"), "the canvas's tools are in the bar (\(ui.viewBarTipsForTest))")
+        check(ui.viewBarTipsForTest.contains("重設擺放…"), "the canvas's tools are in the bar (\(ui.viewBarTipsForTest))")
+        check(ui.viewBarTipsForTest.first == "分堆", "one 分堆 button leads the bar (\(ui.viewBarTipsForTest))")
+        check(ui.viewBarChoicesForTest("分堆") == ["依格式分堆", "依分類分堆", "依主題分堆", "依顏色分堆"], "its choices follow the sidebar's sections (\(ui.viewBarChoicesForTest("分堆")))")
+        ui.canvas.clusterByColor(nil)
+        await wait(0.6)
+        let colourTitles = Set(Colours.all.map(\.title) + [CanvasLayout.otherPile])
+        check(!ui.canvas.groups.isEmpty && ui.canvas.groups.allSatisfy { colourTitles.contains($0.title ?? "") }, "piling by colour names each pile a colour (\(ui.canvas.groups.map(\.title)))")
+        ui.canvas.clusterByFormat(nil)
+        await wait(0.6)
+        let formatTitles = Set(SidebarViewController.fileKinds.map(\.title) + [CanvasLayout.otherPile])
+        check(!ui.canvas.groups.isEmpty && ui.canvas.groups.allSatisfy { formatTitles.contains($0.title ?? "") }, "piling by format names each pile a format (\(ui.canvas.groups.map(\.title)))")
         shot("space-map-canvas")
-        await wait(2)
-        if ui.canvas.hasRelations {
-            check(ui.viewBarEnabledForTest("依關聯分堆") == true, "pile by connection wakes once connections are found")
-        }
+        // Saved arrangements: save one, change the canvas, come back to it.
+        let slots = ui.snapshotBarForTest
+        check(!slots.isHidden && slots.slots.count == 3, "the 工作台 has three arrangement slots")
+        for i in 0..<3 where slots.slots[i].picture != nil { slots.onClear?(i) }
+        slots.clickForTest(0)
+        await wait(0.3)
+        check(slots.slots[0].picture != nil && slots.slots[0].current, "an empty slot saves the arrangement, and lights as current")
+        ui.canvas.clusterByTheme(nil)
+        await wait(0.6)
+        check(!slots.slots[0].current, "rearranged, the slot is no longer current")
+        shot("snapshots")
+        slots.clickForTest(0)
+        await wait(0.8)
+        check(slots.slots[0].current, "clicking the slot puts the canvas back")
+        slots.onClear?(0)
+        await wait(0.2)
+        check(slots.slots[0].picture == nil, "a slot can be cleared")
+
         await spacePanCheck()
-        check(ui.hoverViewBarForTest() == "依主題分堆", "pointing at a bar button names it (\(ui.hoverViewBarForTest() ?? "nothing"))")
+        check(ui.hoverViewBarForTest() == "分堆", "pointing at a bar button names it (\(ui.hoverViewBarForTest() ?? "nothing"))")
         await wait(0.3)
         ui.setSpace(.cabinet)
         await wait(0.4)
@@ -1010,14 +1034,7 @@ final class SelfTest {
         for _ in 0..<40 where canvas.debugRelationCount == 0 { await wait(0.25) }
         check(canvas.debugRelationCount >= 10, "the canvas finds the relations (\(canvas.debugRelationCount))")
         shot("relations-canvas-lines")
-        canvas.clusterByRelation(nil)
-        await wait(1)
-        let titles = canvas.debugPileTitles
-        log("piles: \(titles.joined(separator: "、"))")
-        check(["Wong Kar-Wai", "New York", "Khruangbin"].allSatisfy(titles.contains), "piles by relation are named by what connects them")
-        canvas.fit()
-        await wait(0.6)
-        shot("relations-canvas-piles")
+
         log("titles: " + canvas.debugTitleFrames.joined(separator: " | "))
     }
 
@@ -1550,7 +1567,9 @@ protocol SelfTestUI: AnyObject {
     func unwatchFolderForTest(_ folder: URL)
     var watchedFoldersForTest: [URL] { get }
     var viewBarTipsForTest: [String] { get }
+    func viewBarChoicesForTest(_ tip: String) -> [String]
     func hoverViewBarForTest() -> String?
+    var snapshotBarForTest: SnapshotBar { get }
     var isSearchExpanded: Bool { get }
     var topBarSearchCapsuleForTest: NSView? { get }
     func viewBarEnabledForTest(_ tip: String) -> Bool?

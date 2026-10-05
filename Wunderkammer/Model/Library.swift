@@ -21,6 +21,12 @@ struct CanvasGroup: Codable, Identifiable, Hashable {
     var title: String?
 }
 
+/// A canvas arrangement put by to come back to: its piles, where they were.
+struct CanvasSnapshot: Codable, Hashable {
+    var groups: [CanvasGroup]
+    var saved: Date
+}
+
 /// A line drawn between two curiosities on a canvas.
 struct CanvasLink: Codable, Hashable {
     var a: UUID
@@ -47,6 +53,23 @@ final class Library {
     private(set) var collections: [Board] = []
     private var canvases: [String: [CanvasGroup]] = [:]
     private var canvasLinks: [String: [CanvasLink]] = [:]
+    private var canvasSnapshots: [String: [CanvasSnapshot?]] = [:]
+
+    static let snapshotSlots = 3
+
+    /// A canvas's saved arrangements, one per slot (nil: empty).
+    func snapshots(key: String) -> [CanvasSnapshot?] {
+        let s = canvasSnapshots[key] ?? []
+        return (0..<Self.snapshotSlots).map { $0 < s.count ? s[$0] : nil }
+    }
+
+    func setSnapshot(_ snapshot: CanvasSnapshot?, slot: Int, key: String) {
+        guard (0..<Self.snapshotSlots).contains(slot) else { return }
+        var s = snapshots(key: key)
+        s[slot] = snapshot
+        canvasSnapshots[key] = s
+        save()
+    }
     private var byID: [UUID: Int] = [:]
     /// Visually similar items, supplied by the understanding layer.
     var similarity: ((UUID) -> [Item])?
@@ -98,6 +121,7 @@ final class Library {
         collections = []
         canvases = [:]
         canvasLinks = [:]
+        canvasSnapshots = [:]
         loadFailed = false
         root = newRoot
         originalsDir = newRoot.appendingPathComponent("originals")
@@ -118,6 +142,7 @@ final class Library {
         var collections: [Board]?
         var canvases: [String: [CanvasGroup]]?
         var links: [String: [CanvasLink]]?
+        var snapshots: [String: [CanvasSnapshot?]]?
     }
 
     /// Set when library.json exists but couldn't be read: nothing gets purged,
@@ -141,6 +166,7 @@ final class Library {
         collections = stored.collections ?? []
         canvases = stored.canvases ?? [:]
         canvasLinks = stored.links ?? [:]
+        canvasSnapshots = stored.snapshots ?? [:]
         reindex()
     }
 
@@ -161,7 +187,8 @@ final class Library {
         saveWork = nil
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        if let data = try? encoder.encode(Stored(items: items, collections: collections, canvases: canvases, links: canvasLinks)) {
+        if let data = try? encoder.encode(Stored(items: items, collections: collections, canvases: canvases, links: canvasLinks,
+                                                  snapshots: canvasSnapshots)) {
             try? data.write(to: jsonURL, options: .atomic)
         }
     }
