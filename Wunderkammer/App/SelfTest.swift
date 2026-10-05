@@ -41,9 +41,16 @@ final class SelfTest {
         guard let dir = Self.outputDir else { return }
         let p = Process()
         p.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
-        p.arguments = ["-x", "-o", "-l", "\(windowNumber ?? window.windowNumber)", dir.appendingPathComponent("\(name).png").path]
+        let file = dir.appendingPathComponent("\(name).png")
+        p.arguments = ["-x", "-o", "-l", "\(windowNumber ?? window.windowNumber)", file.path]
         try? p.run()
         p.waitUntilExit()
+        // A locked screen can't be captured: the window draws itself instead (glass comes out flat).
+        if !FileManager.default.fileExists(atPath: file.path), windowNumber == nil, let frame = window.contentView?.superview,
+           let rep = frame.bitmapImageRepForCachingDisplay(in: frame.bounds) {
+            frame.cacheDisplay(in: frame.bounds, to: rep)
+            try? rep.representation(using: .png, properties: [:])?.write(to: file)
+        }
     }
 
     private func mouse(_ type: NSEvent.EventType, _ view: NSView, _ p: NSPoint,

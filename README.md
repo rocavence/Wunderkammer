@@ -1,96 +1,97 @@
-# Wunderkammer
+<p align="center"><img src="site/assets/icon.png" width="128" alt="Wunder icon"></p>
 
-> **Collect without organizing.**
+<h1 align="center">Wunder</h1>
 
-macOS 原生的個人展室。看到喜歡的東西就收進來，不用分類、命名或整理；系統負責理解、搜尋與重新發現。
+<p align="center"><b>A cabinet of curiosities for your Mac. Collect anything, organize nothing.</b><br>
+<a href="https://wunder.rocavence.com">wunder.rocavence.com</a> · <a href="README.zh-Hant.md">繁體中文</a></p>
 
-<p align="center"><img src="docs/screenshots/00-icon.jpg" width="160" alt="Wunderkammer icon"></p>
+![Wunder](site/assets/collection-light.jpg)
 
-![Grid](docs/screenshots/01-grid.jpg)
+Wunder keeps pictures, web pages, text and files without asking where they go. It reads the words in pictures, recognizes what's in them and their colors, and sorts itself by format, kind, theme and color. Then it brings old things back, so what you collected doesn't just sit there. Everything runs on your Mac.
 
-## 收藏
+## Download
 
-| 方式 | 操作 |
+[**Download Wunder.zip**](https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip) (4 MB, macOS 14 or later, Apple silicon and Intel).
+
+Wunder isn't notarized by Apple yet. The first time you open it, macOS stops it: open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**. Or run:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/Wunder.app
+```
+
+## Collect
+
+| How | What to do |
 |---|---|
-| 全域快捷鍵 | `⌘⇧C`：剛複製的東西優先；否則收最前面瀏覽器的目前分頁 |
-| 截圖 | `⌃⌘⇧C`：選範圍或視窗，截好直接收進來 |
-| 拖放、貼上 | 把檔案、圖片、網址或文字拖進視窗，或按 `⌘V` |
-| Dock | 把檔案拖到 Dock 上的 icon |
-| 選單列 | 展室 icon：收藏剪貼簿、截圖收藏、隨機一件 |
-| 分享選單 | 任何 app 的「分享 → Wunderkammer」 |
-| 服務選單 | 選取文字或檔案後，右鍵「服務 → 收進 Wunderkammer」 |
-| 瀏覽器 | 擴充或書籤小程式，見 [extensions/README.md](extensions/README.md) |
+| Shortcut | `⌘⇧C` collects what you just copied, or the page open in your browser |
+| Screenshot | `⌃⌘⇧C`, then drag a region or pick a window |
+| Drag and drop | Onto the window, the Dock icon, or the arch in the menu bar |
+| Paste | `⌘V` in the window |
+| Services | Select text or files, then right-click → Services → Collect in Wunder |
+| Browser | Extension or bookmarklet, see [extensions/README.md](extensions/README.md) |
+| Siri and Shortcuts | “Collect into Wunder”, “Ask Wunder”, “Search Wunder” |
+| Watched folders | A room can watch up to three folders and take in what lands there |
 
-收藏不會跳出任何對話框，收完在螢幕上方出現 1.6 秒的提示。關掉視窗後 app 仍在背景執行，收藏照常運作；點 Dock icon 或按 `⌘0` 叫回視窗。
+Files stay where they are: Wunder remembers where they live and follows them if they move. A room can instead keep a copy of every file in a folder of its own.
 
-能收的東西：圖片、影片、聲音、PDF、網頁、文字與任何檔案。檔案以參照方式收藏（記路徑與 bookmark），不會複製一份；只有本身沒有檔案的內容（複製的圖片、截圖）才保存在圖庫裡。
+## Three spaces
 
-## 瀏覽
-
-| 顯示方式 | 快捷鍵 | 說明 |
+| Space | For | Layouts |
 |---|---|---|
-| Grid | `⌘1` | 每排填滿寬度，保留原始比例 |
-| Masonry | `⌘2` | 瀑布流欄位 |
-| Timeline | `⌘3` | 依收藏日期分組 |
-| Canvas | `⌘4` | 自由排列：框選後拖出成新的一堆，堆與堆自動推開 |
-| Infinity | `⌘5` | 無邊界的牆，閒置時會慢慢漂移 |
+| Collection | Browsing and finding | Grid, masonry, timeline |
+| Wunder | Rediscovering | A drifting wall; For Today, On this day, Forgotten, Trail, Surprise Me |
+| Space | Thinking | A canvas: pile by format, kind, theme or color, connect, save three layouts |
 
-* 捏合或 `⌘` 加滾輪縮放；放開後以彈簧動畫重排。
-* `Space` 預覽：圖片、網頁、短文字從磚塊飛出；影片、聲音、PDF、長文字與其他檔案用系統 Quick Look。
-* `Return` 用預設 app 或瀏覽器打開；`⌘I` 顯示系統記下的 metadata。
-* `Delete` 移除，`⌘Z` 復原。移除不會動到原始檔案。
+## Find
 
-## 找到
+* `⌘K` searches titles, file names, sites, text, the words inside pictures, recognized objects and colors, and the year.
+* Describe a picture to find it, like “a bird on a branch”. The description model (MobileCLIP, about 106 MB) downloads the first time you need it.
+* End a search with a question mark to ask your collection a question. Needs Apple Intelligence (macOS 26).
+* Right-click → Find Similar; `⌘I` shows what Wunder noticed and what's related.
 
-* `⌘K` 搜尋標題、檔名、網站、文字、圖中文字（OCR）、系統辨識的物件與顏色、收藏年份。中文查詢會斷詞並對應英文標籤，例如「紅色的椅子」。
-* 語意搜尋：用描述找圖，例如「a cat at a dinner table」。需要先執行 `scripts/models/fetch-mobileclip.sh` 安裝本機模型（約 106 MB）。中文描述需要系統的「中文（繁體）→ 英文」翻譯語言，可從選單「編輯 → 啟用中文描述搜尋…」下載。
-* 收藏也編入 Spotlight（只放標題、網站與主題，不放文字內容）。
-* 側欄的 view 都由系統維護：依類型（圖片、網頁、文字……）、自動發現的主題（人物、插畫……）。
-* 右鍵「找相似的」依視覺相似度排序；`⌘I` 列出相關的收藏，名字與網站可以點開，看所有連到它的收藏。
-* Canvas 空白處右鍵「依主題分堆」：系統依主題分成有名稱的幾堆。
+## Rooms and sync
 
-## 重新發現
+Each room (展室) has its own collection, cover and folders. Turn on sync for a room and it moves into iCloud Drive, where any Mac signed in to your Apple Account can join it. When two Macs change it at once, both changes are kept.
 
-* `R` 隨機挑一件：越久以前收、越久沒看的越容易出現，預覽下方寫著「你在 N 天前收藏了這個」。
-* 側欄「過去的今天」與「被遺忘的」（超過一個月沒看）。
+## Privacy
 
-所有理解（OCR、物件、顏色、相似度、名字）都用 Apple Vision 與 NaturalLanguage 在本機完成，不上傳任何內容。
+Text recognition, objects, colors, similarity, description search and questions all run on your Mac with Apple's frameworks. Wunder goes online only to read the pages you collect, to download the optional description model once, and to check GitHub for a new version once a day.
 
-## 建置
+## Build
 
-需要 Xcode 16 以上與 [XcodeGen](https://github.com/yonaskolb/XcodeGen)。
+Needs Xcode 16 or later and [XcodeGen](https://github.com/yonaskolb/XcodeGen).
 
 ```bash
 xcodegen generate
-scripts/build-release.sh        # 輸出 dist/Wunderkammer.app
+scripts/build-release.sh     # dist/Wunder.app, signed with your local certificate
+scripts/package.sh           # dist/Wunder.zip, ad-hoc signed, for download
 ```
 
-簽章設定在 `Config/Signing.xcconfig`。分享延伸功能使用 App Group，需要在 `Config/Signing.local.xcconfig`（不進版控）設定開發者憑證；ad-hoc 簽章時其他功能照常運作。
+Signing settings live in `Config/Signing.xcconfig`. To use your own certificate, put `CODE_SIGN_IDENTITY` and `DEVELOPMENT_TEAM` in `Config/Signing.local.xcconfig` (not tracked). The Share menu extension needs a team-signed build, so the ad-hoc download leaves it out.
 
-## 測試
+## Test
 
 ```bash
 xcodebuild -project Wunderkammer.xcodeproj -scheme Wunderkammer -derivedDataPath build test
-scripts/selftest.sh             # 端對端：完整流程
-scripts/selftest.sh ui          # 收藏、顯示方式、搜尋、隨機、Inspector
-scripts/selftest.sh understand  # OCR、主題、相似、主題分堆
-scripts/selftest.sh semantic    # 語意搜尋（需要模型）
-scripts/selftest.sh formats     # 系統內建的影片、聲音、HEIC、PDF、app
-WK_SELFTEST_TIMEOUT=400 scripts/selftest.sh perf   # 3,000 件的效能
+scripts/selftest.sh ui           # end to end: collect, layouts, search, random, inspector
+scripts/selftest.sh spaces       # the three spaces, piles, saved layouts
+scripts/selftest.sh understand   # text in pictures, themes, similar (macOS's own pictures)
+scripts/selftest.sh cloud        # rooms in iCloud Drive (a stand-in folder)
 ```
 
-端對端測試用圖庫的複本操作 app 本身，不會動到真正的圖庫與滑鼠；截圖與紀錄在 `build/selftest/`。
+End-to-end tests drive the app itself on a copy of your library, or on built-in test pictures. They never touch your real library, your mouse or your focus. Screenshots and logs go to `build/selftest/`.
 
-## 結構
+## Layout
 
-| 資料夾 | 內容 |
+| Folder | What's there |
 |---|---|
-| `Wunderkammer/Model` | Curiosity 資料模型、Representation、metadata、搜尋、理解、重新發現 |
-| `Wunderkammer/Capture` | 快捷鍵、剪貼簿、瀏覽器、截圖、服務、分享收件匣 |
-| `Wunderkammer/Cabinet` | 五種顯示方式、預覽、側欄、Inspector |
-| `Wunderkammer/DesignSystem` | Reicon icon、空狀態文字 |
-| `ShareExtension` | 分享延伸功能 |
-| `extensions/browser` | Chrome、Zen、Firefox 擴充 |
-| `docs/DECISIONS.md` | 決策紀錄 |
+| `Wunderkammer/Model` | Items, library, search, understanding, rediscovery, sync |
+| `Wunderkammer/Capture` | Shortcuts, clipboard, browser, screenshots, services, share inbox |
+| `Wunderkammer/Cabinet` | The views: grid, wall, canvas, preview, sidebar, inspector |
+| `Wunderkammer/App` | App delegate, rooms, settings, menu bar, updates, self-tests |
+| `ShareExtension` | The Share menu extension |
+| `extensions/browser` | Chrome, Zen and Firefox extension |
+| `site` | wunder.rocavence.com |
+| `docs` | [PLAN.md](docs/PLAN.md) (plan and roadmap), [DECISIONS.md](docs/DECISIONS.md) (decision log), both in Chinese |
 
-圖庫位置：`~/Library/Application Support/Wunderkammer/`（`library.json`、`originals/`、`thumbnails/`、`featureprints/`、`embeddings/`、`models/`）。
+Pictures in the screenshots come from the [Cleveland Museum of Art Open Access](https://www.clevelandart.org/open-access) collection (CC0).

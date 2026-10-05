@@ -311,3 +311,61 @@ Atlas 的偵錯說明文字寫明舊版（1.6.7）的參數：質量 1.89、剛�
 * 在漫遊裡按隨機一件，留在無限牆上打開，不再跳回格狀。
 
 修改位置：`Space`、`AppDelegate.setSpace` / `updateSpaceControls`、`SidebarViewController.space`。
+
+## D36 App 對外叫 Wunder
+
+顯示名稱、選單、服務選單、Siri 指令、設定、網站都改成 Wunder；`.app` 也改名 `Wunder.app`。
+
+模組名稱（`PRODUCT_MODULE_NAME`）、bundle ID、`wunderkammer://` 連結與 `~/Library/Application Support/Wunderkammer` 都不動，現有的收藏、測試與瀏覽器擴充不受影響。
+
+修改位置：`project.yml`、`Localizable.xcstrings`、各語言的 `ServicesMenu.strings` 與 `InfoPlist.strings`。
+
+## D37 語意搜尋模型第一次用時才下載
+
+app 不內建模型（下載版維持 4 MB）。第一次搜尋時，收藏牆上方出現提示：「下載語意模型（約 106 MB），只在這台 Mac 上執行」，按「下載」才開始；按「不用了」就不再提示，之後仍可在「設定 → 理解」下載。
+
+* 模型從 Hugging Face 的 `apple/coreml-mobileclip` 下載 `.mlpackage`，在本機用 `MLModel.compileModel` 編譯；分詞表改用 `openai/clip-vit-base-patch32` 的 `merges.txt`（與原本的 `bpe_simple_vocab_16e6.txt` 前 48,894 組相同）。
+* 實測：下載加編譯約 15 秒，裝好後描述搜尋 5 題全對。
+
+修改位置：`Model/ModelInstaller.swift`、`Cabinet/SemanticOffer.swift`。
+
+## D38 需要已知內容的測試改用固定測試資料
+
+understand、semantic、relations、intents、trail、models 這幾組原本依賴個人圖庫裡的迷因與電影，圖庫換了就失敗。現在從空圖庫開始，由 app 放入：macOS 內建的 43 張使用者圖片、一張自繪含字的圖（測圖中文字）、兩段文字與 7 個固定網頁。
+
+網站與 README 的截圖另用 `showcase`：克里夫蘭美術館的 CC0 圖片（`scripts/samples/fetch-samples.py`）。螢幕鎖定時無法用 `screencapture`，自我測試改由視窗自己繪製（毛玻璃會變平）。
+
+## D39 主題名稱補齊六種語言
+
+Apple Vision 的 1,303 個標籤原本只翻了 249 個，中文介面會出現「Sports equipment」這類英文主題。全部補齊六種語言（`Themes.strings`）。
+
+## D40 今天的推薦（US-306）
+
+漫遊的側欄多一項「今天的推薦」：每天在本機挑 12 件。
+
+* 分數：和最近 14 天常看、新收的東西共有的主題，加上「以前常看但超過 30 天沒開」與「收了沒看過」的加分，再加一點每天不同的隨機。同一主題最多占三分之一。
+* 三天內看過的不選；三天內新收的只在舊東西不夠時補上（新展室也有推薦）。
+* 同一天內結果固定，隔天換一組。預覽下方寫出推薦原因，例如「和你最近常看的「花」有關」。
+
+修改位置：`Rediscovery.forToday`。
+
+## D41 展室在 iCloud 雲碟同步（US-308）
+
+不用 CloudKit：展室搬進 `iCloud 雲碟/Wunder/<展室 ID>/`，由系統同步，app 不需要額外權限。
+
+* 兩台 Mac 同時修改：寫入前先讀回磁碟上的版本合併。雙方新增的都留、刪除的都刪（以上次讀寫時的 ID 判斷）、同一件取 `modified` 較新的，看過的次數取較大值。合併結果與磁碟相同就不寫，避免兩台互相觸發。iCloud 留下的衝突版本也逐一併入後清除。
+* 特徵、語意向量、每日備份與足跡留在各自的 Mac（`Caches/<展室 ID>/`）。
+* 別台 Mac 建立的展室，以 `room.json` 認出，出現在展室列表，點一下加入。從列表刪除同步中的展室只會移出這台 Mac 的列表。
+* 留在原處的參照檔案不會搬，其他 Mac 只看得到縮圖。
+
+修改位置：`Model/LibrarySync.swift`、`Library`（iCloud 區段）、`Cabinets`（iCloud 區段）、`CabinetsPanel`。
+
+## D42 下載版 ad-hoc 簽章，不含分享延伸功能
+
+使用者決定先不申請 Developer ID。下載版用 ad-hoc 簽章、不公證，網站與 README 寫出第一次打開的方法。
+
+分享延伸功能在沙盒內，需要團隊簽章才能寫入共用資料夾，所以下載版不放；空展室的提示改成「之後按 ⌘K 找回來」。開發版（本機憑證）仍有分享選單。
+
+檢查更新：每天向 GitHub 查一次最新 Release，有新版時在 App 選單與「設定 → 關於」提供下載連結，不自動安裝。
+
+修改位置：`scripts/package.sh`、`App/UpdateChecker.swift`。
