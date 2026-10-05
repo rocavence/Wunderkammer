@@ -728,6 +728,14 @@ final class SelfTest {
         check(ui.cabinetNames.contains("旅行的展室"), "it's in the list")
         ui.switchCabinet(to: home)
         await wait(0.4)
+        // The settings button at the sidebar's foot: just this 展室's settings.
+        ui.cabinetSettingsForTest()
+        await wait(0.6)
+        check(ui.cabinetSettingsShownForTest, "the sidebar's settings button opens this 展室's settings")
+        shot("cabinet-settings-alone", windowNumber: ui.cabinetsWindowNumber)
+        ui.closeCabinetsForTest()
+        await wait(0.4)
+        check(!ui.cabinetSettingsShownForTest, "and 完成 puts them away")
         // The window from the 展室 card atop the sidebar.
         ui.manageCabinets()
         await wait(0.6)
@@ -1866,6 +1874,8 @@ protocol SelfTestUI: AnyObject {
     func switchCabinet(to id: UUID)
     func createCabinetForTest(_ name: String) -> UUID
     func manageCabinets()
+    func cabinetSettingsForTest()
+    var cabinetSettingsShownForTest: Bool { get }
     func closeCabinetsForTest()
     var cabinetsWindowNumber: Int? { get }
     func beginAddCabinetForTest()

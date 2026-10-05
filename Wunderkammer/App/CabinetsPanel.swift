@@ -29,6 +29,8 @@ final class CabinetsPanel: NSObject {
     private var cards: [NSView] = []
     /// A new 展室 waiting for its name: a card, not yet a folder.
     private var drafting = false
+    /// Only one 展室's settings, without the cards (the sidebar's settings button).
+    private var alone = false
     /// The tallest the sheet may be: no taller than the window it hangs from.
     private var maxHeight: CGFloat = .greatestFiniteMagnitude
 
@@ -51,6 +53,26 @@ final class CabinetsPanel: NSObject {
         super.init()
         build()
         wireSettings()
+    }
+
+    /// Just the settings of one 展室, on a sheet of their own.
+    func presentSettings(of id: UUID, on window: NSWindow) {
+        alone = true
+        flipped = id
+        settings.standsAlone()
+        let content = NSView()
+        settings.translatesAutoresizingMaskIntoConstraints = false
+        content.addSubview(settings)
+        NSLayoutConstraint.activate([
+            settings.topAnchor.constraint(equalTo: content.topAnchor),
+            settings.leadingAnchor.constraint(equalTo: content.leadingAnchor),
+            settings.trailingAnchor.constraint(equalTo: content.trailingAnchor),
+            settings.bottomAnchor.constraint(equalTo: content.bottomAnchor),
+        ])
+        sheet.contentView = content
+        layoutCards()
+        window.beginSheet(sheet)
+        settings.focusName()
     }
 
     func present(on window: NSWindow) {
@@ -103,6 +125,11 @@ final class CabinetsPanel: NSObject {
     /// Cards in rows of three: every 展室, then the one being named or the
     /// card for adding one.
     private func layoutCards() {
+        if alone {
+            refreshSettings()
+            sheet.setContentSize(settings.fittingSize)
+            return
+        }
         cards.forEach { $0.removeFromSuperview() }
         cardsByID = [:]
         cards = cabinets.entries.map { entry in
@@ -196,6 +223,12 @@ final class CabinetsPanel: NSObject {
     }
 
     private func closeSettings() {
+        if alone {
+            settings.commitName()
+            flipped = nil
+            sheet.sheetParent?.endSheet(sheet)
+            return
+        }
         guard let id = flipped, settings.superview != nil else { return }
         settings.commitName()
         let card = cardsByID[id]
@@ -451,6 +484,7 @@ final class CabinetsPanel: NSObject {
     var windowNumber: Int { sheet.windowNumber }
     func closeForTest() { close() }
     /// A card turned over to its settings, without the turn.
+    var settingsShownForTest: Bool { sheet.isVisible && flipped != nil }
     func flipForTest(_ id: UUID) {
         openSettings(id)
     }
@@ -1074,6 +1108,14 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
     private func updateColors() {
         layer?.backgroundColor = resolved(.windowBackgroundColor)
         layer?.borderColor = resolved(.separatorColor)
+    }
+
+    /// On a sheet of its own: the sheet is the card, so no card of its own.
+    func standsAlone() {
+        layer?.cornerRadius = 0
+        layer?.borderWidth = 0
+        layer?.shadowOpacity = 0
+        shadow = nil
     }
 
     // Clicks inside stay inside (the dimmed cards behind would close it).

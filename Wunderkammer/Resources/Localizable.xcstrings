@@ -3889,6 +3889,12 @@
             "value" : "Saves what you just copied, or else the page open in your browser."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guarda lo que acabas de copiar o, si no hay nada, la página abierta en el navegador."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3899,12 +3905,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "방금 복사한 것을, 없으면 브라우저에서 보고 있는 페이지를 담습니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Guarda lo que acabas de copiar o, si no hay nada, la página abierta en el navegador."
           }
         },
         "pt-BR" : {
@@ -3969,6 +3969,12 @@
             "value" : "Klein Blue"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azul Klein"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3979,12 +3985,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "클랭 블루"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Azul Klein"
           }
         },
         "pt-BR" : {
@@ -5009,6 +5009,12 @@
             "value" : "Only titles, sites, and themes, never the text inside."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo títulos, sitios y temas, nunca el texto."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5019,12 +5025,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "제목, 사이트, 주제만 담고 본문은 넣지 않습니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Solo títulos, sitios y temas, nunca el texto."
           }
         },
         "pt-BR" : {
@@ -6209,6 +6209,12 @@
             "value" : "Type a question in the search field and press Return, or say “Ask Wunder” to Siri."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe una pregunta en el buscador y pulsa Retorno, o di «Ask Wunder» a Siri."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6219,12 +6225,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "검색창에 질문을 입력하고 Return을 누르거나 Siri에게 “Ask Wunder”라고 말하세요."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Escribe una pregunta en el buscador y pulsa Retorno, o di «Ask Wunder» a Siri."
           }
         },
         "pt-BR" : {
@@ -7041,6 +7041,46 @@
         }
       }
     },
+    "展室設定" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room Settings"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展示室の設定"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전시실 설정"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes de la sala"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes da sala"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展室設定"
+          }
+        }
+      }
+    },
     "展室還是空的\n看到喜歡的東西，按 ⌘⇧C 收進來\n也可以把檔案、圖片、網址或文字拖到這裡" : {
       "localizations" : {
         "en" : {
@@ -7409,6 +7449,12 @@
             "value" : "Barragán Pink"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rosa Barragán"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7419,12 +7465,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "바라간 핑크"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rosa Barragán"
           }
         },
         "pt-BR" : {
@@ -8529,6 +8569,12 @@
             "value" : "Rams Orange"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naranja Rams"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8539,12 +8585,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "람스 오렌지"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Naranja Rams"
           }
         },
         "pt-BR" : {
@@ -11249,6 +11289,12 @@
             "value" : "Marks your selection, the space you’re in, and where things will drop."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marca la selección, el espacio en el que estás y dónde caerá lo que arrastras."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11259,12 +11305,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "선택한 항목, 지금 있는 공간, 놓을 위치를 표시합니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Marca la selección, el espacio en el que estás y dónde caerá lo que arrastras."
           }
         },
         "pt-BR" : {
@@ -12769,6 +12809,12 @@
             "value" : "Find pictures with a sentence, like “a cat at a dinner table”.\nThe model runs on this Mac, about 106 MB."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Busca imágenes con una frase, como «a cat at a dinner table».\nEl modelo funciona en este Mac y ocupa unos 106 MB."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12779,12 +12825,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "한 문장으로 그림을 찾습니다. 예: “a cat at a dinner table”\n모델은 이 Mac에서 실행되며 약 106 MB입니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Busca imágenes con una frase, como «a cat at a dinner table».\nEl modelo funciona en este Mac y ocupa unos 106 MB."
           }
         },
         "pt-BR" : {
@@ -12809,6 +12849,12 @@
             "value" : "Describe pictures in Chinese. Needs the system’s Chinese → English translation language."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Describe imágenes en chino. Requiere el idioma de traducción chino → inglés del sistema."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12819,12 +12865,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "중국어로 그림을 찾습니다. 시스템의 ‘중국어 → 영어’ 번역 언어가 필요합니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Describe imágenes en chino. Requiere el idioma de traducción chino → inglés del sistema."
           }
         },
         "pt-BR" : {
@@ -14969,6 +15009,12 @@
             "value" : "Monet Green"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verde Monet"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14979,12 +15025,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "모네 그린"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verde Monet"
           }
         },
         "pt-BR" : {
@@ -16449,6 +16489,12 @@
             "value" : "Pick an area or a window; the screenshot goes straight in."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige un área o una ventana; la captura entra directamente."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16459,12 +16505,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "영역이나 윈도우를 고르면 찍은 화면이 바로 들어옵니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elige un área o una ventana; la captura entra directamente."
           }
         },
         "pt-BR" : {
@@ -17889,6 +17929,12 @@
             "value" : "Hockney Blue"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azul Hockney"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17899,12 +17945,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "호크니 블루"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Azul Hockney"
           }
         },
         "pt-BR" : {
@@ -18369,6 +18409,12 @@
             "value" : "Matisse Red"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rojo Matisse"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18379,12 +18425,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "마티스 레드"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rojo Matisse"
           }
         },
         "pt-BR" : {
@@ -18409,6 +18449,12 @@
             "value" : "Iris Violet"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Violeta iris"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18419,12 +18465,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "아이리스 바이올렛"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Violeta iris"
           }
         },
         "pt-BR" : {
@@ -18609,6 +18649,12 @@
             "value" : "Click a shortcut, then press the new keys. Esc cancels, Delete restores the default.\nYou can also drag anything onto the arch in the menu bar."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haz clic en un atajo y pulsa las nuevas teclas.\nEsc cancela; Suprimir restaura el atajo predeterminado.\nTambién puedes arrastrar cualquier cosa al arco de la barra de menús."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18619,12 +18665,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "단축키를 클릭한 뒤 새 키 조합을 누르세요.\nEsc는 취소, Delete는 기본값 복원입니다.\n메뉴 막대의 아치로 무엇이든 끌어 놓을 수도 있습니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Haz clic en un atajo y pulsa las nuevas teclas.\nEsc cancela; Suprimir restaura el atajo predeterminado.\nTambién puedes arrastrar cualquier cosa al arco de la barra de menús."
           }
         },
         "pt-BR" : {

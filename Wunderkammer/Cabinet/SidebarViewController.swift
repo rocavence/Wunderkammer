@@ -12,6 +12,9 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     var onRandom: (() -> Void)?
     /// The 展室 card at the top: the window for switching, adding and removing 展室.
     var onManageCabinets: (() -> Void)?
+    /// The open 展室's settings (the button at the foot, left).
+    var onCabinetSettings: (() -> Void)?
+    private let roomSettings = NSButton()
     /// Which 展室 is open, shown on the card at the top.
     var cabinetName = String(localized: "展室") { didSet { if cabinetName != oldValue { reload() } } }
     var cabinetID: UUID? { didSet { if cabinetID != oldValue { coverIDs = [] ; reload() } } }
@@ -74,12 +77,20 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         add.isBordered = false
         add.toolTip = String(localized: "新增釘選版")
         add.contentTintColor = .secondaryLabelColor
+        // The open 展室's settings, at the other end of the foot.
+        roomSettings.image = Icon.image(.setting)
+        roomSettings.isBordered = false
+        roomSettings.toolTip = String(localized: "展室設定")
+        roomSettings.setAccessibilityLabel(String(localized: "展室設定"))
+        roomSettings.contentTintColor = .secondaryLabelColor
+        roomSettings.target = self
+        roomSettings.action = #selector(openCabinetSettings)
 
         header.target = self
         header.action = #selector(manageCabinets)
 
         let container = NSView()
-        for v in [header, scroll, add] as [NSView] {
+        for v in [header, scroll, add, roomSettings] as [NSView] {
             v.translatesAutoresizingMaskIntoConstraints = false
             container.addSubview(v)
         }
@@ -92,7 +103,9 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             scroll.leadingAnchor.constraint(equalTo: container.leadingAnchor),
             scroll.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             scroll.bottomAnchor.constraint(equalTo: add.topAnchor, constant: -6),
-            add.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 14),
+            roomSettings.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 14),
+            roomSettings.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -10),
+            add.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -14),
             add.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -10),
         ])
         view = container
@@ -503,6 +516,8 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     }
 
     @objc private func manageCabinets() { onManageCabinets?() }
+    @objc private func openCabinetSettings() { onCabinetSettings?() }
+    var cabinetSettingsButtonForTest: NSButton { roomSettings }
 
     @objc func newBoard(_ sender: Any?) {
         let n = library.collections.count + 1

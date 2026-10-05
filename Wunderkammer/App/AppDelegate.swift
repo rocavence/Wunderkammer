@@ -381,6 +381,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         sidebar.onSelect = { [weak self] base in self?.show(base: base) }
         sidebar.onRandom = { [weak self] in self?.showRandom() }
         sidebar.onManageCabinets = { [weak self] in self?.manageCabinets() }
+        sidebar.onCabinetSettings = { [weak self] in self?.cabinetSettings() }
         sidebar.cabinetName = cabinets.current.name
         sidebar.cabinetID = cabinets.currentID
         sidebar.coverPicture = cabinets.coverURL(cabinets.currentID)
@@ -1423,7 +1424,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private var cabinetsPanel: CabinetsPanel?
 
     /// The window for switching, adding, renaming and removing 展室 (a sheet).
-    func manageCabinets() {
+    func manageCabinets() { makeCabinetsPanel().present(on: window) }
+
+    /// The open 展室's own settings: name, cover, files, sync.
+    func cabinetSettings() { makeCabinetsPanel().presentSettings(of: cabinets.currentID, on: window) }
+
+    private func makeCabinetsPanel() -> CabinetsPanel {
         let panel = CabinetsPanel(cabinets: cabinets, count: { [weak self] entry in self?.itemCount(of: entry) ?? 0 },
                                   covers: { [weak self] entry in self?.coverURLs(of: entry) ?? [] },
                                   referenced: { [weak self] entry in self?.referencedCount(of: entry) ?? 0 })
@@ -1432,7 +1438,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         panel.onWillMove = { [weak self] id in self?.cabinetWillMove(id) }
         panel.onMoved = { [weak self] id in self?.cabinetMoved(id) }
         cabinetsPanel = panel
-        panel.present(on: window)
+        return panel
     }
 
     /// How many things a 展室 holds (the open one from memory, others from disk).
@@ -1544,6 +1550,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     var isSidebarCollapsed: Bool { sidebarItem.isCollapsed }
     func showSettingsTabForTest(_ tab: SettingsWindowController.Tab) { settings.showForTest(tab) }
     func flipCabinetForTest() { cabinetsPanel?.flipForTest(cabinets.currentID) }
+    func cabinetSettingsForTest() { sidebar.cabinetSettingsButtonForTest.performClick(nil) }
+    var cabinetSettingsShownForTest: Bool { cabinetsPanel?.settingsShownForTest ?? false }
     func collectDropForTest(_ pasteboard: NSPasteboard) -> Bool { capture.collectDrop(pasteboard) }
     func setCoverForTest(_ picture: URL?) -> Bool {
         defer { cabinetsChanged() }
