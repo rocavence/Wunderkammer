@@ -57,12 +57,12 @@ final class CanvasTips: NSView {
         head.spacing = 8
         let foot = NSStackView(views: [counter, NSView(), back, next])
         foot.spacing = 2
-        let body = NSStackView(views: [head, detail, foot])
+        let body = NSStackView(views: [head, detail])
         body.orientation = .vertical
         body.alignment = .leading
         body.spacing = 6
         body.edgeInsets = NSEdgeInsets(top: 12, left: 14, bottom: 8, right: 8)
-        for v in [glass, body] as [NSView] {
+        for v in [glass, body, foot] as [NSView] {
             v.translatesAutoresizingMaskIntoConstraints = false
             addSubview(v)
         }
@@ -79,7 +79,10 @@ final class CanvasTips: NSView {
             body.topAnchor.constraint(equalTo: topAnchor),
             body.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor),
             head.widthAnchor.constraint(equalTo: body.widthAnchor, constant: -22),
-            foot.widthAnchor.constraint(equalTo: body.widthAnchor, constant: -22),
+            // The counter and arrows keep their place at the foot, whatever the tip's length.
+            foot.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
+            foot.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
+            foot.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
             detail.widthAnchor.constraint(equalTo: body.widthAnchor, constant: -28),
             icon.widthAnchor.constraint(equalToConstant: 18),
             icon.heightAnchor.constraint(equalToConstant: 18),
