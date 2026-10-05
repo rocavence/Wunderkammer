@@ -12,6 +12,10 @@ final class SettingsWindowController: NSWindowController {
     var onRecording: ((Bool) -> Void)?
     var onSpotlightChanged: ((Bool) -> Void)?
     var semanticReady: () -> Bool = { false }
+    var update: () -> UpdateChecker.Release? = { nil }
+    var onCheckUpdate: (() -> Void)?
+    /// What the last check by hand found: nil not asked (or GitHub unreachable).
+    var updateResult: Bool?
     var semanticState: () -> ModelInstaller.State = { .idle }
     var onInstallSemantic: (() -> Void)?
 
@@ -263,11 +267,25 @@ final class SettingsWindowController: NSWindowController {
         let tagline = NSTextField(wrappingLabelWithString: String(localized: "收進來就好，不必整理。看到喜歡的東西就收，系統負責理解、搜尋與重新發現。"))
         tagline.font = .systemFont(ofSize: 13)
         tagline.textColor = .secondaryLabelColor
-        let stack = NSStackView(views: [icon, name, detail, tagline])
+        let updateRow = NSStackView()
+        updateRow.spacing = 10
+        if let release = update() {
+            updateRow.addArrangedSubview(PillButton(String(localized: "下載新版本 \(release.version)")) { NSWorkspace.shared.open(release.page) })
+        } else {
+            updateRow.addArrangedSubview(PillButton(String(localized: "檢查更新")) { [weak self] in self?.onCheckUpdate?() })
+            if updateResult == false {
+                let latest = NSTextField(labelWithString: String(localized: "已經是最新版本"))
+                latest.font = .systemFont(ofSize: 12)
+                latest.textColor = .secondaryLabelColor
+                updateRow.addArrangedSubview(latest)
+            }
+        }
+        let stack = NSStackView(views: [icon, name, detail, tagline, updateRow])
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = 6
         stack.setCustomSpacing(14, after: icon)
+        stack.setCustomSpacing(16, after: tagline)
         stack.edgeInsets = NSEdgeInsets(top: 12, left: 0, bottom: 0, right: 0)
         icon.widthAnchor.constraint(equalToConstant: 96).isActive = true
         icon.heightAnchor.constraint(equalToConstant: 96).isActive = true

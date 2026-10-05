@@ -109,6 +109,13 @@ struct RediscoveryTests {
         #expect(morning.count == 12 && morning == evening && morning != tomorrow)
     }
 
+    @Test func newerVersionsCompareByNumber() {
+        #expect(UpdateChecker.isNewer("0.10.0", than: "0.9.2"))
+        #expect(UpdateChecker.isNewer("1.0", than: "0.5.0"))
+        #expect(!UpdateChecker.isNewer("0.5.0", than: "0.5"))
+        #expect(!UpdateChecker.isNewer("0.4.9", than: "0.5.0"))
+    }
+
     @Test func onceFavouritesComeBackFirst() {
         let now = at(2026, 10, 4)
         let favourite = item(added: at(2025, 1, 1), viewed: at(2026, 6, 1), views: 12)

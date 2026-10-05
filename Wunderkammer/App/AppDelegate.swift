@@ -74,6 +74,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private var capture: CaptureController!
     private let answerBanner = AnswerBanner()
     private let modelInstaller = ModelInstaller()
+    private let updates = UpdateChecker()
+    private let updateItem = NSMenuItem(title: "", action: #selector(openUpdate), keyEquivalent: "")
     private let semanticOffer = SemanticOffer()
     private static let semanticOfferKey = "semanticOfferDismissed"
     private var trailView: TrailView!
@@ -115,10 +117,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         s.semanticState = { [weak self] in self?.modelInstaller.state ?? .idle }
         s.onInstallSemantic = { [weak self] in self?.installSemantic() }
         s.onEnableChinese = { [weak self] in self?.enableChineseDescriptions() }
+        s.update = { [weak self] in self?.updates.available }
+        s.onCheckUpdate = { [weak self] in
+            Task { @MainActor in
+                let found = await self?.updates.check()
+                self?.settings.updateResult = found
+                self?.settings.refresh()
+            }
+        }
         return s
     }()
 
     @objc private func showSettings() { settings.showWindow(nil) }
+
+    /// A newer version shows itself under 關於 Wunder, and in Settings → 關於.
+    private func updateChanged() {
+        updateItem.isHidden = updates.available == nil
+        updateItem.title = updates.available.map { String(localized: "下載新版本 \($0.version)…") } ?? ""
+        settings.refresh()
+    }
+
+    @objc private func openUpdate() {
+        NSWorkspace.shared.open(updates.available?.page ?? UpdateChecker.releases)
+    }
 
     func showSettingsForTest() -> NSWindow? {
         settings.showWindow(nil)
@@ -166,6 +187,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         // Copies and representations of items removed in an earlier session.
         library.purgeOrphans()
         if !SelfTest.isEnabled {
+            updates.onChange = { [weak self] in self?.updateChanged() }
+            updates.checkIfDue()
             library.archiveMissing()
             Task { await library.refreshWebData() }
             library.shrinkArchives()
@@ -1192,6 +1215,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         let appItem = NSMenuItem()
         let appMenu = NSMenu()
         appMenu.addItem(withTitle: String(localized: "關於 Wunder"), action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
+        updateItem.target = self
+        appMenu.addItem(updateItem)
+        updateChanged()
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: String(localized: "設定…"), action: #selector(showSettings), keyEquivalent: ",").target = self
         appMenu.addItem(.separator())

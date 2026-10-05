@@ -1929,6 +1929,12 @@
             "value" : "Keep “%@” on this Mac only?"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Guardar «%@» solo en este Mac?"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1939,12 +1945,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "‘%@’을(를) 이 Mac에만 두시겠습니까?"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Guardar «%@» solo en este Mac?"
           }
         },
         "pt-BR" : {
@@ -2517,6 +2517,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "下載「中文（繁體）→ 英文」的翻譯語言後，就能用中文描述搜尋，例如「坐在餐桌前的貓」。翻譯在這台 Mac 上完成。"
+          }
+        }
+      }
+    },
+    "下載新版本 %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download Version %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新しいバージョン %@ をダウンロード"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새 버전 %@ 다운로드"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descargar la versión %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baixar a versão %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載新版本 %@"
+          }
+        }
+      }
+    },
+    "下載新版本 %@…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download Version %@…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新しいバージョン %@ をダウンロード…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새 버전 %@ 다운로드…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descargar la versión %@…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baixar a versão %@…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載新版本 %@…"
           }
         }
       }
@@ -4489,6 +4569,12 @@
             "value" : "Join “%@” from iCloud"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unirse a «%@» desde iCloud"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4499,12 +4585,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "iCloud의 ‘%@’ 참여"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unirse a «%@» desde iCloud"
           }
         },
         "pt-BR" : {
@@ -4889,6 +4969,12 @@
             "value" : "Sync"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronización"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4899,12 +4985,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "동기화"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sincronización"
           }
         },
         "pt-BR" : {
@@ -5729,6 +5809,12 @@
             "value" : "Sync “%@” with iCloud?"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Sincronizar «%@» con iCloud?"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5739,12 +5825,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "‘%@’을(를) iCloud로 동기화하시겠습니까?"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Sincronizar «%@» con iCloud?"
           }
         },
         "pt-BR" : {
@@ -5809,6 +5889,12 @@
             "value" : "Sync this room between the Macs signed in to your Apple Account."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincroniza esta sala entre los Mac con tu misma cuenta de Apple."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5819,12 +5905,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "같은 Apple 계정으로 로그인한 Mac 사이에서 이 전시실을 동기화합니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sincroniza esta sala entre los Mac con tu misma cuenta de Apple."
           }
         },
         "pt-BR" : {
@@ -5849,6 +5929,12 @@
             "value" : "Made on another Mac · Click to join"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creada en otro Mac · Haz clic para unirte"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5859,12 +5945,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "다른 Mac에서 만듦 · 클릭하여 참여"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Creada en otro Mac · Haz clic para unirte"
           }
         },
         "pt-BR" : {
@@ -6289,6 +6369,12 @@
             "value" : "It stays in iCloud Drive and your other Macs keep using it. You can join it again later from Rooms."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sigue en iCloud Drive y tus otros Mac la usan igual. Puedes volver a unirte desde Salas."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6299,12 +6385,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "iCloud Drive에 그대로 남아 다른 Mac에서는 계속 쓸 수 있어요. 나중에 전시실에서 다시 참여할 수 있습니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sigue en iCloud Drive y tus otros Mac la usan igual. Puedes volver a unirte desde Salas."
           }
         },
         "pt-BR" : {
@@ -6609,6 +6689,12 @@
             "value" : "The room moves out of iCloud Drive back to this Mac, and your other Macs won’t see it anymore."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sala sale de iCloud Drive y vuelve a este Mac; tus otros Mac ya no la verán."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6619,12 +6705,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "전시실이 iCloud Drive에서 이 Mac으로 돌아오며, 다른 Mac에서는 더 이상 보이지 않습니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La sala sale de iCloud Drive y vuelve a este Mac; tus otros Mac ya no la verán."
           }
         },
         "pt-BR" : {
@@ -6649,6 +6729,12 @@
             "value" : "The room moves to the Wunder folder in iCloud Drive, and any Mac signed in to your Apple Account can open it."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sala se mueve a la carpeta Wunder de iCloud Drive y cualquier Mac con tu cuenta de Apple puede abrirla."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6659,12 +6745,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "전시실이 iCloud Drive의 Wunder 폴더로 옮겨지며, 같은 Apple 계정의 Mac이면 어디서든 열 수 있습니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La sala se mueve a la carpeta Wunder de iCloud Drive y cualquier Mac con tu cuenta de Apple puede abrirla."
           }
         },
         "pt-BR" : {
@@ -7041,6 +7121,46 @@
         }
       }
     },
+    "已經是最新版本" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You’re up to date"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最新バージョンです"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최신 버전입니다"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tienes la última versión"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Você está na versão mais recente"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已經是最新版本"
+          }
+        }
+      }
+    },
     "建立於" : {
       "localizations" : {
         "en" : {
@@ -7329,6 +7449,12 @@
             "value" : "Remove from This Mac"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar de este Mac"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7339,12 +7465,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "이 Mac에서 제거"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quitar de este Mac"
           }
         },
         "pt-BR" : {
@@ -7369,6 +7489,12 @@
             "value" : "Remove “%@” from this Mac?"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Quitar «%@» de este Mac?"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7379,12 +7505,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "이 Mac에서 ‘%@’을(를) 제거하시겠습니까?"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Quitar «%@» de este Mac?"
           }
         },
         "pt-BR" : {
@@ -8849,6 +8969,12 @@
             "value" : "Move Back to This Mac"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volver a este Mac"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8859,12 +8985,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "이 Mac으로 옮기기"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Volver a este Mac"
           }
         },
         "pt-BR" : {
@@ -10881,6 +11001,46 @@
         }
       }
     },
+    "檢查更新" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check for Updates"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデートを確認"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 확인"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar actualizaciones"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verificar atualizações"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢查更新"
+          }
+        }
+      }
+    },
     "正在下載… %lld%%" : {
       "localizations" : {
         "en" : {
@@ -11289,6 +11449,12 @@
             "value" : "Couldn’t move the room"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo mover la sala"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11299,12 +11465,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "옮기지 못했습니다"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo mover la sala"
           }
         },
         "pt-BR" : {
@@ -12289,6 +12449,12 @@
             "value" : "Files that stay where they are won’t move: other Macs see their thumbnails, and the originals open on this Mac."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los archivos que se quedan en su sitio no se mueven: otros Mac ven las miniaturas y los originales se abren en este Mac."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12299,12 +12465,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "원래 위치에 있는 파일은 옮겨지지 않아요. 다른 Mac에서는 썸네일이 보이고, 원본은 이 Mac에서 열 수 있습니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Los archivos que se quedan en su sitio no se mueven: otros Mac ven las miniaturas y los originales se abren en este Mac."
           }
         },
         "pt-BR" : {
@@ -15209,6 +15369,12 @@
             "value" : "iCloud Drive is off on this Mac. Turn it on in System Settings → Apple Account → iCloud to sync between your Macs."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud Drive está desactivado en este Mac. Actívalo en Ajustes del Sistema → Cuenta de Apple → iCloud para sincronizar tus Mac."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15219,12 +15385,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "이 Mac에서 iCloud Drive가 꺼져 있습니다. ‘시스템 설정 → Apple 계정 → iCloud’에서 켜면 Mac 간에 동기화할 수 있어요."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "iCloud Drive está desactivado en este Mac. Actívalo en Ajustes del Sistema → Cuenta de Apple → iCloud para sincronizar tus Mac."
           }
         },
         "pt-BR" : {
@@ -16409,6 +16569,12 @@
             "value" : "Start Syncing"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar a sincronizar"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16419,12 +16585,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "동기화 시작"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Empezar a sincronizar"
           }
         },
         "pt-BR" : {
