@@ -15,6 +15,7 @@
 <link rel="icon" href="{{root}}assets/favicon.png">
 <link rel="apple-touch-icon" href="{{root}}assets/icon.png">
 {{alternates}}
+<link rel="preload" href="{{root}}assets/wall.json" as="fetch" crossorigin>
 <link rel="stylesheet" href="{{root}}style.css">
 <script>
   (function () {
@@ -25,48 +26,63 @@
 {{redirect}}
   })();
 </script>
+<script src="{{root}}app.js" defer></script>
 </head>
 <body>
 <nav class="nav" aria-label="{{nav_label}}">
-  <ul>
+  <ul class="links">
     <li><a class="home" href="#top">{{name}}</a></li>
     <li class="wide"><a href="#how">{{nav_how}}</a></li>
     <li class="wide"><a href="#faq">{{nav_faq}}</a></li>
     <li><a class="get" href="#download">{{nav_get}}</a></li>
-    <li>
-      <details class="menu">
-        <summary aria-label="{{language_label}}" title="{{language_label}}">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2.2 2.3 3.2 4.8 3.2 7.5s-1 5.2-3.2 7.5M10 2.5C7.8 4.8 6.8 7.3 6.8 10s1 5.2 3.2 7.5"/></svg>
-          <span>{{short}}</span>
-        </summary>
-        <ul>
-{{languages}}
-        </ul>
-      </details>
-    </li>
-    <li>
-      <button class="theme" type="button" aria-label="{{theme_label}}" title="{{theme_label}}"
-              data-auto="{{theme_auto}}" data-light="{{theme_light}}" data-dark="{{theme_dark}}">
-        <svg class="i-auto" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 3a7 7 0 0 1 0 14z" class="fill"/></svg>
-        <svg class="i-light" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M10 1.8v2M10 16.2v2M1.8 10h2M16.2 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4"/></svg>
-        <svg class="i-dark" viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 12.2A7 7 0 0 1 7.8 3.5a7 7 0 1 0 8.7 8.7z"/></svg>
-      </button>
-    </li>
   </ul>
+  <div class="tools">
+    <details class="menu">
+      <summary aria-label="{{language_label}}" title="{{language_label}}">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2.2 2.3 3.2 4.8 3.2 7.5s-1 5.2-3.2 7.5M10 2.5C7.8 4.8 6.8 7.3 6.8 10s1 5.2 3.2 7.5"/></svg>
+        <span>{{short}}</span>
+      </summary>
+      <ul>
+{{languages}}
+      </ul>
+    </details>
+    <button class="theme" type="button" aria-label="{{theme_auto}}" title="{{theme_auto}}"
+            data-auto="{{theme_auto}}" data-light="{{theme_light}}" data-dark="{{theme_dark}}">
+      <svg class="i-auto" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 3a7 7 0 0 1 0 14z" class="fill"/></svg>
+      <svg class="i-light" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M10 1.8v2M10 16.2v2M1.8 10h2M16.2 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4"/></svg>
+      <svg class="i-dark" viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 12.2A7 7 0 0 1 7.8 3.5a7 7 0 1 0 8.7 8.7z"/></svg>
+    </button>
+  </div>
 </nav>
 
 <main id="top">
-  <section class="hero">
-    <h1>{{h1}}</h1>
-    <p class="lede">{{lede}}</p>
-    <a class="cta" id="download" href="https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip">
-      <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 16.5V8a5 5 0 0 1 10 0v8.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-      {{cta}}
-    </a>
-    <p class="fine">{{fine}} · <a href="#open">{{fine_open}}</a></p>
+  <section class="stage" aria-label="{{tab_wander}}">
+    <div class="stage-pin">
+      <div class="wall" data-root="{{root}}" title="{{hint}}">
+        <div class="wall-track"></div>
+      </div>
+      <div class="chrome" aria-hidden="true">
+        <div class="c-side">
+          <div class="c-lights"><i></i><i></i><i></i></div>
+          <div class="c-room"><img src="{{root}}assets/wall/02.jpg" alt=""><span><b>{{room}}</b><small>44</small></span></div>
+          <ul>
+{{side_items}}
+          </ul>
+        </div>
+        <div class="c-tabs"><span>{{tab_collection}}</span><span class="on">{{tab_wander}}</span><span>{{tab_space}}</span></div>
+      </div>
+      <div class="hero">
+        <h1>{{h1}}</h1>
+        <p class="lede">{{lede}}</p>
+        <a class="cta" id="download" href="https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip">
+          <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 16.5V8a5 5 0 0 1 10 0v8.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          {{cta}}
+        </a>
+        <p class="fine">{{fine}} · <a href="#open">{{fine_open}}</a></p>
+      </div>
+      <p class="cue" aria-hidden="true"><span>{{hint}}</span></p>
+    </div>
   </section>
-
-  <div class="window shot-hero rise">{{shot_collection}}</div>
 
   <section class="section rise">
     <p class="label"><span class="n">1</span>{{s1_label}}</p>
@@ -89,6 +105,7 @@
     <ol class="steps">
 {{steps}}
     </ol>
+    <p class="try">{{try_collect}}</p>
   </section>
 
   <section class="section rise">
@@ -98,9 +115,42 @@
     </ul>
   </section>
 
-  <div class="features">
-{{features}}
-  </div>
+  <section class="kinds">
+    <p class="kicker rise">{{kinds_kicker}}</p>
+    <h3 class="rise">{{kinds_title}}</h3>
+    <ul>
+{{kinds}}
+    </ul>
+  </section>
+
+  <section class="rooms">
+    <p class="kicker rise">{{rooms_kicker}}</p>
+    <h3 class="rise">{{rooms_title}}</h3>
+    <p class="rooms-p rise">{{rooms_p}}</p>
+    <ul>
+{{rooms_cards}}
+    </ul>
+  </section>
+
+  <section class="finder rise" data-queries="{{finder_queries}}" data-found="{{finder_found}}">
+    <p class="kicker">{{finder_kicker}}</p>
+    <h3>{{finder_title}}</h3>
+    <div class="f-search" aria-hidden="true">
+      <svg viewBox="0 0 20 20"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l4 4"/></svg>
+      <span class="f-query"></span><span class="f-caret"></span>
+      <span class="f-count"></span>
+    </div>
+    <div class="f-grid" aria-hidden="true"></div>
+  </section>
+
+  <section class="story">
+    <div class="story-steps">
+{{story_steps}}
+    </div>
+    <div class="story-view window" data-active="0" aria-hidden="true">
+{{story_shots}}
+    </div>
+  </section>
 
   <p class="big rise">{{big}}</p>
 
@@ -138,36 +188,19 @@
   <span>{{footer_pictures}}</span>
 </footer>
 
-<script>
-  const io = new IntersectionObserver((entries) => {
-    for (const e of entries) if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
-  }, { rootMargin: "0px 0px -8% 0px" });
-  document.querySelectorAll(".rise").forEach((el) => io.observe(el));
+<div class="preview" hidden role="dialog" aria-modal="true" aria-label="{{preview_label}}">
+  <img alt="">
+  <div class="p-caption">
+    <p class="p-title"></p>
+    <p class="p-meta"></p>
+    <a class="p-link" target="_blank" rel="noopener">{{preview_source}}</a>
+  </div>
+  <button class="p-close" type="button">{{preview_close}}</button>
+</div>
 
-  // Follow the system, then light, then dark, and remember the choice.
-  const root = document.documentElement, toggle = document.querySelector(".theme");
-  const order = ["auto", "light", "dark"];
-  const current = () => root.dataset.theme || "auto";
-  const label = () => {
-    const text = toggle.dataset[current()];
-    toggle.setAttribute("aria-label", text);
-    toggle.title = text;
-  };
-  label();
-  toggle.addEventListener("click", () => {
-    const next = order[(order.indexOf(current()) + 1) % order.length];
-    if (next === "auto") delete root.dataset.theme; else root.dataset.theme = next;
-    try { next === "auto" ? localStorage.removeItem("theme") : localStorage.setItem("theme", next); } catch (e) {}
-    label();
-  });
-
-  // A language picked by hand is kept, so the home page stops guessing.
-  document.querySelectorAll(".menu a[hreflang]").forEach((a) => a.addEventListener("click", () => {
-    try { localStorage.setItem("lang", a.getAttribute("hreflang")); } catch (e) {}
-  }));
-  const menu = document.querySelector(".menu");
-  document.addEventListener("click", (e) => { if (menu.open && !menu.contains(e.target)) menu.open = false; });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") menu.open = false; });
-</script>
+<div class="toast" role="status" aria-live="polite">
+  <img alt="">
+  <div><b>{{toast_title}}</b><span class="t-title"></span></div>
+</div>
 </body>
 </html>

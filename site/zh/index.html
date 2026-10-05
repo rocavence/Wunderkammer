@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Wunder：Mac 上的珍奇室</title>
-<meta name="description" content="什麼都能收，什麼都不用整理。Wunder 收下圖片、網頁、文字和檔案，在你的 Mac 上看懂它們，在你忘記的時候再拿回來給你。">
+<meta name="description" content="什麼都能放，什麼都不用整理。Wunder 收下圖片、網頁、文字和檔案，在你的 Mac 上看懂它們，在你忘記的時候再拿回來給你。">
 <meta name="theme-color" content="#f4f2ee" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)">
 <meta property="og:title" content="Wunder：Mac 上的珍奇室">
-<meta property="og:description" content="什麼都能收，什麼都不用整理。">
+<meta property="og:description" content="什麼都能放，什麼都不用整理。">
 <meta property="og:image" content="https://wunder.rocavence.com/assets/og.png">
 <meta property="og:url" content="https://wunder.rocavence.com/zh/">
 <meta name="twitter:card" content="summary_large_image">
@@ -21,6 +21,7 @@
 <link rel="alternate" hreflang="es" href="https://wunder.rocavence.com/es/">
 <link rel="alternate" hreflang="pt-BR" href="https://wunder.rocavence.com/pt/">
 <link rel="alternate" hreflang="x-default" href="https://wunder.rocavence.com/">
+<link rel="preload" href="../assets/wall.json" as="fetch" crossorigin>
 <link rel="stylesheet" href="../style.css">
 <script>
   (function () {
@@ -31,53 +32,73 @@
 
   })();
 </script>
+<script src="../app.js" defer></script>
 </head>
 <body>
 <nav class="nav" aria-label="主選單">
-  <ul>
+  <ul class="links">
     <li><a class="home" href="#top">Wunder</a></li>
     <li class="wide"><a href="#how">怎麼用</a></li>
     <li class="wide"><a href="#faq">常見問題</a></li>
     <li><a class="get" href="#download">下載</a></li>
-    <li>
-      <details class="menu">
-        <summary aria-label="語言" title="語言">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2.2 2.3 3.2 4.8 3.2 7.5s-1 5.2-3.2 7.5M10 2.5C7.8 4.8 6.8 7.3 6.8 10s1 5.2 3.2 7.5"/></svg>
-          <span>中</span>
-        </summary>
-        <ul>
+  </ul>
+  <div class="tools">
+    <details class="menu">
+      <summary aria-label="語言" title="語言">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2.2 2.3 3.2 4.8 3.2 7.5s-1 5.2-3.2 7.5M10 2.5C7.8 4.8 6.8 7.3 6.8 10s1 5.2 3.2 7.5"/></svg>
+        <span>中</span>
+      </summary>
+      <ul>
           <li><a href="../" hreflang="en" lang="en">English</a></li>
           <li><a href="../zh/" hreflang="zh-Hant" lang="zh-Hant" aria-current="page">繁體中文</a></li>
           <li><a href="../ja/" hreflang="ja" lang="ja">日本語</a></li>
           <li><a href="../ko/" hreflang="ko" lang="ko">한국어</a></li>
           <li><a href="../es/" hreflang="es" lang="es">Español</a></li>
           <li><a href="../pt/" hreflang="pt-BR" lang="pt-BR">Português</a></li>
-        </ul>
-      </details>
-    </li>
-    <li>
-      <button class="theme" type="button" aria-label="外觀：跟隨系統" title="外觀：跟隨系統"
-              data-auto="外觀：跟隨系統" data-light="外觀：淺色" data-dark="外觀：深色">
-        <svg class="i-auto" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 3a7 7 0 0 1 0 14z" class="fill"/></svg>
-        <svg class="i-light" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M10 1.8v2M10 16.2v2M1.8 10h2M16.2 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4"/></svg>
-        <svg class="i-dark" viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 12.2A7 7 0 0 1 7.8 3.5a7 7 0 1 0 8.7 8.7z"/></svg>
-      </button>
-    </li>
-  </ul>
+      </ul>
+    </details>
+    <button class="theme" type="button" aria-label="外觀：跟隨系統" title="外觀：跟隨系統"
+            data-auto="外觀：跟隨系統" data-light="外觀：淺色" data-dark="外觀：深色">
+      <svg class="i-auto" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 3a7 7 0 0 1 0 14z" class="fill"/></svg>
+      <svg class="i-light" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M10 1.8v2M10 16.2v2M1.8 10h2M16.2 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4"/></svg>
+      <svg class="i-dark" viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 12.2A7 7 0 0 1 7.8 3.5a7 7 0 1 0 8.7 8.7z"/></svg>
+    </button>
+  </div>
 </nav>
 
 <main id="top">
-  <section class="hero">
-    <h1><img src="../assets/icon.png" alt="" width="96" height="96"> <span>Wunder<span class="dot">.</span></span></h1>
-    <p class="lede">你 Mac 上的珍奇室。<b>什麼都能收</b>，什麼都不用整理。</p>
-    <a class="cta" id="download" href="https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip">
-      <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 16.5V8a5 5 0 0 1 10 0v8.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-      下載 Mac 版
-    </a>
-    <p class="fine">免費 · 4 MB · macOS 14 以上 · <a href="#open">第一次打不開？</a></p>
+  <section class="stage" aria-label="漫遊">
+    <div class="stage-pin">
+      <div class="wall" data-root="../" title="拖曳漫遊 · 點一下看仔細">
+        <div class="wall-track"></div>
+      </div>
+      <div class="chrome" aria-hidden="true">
+        <div class="c-side">
+          <div class="c-lights"><i></i><i></i><i></i></div>
+          <div class="c-room"><img src="../assets/wall/02.jpg" alt=""><span><b>展室</b><small>44</small></span></div>
+          <ul>
+            <li><svg viewBox="0 0 16 16"><path d="M2.5 2.5h4.5v4.5h-4.5zM9 2.5h4.5v4.5h-4.5zM2.5 9h4.5v4.5h-4.5zM9 9h4.5v4.5h-4.5z"/></svg>全部</li>
+            <li class="on"><svg viewBox="0 0 16 16"><path d="M8 5.2a2.8 2.8 0 1 1 0 5.6a2.8 2.8 0 1 1 0-5.6M8 1.5v1.4M8 13.1v1.4M1.5 8h1.4M13.1 8h1.4M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1"/></svg>今天的推薦</li>
+            <li><svg viewBox="0 0 16 16"><path d="M2.5 4h11v9.5h-11zM2.5 7h11M5.5 2.2v3M10.5 2.2v3"/></svg>過去的今天</li>
+            <li><svg viewBox="0 0 16 16"><path d="M8 2.5a5.5 5.5 0 1 1-5.2 3.7M2.5 2.5v3.6h3.6M8 5.2v3l2 1.4"/></svg>被遺忘的</li>
+            <li><svg viewBox="0 0 16 16"><path d="M4 13.5a1.6 1.6 0 1 1 0-3.2a1.6 1.6 0 1 1 0 3.2M12 5.7a1.6 1.6 0 1 1 0-3.2a1.6 1.6 0 1 1 0 3.2M5.3 11.2c3-1 2.4-4.4 5.4-5.4"/></svg>足跡</li>
+            <li><svg viewBox="0 0 16 16"><path d="M2 4.5h2.5c2.5 0 4.5 7 7 7h2.5M2 11.5h2.5c1.2 0 2.2-1.5 3-3M10.5 6c.8-1 1.4-1.5 2-1.5h1.5M12.5 2.8l1.7 1.7-1.7 1.7M12.5 9.8l1.7 1.7-1.7 1.7"/></svg>隨機一件</li>
+          </ul>
+        </div>
+        <div class="c-tabs"><span>收藏</span><span class="on">漫遊</span><span>工作台</span></div>
+      </div>
+      <div class="hero">
+        <h1><img src="../assets/icon.png" alt="" width="96" height="96"> <span>Wunder<span class="dot">.</span></span></h1>
+        <p class="lede">你 Mac 上的珍奇室。<b>什麼都能放</b>，什麼都不用整理。</p>
+        <a class="cta" id="download" href="https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip">
+          <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 16.5V8a5 5 0 0 1 10 0v8.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          下載 Mac 版
+        </a>
+        <p class="fine">免費 · 4 MB · macOS 14 以上 · <a href="#open">第一次打不開？</a></p>
+      </div>
+      <p class="cue" aria-hidden="true"><span>拖曳漫遊 · 點一下看仔細</span></p>
+    </div>
   </section>
-
-  <div class="window shot-hero rise"><img class="shot-light" src="../assets/zh-collection-light.jpg" width="1600" height="1025" alt="Wunder 以格狀排出博物館收藏，側欄依格式、主題與顏色自動分好。"><img class="shot-dark" src="../assets/zh-collection-dark.jpg" width="1600" height="1025" loading="lazy" alt="Wunder 以格狀排出博物館收藏，側欄依格式、主題與顏色自動分好。"></div>
 
   <section class="section rise">
     <p class="label"><span class="n">1</span>這是什麼</p>
@@ -100,10 +121,11 @@
   <section class="section rise" id="how">
     <p class="label"><span class="n">3</span>怎麼用</p>
     <ol class="steps">
-      <li>看到喜歡的，按 <kbd>⌘⇧C</kbd>。</li>
+      <li>看到喜歡的，按 <button class="collect" type="button">⌘⇧C</button>。</li>
       <li>或是把任何東西拖到選單列的拱門上。</li>
       <li>之後用內容找回來，或等 Wunder 自己拿給你看。</li>
     </ol>
+    <p class="try">在這裡試試：按 <kbd>⌘⇧C</kbd>，或點上面的按鍵。</p>
   </section>
 
   <section class="section rise">
@@ -121,32 +143,71 @@
     </ul>
   </section>
 
-  <div class="features">
-    <article class="feature rise">
-      <header>
+  <section class="kinds">
+    <p class="kicker rise">能放什麼</p>
+    <h3 class="rise">放什麼都行。</h3>
+    <ul>
+      <li class="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4.5h18v15H3zM3 15.5l5-5 4 4 3-3 6 6M15.5 9.2a1.6 1.6 0 1 0 0-.1"/></svg><b>圖片</b><p>網頁上、相機裡、硬碟裡的都可以，圖裡的字也搜得到。</p><span><i>JPEG</i><i>PNG</i><i>HEIC</i><i>WebP</i><i>GIF</i><i>TIFF</i><i>RAW</i><i>PSD</i></span></li>
+      <li class="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5h13v13H3zM16 10l5-3v10l-5-3"/></svg><b>影片</b><p>滑鼠停在上面，就在原地播放。</p><span><i>MOV</i><i>MP4</i><i>M4V</i></span></li>
+      <li class="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4M7.5 7v10M11 4v16M14.5 8v8M18 10.5v3"/></svg><b>聲音</b><p>畫成一條能播放的波形。</p><span><i>MP3</i><i>M4A</i><i>WAV</i><i>AIFF</i><i>FLAC</i></span></li>
+      <li class="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2.5h8l4.5 4.5v14.5H6zM14 2.5V7h4.5M8.8 12h6.4M8.8 15.5h6.4M8.8 19h4"/></svg><b>PDF</b><p>每一頁的字都搜得到。</p><span><i>PDF</i></span></li>
+      <li class="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M3 12h18M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9M12 3C9.4 5.6 8.2 8.6 8.2 12s1.2 6.4 3.8 9"/></svg><b>網頁</b><p>任何連結都行，還會存一份整頁副本，網站關了也看得到。認得出書、電影、音樂、商品和地點。</p><span><i>URL</i></span></li>
+      <li class="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14M5 10h14M5 14h10M5 18h7"/></svg><b>文字與摘句</b><p>拷貝的文字變成卡片，記得是從哪裡來的。</p><span><i>TXT</i><i>RTF</i><i>HTML</i></span></li>
+      <li class="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8V4h4M17 4h4v4M21 16v4h-4M7 20H3v-4M9 9h6v6H9z"/></svg><b>截圖</b><p>選一塊範圍或一個視窗，就收好了。</p><span><i>⌃⌘⇧C</i></span></li>
+      <li class="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 2.5h9l4 4v15h-13zM14.5 2.5v4h4"/></svg><b>其他任何檔案</b><p>保留它自己的預覽，用原本的 app 打開。</p><span><i>Keynote</i><i>Figma</i><i>ZIP</i><i>…</i></span></li>
+    </ul>
+  </section>
+
+  <section class="rooms">
+    <p class="kicker rise">展室</p>
+    <h3 class="rise">每個專案，一個展室。</h3>
+    <p class="rooms-p rise">依照專案、情境或心情開不同的展室。每個展室有自己的收藏、封面和資料夾，也能用 iCloud 在你的 Mac 之間同步。</p>
+    <ul>
+      <li class="rise on"><div class="cover"><img src="../assets/wall/14.jpg" alt="" loading="lazy"><img src="../assets/wall/34.jpg" alt="" loading="lazy"><img src="../assets/wall/35.jpg" alt="" loading="lazy"><img src="../assets/wall/01.jpg" alt="" loading="lazy"><span><em class="now">目前</em></span></div><b>咖啡店品牌改版</b><small>128 件收藏</small></li>
+      <li class="rise"><div class="cover"><img src="../assets/wall/24.jpg" alt="" loading="lazy"><img src="../assets/wall/27.jpg" alt="" loading="lazy"><img src="../assets/wall/28.jpg" alt="" loading="lazy"><img src="../assets/wall/00.jpg" alt="" loading="lazy"><span><em>iCloud</em></span></div><b>論文參考資料</b><small>86 件收藏</small></li>
+      <li class="rise"><div class="cover"><img src="../assets/wall/07.jpg" alt="" loading="lazy"><img src="../assets/wall/08.jpg" alt="" loading="lazy"><img src="../assets/wall/10.jpg" alt="" loading="lazy"><img src="../assets/wall/12.jpg" alt="" loading="lazy"><span></span></div><b>喜歡的東西</b><small>412 件收藏</small></li>
+      <li class="rise"><div class="cover"><img src="../assets/wall/26.jpg" alt="" loading="lazy"><img src="../assets/wall/39.jpg" alt="" loading="lazy"><img src="../assets/wall/43.jpg" alt="" loading="lazy"><img src="../assets/wall/06.jpg" alt="" loading="lazy"><span></span></div><b>京都旅行</b><small>57 件收藏</small></li>
+    </ul>
+  </section>
+
+  <section class="finder rise" data-queries="[[&quot;一隻鳥&quot;, &quot;bird&quot;], [&quot;蝴蝶&quot;, &quot;butterfly&quot;], [&quot;橘色的東西&quot;, &quot;color:orange&quot;], [&quot;茶壺&quot;, &quot;teapot&quot;], [&quot;月亮&quot;, &quot;moon&quot;], [&quot;花&quot;, &quot;flower&quot;]]" data-found="找到 {n} 件">
+    <p class="kicker">搜尋</p>
+    <h3>用說的，就找得到。</h3>
+    <div class="f-search" aria-hidden="true">
+      <svg viewBox="0 0 20 20"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l4 4"/></svg>
+      <span class="f-query"></span><span class="f-caret"></span>
+      <span class="f-count"></span>
+    </div>
+    <div class="f-grid" aria-hidden="true"></div>
+  </section>
+
+  <section class="story">
+    <div class="story-steps">
+      <article class="story-step">
         <span class="kicker">收藏</span>
         <h3>一眼看完全部。</h3>
         <p>格狀、瀑布、時間軸都能看。側欄自己長出格式、分類、主題和顏色。</p>
-      </header>
-      <div class="window"><img class="shot-light" src="../assets/zh-inspector-light.jpg" width="1600" height="1025" loading="lazy" alt="選取一件雕像，側邊寫著 Wunder 看到的內容和相關收藏。"><img class="shot-dark" src="../assets/zh-inspector-dark.jpg" width="1600" height="1025" loading="lazy" alt="選取一件雕像，側邊寫著 Wunder 看到的內容和相關收藏。"></div>
-    </article>
-    <article class="feature rise">
-      <header>
+        <div class="window story-inline"><img class="shot-light" src="../assets/zh-inspector-light.jpg" width="1600" height="1025" loading="lazy" alt="選取一件雕像，側邊寫著 Wunder 看到的內容和相關收藏。"><img class="shot-dark" src="../assets/zh-inspector-dark.jpg" width="1600" height="1025" loading="lazy" alt="選取一件雕像，側邊寫著 Wunder 看到的內容和相關收藏。"></div>
+      </article>
+      <article class="story-step">
         <span class="kicker">漫遊</span>
         <h3>隨意逛，再遇見一次。</h3>
         <p>一面會自己慢慢漂的牆。「今天的推薦」每天挑十二件你快忘了的，還告訴你為什麼。</p>
-      </header>
-      <div class="window"><img class="shot-light" src="../assets/zh-wander-light.jpg" width="1600" height="1025" loading="lazy" alt="一面可以隨意漫遊的收藏牆。"><img class="shot-dark" src="../assets/zh-wander-dark.jpg" width="1600" height="1025" loading="lazy" alt="一面可以隨意漫遊的收藏牆。"></div>
-    </article>
-    <article class="feature rise">
-      <header>
+        <div class="window story-inline"><img class="shot-light" src="../assets/zh-wander-light.jpg" width="1600" height="1025" loading="lazy" alt="一面可以隨意漫遊的收藏牆。"><img class="shot-dark" src="../assets/zh-wander-dark.jpg" width="1600" height="1025" loading="lazy" alt="一面可以隨意漫遊的收藏牆。"></div>
+      </article>
+      <article class="story-step">
         <span class="kicker">工作台</span>
         <h3>拿來想事情的桌面。</h3>
         <p>依格式、分類、主題或顏色分堆，拖來拖去、畫線連起來，存三種排法隨時回來。</p>
-      </header>
-      <div class="window"><img class="shot-light" src="../assets/zh-workbench-light.jpg" width="1600" height="1025" loading="lazy" alt="收藏在畫布上分成有名字的幾堆，中間有一條連線。"><img class="shot-dark" src="../assets/zh-workbench-dark.jpg" width="1600" height="1025" loading="lazy" alt="收藏在畫布上分成有名字的幾堆，中間有一條連線。"></div>
-    </article>
-  </div>
+        <div class="window story-inline"><img class="shot-light" src="../assets/zh-workbench-light.jpg" width="1600" height="1025" loading="lazy" alt="收藏在畫布上分成有名字的幾堆，中間有一條連線。"><img class="shot-dark" src="../assets/zh-workbench-dark.jpg" width="1600" height="1025" loading="lazy" alt="收藏在畫布上分成有名字的幾堆，中間有一條連線。"></div>
+      </article>
+    </div>
+    <div class="story-view window" data-active="0" aria-hidden="true">
+      <div class="s-shot" data-i="0"><img class="shot-light" src="../assets/zh-inspector-light.jpg" width="1600" height="1025" loading="lazy" alt="選取一件雕像，側邊寫著 Wunder 看到的內容和相關收藏。"><img class="shot-dark" src="../assets/zh-inspector-dark.jpg" width="1600" height="1025" loading="lazy" alt="選取一件雕像，側邊寫著 Wunder 看到的內容和相關收藏。"></div>
+      <div class="s-shot" data-i="1"><img class="shot-light" src="../assets/zh-wander-light.jpg" width="1600" height="1025" loading="lazy" alt="一面可以隨意漫遊的收藏牆。"><img class="shot-dark" src="../assets/zh-wander-dark.jpg" width="1600" height="1025" loading="lazy" alt="一面可以隨意漫遊的收藏牆。"></div>
+      <div class="s-shot" data-i="2"><img class="shot-light" src="../assets/zh-workbench-light.jpg" width="1600" height="1025" loading="lazy" alt="收藏在畫布上分成有名字的幾堆，中間有一條連線。"><img class="shot-dark" src="../assets/zh-workbench-dark.jpg" width="1600" height="1025" loading="lazy" alt="收藏在畫布上分成有名字的幾堆，中間有一條連線。"></div>
+    </div>
+  </section>
 
   <p class="big rise">留下那些<em>吸引你</em>的東西。</p>
 
@@ -157,7 +218,7 @@
       </thead>
       <tbody>
         <tr><td>價格</td><td class="us"><b>免費</b></td><td>US$39</td><td>US$29.95</td></tr>
-        <tr><td>自己分類，不用設資料夾或標籤</td><td class="us yes">✓</td><td class="no">–</td><td class="no">要設規則</td></tr>
+        <tr><td>自動分類，不用你煩惱資料夾或標籤</td><td class="us yes">✓</td><td class="no">–</td><td class="no">要設規則</td></tr>
         <tr><td>用一句話描述就找到圖</td><td class="us yes">✓</td><td class="no">–</td><td class="yes">✓</td></tr>
         <tr><td>每天把舊東西帶回來</td><td class="us yes">✓</td><td class="no">–</td><td class="no">–</td></tr>
         <tr><td>可以自由擺放的畫布</td><td class="us yes">✓</td><td class="yes">✓</td><td class="no">–</td></tr>
@@ -217,36 +278,19 @@
   <span>圖片：<a href="https://www.clevelandart.org/open-access">克里夫蘭美術館</a>，CC0</span>
 </footer>
 
-<script>
-  const io = new IntersectionObserver((entries) => {
-    for (const e of entries) if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
-  }, { rootMargin: "0px 0px -8% 0px" });
-  document.querySelectorAll(".rise").forEach((el) => io.observe(el));
+<div class="preview" hidden role="dialog" aria-modal="true" aria-label="仔細看">
+  <img alt="">
+  <div class="p-caption">
+    <p class="p-title"></p>
+    <p class="p-meta"></p>
+    <a class="p-link" target="_blank" rel="noopener">到美術館看原件 ↗</a>
+  </div>
+  <button class="p-close" type="button">關閉</button>
+</div>
 
-  // Follow the system, then light, then dark, and remember the choice.
-  const root = document.documentElement, toggle = document.querySelector(".theme");
-  const order = ["auto", "light", "dark"];
-  const current = () => root.dataset.theme || "auto";
-  const label = () => {
-    const text = toggle.dataset[current()];
-    toggle.setAttribute("aria-label", text);
-    toggle.title = text;
-  };
-  label();
-  toggle.addEventListener("click", () => {
-    const next = order[(order.indexOf(current()) + 1) % order.length];
-    if (next === "auto") delete root.dataset.theme; else root.dataset.theme = next;
-    try { next === "auto" ? localStorage.removeItem("theme") : localStorage.setItem("theme", next); } catch (e) {}
-    label();
-  });
-
-  // A language picked by hand is kept, so the home page stops guessing.
-  document.querySelectorAll(".menu a[hreflang]").forEach((a) => a.addEventListener("click", () => {
-    try { localStorage.setItem("lang", a.getAttribute("hreflang")); } catch (e) {}
-  }));
-  const menu = document.querySelector(".menu");
-  document.addEventListener("click", (e) => { if (menu.open && !menu.contains(e.target)) menu.open = false; });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") menu.open = false; });
-</script>
+<div class="toast" role="status" aria-live="polite">
+  <img alt="">
+  <div><b>已收藏</b><span class="t-title"></span></div>
+</div>
 </body>
 </html>

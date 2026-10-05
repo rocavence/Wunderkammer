@@ -2,7 +2,7 @@
 
 <h1 align="center">Wunder</h1>
 
-<p align="center"><b>Mac 上的珍奇室。什麼都能收，什麼都不用整理。</b><br>
+<p align="center"><b>Mac 上的珍奇室。什麼都能放，什麼都不用整理。</b><br>
 <a href="https://wunder.rocavence.com/zh/">wunder.rocavence.com</a> · <a href="README.md">English</a></p>
 
 ![Wunder](site/assets/zh-collection-light.jpg)

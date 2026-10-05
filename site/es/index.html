@@ -21,6 +21,7 @@
 <link rel="alternate" hreflang="es" href="https://wunder.rocavence.com/es/">
 <link rel="alternate" hreflang="pt-BR" href="https://wunder.rocavence.com/pt/">
 <link rel="alternate" hreflang="x-default" href="https://wunder.rocavence.com/">
+<link rel="preload" href="../assets/wall.json" as="fetch" crossorigin>
 <link rel="stylesheet" href="../style.css">
 <script>
   (function () {
@@ -31,53 +32,73 @@
 
   })();
 </script>
+<script src="../app.js" defer></script>
 </head>
 <body>
 <nav class="nav" aria-label="Principal">
-  <ul>
+  <ul class="links">
     <li><a class="home" href="#top">Wunder</a></li>
     <li class="wide"><a href="#how">cómo funciona</a></li>
     <li class="wide"><a href="#faq">preguntas</a></li>
     <li><a class="get" href="#download">descargar</a></li>
-    <li>
-      <details class="menu">
-        <summary aria-label="Idioma" title="Idioma">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2.2 2.3 3.2 4.8 3.2 7.5s-1 5.2-3.2 7.5M10 2.5C7.8 4.8 6.8 7.3 6.8 10s1 5.2 3.2 7.5"/></svg>
-          <span>ES</span>
-        </summary>
-        <ul>
+  </ul>
+  <div class="tools">
+    <details class="menu">
+      <summary aria-label="Idioma" title="Idioma">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2.2 2.3 3.2 4.8 3.2 7.5s-1 5.2-3.2 7.5M10 2.5C7.8 4.8 6.8 7.3 6.8 10s1 5.2 3.2 7.5"/></svg>
+        <span>ES</span>
+      </summary>
+      <ul>
           <li><a href="../" hreflang="en" lang="en">English</a></li>
           <li><a href="../zh/" hreflang="zh-Hant" lang="zh-Hant">繁體中文</a></li>
           <li><a href="../ja/" hreflang="ja" lang="ja">日本語</a></li>
           <li><a href="../ko/" hreflang="ko" lang="ko">한국어</a></li>
           <li><a href="../es/" hreflang="es" lang="es" aria-current="page">Español</a></li>
           <li><a href="../pt/" hreflang="pt-BR" lang="pt-BR">Português</a></li>
-        </ul>
-      </details>
-    </li>
-    <li>
-      <button class="theme" type="button" aria-label="Aspecto: como el sistema" title="Aspecto: como el sistema"
-              data-auto="Aspecto: como el sistema" data-light="Aspecto: claro" data-dark="Aspecto: oscuro">
-        <svg class="i-auto" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 3a7 7 0 0 1 0 14z" class="fill"/></svg>
-        <svg class="i-light" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M10 1.8v2M10 16.2v2M1.8 10h2M16.2 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4"/></svg>
-        <svg class="i-dark" viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 12.2A7 7 0 0 1 7.8 3.5a7 7 0 1 0 8.7 8.7z"/></svg>
-      </button>
-    </li>
-  </ul>
+      </ul>
+    </details>
+    <button class="theme" type="button" aria-label="Aspecto: como el sistema" title="Aspecto: como el sistema"
+            data-auto="Aspecto: como el sistema" data-light="Aspecto: claro" data-dark="Aspecto: oscuro">
+      <svg class="i-auto" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 3a7 7 0 0 1 0 14z" class="fill"/></svg>
+      <svg class="i-light" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M10 1.8v2M10 16.2v2M1.8 10h2M16.2 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4"/></svg>
+      <svg class="i-dark" viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 12.2A7 7 0 0 1 7.8 3.5a7 7 0 1 0 8.7 8.7z"/></svg>
+    </button>
+  </div>
 </nav>
 
 <main id="top">
-  <section class="hero">
-    <h1><img src="../assets/icon.png" alt="" width="96" height="96"> <span>Wunder<span class="dot">.</span></span></h1>
-    <p class="lede">Un gabinete de curiosidades para tu Mac. <b>Guarda</b> cualquier cosa, no <b>organices</b> nada.</p>
-    <a class="cta" id="download" href="https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip">
-      <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 16.5V8a5 5 0 0 1 10 0v8.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-      Descargar para Mac
-    </a>
-    <p class="fine">Gratis · 4 MB · macOS 14 o posterior · <a href="#open">¿Es la primera vez que lo abres?</a></p>
+  <section class="stage" aria-label="Deambular">
+    <div class="stage-pin">
+      <div class="wall" data-root="../" title="arrastra para pasear · haz clic para ver de cerca">
+        <div class="wall-track"></div>
+      </div>
+      <div class="chrome" aria-hidden="true">
+        <div class="c-side">
+          <div class="c-lights"><i></i><i></i><i></i></div>
+          <div class="c-room"><img src="../assets/wall/02.jpg" alt=""><span><b>Sala</b><small>44</small></span></div>
+          <ul>
+            <li><svg viewBox="0 0 16 16"><path d="M2.5 2.5h4.5v4.5h-4.5zM9 2.5h4.5v4.5h-4.5zM2.5 9h4.5v4.5h-4.5zM9 9h4.5v4.5h-4.5z"/></svg>Todo</li>
+            <li class="on"><svg viewBox="0 0 16 16"><path d="M8 5.2a2.8 2.8 0 1 1 0 5.6a2.8 2.8 0 1 1 0-5.6M8 1.5v1.4M8 13.1v1.4M1.5 8h1.4M13.1 8h1.4M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1"/></svg>Para hoy</li>
+            <li><svg viewBox="0 0 16 16"><path d="M2.5 4h11v9.5h-11zM2.5 7h11M5.5 2.2v3M10.5 2.2v3"/></svg>Un día como hoy</li>
+            <li><svg viewBox="0 0 16 16"><path d="M8 2.5a5.5 5.5 0 1 1-5.2 3.7M2.5 2.5v3.6h3.6M8 5.2v3l2 1.4"/></svg>Olvidados</li>
+            <li><svg viewBox="0 0 16 16"><path d="M4 13.5a1.6 1.6 0 1 1 0-3.2a1.6 1.6 0 1 1 0 3.2M12 5.7a1.6 1.6 0 1 1 0-3.2a1.6 1.6 0 1 1 0 3.2M5.3 11.2c3-1 2.4-4.4 5.4-5.4"/></svg>Rastro</li>
+            <li><svg viewBox="0 0 16 16"><path d="M2 4.5h2.5c2.5 0 4.5 7 7 7h2.5M2 11.5h2.5c1.2 0 2.2-1.5 3-3M10.5 6c.8-1 1.4-1.5 2-1.5h1.5M12.5 2.8l1.7 1.7-1.7 1.7M12.5 9.8l1.7 1.7-1.7 1.7"/></svg>Elemento al azar</li>
+          </ul>
+        </div>
+        <div class="c-tabs"><span>Colección</span><span class="on">Deambular</span><span>Mesa de trabajo</span></div>
+      </div>
+      <div class="hero">
+        <h1><img src="../assets/icon.png" alt="" width="96" height="96"> <span>Wunder<span class="dot">.</span></span></h1>
+        <p class="lede">Un gabinete de curiosidades para tu Mac. <b>Guarda</b> cualquier cosa, no <b>organices</b> nada.</p>
+        <a class="cta" id="download" href="https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip">
+          <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 16.5V8a5 5 0 0 1 10 0v8.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          Descargar para Mac
+        </a>
+        <p class="fine">Gratis · 4 MB · macOS 14 o posterior · <a href="#open">¿Es la primera vez que lo abres?</a></p>
+      </div>
+      <p class="cue" aria-hidden="true"><span>arrastra para pasear · haz clic para ver de cerca</span></p>
+    </div>
   </section>
-
-  <div class="window shot-hero rise"><img class="shot-light" src="../assets/es-collection-light.jpg" width="1600" height="1025" alt="Wunder muestra una colección de objetos de museo en cuadrícula, con la barra lateral ordenada por formatos, temas y colores."><img class="shot-dark" src="../assets/es-collection-dark.jpg" width="1600" height="1025" loading="lazy" alt="Wunder muestra una colección de objetos de museo en cuadrícula, con la barra lateral ordenada por formatos, temas y colores."></div>
 
   <section class="section rise">
     <p class="label"><span class="n">1</span>Qué es</p>
@@ -100,10 +121,11 @@
   <section class="section rise" id="how">
     <p class="label"><span class="n">3</span>Cómo funciona</p>
     <ol class="steps">
-      <li>Ves algo que te gusta. Pulsas <kbd>⌘⇧C</kbd>.</li>
+      <li>Ves algo que te gusta. Pulsas <button class="collect" type="button">⌘⇧C</button>.</li>
       <li>O arrastras lo que sea al arco de la barra de menús.</li>
       <li>Más tarde lo encuentras por su contenido, o dejas que Wunder te lo traiga.</li>
     </ol>
+    <p class="try">Pruébalo aquí: pulsa <kbd>⌘⇧C</kbd> o haz clic en la tecla de arriba.</p>
   </section>
 
   <section class="section rise">
@@ -121,32 +143,71 @@
     </ul>
   </section>
 
-  <div class="features">
-    <article class="feature rise">
-      <header>
+  <section class="kinds">
+    <p class="kicker rise">Qué cabe</p>
+    <h3 class="rise">¿Qué puedes guardar? Lo que sea.</h3>
+    <ul>
+      <li class="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4.5h18v15H3zM3 15.5l5-5 4 4 3-3 6 6M15.5 9.2a1.6 1.6 0 1 0 0-.1"/></svg><b>Imágenes</b><p>De la web, de la cámara o del disco. El texto que contienen se puede buscar.</p><span><i>JPEG</i><i>PNG</i><i>HEIC</i><i>WebP</i><i>GIF</i><i>TIFF</i><i>RAW</i><i>PSD</i></span></li>
+      <li class="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5h13v13H3zM16 10l5-3v10l-5-3"/></svg><b>Vídeo</b><p>Se reproduce en su sitio al pasar el puntero.</p><span><i>MOV</i><i>MP4</i><i>M4V</i></span></li>
+      <li class="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4M7.5 7v10M11 4v16M14.5 8v8M18 10.5v3"/></svg><b>Sonido</b><p>Se muestra como una onda que puedes reproducir.</p><span><i>MP3</i><i>M4A</i><i>WAV</i><i>AIFF</i><i>FLAC</i></span></li>
+      <li class="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2.5h8l4.5 4.5v14.5H6zM14 2.5V7h4.5M8.8 12h6.4M8.8 15.5h6.4M8.8 19h4"/></svg><b>PDF</b><p>El texto de cada página se puede buscar.</p><span><i>PDF</i></span></li>
+      <li class="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M3 12h18M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9M12 3C9.4 5.6 8.2 8.6 8.2 12s1.2 6.4 3.8 9"/></svg><b>Páginas web</b><p>Cualquier enlace, con una copia de la página entera para que siga ahí aunque la web desaparezca. Reconoce libros, películas, música, productos y lugares.</p><span><i>URL</i></span></li>
+      <li class="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14M5 10h14M5 14h10M5 18h7"/></svg><b>Textos y citas</b><p>Las palabras copiadas se convierten en tarjetas que recuerdan de dónde vienen.</p><span><i>TXT</i><i>RTF</i><i>HTML</i></span></li>
+      <li class="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8V4h4M17 4h4v4M21 16v4h-4M7 20H3v-4M9 9h6v6H9z"/></svg><b>Capturas</b><p>Elige una zona o una ventana, y ya está.</p><span><i>⌃⌘⇧C</i></span></li>
+      <li class="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 2.5h9l4 4v15h-13zM14.5 2.5v4h4"/></svg><b>Cualquier otro archivo</b><p>Con su propia vista previa, y se abre en su app.</p><span><i>Keynote</i><i>Figma</i><i>ZIP</i><i>…</i></span></li>
+    </ul>
+  </section>
+
+  <section class="rooms">
+    <p class="kicker rise">Salas</p>
+    <h3 class="rise">Una sala para cada proyecto.</h3>
+    <p class="rooms-p rise">Abre una sala para cada proyecto, cliente o estado de ánimo. Cada una tiene su colección, su portada y sus carpetas, y se sincroniza entre tus Mac con iCloud.</p>
+    <ul>
+      <li class="rise on"><div class="cover"><img src="../assets/wall/14.jpg" alt="" loading="lazy"><img src="../assets/wall/34.jpg" alt="" loading="lazy"><img src="../assets/wall/35.jpg" alt="" loading="lazy"><img src="../assets/wall/01.jpg" alt="" loading="lazy"><span><em class="now">Actual</em></span></div><b>Rediseño de la cafetería</b><small>128 elementos</small></li>
+      <li class="rise"><div class="cover"><img src="../assets/wall/24.jpg" alt="" loading="lazy"><img src="../assets/wall/27.jpg" alt="" loading="lazy"><img src="../assets/wall/28.jpg" alt="" loading="lazy"><img src="../assets/wall/00.jpg" alt="" loading="lazy"><span><em>iCloud</em></span></div><b>Referencias de la tesis</b><small>86 elementos</small></li>
+      <li class="rise"><div class="cover"><img src="../assets/wall/07.jpg" alt="" loading="lazy"><img src="../assets/wall/08.jpg" alt="" loading="lazy"><img src="../assets/wall/10.jpg" alt="" loading="lazy"><img src="../assets/wall/12.jpg" alt="" loading="lazy"><span></span></div><b>Cosas que me encantan</b><small>412 elementos</small></li>
+      <li class="rise"><div class="cover"><img src="../assets/wall/26.jpg" alt="" loading="lazy"><img src="../assets/wall/39.jpg" alt="" loading="lazy"><img src="../assets/wall/43.jpg" alt="" loading="lazy"><img src="../assets/wall/06.jpg" alt="" loading="lazy"><span></span></div><b>Viaje a Kioto</b><small>57 elementos</small></li>
+    </ul>
+  </section>
+
+  <section class="finder rise" data-queries="[[&quot;un pájaro&quot;, &quot;bird&quot;], [&quot;mariposas&quot;, &quot;butterfly&quot;], [&quot;algo naranja&quot;, &quot;color:orange&quot;], [&quot;una tetera&quot;, &quot;teapot&quot;], [&quot;la luna&quot;, &quot;moon&quot;], [&quot;flores&quot;, &quot;flower&quot;]]" data-found="{n} encontrados">
+    <p class="kicker">Búsqueda</p>
+    <h3>Descríbelo, y ahí está.</h3>
+    <div class="f-search" aria-hidden="true">
+      <svg viewBox="0 0 20 20"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l4 4"/></svg>
+      <span class="f-query"></span><span class="f-caret"></span>
+      <span class="f-count"></span>
+    </div>
+    <div class="f-grid" aria-hidden="true"></div>
+  </section>
+
+  <section class="story">
+    <div class="story-steps">
+      <article class="story-step">
         <span class="kicker">Colección</span>
         <h3>Todo, de un vistazo.</h3>
         <p>Recórrela en cuadrícula, en mosaico o en línea de tiempo. La barra lateral se llena sola con formatos, tipos, temas y colores.</p>
-      </header>
-      <div class="window"><img class="shot-light" src="../assets/es-inspector-light.jpg" width="1600" height="1025" loading="lazy" alt="Una escultura seleccionada, con lo que Wunder ha visto en ella y piezas relacionadas en el panel lateral."><img class="shot-dark" src="../assets/es-inspector-dark.jpg" width="1600" height="1025" loading="lazy" alt="Una escultura seleccionada, con lo que Wunder ha visto en ella y piezas relacionadas en el panel lateral."></div>
-    </article>
-    <article class="feature rise">
-      <header>
-        <span class="kicker">Wunder</span>
+        <div class="window story-inline"><img class="shot-light" src="../assets/es-inspector-light.jpg" width="1600" height="1025" loading="lazy" alt="Una escultura seleccionada, con lo que Wunder ha visto en ella y piezas relacionadas en el panel lateral."><img class="shot-dark" src="../assets/es-inspector-dark.jpg" width="1600" height="1025" loading="lazy" alt="Una escultura seleccionada, con lo que Wunder ha visto en ella y piezas relacionadas en el panel lateral."></div>
+      </article>
+      <article class="story-step">
+        <span class="kicker">Deambular</span>
         <h3>Pasea y vuelve a encontrarlo.</h3>
         <p>Una pared que se desliza sola. «Para hoy» elige cada día doce cosas que habías olvidado, y te dice por qué.</p>
-      </header>
-      <div class="window"><img class="shot-light" src="../assets/es-wander-light.jpg" width="1600" height="1025" loading="lazy" alt="Una pared infinita de piezas guardadas para pasear entre ellas."><img class="shot-dark" src="../assets/es-wander-dark.jpg" width="1600" height="1025" loading="lazy" alt="Una pared infinita de piezas guardadas para pasear entre ellas."></div>
-    </article>
-    <article class="feature rise">
-      <header>
-        <span class="kicker">Espacio</span>
+        <div class="window story-inline"><img class="shot-light" src="../assets/es-wander-light.jpg" width="1600" height="1025" loading="lazy" alt="Una pared infinita de piezas guardadas para pasear entre ellas."><img class="shot-dark" src="../assets/es-wander-dark.jpg" width="1600" height="1025" loading="lazy" alt="Una pared infinita de piezas guardadas para pasear entre ellas."></div>
+      </article>
+      <article class="story-step">
+        <span class="kicker">Mesa de trabajo</span>
         <h3>Un banco de trabajo para pensar.</h3>
         <p>Agrupa por formato, tipo, tema o color. Mueve las cosas, traza líneas entre ellas y guarda tres disposiciones a las que volver.</p>
-      </header>
-      <div class="window"><img class="shot-light" src="../assets/es-workbench-light.jpg" width="1600" height="1025" loading="lazy" alt="Piezas ordenadas en montones con nombre sobre un lienzo, unidas por una línea."><img class="shot-dark" src="../assets/es-workbench-dark.jpg" width="1600" height="1025" loading="lazy" alt="Piezas ordenadas en montones con nombre sobre un lienzo, unidas por una línea."></div>
-    </article>
-  </div>
+        <div class="window story-inline"><img class="shot-light" src="../assets/es-workbench-light.jpg" width="1600" height="1025" loading="lazy" alt="Piezas ordenadas en montones con nombre sobre un lienzo, unidas por una línea."><img class="shot-dark" src="../assets/es-workbench-dark.jpg" width="1600" height="1025" loading="lazy" alt="Piezas ordenadas en montones con nombre sobre un lienzo, unidas por una línea."></div>
+      </article>
+    </div>
+    <div class="story-view window" data-active="0" aria-hidden="true">
+      <div class="s-shot" data-i="0"><img class="shot-light" src="../assets/es-inspector-light.jpg" width="1600" height="1025" loading="lazy" alt="Una escultura seleccionada, con lo que Wunder ha visto en ella y piezas relacionadas en el panel lateral."><img class="shot-dark" src="../assets/es-inspector-dark.jpg" width="1600" height="1025" loading="lazy" alt="Una escultura seleccionada, con lo que Wunder ha visto en ella y piezas relacionadas en el panel lateral."></div>
+      <div class="s-shot" data-i="1"><img class="shot-light" src="../assets/es-wander-light.jpg" width="1600" height="1025" loading="lazy" alt="Una pared infinita de piezas guardadas para pasear entre ellas."><img class="shot-dark" src="../assets/es-wander-dark.jpg" width="1600" height="1025" loading="lazy" alt="Una pared infinita de piezas guardadas para pasear entre ellas."></div>
+      <div class="s-shot" data-i="2"><img class="shot-light" src="../assets/es-workbench-light.jpg" width="1600" height="1025" loading="lazy" alt="Piezas ordenadas en montones con nombre sobre un lienzo, unidas por una línea."><img class="shot-dark" src="../assets/es-workbench-dark.jpg" width="1600" height="1025" loading="lazy" alt="Piezas ordenadas en montones con nombre sobre un lienzo, unidas por una línea."></div>
+    </div>
+  </section>
 
   <p class="big rise">Guarda lo que te <em>llama</em> la atención.</p>
 
@@ -217,36 +278,19 @@
   <span>Imágenes: <a href="https://www.clevelandart.org/open-access">Cleveland Museum of Art</a>, CC0</span>
 </footer>
 
-<script>
-  const io = new IntersectionObserver((entries) => {
-    for (const e of entries) if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
-  }, { rootMargin: "0px 0px -8% 0px" });
-  document.querySelectorAll(".rise").forEach((el) => io.observe(el));
+<div class="preview" hidden role="dialog" aria-modal="true" aria-label="Vista de cerca">
+  <img alt="">
+  <div class="p-caption">
+    <p class="p-title"></p>
+    <p class="p-meta"></p>
+    <a class="p-link" target="_blank" rel="noopener">verlo en el museo ↗</a>
+  </div>
+  <button class="p-close" type="button">cerrar</button>
+</div>
 
-  // Follow the system, then light, then dark, and remember the choice.
-  const root = document.documentElement, toggle = document.querySelector(".theme");
-  const order = ["auto", "light", "dark"];
-  const current = () => root.dataset.theme || "auto";
-  const label = () => {
-    const text = toggle.dataset[current()];
-    toggle.setAttribute("aria-label", text);
-    toggle.title = text;
-  };
-  label();
-  toggle.addEventListener("click", () => {
-    const next = order[(order.indexOf(current()) + 1) % order.length];
-    if (next === "auto") delete root.dataset.theme; else root.dataset.theme = next;
-    try { next === "auto" ? localStorage.removeItem("theme") : localStorage.setItem("theme", next); } catch (e) {}
-    label();
-  });
-
-  // A language picked by hand is kept, so the home page stops guessing.
-  document.querySelectorAll(".menu a[hreflang]").forEach((a) => a.addEventListener("click", () => {
-    try { localStorage.setItem("lang", a.getAttribute("hreflang")); } catch (e) {}
-  }));
-  const menu = document.querySelector(".menu");
-  document.addEventListener("click", (e) => { if (menu.open && !menu.contains(e.target)) menu.open = false; });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") menu.open = false; });
-</script>
+<div class="toast" role="status" aria-live="polite">
+  <img alt="">
+  <div><b>Guardado</b><span class="t-title"></span></div>
+</div>
 </body>
 </html>
