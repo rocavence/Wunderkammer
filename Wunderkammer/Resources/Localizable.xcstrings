@@ -3521,46 +3521,6 @@
         }
       }
     },
-    "例如「a cat at a dinner table」，用本機的 MobileCLIP 模型（約 106 MB）" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Like “a cat at a dinner table”, with the MobileCLIP model on this Mac (about 106 MB)"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Por ejemplo, “a cat at a dinner table”, con el modelo MobileCLIP en este Mac (unos 106 MB)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "例：「a cat at a dinner table」。この Mac の MobileCLIP モデルを使用（約 106 MB）"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "예: “a cat at a dinner table”. 이 Mac의 MobileCLIP 모델 사용(약 106MB)"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Por exemplo, “a cat at a dinner table”, com o modelo MobileCLIP neste Mac (cerca de 106 MB)"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "例如「a cat at a dinner table」，用本機的 MobileCLIP 模型（約 106 MB）"
-          }
-        }
-      }
-    },
     "依主題分堆" : {
       "localizations" : {
         "en" : {
@@ -3921,6 +3881,46 @@
         }
       }
     },
+    "先收剛拷貝的東西，沒有就收瀏覽器正在看的頁面。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saves what you just copied, or else the page open in your browser."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーしたばかりのものを、なければブラウザで開いているページを収集します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "방금 복사한 것을, 없으면 브라우저에서 보고 있는 페이지를 담습니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guarda lo que acabas de copiar o, si no hay nada, la página abierta en el navegador."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guarda o que você acabou de copiar ou, se não houver nada, a página aberta no navegador."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "先收剛拷貝的東西，沒有就收瀏覽器正在看的頁面。"
+          }
+        }
+      }
+    },
     "先複製圖片、網址或文字，再按 ⌘⇧C" : {
       "localizations" : {
         "en" : {
@@ -3957,6 +3957,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "先複製圖片、網址或文字，再按 ⌘⇧C"
+          }
+        }
+      }
+    },
+    "克萊因藍" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klein Blue"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クライン・ブルー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "클랭 블루"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azul Klein"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azul Klein"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "克萊因藍"
           }
         }
       }
@@ -4197,46 +4237,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "再試一次"
-          }
-        }
-      }
-    },
-    "冰川藍" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Glacier"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "グレイシャー"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "글레이셔"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Glaciar"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Glacial"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "冰川藍"
           }
         }
       }
@@ -4641,46 +4641,6 @@
         }
       }
     },
-    "剛拷貝的東西優先；沒有的話，收瀏覽器正在看的頁面" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "What you just copied comes first. If there's nothing, the page open in your browser is collected"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Primero lo que acabas de copiar; si no hay nada, la página abierta en el navegador"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "コピーしたばかりのものを優先し、なければブラウザで表示中のページを追加します"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "방금 복사한 항목을 우선 수집하고, 없으면 브라우저에서 보고 있는 페이지를 수집합니다"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Primeiro o que você acabou de copiar; se não houver nada, a página aberta no navegador"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "剛拷貝的東西優先；沒有的話，收瀏覽器正在看的頁面"
-          }
-        }
-      }
-    },
     "剪下" : {
       "localizations" : {
         "en" : {
@@ -5041,82 +5001,42 @@
         }
       }
     },
-    "只放標題、網站與主題，不放文字內容" : {
+    "只放標題、網站與主題，不放文字內容。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Only titles, sites and themes, no text content"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Solo títulos, sitios y temas, sin el texto"
+            "value" : "Only titles, sites, and themes, never the text inside."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "タイトル、サイト、テーマのみを含め、本文は含めません"
+            "value" : "タイトル、サイト、テーマだけ。本文は入れません。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "제목, 사이트, 테마만 포함하며 텍스트 내용은 포함하지 않음"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Somente título, site e temas, sem o conteúdo do texto"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "只放標題、網站與主題，不放文字內容"
-          }
-        }
-      }
-    },
-    "只用在選中與作用中的東西：所在的空間、選取、拖放的目標。可以跟隨系統，或在這裡另外指定。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Used only for selected and active things: the current space, selections and drop targets. Follow the system, or choose one here."
+            "value" : "제목, 사이트, 주제만 담고 본문은 넣지 않습니다."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Solo se usa en lo seleccionado y activo: el espacio actual, las selecciones y los destinos al soltar. Sigue al sistema o elige uno aquí."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "選択中・作業中のものだけに使われます：今いるスペース、選択、ドロップ先。システムに合わせるか、ここで指定できます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "선택되거나 활성화된 것에만 쓰입니다: 현재 공간, 선택 항목, 놓을 위치. 시스템을 따르거나 여기서 따로 지정할 수 있습니다."
+            "value" : "Solo títulos, sitios y temas, nunca el texto."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Usada só no que está selecionado e ativo: o espaço atual, as seleções e os destinos ao soltar. Siga o sistema ou escolha uma aqui."
+            "value" : "Só títulos, sites e temas, nunca o texto."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "只用在選中與作用中的東西：所在的空間、選取、拖放的目標。可以跟隨系統，或在這裡另外指定。"
+            "value" : "只放標題、網站與主題，不放文字內容。"
           }
         }
       }
@@ -5686,31 +5606,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recognizing text, objects, similarity and names in images all happens on this Mac. Nothing is uploaded."
+            "value" : "Text, objects, similar pictures, and names are all recognized on this Mac.\nNothing is uploaded."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El reconocimiento de texto, objetos, similitudes y nombres en las imágenes se hace en este Mac. No se sube nada."
+            "value" : "El texto, los objetos, las semejanzas y los nombres se reconocen en este Mac.\nNo se sube nada."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "画像内のテキスト、物体、類似度、名前の認識はすべてこのMac上で行われ、何もアップロードされません。"
+            "value" : "画像内の文字、物体、類似度、名前の認識はすべてこの Mac 上で行います。\n何もアップロードされません。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이미지 속 텍스트, 사물, 유사도 및 이름 인식은 모두 이 Mac에서 처리되며 어떤 내용도 업로드되지 않습니다."
+            "value" : "이미지 속 텍스트, 사물, 유사도, 이름 인식은 모두 이 Mac에서 처리됩니다.\n아무것도 업로드되지 않습니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O reconhecimento de texto, objetos, semelhanças e nomes nas imagens é feito neste Mac. Nada é enviado."
+            "value" : "Texto, objetos, semelhanças e nomes são reconhecidos neste Mac.\nNada é enviado."
           }
         },
         "zh-Hant" : {
@@ -6281,42 +6201,42 @@
         }
       }
     },
-    "在搜尋框輸入問句後按 Return，或對 Siri 說 Ask Wunder" : {
+    "在搜尋框輸入問句後按 Return，或對 Siri 說「Ask Wunder」。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Type a question in the search field and press Return, or say “Ask Wunder” to Siri"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Escribe una pregunta en el campo de búsqueda y pulsa Return, o dile a Siri “Ask Wunder”"
+            "value" : "Type a question in the search field and press Return, or say “Ask Wunder” to Siri."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "検索フィールドに質問を入力して Return を押すか、Siri に「Ask Wunder」と話しかけます"
+            "value" : "検索欄に質問を入力して Return、または Siri に「Ask Wunder」と話しかけます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "검색 필드에 질문을 입력하고 Return을 누르거나 Siri에게 ‘Ask Wunder’라고 말하십시오"
+            "value" : "검색창에 질문을 입력하고 Return을 누르거나 Siri에게 “Ask Wunder”라고 말하세요."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe una pregunta en el buscador y pulsa Retorno, o di «Ask Wunder» a Siri."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Digite uma pergunta no campo de busca e pressione Return, ou diga “Ask Wunder” à Siri"
+            "value" : "Digite uma pergunta na busca e pressione Return, ou diga “Ask Wunder” à Siri."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在搜尋框輸入問句後按 Return，或對 Siri 說 Ask Wunder"
+            "value" : "在搜尋框輸入問句後按 Return，或對 Siri 說「Ask Wunder」。"
           }
         }
       }
@@ -7481,6 +7401,46 @@
         }
       }
     },
+    "巴拉岡粉" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Barragán Pink"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バラガン・ピンク"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "바라간 핑크"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rosa Barragán"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rosa Barragán"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "巴拉岡粉"
+          }
+        }
+      }
+    },
     "建立於" : {
       "localizations" : {
         "en" : {
@@ -8557,6 +8517,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "把東西拖進這個視窗"
+          }
+        }
+      }
+    },
+    "拉姆斯橘" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rams Orange"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ラムス・オレンジ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "람스 오렌지"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naranja Rams"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laranja Rams"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拉姆斯橘"
           }
         }
       }
@@ -11241,6 +11241,46 @@
         }
       }
     },
+    "標示選取、所在的空間與拖放的目標。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marks your selection, the space you’re in, and where things will drop."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択中のもの、いまいる空間、ドロップ先を示します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택한 항목, 지금 있는 공간, 놓을 위치를 표시합니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marca la selección, el espacio en el que estás y dónde caerá lo que arrastras."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marca a seleção, o espaço em que você está e onde o item vai cair."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "標示選取、所在的空間與拖放的目標。"
+          }
+        }
+      }
+    },
     "橙" : {
       "localizations" : {
         "en" : {
@@ -12721,82 +12761,82 @@
         }
       }
     },
-    "玫瑰色" : {
+    "用一句話找圖，例如「a cat at a dinner table」。\n模型在這台 Mac 上執行，約 106 MB。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rose"
+            "value" : "Find pictures with a sentence, like “a cat at a dinner table”.\nThe model runs on this Mac, about 106 MB."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ローズ"
+            "value" : "ひと言で画像を探せます。例：「a cat at a dinner table」\nモデルはこの Mac 上で動きます（約 106 MB）。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "로즈"
+            "value" : "한 문장으로 그림을 찾습니다. 예: “a cat at a dinner table”\n모델은 이 Mac에서 실행되며 약 106 MB입니다."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rosa"
+            "value" : "Busca imágenes con una frase, como «a cat at a dinner table».\nEl modelo funciona en este Mac y ocupa unos 106 MB."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rosa"
+            "value" : "Encontre imagens com uma frase, como “a cat at a dinner table”.\nO modelo roda neste Mac e ocupa cerca de 106 MB."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "玫瑰色"
+            "value" : "用一句話找圖，例如「a cat at a dinner table」。\n模型在這台 Mac 上執行，約 106 MB。"
           }
         }
       }
     },
-    "用中文描述找圖，需要系統的中文 → 英文翻譯語言" : {
+    "用中文描述找圖，需要系統的「中文 → 英文」翻譯語言。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finding images by Chinese description needs the system's Chinese → English translation language"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Para buscar imágenes con descripciones en chino se necesita el idioma de traducción Chino → Inglés del sistema"
+            "value" : "Describe pictures in Chinese. Needs the system’s Chinese → English translation language."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "中国語の説明で画像を探すには、システムの中国語 → 英語の翻訳言語が必要です"
+            "value" : "中国語で画像を探せます。システムの「中国語 → 英語」翻訳言語が必要です。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "중국어 설명으로 이미지를 찾으려면 시스템의 중국어 → 영어 번역 언어가 필요합니다"
+            "value" : "중국어로 그림을 찾습니다. 시스템의 ‘중국어 → 영어’ 번역 언어가 필요합니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Describe imágenes en chino. Requiere el idioma de traducción chino → inglés del sistema."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Para buscar imagens com descrições em chinês, é preciso o idioma de tradução Chinês → Inglês do sistema"
+            "value" : "Descreva imagens em chinês. Requer o idioma de tradução chinês → inglês do sistema."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "用中文描述找圖，需要系統的中文 → 英文翻譯語言"
+            "value" : "用中文描述找圖，需要系統的「中文 → 英文」翻譯語言。"
           }
         }
       }
@@ -14801,46 +14841,6 @@
         }
       }
     },
-    "翠綠" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Emerald"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "エメラルド"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "에메랄드"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Esmeralda"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Esmeralda"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "翠綠"
-          }
-        }
-      }
-    },
     "聲音" : {
       "localizations" : {
         "en" : {
@@ -14957,6 +14957,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "與「%@」相似"
+          }
+        }
+      }
+    },
+    "莫內綠" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monet Green"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "モネ・グリーン"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모네 그린"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verde Monet"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verde Monet"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "莫內綠"
           }
         }
       }
@@ -16401,42 +16441,42 @@
         }
       }
     },
-    "選範圍或視窗，截好直接收進來" : {
+    "選範圍或視窗，截好直接收進來。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Select an area or window, and the screenshot is collected right away"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Selecciona un área o una ventana y la captura se guarda directamente"
+            "value" : "Pick an area or a window; the screenshot goes straight in."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "範囲またはウインドウを選んで撮影し、そのまま追加します"
+            "value" : "範囲かウインドウを選ぶと、撮ったものがそのまま収まります。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "영역이나 윈도우를 선택하면 캡처한 후 바로 수집합니다"
+            "value" : "영역이나 윈도우를 고르면 찍은 화면이 바로 들어옵니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige un área o una ventana; la captura entra directamente."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Selecione uma área ou janela; a captura é coletada direto"
+            "value" : "Escolha uma área ou janela; a captura entra direto."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "選範圍或視窗，截好直接收進來"
+            "value" : "選範圍或視窗，截好直接收進來。"
           }
         }
       }
@@ -17841,6 +17881,46 @@
         }
       }
     },
+    "霍克尼藍" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hockney Blue"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ホックニー・ブルー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "호크니 블루"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azul Hockney"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azul Hockney"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "霍克尼藍"
+          }
+        }
+      }
+    },
     "青" : {
       "localizations" : {
         "en" : {
@@ -18281,6 +18361,86 @@
         }
       }
     },
+    "馬諦斯紅" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matisse Red"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マティス・レッド"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "마티스 레드"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rojo Matisse"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vermelho Matisse"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "馬諦斯紅"
+          }
+        }
+      }
+    },
+    "鳶尾紫" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iris Violet"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイリス・バイオレット"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아이리스 바이올렛"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Violeta iris"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Violeta íris"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鳶尾紫"
+          }
+        }
+      }
+    },
     "黃" : {
       "localizations" : {
         "en" : {
@@ -18441,42 +18601,42 @@
         }
       }
     },
-    "點一下快捷鍵，再按下新的組合鍵。Esc 取消，Delete 還原預設。也可以把任何東西拖到選單列的拱門。" : {
+    "點一下快捷鍵，再按下新的組合鍵。Esc 取消，Delete 還原預設。\n也可以把任何東西拖到選單列的拱門。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Click a shortcut, then press the new key combination. Esc cancels, Delete restores the default. You can also drag anything onto the arch in the menu bar."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Haz clic en un atajo y pulsa la nueva combinación. Esc cancela, Delete restaura el predeterminado. También puedes arrastrar cualquier cosa al arco de la barra de menús."
+            "value" : "Click a shortcut, then press the new keys. Esc cancels, Delete restores the default.\nYou can also drag anything onto the arch in the menu bar."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ショートカットをクリックしてから、新しいキーの組み合わせを押してください。Esc でキャンセル、Delete でデフォルトに戻します。メニューバーのアーチに何でもドラッグすることもできます。"
+            "value" : "ショートカットをクリックして、新しいキーを押します。\nEsc で取り消し、Delete でデフォルトに戻します。\nメニューバーのアーチに何でもドラッグすることもできます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "단축키를 클릭한 다음 새로운 키 조합을 누르십시오. Esc를 누르면 취소되고, Delete를 누르면 기본값으로 복원됩니다. 메뉴 막대의 아치로 무엇이든 드래그할 수도 있습니다."
+            "value" : "단축키를 클릭한 뒤 새 키 조합을 누르세요.\nEsc는 취소, Delete는 기본값 복원입니다.\n메뉴 막대의 아치로 무엇이든 끌어 놓을 수도 있습니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haz clic en un atajo y pulsa las nuevas teclas.\nEsc cancela; Suprimir restaura el atajo predeterminado.\nTambién puedes arrastrar cualquier cosa al arco de la barra de menús."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clique em um atalho e pressione a nova combinação de teclas. Esc cancela, Delete restaura o padrão. Você também pode arrastar qualquer coisa para o arco na barra de menus."
+            "value" : "Clique num atalho e pressione as novas teclas.\nEsc cancela; Delete restaura o padrão.\nVocê também pode arrastar qualquer coisa para o arco da barra de menus."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "點一下快捷鍵，再按下新的組合鍵。Esc 取消，Delete 還原預設。也可以把任何東西拖到選單列的拱門。"
+            "value" : "點一下快捷鍵，再按下新的組合鍵。Esc 取消，Delete 還原預設。\n也可以把任何東西拖到選單列的拱門。"
           }
         }
       }

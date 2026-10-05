@@ -205,12 +205,17 @@ final class SettingsWindowController: NSWindowController {
             Swatch(a, selected: a == Accent.current) { Accent.apply(a) }
         })
         swatches.spacing = 6
+        let chosen = NSTextField(labelWithString: Accent.current.title)
+        chosen.font = .systemFont(ofSize: 12, weight: .medium)
+        chosen.textColor = .secondaryLabelColor
+        swatches.addArrangedSubview(chosen)
+        swatches.setCustomSpacing(14, after: swatches.arrangedSubviews[swatches.arrangedSubviews.count - 2])
         return [
             row(String(localized: "語言"),
                 pending ? String(localized: "重新開啟 Wunder 後換成新的語言。") : String(localized: "選單、按鈕與訊息使用的語言。"),
                 languageControl),
             row(String(localized: "外觀"), String(localized: "淺色、深色，或跟著系統切換。"), look),
-            row(String(localized: "重點色"), String(localized: "只用在選中與作用中的東西：所在的空間、選取、拖放的目標。可以跟隨系統，或在這裡另外指定。"),
+            row(String(localized: "重點色"), String(localized: "標示選取、所在的空間與拖放的目標。"),
                 swatches),
         ]
     }
@@ -225,9 +230,9 @@ final class SettingsWindowController: NSWindowController {
             f.onRecording = { [weak self] r in self?.onRecording?(r) }
         }
         return [
-            row(String(localized: "收藏剪貼簿或目前頁面"), String(localized: "剛拷貝的東西優先；沒有的話，收瀏覽器正在看的頁面"), capture),
-            row(String(localized: "截圖收藏"), String(localized: "選範圍或視窗，截好直接收進來"), shot),
-            note(String(localized: "點一下快捷鍵，再按下新的組合鍵。Esc 取消，Delete 還原預設。也可以把任何東西拖到選單列的拱門。")),
+            row(String(localized: "收藏剪貼簿或目前頁面"), String(localized: "先收剛拷貝的東西，沒有就收瀏覽器正在看的頁面。"), capture),
+            row(String(localized: "截圖收藏"), String(localized: "選範圍或視窗，截好直接收進來。"), shot),
+            note(String(localized: "點一下快捷鍵，再按下新的組合鍵。Esc 取消，Delete 還原預設。\n也可以把任何東西拖到選單列的拱門。")),
         ]
     }
 
@@ -236,11 +241,11 @@ final class SettingsWindowController: NSWindowController {
         if #available(macOS 26.0, *) { asking = Asker.isAvailable }
         let chinese = PillButton(String(localized: "下載…")) { [weak self] in self?.onEnableChinese?() }
         return [
-            row(String(localized: "用描述找圖"), String(localized: "例如「a cat at a dinner table」，用本機的 MobileCLIP 模型（約 106 MB）"),
+            row(String(localized: "用描述找圖"), String(localized: "用一句話找圖，例如「a cat at a dinner table」。\n模型在這台 Mac 上執行，約 106 MB。"),
                 semanticControl()),
-            row(String(localized: "對收藏提問"), String(localized: "在搜尋框輸入問句後按 Return，或對 Siri 說 Ask Wunder"),
+            row(String(localized: "對收藏提問"), String(localized: "在搜尋框輸入問句後按 Return，或對 Siri 說「Ask Wunder」。"),
                 status(asking, ready: String(localized: "Apple Intelligence 可用"), missing: String(localized: "需要 Apple Intelligence"))),
-            row(String(localized: "中文描述"), String(localized: "用中文描述找圖，需要系統的中文 → 英文翻譯語言"), chinese),
+            row(String(localized: "中文描述"), String(localized: "用中文描述找圖，需要系統的「中文 → 英文」翻譯語言。"), chinese),
         ]
     }
 
@@ -251,7 +256,7 @@ final class SettingsWindowController: NSWindowController {
         }
         spotlight.setAccessibilityLabel(String(localized: "在 Spotlight 顯示收藏"))
         return [
-            row(String(localized: "在 Spotlight 顯示收藏"), String(localized: "只放標題、網站與主題，不放文字內容"), spotlight),
+            row(String(localized: "在 Spotlight 顯示收藏"), String(localized: "只放標題、網站與主題，不放文字內容。"), spotlight),
             note(String(localized: "圖中文字、物件、相似度與名字的辨識，都在這台 Mac 上完成，不會上傳任何內容。")),
         ]
     }
@@ -295,8 +300,6 @@ final class SettingsWindowController: NSWindowController {
 
     // MARK: Pieces
 
-    /// One setting: its name and what it does on the left, the control at the
-    /// right, a hairline under it.
     /// One setting: its name and what it does, the control beside them, a
     /// hairline under it. Every row is at least the same height with the same
     /// room around it; a wide control (the colour swatches) goes under the
@@ -304,13 +307,11 @@ final class SettingsWindowController: NSWindowController {
     private func row(_ title: String, _ detail: String, _ control: NSView) -> NSView {
         let name = NSTextField(labelWithString: title)
         name.font = .systemFont(ofSize: 13.5, weight: .medium)
-        let about = NSTextField(wrappingLabelWithString: detail)
-        about.font = .systemFont(ofSize: 11.5)
-        about.textColor = .secondaryLabelColor
+        let about = Self.small(detail)
         let text = NSStackView(views: [name, about])
         text.orientation = .vertical
         text.alignment = .leading
-        text.spacing = 4
+        text.spacing = 3
         control.setContentHuggingPriority(.required, for: .horizontal)
         control.setContentCompressionResistancePriority(.required, for: .horizontal)
 
@@ -322,16 +323,17 @@ final class SettingsWindowController: NSWindowController {
             row.spacing = 12
             row.addArrangedSubview(text)
             row.addArrangedSubview(control)
-            about.preferredMaxLayoutWidth = Self.textWidth + Self.besideLimit
+            about.preferredMaxLayoutWidth = Self.textWidth
         } else {
             row.addView(text, in: .leading)
             row.addView(control, in: .trailing)
             row.alignment = .centerY
             row.spacing = 24
             text.setContentHuggingPriority(.defaultLow, for: .horizontal)
-            // The words keep their width; the row grows taller instead.
-            about.preferredMaxLayoutWidth = Self.textWidth
-            text.widthAnchor.constraint(greaterThanOrEqualToConstant: Self.textWidth).isActive = true
+            // The words keep one measure; the row grows taller instead.
+            let width = min(Self.textWidth, Self.rowWidth - control.fittingSize.width - row.spacing)
+            about.preferredMaxLayoutWidth = width
+            text.widthAnchor.constraint(equalToConstant: width).isActive = true
         }
         row.edgeInsets = NSEdgeInsets(top: 16, left: 0, bottom: 16, right: 0)
         row.heightAnchor.constraint(greaterThanOrEqualToConstant: Self.rowHeight).isActive = true
@@ -353,15 +355,29 @@ final class SettingsWindowController: NSWindowController {
     }
     private var rows: [NSView] = []
 
-    /// Room for the words of a row, and how wide a control can be beside them.
-    private static let textWidth: CGFloat = 300
+    /// The measure for the words of a row, the room a row has (the window
+    /// less the sidebar and margins), and how wide a control can be beside them.
+    private static let textWidth: CGFloat = 340
+    private static let rowWidth: CGFloat = 820 - 221 - 64
     private static let besideLimit: CGFloat = 220
     private static let rowHeight: CGFloat = 68
 
+    /// A row's explanation: 12 pt, grey, with room between the lines.
+    private static func small(_ text: String) -> NSTextField {
+        let style = NSMutableParagraphStyle()
+        style.minimumLineHeight = 18
+        style.maximumLineHeight = 18
+        style.lineBreakStrategy = .standard
+        let label = NSTextField(wrappingLabelWithString: "")
+        label.attributedStringValue = NSAttributedString(string: text, attributes: [
+            .font: NSFont.systemFont(ofSize: 12), .foregroundColor: NSColor.secondaryLabelColor, .paragraphStyle: style,
+        ])
+        return label
+    }
+
     private func note(_ text: String) -> NSView {
-        let n = NSTextField(wrappingLabelWithString: text)
-        n.font = .systemFont(ofSize: 11.5)
-        n.textColor = .secondaryLabelColor
+        let n = Self.small(text)
+        n.preferredMaxLayoutWidth = Self.rowWidth
         let box = NSStackView(views: [n])
         box.edgeInsets = NSEdgeInsets(top: 12, left: 0, bottom: 0, right: 0)
         return box
@@ -413,7 +429,7 @@ private final class TabRow: NSView {
         let image = NSImageView(image: Icon.optical(icon, size: 16))
         image.contentTintColor = selected ? .white : .secondaryLabelColor
         let label = NSTextField(labelWithString: title)
-        label.font = .systemFont(ofSize: 13, weight: selected ? .semibold : .regular)
+        label.font = .systemFont(ofSize: 13, weight: selected ? .medium : .regular)
         label.textColor = selected ? .white : .labelColor
         for v in [image, label] as [NSView] {
             v.translatesAutoresizingMaskIntoConstraints = false
@@ -439,7 +455,7 @@ private final class TabRow: NSView {
     }
 }
 
-/// One accent to choose: a disc of the colour, ringed when chosen, its name under it.
+/// One accent to choose: a disc of the colour, ringed when chosen; its name on hover.
 @MainActor
 private final class Swatch: NSView {
     private let action: () -> Void
@@ -469,17 +485,13 @@ private final class Swatch: NSView {
         ring.layer?.cornerRadius = 17
         ring.layer?.borderWidth = selected ? 2 : 0
         ring.layer?.borderColor = (accent == .system ? NSColor.controlAccentColor : accent.color).cgColor
-        let name = NSTextField(labelWithString: accent.title)
-        // Only the chosen one says its name, as in System Settings; the rest on hover.
-        name.font = .systemFont(ofSize: 10.5)
-        name.textColor = .secondaryLabelColor
-        name.isHidden = !selected
-        for v in [ring, disc, name] as [NSView] {
+        for v in [ring, disc] as [NSView] {
             v.translatesAutoresizingMaskIntoConstraints = false
             addSubview(v)
         }
         NSLayoutConstraint.activate([
-            widthAnchor.constraint(equalToConstant: 36),
+            widthAnchor.constraint(equalToConstant: 34),
+            heightAnchor.constraint(equalToConstant: 34),
             ring.topAnchor.constraint(equalTo: topAnchor),
             ring.centerXAnchor.constraint(equalTo: centerXAnchor),
             ring.widthAnchor.constraint(equalToConstant: 34),
@@ -488,9 +500,6 @@ private final class Swatch: NSView {
             disc.centerYAnchor.constraint(equalTo: ring.centerYAnchor),
             disc.widthAnchor.constraint(equalToConstant: 26),
             disc.heightAnchor.constraint(equalToConstant: 26),
-            name.topAnchor.constraint(equalTo: ring.bottomAnchor, constant: 4),
-            name.centerXAnchor.constraint(equalTo: centerXAnchor),
-            name.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
         toolTip = accent.title
         setAccessibilityElement(true)

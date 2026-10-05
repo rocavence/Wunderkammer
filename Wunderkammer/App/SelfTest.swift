@@ -954,7 +954,10 @@ final class SelfTest {
         check(!ui.canvas.groups.isEmpty && ui.canvas.groups.allSatisfy { formatTitles.contains($0.title ?? "") }, "piling by format names each pile a format (\(ui.canvas.groups.map(\.title)))")
         shot("space-map-canvas")
         // A narrow window: the bars at the foot go compact, and stay inside the view.
-        let wide = window.frame
+        let was = window.frame
+        let wide = NSRect(x: was.minX, y: was.minY, width: max(was.width, 1360), height: was.height)
+        window.setFrame(wide, display: true)
+        await wait(0.6)
         check(!ui.barsCompactForTest, "a wide window has the regular bar")
         window.setFrame(NSRect(x: wide.minX, y: wide.minY, width: 760, height: wide.height), display: true)
         ui.toggleInspectorForTest()
@@ -969,6 +972,7 @@ final class SelfTest {
         window.setFrame(wide, display: true)
         await wait(0.8)
         check(!ui.barsCompactForTest && ui.slotsShownForTest, "wide again, the regular bar and the slots come back")
+        window.setFrame(was, display: true)
 
         // Tips: on the 工作台 only; five of them; closed, they stay closed for this run.
         if let tips = ui.canvasTipsForTest {
