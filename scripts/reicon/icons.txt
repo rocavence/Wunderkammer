@@ -47,7 +47,7 @@ chevron-right nav-arrow-right
 search-zoom-in zoom-in
 search-zoom-out zoom-out
 maximize expand
-grid2 table-2-columns
+grid2 cell-2x2
 restart refresh
 trash trash
 share share-ios

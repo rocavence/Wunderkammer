@@ -29,7 +29,8 @@ enum Icon {
         let ink = inkBounds(source, side: 96) ?? CGRect(x: 0, y: 0, width: 96, height: 96)
         // Same footprint: the ink's average side, kept inside the frame.
         let side = (ink.width * ink.height).squareRoot()
-        let scale = min(size * fill / max(side, 1), size / max(ink.width, ink.height, 1))
+        let nudge = opticalNudge[icon] ?? 1
+        let scale = min(size * fill * nudge / max(side, 1), size / max(ink.width, ink.height, 1))
         let drawn = CGSize(width: 96 * scale, height: 96 * scale)
         let origin = CGPoint(x: size / 2 - ink.midX * scale, y: size / 2 - ink.midY * scale)
         let result = NSImage(size: NSSize(width: size, height: size), flipped: false) { _ in
@@ -43,6 +44,14 @@ enum Icon {
     }
 
     @MainActor private static var opticalCache: [String: NSImage] = [:]
+
+    /// Where equal area still doesn't look equal: a circle reads small, four
+    /// corner arrows read big. Adjusted by eye.
+    private static let opticalNudge: [Reicon: CGFloat] = [
+        .infoCircle: 1.08,
+        .search: 1.04,
+        .maximize: 0.84,
+    ]
 
     /// Where the drawing actually is, in a `side`-point square, bottom-up.
     private static func inkBounds(_ image: NSImage, side: Int) -> CGRect? {

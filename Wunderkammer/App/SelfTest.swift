@@ -777,6 +777,9 @@ final class SelfTest {
     private func spacesCheck() async {
         // Search waits folded as a button, opens when wanted, folds once left empty.
         check(!ui.isSearchExpanded, "search starts folded away")
+        if let capsule = ui.topBarSearchCapsuleForTest {
+            check(abs(capsule.frame.width - capsule.frame.height) < 1, "folded, search is a circle (\(capsule.frame.size))")
+        }
         ui.openSearchForTest()
         await wait(0.3)
         check(ui.isSearchExpanded, "⌘K opens it")
@@ -870,7 +873,7 @@ final class SelfTest {
         ui.setSpace(.wander)
         await wait(0.8)
         check(ui.mode == .infinity, "漫遊 is the wall")
-        check(!ui.viewBarTipsForTest.contains("無限牆") && ui.viewBarTipsForTest.contains("放大（⌘=）"), "one layout, no switch; its tools stay (\(ui.viewBarTipsForTest))")
+        check(!ui.viewBarTipsForTest.contains("無限牆") && ui.viewBarTipsForTest.contains("放大（⌘+）"), "one layout, no switch; its tools stay (\(ui.viewBarTipsForTest))")
         shot("space-wander")
         ui.sidebar.select(.trail)
         await wait(0.6)
@@ -1540,6 +1543,7 @@ protocol SelfTestUI: AnyObject {
     var viewBarTipsForTest: [String] { get }
     func hoverViewBarForTest() -> String?
     var isSearchExpanded: Bool { get }
+    var topBarSearchCapsuleForTest: NSView? { get }
     func openSearchForTest()
     var spacesControlForTest: NSView { get }
     var contentAreaForTest: NSView? { get }

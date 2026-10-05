@@ -18,7 +18,10 @@ final class TopBar: NSView {
     private let searchCapsule = TopBar.capsule()
     private let searchButton = NSButton()
     private var fieldWidth: NSLayoutConstraint!
+    private var fieldLeading: NSLayoutConstraint!
+    private var fieldTrailing: NSLayoutConstraint!
     private(set) var isSearchOpen = false
+    var searchCapsuleForTest: NSView { searchCapsule }
 
     static let height: CGFloat = 36
     /// From the window's top edge to the bar: below the traffic lights' own row.
@@ -71,6 +74,9 @@ final class TopBar: NSView {
             addSubview(v)
         }
         fieldWidth = searchField.widthAnchor.constraint(equalToConstant: 0)
+        // Closed, the field takes no room at all: the capsule is a circle.
+        fieldLeading = searchField.leadingAnchor.constraint(equalTo: searchButton.trailingAnchor, constant: 0)
+        fieldTrailing = searchField.trailingAnchor.constraint(equalTo: searchCapsule.trailingAnchor, constant: 0)
         // Short of room, the spaces give up the middle first, then the field narrows;
         // nothing ever overlaps.
         fieldWidth.priority = NSLayoutConstraint.Priority(700)
@@ -108,8 +114,7 @@ final class TopBar: NSView {
             searchButton.centerYAnchor.constraint(equalTo: searchCapsule.centerYAnchor),
             searchButton.widthAnchor.constraint(equalToConstant: Self.height),
             searchButton.heightAnchor.constraint(equalToConstant: Self.height),
-            searchField.leadingAnchor.constraint(equalTo: searchButton.trailingAnchor, constant: -6),
-            searchField.trailingAnchor.constraint(equalTo: searchCapsule.trailingAnchor, constant: -10),
+            fieldLeading, fieldTrailing,
             searchField.centerYAnchor.constraint(equalTo: searchCapsule.centerYAnchor),
             fieldWidth,
         ])
@@ -134,6 +139,8 @@ final class TopBar: NSView {
             ctx.duration = animated ? 0.22 : 0
             ctx.allowsImplicitAnimation = true
             fieldWidth.animator().constant = open ? 200 : 0
+            fieldLeading.animator().constant = open ? -6 : 0
+            fieldTrailing.animator().constant = open ? -10 : 0
             searchField.animator().alphaValue = open ? 1 : 0
             layoutSubtreeIfNeeded()
         }

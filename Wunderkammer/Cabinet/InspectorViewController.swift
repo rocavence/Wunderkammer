@@ -464,7 +464,7 @@ final class InspectorViewController: NSViewController {
     private func label(_ s: String, size: CGFloat, color: NSColor = .labelColor, serif: Bool = false) -> NSTextField {
         let l = NSTextField(wrappingLabelWithString: s)
         var font = NSFont.systemFont(ofSize: size)
-        if serif, let f = Typography.display(size) { font = f }
+        if serif, let f = Typography.display(size) { font = f }  // the display face (sans)
         l.font = font
         l.textColor = color
         l.isSelectable = true

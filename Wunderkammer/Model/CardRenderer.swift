@@ -3,7 +3,7 @@ import CoreText
 
 /// Draws the cabinet representation for things that aren't pictures: text,
 /// web pages without a preview image, audio without artwork, generic files.
-/// Quiet, editorial cards: paper, ink, a serif. Pure CoreGraphics/CoreText so
+/// Quiet, editorial cards: paper, ink, a clean sans. Pure CoreGraphics/CoreText so
 /// it runs off the main thread.
 enum CardRenderer {
     static let paper = CGColor(srgbRed: 0.953, green: 0.937, blue: 0.902, alpha: 1)
@@ -219,19 +219,10 @@ enum CardRenderer {
         attributed(s, font: Typography.display(size) ?? .systemFont(ofSize: size), color: color, lineHeight: lineHeight)
     }
 
-    /// New York for Latin; Chinese in Songti TC, whose punctuation sits right.
-    /// (Left to the system, CJK falls back to a font with gaps around ，。)
+    /// Card text: the system sans, PingFang for Chinese. (Named for what it
+    /// was; there is no serif in the app any more.)
     private static func serif(_ s: String, size: CGFloat, color: CGColor = ink, lineHeight: CGFloat) -> NSAttributedString {
-        let ideographs = s.unicodeScalars.filter { $0.properties.isIdeographic }.count
-        let letters = max(s.unicodeScalars.filter { $0.properties.isAlphabetic }.count, 1)
-        if Double(ideographs) / Double(letters) > 0.3, let song = NSFont(name: "STSongti-TC-Regular", size: size) {
-            return attributed(s, font: song, color: color, lineHeight: lineHeight + 0.15)
-        }
-        let base = NSFont.systemFont(ofSize: size, weight: .regular)
-        var descriptor = base.fontDescriptor.withDesign(.serif) ?? base.fontDescriptor
-        descriptor = descriptor.addingAttributes([.cascadeList: [NSFontDescriptor(name: "STSongti-TC-Regular", size: size)]])
-        let font = NSFont(descriptor: descriptor, size: size) ?? base
-        return attributed(s, font: font, color: color, lineHeight: lineHeight)
+        attributed(s, font: .systemFont(ofSize: size), color: color, lineHeight: lineHeight + 0.05)
     }
 
     private static func sans(_ s: String, size: CGFloat, color: CGColor, lineHeight: CGFloat) -> NSAttributedString {

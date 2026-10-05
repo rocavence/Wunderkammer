@@ -626,7 +626,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private func updateViewBar() {
         let zoom: [ViewBar.Tool] = [
             .init(icon: .searchZoomOut, tip: String(localized: "縮小（⌘-）")) { [weak self] in self?.zoomOut() },
-            .init(icon: .searchZoomIn, tip: String(localized: "放大（⌘=）")) { [weak self] in self?.zoomIn() },
+            .init(icon: .searchZoomIn, tip: String(localized: "放大（⌘+）")) { [weak self] in self?.zoomIn() },
         ]
         var tools: [[ViewBar.Tool]]
         switch mode {
@@ -1163,7 +1163,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
             item.target = self
         }
         viewMenu.addItem(.separator())
-        viewMenu.addItem(withTitle: String(localized: "放大"), action: #selector(zoomIn), keyEquivalent: "=").target = self
+        // Shown as ⌘+; ⌘= (the same key without shift) works too, from a hidden twin.
+        viewMenu.addItem(withTitle: String(localized: "放大"), action: #selector(zoomIn), keyEquivalent: "+").target = self
+        let zoomTwin = viewMenu.addItem(withTitle: String(localized: "放大"), action: #selector(zoomIn), keyEquivalent: "=")
+        zoomTwin.target = self
+        zoomTwin.isHidden = true
+        zoomTwin.allowsKeyEquivalentWhenHidden = true
         viewMenu.addItem(withTitle: String(localized: "縮小"), action: #selector(zoomOut), keyEquivalent: "-").target = self
         viewMenu.addItem(withTitle: String(localized: "整理畫布"), action: #selector(CanvasView.arrange(_:)), keyEquivalent: "")
         viewMenu.addItem(withTitle: String(localized: "畫布依主題分堆"), action: #selector(CanvasView.clusterByTheme(_:)), keyEquivalent: "")
@@ -1295,6 +1300,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     func hoverViewBarForTest() -> String? { viewBar.hoverFirstForTest() }
     func openSearchForTest() { focusSearch() }
     var spacesControlForTest: NSView { topBar.spaces }
+    var topBarSearchCapsuleForTest: NSView? { topBar.searchCapsuleForTest }
     var contentAreaForTest: NSView? { contentArea }
     var topBarOverlapsForTest: Bool { topBar.layoutSubtreeIfNeeded(); return topBar.controlsOverlap }
     var sidebarToggleForTest: NSView { topBar.sidebarButton }

@@ -918,7 +918,10 @@ private final class HeadingBand: CALayer {
             let words = titleLayer.frame.union(detailLayer.frame.width > 0 && !detail.isEmpty
                 ? CGRect(x: detailLayer.frame.minX, y: detailLayer.frame.minY, width: ceil(detailLayer.preferredFrameSize().width), height: detailLayer.frame.height)
                 : titleLayer.frame)
-            pill.frame = CGRect(x: inset, y: words.minY - 5, width: words.maxX + Self.pillPad - inset, height: words.height + 10).integral
+            // Taller, and centred on the words so the room above them is the room below.
+            let height: CGFloat = 40
+            pill.frame = CGRect(x: inset, y: (titleLayer.frame.midY - height / 2).rounded(),
+                                width: ceil(words.maxX + Self.pillPad - inset), height: height)
             pill.cornerRadius = pill.frame.height / 2
             pill.backgroundColor = colors.band.copy(alpha: 0.86)
             pill.borderColor = colors.detail.copy(alpha: 0.25)
