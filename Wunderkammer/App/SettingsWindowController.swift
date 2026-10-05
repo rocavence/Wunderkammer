@@ -56,7 +56,7 @@ final class SettingsWindowController: NSWindowController {
     private let sidebar = NSStackView()
     private let heading = NSTextField(labelWithString: "")
     private let page = FlippedView()
-    private let scroll = FadingScrollView()
+    private let scroll = NSScrollView()
 
     /// Flione's settings card: 900 × 600, 32 all round, a 184-wide column of
     /// sections, a hairline, then the page 24 in from it.
@@ -151,6 +151,7 @@ final class SettingsWindowController: NSWindowController {
         heading.attributedStringValue = Self.text(tab.title, size: 19, weight: .semibold, tracking: -0.3)
         page.subviews.forEach { $0.removeFromSuperview() }
         self.rows = []
+        rowLines = []
         let rows: [NSView]
         switch tab {
         case .general: rows = generalRows()
@@ -173,6 +174,8 @@ final class SettingsWindowController: NSWindowController {
             stack.bottomAnchor.constraint(equalTo: page.bottomAnchor),
         ])
         for r in rows { r.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true }
+        // A note closes the page: no hairline between it and the last setting.
+        if rows.last is Note { rowLines.last?.isHidden = true }
     }
 
     // MARK: Sections
@@ -328,6 +331,7 @@ final class SettingsWindowController: NSWindowController {
         row.widthAnchor.constraint(equalTo: box.widthAnchor).isActive = true
         line.widthAnchor.constraint(equalTo: box.widthAnchor).isActive = true
         rows.append(row)
+        rowLines.append(line)
         return box
     }
 
@@ -337,6 +341,7 @@ final class SettingsWindowController: NSWindowController {
         return rows.map(\.frame.height)
     }
     private var rows: [NSView] = []
+    private var rowLines: [NSView] = []
 
     /// How wide a control can be beside the words.
     private static let besideLimit: CGFloat = 220
@@ -344,30 +349,25 @@ final class SettingsWindowController: NSWindowController {
 
     /// Flione's type: 28 and 19 semibold for titles, 14 medium for a
     /// setting's name, 13 for words, 11 for small print.
-    static func text(_ string: String, size: CGFloat, weight: NSFont.Weight = .regular,
-                     color: NSColor = .labelColor, tracking: CGFloat = 0) -> NSAttributedString {
+    static func text(_ string: String, size: CGFloat, weight: NSFont.Weight = .regular, color: NSColor = .labelColor,
+                     tracking: CGFloat = 0, alignment: NSTextAlignment = .natural) -> NSAttributedString {
         let style = NSMutableParagraphStyle()
         style.lineBreakStrategy = .standard
+        style.alignment = alignment
         return NSAttributedString(string: string, attributes: [
             .font: NSFont.systemFont(ofSize: size, weight: weight), .foregroundColor: color, .kern: tracking,
             .paragraphStyle: style,
         ])
     }
 
-    static func label(_ string: String, size: CGFloat, weight: NSFont.Weight = .regular,
-                      color: NSColor = .labelColor, wraps: Bool = false) -> NSTextField {
+    static func label(_ string: String, size: CGFloat, weight: NSFont.Weight = .regular, color: NSColor = .labelColor,
+                      wraps: Bool = false, alignment: NSTextAlignment = .natural) -> NSTextField {
         let label = wraps ? NSTextField(wrappingLabelWithString: "") : NSTextField(labelWithString: "")
-        label.attributedStringValue = text(string, size: size, weight: weight, color: color)
+        label.attributedStringValue = text(string, size: size, weight: weight, color: color, alignment: alignment)
         return label
     }
 
-    private func note(_ text: String) -> NSView {
-        let n = Self.label(text, size: 13, color: .secondaryLabelColor, wraps: true)
-        n.preferredMaxLayoutWidth = Self.rowWidth
-        let box = NSStackView(views: [n])
-        box.edgeInsets = NSEdgeInsets(top: 16, left: 0, bottom: 0, right: 0)
-        return box
-    }
+    private func note(_ text: String) -> NSView { Note(text, width: Self.rowWidth) }
 
     private func semanticControl() -> NSView {
         if semanticReady() { return status(true, ready: String(localized: "已安裝"), missing: "") }
@@ -477,8 +477,8 @@ private final class Swatch: NSView {
         ring.layer?.borderWidth = selected ? 2 : 0
         ring.layer?.borderColor = (accent == .system ? NSColor.controlAccentColor : accent.color).cgColor
         let name = SettingsWindowController.label(accent.title, size: selected ? 12 : 11, weight: selected ? .medium : .regular,
-                                                  color: selected ? .labelColor : .secondaryLabelColor, wraps: true)
-        name.alignment = .center
+                                                  color: selected ? .labelColor : .secondaryLabelColor, wraps: true,
+                                                  alignment: .center)
         name.maximumNumberOfLines = 2
         name.preferredMaxLayoutWidth = Self.width
         for v in [ring, disc, name] as [NSView] {
@@ -738,6 +738,47 @@ final class ShortcutField: NSButton {
     }
 }
 
+/// A word on how a page works, under its settings: an info mark and the
+/// words, on a faint rounded ground, apart from the settings themselves.
+@MainActor
+private final class Note: NSView {
+    init(_ text: String, width: CGFloat) {
+        super.init(frame: .zero)
+        let mark = NSImageView(image: Icon.optical(.infoCircle, size: 14))
+        mark.contentTintColor = .tertiaryLabelColor
+        let words = SettingsWindowController.label(text, size: 12, color: .secondaryLabelColor, wraps: true)
+        words.preferredMaxLayoutWidth = width - 14 - 8 - 28
+        let ground = NSView()
+        ground.wantsLayer = true
+        ground.layer?.cornerRadius = 10
+        ground.layer?.cornerCurve = .continuous
+        ground.layer?.backgroundColor = NSColor.labelColor.withAlphaComponent(0.04).cgColor
+        for v in [ground, mark, words] as [NSView] {
+            v.translatesAutoresizingMaskIntoConstraints = false
+            addSubview(v)
+        }
+        NSLayoutConstraint.activate([
+            ground.topAnchor.constraint(equalTo: topAnchor, constant: 20),
+            ground.leadingAnchor.constraint(equalTo: leadingAnchor),
+            ground.trailingAnchor.constraint(equalTo: trailingAnchor),
+            ground.bottomAnchor.constraint(equalTo: bottomAnchor),
+            mark.leadingAnchor.constraint(equalTo: ground.leadingAnchor, constant: 14),
+            mark.topAnchor.constraint(equalTo: words.topAnchor, constant: 1),
+            words.leadingAnchor.constraint(equalTo: mark.trailingAnchor, constant: 8),
+            words.trailingAnchor.constraint(lessThanOrEqualTo: ground.trailingAnchor, constant: -14),
+            words.topAnchor.constraint(equalTo: ground.topAnchor, constant: 12),
+            words.bottomAnchor.constraint(equalTo: ground.bottomAnchor, constant: -12),
+        ])
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        subviews.first?.layer?.backgroundColor = resolved(NSColor.labelColor.withAlphaComponent(0.04))
+    }
+}
+
 /// The card's ground, as Flione's: a faint glow of the accent from the top and
 /// of violet from the bottom right.
 @MainActor
@@ -750,7 +791,9 @@ private final class SettingsBackground: NSView {
         wantsLayer = true
         for g in [top, corner] {
             g.type = .radial
-            layer?.addSublayer(g)
+            // Behind the page, never over its words.
+            g.zPosition = -1
+            layer?.insertSublayer(g, at: 0)
         }
         NotificationCenter.default.addObserver(forName: Accent.didChange, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.needsDisplay = true }
@@ -775,23 +818,5 @@ private final class SettingsBackground: NSView {
             g.startPoint = centre
             g.endPoint = CGPoint(x: centre.x + radius / w, y: centre.y + (centre.y > 0.5 ? -1 : 1) * radius / h)
         }
-    }
-}
-
-/// A scroll view whose content fades out over its last 28 points, in place
-/// of a scroller, as Flione's.
-@MainActor
-private final class FadingScrollView: NSScrollView {
-    private let fade = CAGradientLayer()
-
-    override func layout() {
-        super.layout()
-        wantsLayer = true
-        layer?.mask = fade
-        fade.frame = bounds
-        fade.colors = [NSColor.clear.cgColor, NSColor.black.cgColor, NSColor.black.cgColor]
-        fade.startPoint = CGPoint(x: 0.5, y: 0)
-        fade.endPoint = CGPoint(x: 0.5, y: 1)
-        fade.locations = [0, NSNumber(value: Double(28 / max(bounds.height, 28))), 1]
     }
 }
