@@ -14,7 +14,8 @@ from PIL import Image
 
 ROOT = Path(__file__).parent.parent.parent
 SAMPLES = ROOT / "build/samples"
-SRC = SAMPLES / "products"
+# The default set is two sheets of products, sixty pieces in all.
+SOURCES = [SAMPLES / "products", SAMPLES / "products2"]
 OUT = ROOT / "site/assets/wall"
 EDGE = 560
 
@@ -57,14 +58,14 @@ def thumb(src, dest, edge):
 
 
 def main():
-    credits = {c["file"]: c for c in json.loads((SRC / "credits.json").read_text())}
+    credits = {c["file"]: {**c, "dir": src} for src in SOURCES for c in json.loads((src / "credits.json").read_text())}
     OUT.mkdir(parents=True, exist_ok=True)
     for old in OUT.glob("*.jpg"):
         old.unlink()
     items = []
     for i, (name, credit) in enumerate(sorted(credits.items())):
         file = f"{i:02d}.jpg"
-        img = thumb(SRC / name, OUT / file, EDGE)
+        img = thumb(credit["dir"] / name, OUT / file, EDGE)
         title = credit.get("title") or ""
         tags = [credit["kind"]] + sorted({tag for word, tag in NAMES.items() if word in title.lower()})
         items.append({"src": f"wall/{file}", "w": img.width, "h": img.height, "title": title,

@@ -2,7 +2,7 @@
 """把 6 × 5 的拼貼圖（無版權）切成一件一張：極簡家電是預設圖組，咖啡豆、交通標誌、旅遊物件是示範展室。
 
 用法：scripts/samples/cut-sheet.py <拼貼圖> <組名>   輸出 build/samples/<組名>/（含 credits.json）
-組名：products、coffee、signs、travel
+組名：products、products2（兩組合起來是預設圖組）、coffee、signs、travel
 """
 import json
 import sys
@@ -20,9 +20,17 @@ PRODUCTS = [
     ("Toothbrush", "care"), ("Speaker", "audio"), ("Turntable and Amplifier", "audio"), ("Humidifier", "home"), ("Desk Lamp", "light"), ("Portable Speaker", "audio"),
 ]
 # Products sit alone in their cells and are trimmed to the piece; the photographs fill theirs and are kept whole.
-TRIM = {"products"}
+TRIM = {"products", "products2"}
+PRODUCTS2 = [
+    ("Wall Clock", "clock"), ("Record Player", "audio"), ("Alarm Clock", "clock"), ("Calculator", "desk"), ("Portable Speaker", "audio"), ("Spotlight", "light"),
+    ("Water Jug", "kitchen"), ("Letter Tray", "desk"), ("Coffee Grinder", "kitchen"), ("Pour-over Dripper", "kitchen"), ("Storage Box", "home"), ("Kettle", "kitchen"),
+    ("Speaker", "audio"), ("Stapler", "desk"), ("Tape Dispenser", "desk"), ("Pen Cup", "desk"), ("Drawer Unit", "desk"), ("Desk Fan", "home"),
+    ("Ashtray", "home"), ("Thermometer", "home"), ("Cake Stand", "kitchen"), ("Watering Can", "home"), ("Flashlight", "light"), ("Storage Jar", "kitchen"),
+    ("Wall Hooks", "home"), ("Pen Holders", "desk"), ("Lint Brush", "care"), ("Desk Organizer", "desk"), ("Mirror", "care"), ("Pedal Bin", "home"),
+]
 SETS = {
     "products": PRODUCTS,
+    "products2": PRODUCTS2,
     "coffee": [("Coffee Beans", "coffee")] * 30,
     "signs": [("Road Sign", "sign")] * 30,
     "travel": [("Travel Find", "travel")] * 30,
@@ -90,7 +98,7 @@ def main():
             box = span(ink)
             pad = round(max(box[2] - box[0], box[3] - box[1]) * 0.16)
             box = (max(box[0] - pad, 0), max(box[1] - pad, 0), min(box[2] + pad, cell.width), min(box[3] + pad, cell.height))
-        file = f"{i:02d} {title}.png"
+        file = f"{name[-1] if name[-1].isdigit() else ''}{i:02d} {title}.png"
         cell.crop(box).save(out / file)
         credits.append({"file": file, "title": title, "kind": kind, "artist": None, "license": "No rights reserved"})
     (out / "credits.json").write_text(json.dumps(credits, ensure_ascii=False, indent=1))
