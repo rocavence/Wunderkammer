@@ -292,6 +292,7 @@ main { padding: 0 20px; }
   flex-wrap: wrap;
   justify-content: center;
 }
+.hero h1 .pre { flex-basis: 100%; margin-bottom: .04em; }
 .hero h1 img.mark {
   width: auto;
   height: 1.3em;
