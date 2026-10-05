@@ -1,5 +1,5 @@
 // 由 scripts/reicon/generate.py 產生，請勿手動修改
-// Reicon commit ceab2340577684a47d8e361172bdbcd75cb8c7f3
+// Iconoir 7.12.1
 
 enum Reicon: String, CaseIterable, Sendable {
     case grid = "grid"

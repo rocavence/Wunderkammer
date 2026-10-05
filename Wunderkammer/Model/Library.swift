@@ -705,7 +705,7 @@ final class Library {
         Task { for id in ids { await archive(id) } }
     }
 
-    /// The open 珍奇櫃's own folder for files, when it keeps them.
+    /// The open 珍奇室's own folder for files, when it keeps them.
     var vaultDir: URL?
 
     /// Every file that lives elsewhere gets a copy in the vault, under its own

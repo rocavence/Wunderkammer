@@ -196,7 +196,7 @@ final class GraphView: NSView {
             text.append(NSAttributedString(string: "●", attributes: [.font: font, .foregroundColor: color(kind)]))
             text.append(NSAttributedString(string: " \(name)    ", attributes: [.font: font, .foregroundColor: NSColor.secondaryLabelColor]))
         }
-        text.append(NSAttributedString(string: String(localized: "整個珍奇櫃的關係，線越粗共有的收藏越多"), attributes: [.font: font, .foregroundColor: NSColor.tertiaryLabelColor]))
+        text.append(NSAttributedString(string: String(localized: "整個珍奇室的關係，線越粗共有的收藏越多"), attributes: [.font: font, .foregroundColor: NSColor.tertiaryLabelColor]))
         legend.attributedStringValue = text
         legend.isHidden = graph.nodes.isEmpty
     }

@@ -44,7 +44,7 @@ enum ViewMode: Int, CaseIterable {
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate, SelfTestUI {
     private var window: NSWindow!
-    /// The 珍奇櫃 on this Mac; the library is whichever one is open.
+    /// The 珍奇室 on this Mac; the library is whichever one is open.
     private let cabinets = Cabinets(base: ProcessInfo.processInfo.environment["WK_LIBRARY_ROOT"].map { URL(fileURLWithPath: $0) }
         ?? Library.defaultRoot)
     private lazy var library = Library(root: cabinets.root(of: cabinets.current))
@@ -469,7 +469,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private func buildStatusItem() {
         if let old = statusItem { NSStatusBar.system.removeStatusItem(old) }
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        item.button?.toolTip = String(localized: "Wunderkammer：把東西拖到這裡就收進珍奇櫃")
+        item.button?.toolTip = String(localized: "Wunderkammer：把東西拖到這裡就收進珍奇室")
         if let button = item.button { statusDrop.attach(to: button) }
         statusDrop.onDrop = { [weak self] pasteboard in self?.capture.collectDrop(pasteboard) ?? false }
         let menu = NSMenu()
@@ -477,7 +477,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         Self.show(CaptureController.screenshotShortcut, on: menu.addItem(withTitle: String(localized: "截圖收藏"), action: #selector(captureScreenshot), keyEquivalent: ""))
         menu.addItem(.separator())
         menu.addItem(withTitle: String(localized: "隨機一件"), action: #selector(randomFromStatus), keyEquivalent: "")
-        menu.addItem(withTitle: String(localized: "打開珍奇櫃"), action: #selector(showCabinet), keyEquivalent: "")
+        menu.addItem(withTitle: String(localized: "打開珍奇室"), action: #selector(showCabinet), keyEquivalent: "")
         menu.addItem(.separator())
         menu.addItem(withTitle: String(localized: "結束 Wunderkammer"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
         for i in menu.items where i.action != #selector(NSApplication.terminate(_:)) { i.target = self }
@@ -1132,7 +1132,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         fileMenu.addItem(.separator())
         fileMenu.addItem(withTitle: String(localized: "新增釘選版"), action: #selector(newBoard), keyEquivalent: "n").target = self
         fileMenu.addItem(.separator())
-        fileMenu.addItem(withTitle: String(localized: "在 Finder 顯示珍奇櫃的資料"), action: #selector(revealLibrary), keyEquivalent: "").target = self
+        fileMenu.addItem(withTitle: String(localized: "在 Finder 顯示珍奇室的資料"), action: #selector(revealLibrary), keyEquivalent: "").target = self
         fileMenu.addItem(withTitle: String(localized: "關閉視窗"), action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
         fileItem.submenu = fileMenu
         main.addItem(fileItem)
@@ -1193,7 +1193,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         let windowItem = NSMenuItem()
         let windowMenu = NSMenu(title: String(localized: "視窗"))
         windowMenu.addItem(withTitle: String(localized: "縮到最小"), action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
-        windowMenu.addItem(withTitle: String(localized: "珍奇櫃"), action: #selector(showCabinet), keyEquivalent: "0").target = self
+        windowMenu.addItem(withTitle: String(localized: "珍奇室"), action: #selector(showCabinet), keyEquivalent: "0").target = self
         windowItem.submenu = windowMenu
         NSApp.windowsMenu = windowMenu
         main.addItem(windowItem)
@@ -1216,11 +1216,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     @objc private func captureScreenshot() { Task { await capture.captureScreenshot() } }
     @objc private func newBoard() { sidebar.newBoard(nil) }
 
-    // MARK: Cabinets (珍奇櫃)
+    // MARK: Cabinets (珍奇室)
 
     private var cabinetsPanel: CabinetsPanel?
 
-    /// The window for switching, adding, renaming and removing 珍奇櫃 (a sheet).
+    /// The window for switching, adding, renaming and removing 珍奇室 (a sheet).
     func manageCabinets() {
         let panel = CabinetsPanel(cabinets: cabinets, count: { [weak self] entry in self?.itemCount(of: entry) ?? 0 },
                                   covers: { [weak self] entry in self?.coverURLs(of: entry) ?? [] },
@@ -1231,7 +1231,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         panel.present(on: window)
     }
 
-    /// How many things a 珍奇櫃 holds (the open one from memory, others from disk).
+    /// How many things a 珍奇室 holds (the open one from memory, others from disk).
     /// Collected files that still live where they were found.
     private func referencedCount(of entry: Cabinets.Entry) -> Int {
         guard entry.id == cabinets.currentID else { return Library.storedReferencedCount(at: cabinets.root(of: entry)) }
@@ -1276,8 +1276,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
 
     private var watchedNow: (UUID, [URL])?
 
-    /// The open 珍奇櫃's folders, watched; the same ones aren't restarted.
-    /// A 珍奇櫃 that keeps its files fills its vault instead.
+    /// The open 珍奇室's folders, watched; the same ones aren't restarted.
+    /// A 珍奇室 that keeps its files fills its vault instead.
     private func watchFolders() {
         let vault = cabinets.vault(cabinets.currentID)
         if library.vaultDir != vault {

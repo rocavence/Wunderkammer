@@ -1,79 +1,71 @@
-# Wunderkammer 使用的 Reicon icon（名稱即 Reicon 原名）
-# 新增 icon：加一行後執行 python3 scripts/reicon/generate.py
+# 介面用到的 icon：左邊是程式裡的名字（Reicon enum），右邊是 Iconoir 的檔名
 
-# 顯示方式
-grid
-layout
-calendar
-layers
-infinite
-
-# Cabinet 與系統 view
-cabinet
-image
-globe
-text
-video
-music-note
-file-text
-file
-calendar-day
-history
-shuffle
-sparkles
-clapperboard
-book
-film
-vinyl
-shopping-bag
-map-point
-people
-pet
-palette
-paintbrush
-building
-car
-leaf
-cloud
-image-mountain
-coffee
-kanban
-routing
-chevron-expand-y
-
-# 動作
-search
-plus
-more-h
-edit
-folder
-folder-add
-chevron-down
-chevron-right
-search-zoom-in
-search-zoom-out
-maximize
-grid2
-restart
-trash
-share
-link
-box
-check
-setting
-shield
-language
-keyboard
-eye
-sidebar
-info-circle
-arrow-up-right
-copy
-x
-undo
-camera
-clipboard
-inbox-in
-
-# 文化圖譜
-nodes
+grid view-grid
+layout view-columns-2
+calendar calendar
+layers collage-frame
+infinite infinite
+cabinet archive
+image media-image
+globe globe
+text text
+video media-video
+music-note music-double-note
+file-text page
+file empty-page
+calendar-day calendar
+history clock-rotate-right
+shuffle shuffle
+sparkles sparks
+clapperboard cinema-old
+book book
+film movie
+vinyl album
+shopping-bag shopping-bag
+map-point map-pin
+people group
+pet fish
+palette color-filter
+paintbrush design-pencil
+building city
+car car
+leaf leaf
+cloud cloud
+image-mountain sea-and-sun
+coffee coffee-cup
+kanban view-columns-3
+routing path-arrow
+chevron-expand-y nav-arrow-up
+search search
+plus plus
+more-h more-horiz
+edit edit-pencil
+folder folder
+folder-add folder-plus
+chevron-down nav-arrow-down
+chevron-right nav-arrow-right
+search-zoom-in zoom-in
+search-zoom-out zoom-out
+maximize expand
+grid2 table-2-columns
+restart refresh
+trash trash
+share share-ios
+link link
+box box-3d-point
+check check
+setting settings
+shield shield
+language language
+keyboard type
+eye eye
+sidebar sidebar-collapse
+info-circle info-circle
+arrow-up-right arrow-up-right
+copy copy
+x xmark
+undo undo
+camera camera
+clipboard paste-clipboard
+inbox-in download-circle
+nodes git-fork

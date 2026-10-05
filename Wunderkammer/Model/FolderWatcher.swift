@@ -1,8 +1,8 @@
 import CoreServices
 import Foundation
 
-/// Keeps the open 珍奇櫃 in step with the folders it watches: what's put in a
-/// folder is collected, what leaves the folder leaves the 珍奇櫃. Files still
+/// Keeps the open 珍奇室 in step with the folders it watches: what's put in a
+/// folder is collected, what leaves the folder leaves the 珍奇室. Files still
 /// being written wait until they settle.
 @MainActor
 final class FolderWatcher {
@@ -25,7 +25,7 @@ final class FolderWatcher {
         self.library = library
     }
 
-    /// Watches these folders from now on (the open 珍奇櫃's), and catches up
+    /// Watches these folders from now on (the open 珍奇室's), and catches up
     /// with whatever happened in them meanwhile.
     func watch(_ folders: [URL]) {
         stop()
@@ -66,7 +66,7 @@ final class FolderWatcher {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
     }
 
-    /// Compares each folder with the 珍奇櫃 and settles the difference.
+    /// Compares each folder with the 珍奇室 and settles the difference.
     func sync() async {
         guard !syncing else { again = true; return }
         syncing = true

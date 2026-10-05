@@ -1,59 +1,58 @@
 #!/usr/bin/env python3
-"""從 Reicon 的 icon-data.json 產生 Xcode Asset Catalog 與 Swift enum。
+"""從 Iconoir 的 SVG 產生 Xcode Asset Catalog 與 Swift enum。
 
 用法：python3 scripts/reicon/generate.py
+icon 清單在 scripts/reicon/icons.txt：每行「程式裡的名字 Iconoir 檔名」。
+Iconoir 的 SVG 放在 .cache/iconoir/icons（npm pack iconoir 解開後的 package/icons）。
 """
 
 import json
 import re
 import shutil
+import subprocess
 import sys
-import urllib.request
+import tempfile
 from pathlib import Path
 
-# 固定 Reicon 版本，升級時改這裡
-REICON_COMMIT = "ceab2340577684a47d8e361172bdbcd75cb8c7f3"
-DATA_URL = f"https://raw.githubusercontent.com/dqev/reicon/{REICON_COMMIT}/data/icon-data.json"
+ICONOIR_VERSION = "7.12.1"
 
 ROOT = Path(__file__).resolve().parents[2]
 ICON_LIST = ROOT / "scripts/reicon/icons.txt"
-CACHE = ROOT / ".cache/reicon" / f"icon-data-{REICON_COMMIT[:12]}.json"
+SOURCE = ROOT / ".cache/iconoir/icons"
 CATALOG = ROOT / "Wunderkammer/Resources/Assets.xcassets/Reicon"
 SWIFT_OUT = ROOT / "Wunderkammer/DesignSystem/Icons/Reicon+Generated.swift"
 
-WEIGHTS = {"Outline": "outline", "Filled": "filled"}
+# 線條粗細：Iconoir 預設 1.5，介面要粗一點
+STROKE = 2.3
 SWIFT_KEYWORDS = {"repeat", "default", "case", "in", "is", "as", "return", "self", "func", "var", "let"}
 
 
-def load_data() -> dict:
-    if not CACHE.exists():
-        CACHE.parent.mkdir(parents=True, exist_ok=True)
-        print(f"下載 {DATA_URL}")
-        urllib.request.urlretrieve(DATA_URL, CACHE)
-    return json.loads(CACHE.read_text())
+def ensure_source() -> None:
+    if SOURCE.exists():
+        return
+    print(f"下載 iconoir@{ICONOIR_VERSION}")
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run(["npm", "pack", f"iconoir@{ICONOIR_VERSION}"], cwd=tmp, check=True, capture_output=True)
+        subprocess.run(["tar", "xzf", f"iconoir-{ICONOIR_VERSION}.tgz"], cwd=tmp, check=True)
+        SOURCE.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(Path(tmp) / "package/icons", SOURCE)
 
 
-def load_names() -> list[str]:
-    lines = (l.strip() for l in ICON_LIST.read_text().splitlines())
-    return [l for l in lines if l and not l.startswith("#")]
+def load_list() -> list[tuple[str, str]]:
+    pairs = []
+    for line in ICON_LIST.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        name, source = line.split()
+        pairs.append((name, source))
+    return pairs
 
 
-# 線條版加粗：每一筆外面再描一圈，1.5 的線約變成 2.7
-BOLDEN = 1.2
-
-
-def to_svg(code: str, bold: bool = False) -> str:
+def prepare(svg: str) -> str:
     # CoreSVG 不支援 currentColor；template image 只看 alpha，顏色固定黑色即可
-    code = code.replace("currentColor", "#000000")
-    if bold:
-        # 本身用描邊畫的線（自帶 stroke-width）也一起加粗
-        code = re.sub(r'stroke-width="([\d.]+)"', lambda m: f'stroke-width="{float(m.group(1)) + BOLDEN:g}"', code)
-        code = (f'<g stroke="#000000" stroke-width="{BOLDEN}" stroke-linejoin="round" '
-                f'stroke-linecap="round">{code}</g>')
-    return (
-        '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" '
-        f'viewBox="0 0 24 24" fill="none">{code}</svg>\n'
-    )
+    svg = svg.replace("currentColor", "#000000")
+    return re.sub(r'stroke-width="[\d.]+"', f'stroke-width="{STROKE}"', svg)
 
 
 def write_json(path: Path, obj: dict) -> None:
@@ -67,13 +66,11 @@ def swift_case(name: str) -> str:
 
 
 def main() -> int:
-    data = load_data()
-    icons = {n: v for c in data["categories"].values() for n, v in c["icons"].items()}
-    names = load_names()
-
-    missing = [n for n in names if n not in icons]
+    ensure_source()
+    pairs = load_list()
+    missing = [s for _, s in pairs if not (SOURCE / "regular" / f"{s}.svg").exists()]
     if missing:
-        print(f"Reicon 沒有這些 icon：{', '.join(missing)}", file=sys.stderr)
+        print(f"Iconoir 沒有這些 icon：{', '.join(missing)}", file=sys.stderr)
         return 1
 
     if CATALOG.exists():
@@ -84,15 +81,14 @@ def main() -> int:
         "properties": {"provides-namespace": True},
     })
 
-    for name in names:
-        weights = icons[name]["weights"]
-        for weight, suffix in WEIGHTS.items():
-            if weight not in weights:
-                print(f"{name} 缺少 {weight}", file=sys.stderr)
-                return 1
+    for name, source in pairs:
+        solid = SOURCE / "solid" / f"{source}.svg"
+        files = {"outline": SOURCE / "regular" / f"{source}.svg",
+                 "filled": solid if solid.exists() else SOURCE / "regular" / f"{source}.svg"}
+        for suffix, path in files.items():
             imageset = CATALOG / f"{name}.{suffix}.imageset"
             imageset.mkdir()
-            (imageset / f"{name}.{suffix}.svg").write_text(to_svg(weights[weight]["code"], bold=suffix == "outline"))
+            (imageset / f"{name}.{suffix}.svg").write_text(prepare(path.read_text()))
             write_json(imageset / "Contents.json", {
                 "images": [{"filename": f"{name}.{suffix}.svg", "idiom": "universal"}],
                 "info": {"author": "xcode", "version": 1},
@@ -102,17 +98,16 @@ def main() -> int:
                 },
             })
 
-    cases = "\n".join(f'    case {swift_case(n)} = "{n}"' for n in names)
+    cases = "\n".join(f'    case {swift_case(n)} = "{n}"' for n, _ in pairs)
     SWIFT_OUT.parent.mkdir(parents=True, exist_ok=True)
     SWIFT_OUT.write_text(
         "// 由 scripts/reicon/generate.py 產生，請勿手動修改\n"
-        f"// Reicon commit {REICON_COMMIT}\n\n"
+        f"// Iconoir {ICONOIR_VERSION}\n\n"
         "enum Reicon: String, CaseIterable, Sendable {\n"
         f"{cases}\n"
         "}\n"
     )
-
-    print(f"產生 {len(names)} 個 icon × {len(WEIGHTS)} weights")
+    print(f"產生 {len(pairs)} 個 icon（Iconoir {ICONOIR_VERSION}）")
     return 0
 
 

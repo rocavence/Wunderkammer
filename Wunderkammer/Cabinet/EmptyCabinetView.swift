@@ -34,9 +34,9 @@ final class EmptyCabinetView: NSView {
         Typography.display(size) ?? .systemFont(ofSize: size)
     }
 
-    /// The open 珍奇櫃's name, as its welcome.
-    var name = String(localized: "珍奇櫃") { didSet { titleField.stringValue = name } }
-    private let titleField = NSTextField(labelWithString: String(localized: "珍奇櫃"))
+    /// The open 珍奇室's name, as its welcome.
+    var name = String(localized: "珍奇室") { didSet { titleField.stringValue = name } }
+    private let titleField = NSTextField(labelWithString: String(localized: "珍奇室"))
 
     private func build() {
         let icon = NSImageView(image: Icon.image(.cabinet, weight: .outline, size: 56))

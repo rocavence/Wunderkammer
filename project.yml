@@ -55,7 +55,7 @@ targets:
       properties:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
-        NSAppleEventsUsageDescription: 按 ⌘⇧C 時，Wunderkammer 會讀取瀏覽器目前分頁的網址與標題，把這個頁面收進珍奇櫃。
+        NSAppleEventsUsageDescription: 按 ⌘⇧C 時，Wunderkammer 會讀取瀏覽器目前分頁的網址與標題，把這個頁面收進珍奇室。
         # wunderkammer://capture?url=…（書籤小程式、瀏覽器擴充）
         CFBundleURLTypes:
           - CFBundleURLName: com.rocavence.wunderkammer

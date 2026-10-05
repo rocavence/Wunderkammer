@@ -1681,7 +1681,7 @@
         }
       }
     },
-    "Wunderkammer：把東西拖到這裡就收進珍奇櫃": {
+    "Wunderkammer：把東西拖到這裡就收進珍奇室": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -1716,7 +1716,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wunderkammer：把東西拖到這裡就收進珍奇櫃"
+            "value": "Wunderkammer：把東西拖到這裡就收進珍奇室"
           }
         }
       }
@@ -3641,7 +3641,7 @@
         }
       }
     },
-    "切換、新增、改名或刪除珍奇櫃": {
+    "切換、新增、改名或刪除珍奇室": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -3676,7 +3676,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "切換、新增、改名或刪除珍奇櫃"
+            "value": "切換、新增、改名或刪除珍奇室"
           }
         }
       }
@@ -5001,7 +5001,7 @@
         }
       }
     },
-    "在 Finder 顯示珍奇櫃的資料": {
+    "在 Finder 顯示珍奇室的資料": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -5036,7 +5036,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "在 Finder 顯示珍奇櫃的資料"
+            "value": "在 Finder 顯示珍奇室的資料"
           }
         }
       }
@@ -5401,7 +5401,7 @@
         }
       }
     },
-    "它已經在監看清單裡，或和清單裡的資料夾重疊，或是珍奇櫃自己存放資料的地方。": {
+    "它已經在監看清單裡，或和清單裡的資料夾重疊，或是珍奇室自己存放資料的地方。": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -5436,7 +5436,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "它已經在監看清單裡，或和清單裡的資料夾重疊，或是珍奇櫃自己存放資料的地方。"
+            "value": "它已經在監看清單裡，或和清單裡的資料夾重疊，或是珍奇室自己存放資料的地方。"
           }
         }
       }
@@ -5761,7 +5761,7 @@
         }
       }
     },
-    "已經在珍奇櫃裡": {
+    "已經在珍奇室裡": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -5796,7 +5796,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "已經在珍奇櫃裡"
+            "value": "已經在珍奇室裡"
           }
         }
       }
@@ -6441,7 +6441,7 @@
         }
       }
     },
-    "打開珍奇櫃": {
+    "打開珍奇室": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -6476,7 +6476,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "打開珍奇櫃"
+            "value": "打開珍奇室"
           }
         }
       }
@@ -7961,7 +7961,7 @@
         }
       }
     },
-    "收進珍奇櫃": {
+    "收進珍奇室": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -7996,12 +7996,12 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "收進珍奇櫃"
+            "value": "收進珍奇室"
           }
         }
       }
     },
-    "改成把檔案收進珍奇櫃？": {
+    "改成把檔案收進珍奇室？": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -8036,7 +8036,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "改成把檔案收進珍奇櫃？"
+            "value": "改成把檔案收進珍奇室？"
           }
         }
       }
@@ -8241,7 +8241,7 @@
         }
       }
     },
-    "整個珍奇櫃的關係，線越粗共有的收藏越多": {
+    "整個珍奇室的關係，線越粗共有的收藏越多": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -8276,7 +8276,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "整個珍奇櫃的關係，線越粗共有的收藏越多"
+            "value": "整個珍奇室的關係，線越粗共有的收藏越多"
           }
         }
       }
@@ -8521,7 +8521,7 @@
         }
       }
     },
-    "新增珍奇櫃": {
+    "新增珍奇室": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -8556,7 +8556,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "新增珍奇櫃"
+            "value": "新增珍奇室"
           }
         }
       }
@@ -9081,7 +9081,7 @@
         }
       }
     },
-    "未命名珍奇櫃": {
+    "未命名珍奇室": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -9116,7 +9116,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "未命名珍奇櫃"
+            "value": "未命名珍奇室"
           }
         }
       }
@@ -9721,7 +9721,7 @@
         }
       }
     },
-    "每個珍奇櫃都有自己的收藏。點卡片打開，按編輯翻到背面設定名稱與檔案。": {
+    "每個珍奇室都有自己的收藏。點卡片打開，按編輯翻到背面設定名稱與檔案。": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -9756,7 +9756,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "每個珍奇櫃都有自己的收藏。點卡片打開，按編輯翻到背面設定名稱與檔案。"
+            "value": "每個珍奇室都有自己的收藏。點卡片打開，按編輯翻到背面設定名稱與檔案。"
           }
         }
       }
@@ -10641,7 +10641,7 @@
         }
       }
     },
-    "珍奇櫃": {
+    "珍奇室": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -10676,12 +10676,12 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "珍奇櫃"
+            "value": "珍奇室"
           }
         }
       }
     },
-    "珍奇櫃的名字": {
+    "珍奇室的名字": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -10716,12 +10716,12 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "珍奇櫃的名字"
+            "value": "珍奇室的名字"
           }
         }
       }
     },
-    "珍奇櫃裡有一份複本": {
+    "珍奇室裡有一份複本": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -10756,12 +10756,12 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "珍奇櫃裡有一份複本"
+            "value": "珍奇室裡有一份複本"
           }
         }
       }
     },
-    "珍奇櫃還是空的\n看到喜歡的東西，按 ⌘⇧C 收進來\n也可以把檔案、圖片、網址或文字拖到這裡": {
+    "珍奇室還是空的\n看到喜歡的東西，按 ⌘⇧C 收進來\n也可以把檔案、圖片、網址或文字拖到這裡": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -10796,12 +10796,12 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "珍奇櫃還是空的\n看到喜歡的東西，按 ⌘⇧C 收進來\n也可以把檔案、圖片、網址或文字拖到這裡"
+            "value": "珍奇室還是空的\n看到喜歡的東西，按 ⌘⇧C 收進來\n也可以把檔案、圖片、網址或文字拖到這裡"
           }
         }
       }
     },
-    "珍奇櫃：%@，%lld 件收藏。按一下切換或管理": {
+    "珍奇室：%@，%lld 件收藏。按一下切換或管理": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -10836,7 +10836,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "珍奇櫃：%@，%lld 件收藏。按一下切換或管理"
+            "value": "珍奇室：%@，%lld 件收藏。按一下切換或管理"
           }
         }
       }
@@ -12921,7 +12921,7 @@
         }
       }
     },
-    "複製一份到珍奇櫃": {
+    "複製一份到珍奇室": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -12956,7 +12956,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "複製一份到珍奇櫃"
+            "value": "複製一份到珍奇室"
           }
         }
       }
@@ -13001,7 +13001,7 @@
         }
       }
     },
-    "複製到珍奇櫃": {
+    "複製到珍奇室": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -13036,12 +13036,12 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "複製到珍奇櫃"
+            "value": "複製到珍奇室"
           }
         }
       }
     },
-    "要先打開別的珍奇櫃，才能刪除這個": {
+    "要先打開別的珍奇室，才能刪除這個": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -13076,7 +13076,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "要先打開別的珍奇櫃，才能刪除這個"
+            "value": "要先打開別的珍奇室，才能刪除這個"
           }
         }
       }

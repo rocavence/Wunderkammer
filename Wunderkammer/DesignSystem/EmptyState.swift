@@ -6,7 +6,7 @@ enum EmptyState {
     static func message(for scope: Scope) -> String {
         if scope.isSearching { return String(localized: "找不到「\(scope.search)」\n試試別的字，或是顏色、年份、網站名稱") }
         switch scope.base {
-        case .all: return String(localized: "珍奇櫃還是空的\n看到喜歡的東西，按 ⌘⇧C 收進來\n也可以把檔案、圖片、網址或文字拖到這裡")
+        case .all: return String(localized: "珍奇室還是空的\n看到喜歡的東西，按 ⌘⇧C 收進來\n也可以把檔案、圖片、網址或文字拖到這裡")
         case .board: return String(localized: "這個釘選版還是空的\n把收藏拖到左邊的釘選版名稱上，或直接拖檔案進來")
         case .kind(let k): return String(localized: "還沒有\(k.title)\n收進來的\(k.title)會自動出現在這裡")
         case .onThisDay: return String(localized: "過去的今天，你還沒有收藏東西\n明年的今天，這裡會有今天收的東西")

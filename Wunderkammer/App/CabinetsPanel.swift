@@ -1,13 +1,13 @@
 import AppKit
 import ImageIO
 
-/// The 珍奇櫃 on this Mac as a sheet of cards: each wears a cover made of its
+/// The 珍奇室 on this Mac as a sheet of cards: each wears a cover made of its
 /// newest pieces; a click opens it. Names are typed on the card itself. The
-/// default one can't be removed. Opened from the 珍奇櫃 card atop the sidebar.
+/// default one can't be removed. Opened from the 珍奇室 card atop the sidebar.
 @MainActor
 final class CabinetsPanel: NSObject {
     var onSwitch: ((UUID) -> Void)?
-    /// A 珍奇櫃 was added, renamed or removed.
+    /// A 珍奇室 was added, renamed or removed.
     var onChange: (() -> Void)?
 
     private let cabinets: Cabinets
@@ -24,7 +24,7 @@ final class CabinetsPanel: NSObject {
     private let scroll = NSScrollView()
     private let done = NSButton(title: String(localized: "完成"), target: nil, action: nil)
     private var cards: [NSView] = []
-    /// A new 珍奇櫃 waiting for its name: a card, not yet a folder.
+    /// A new 珍奇室 waiting for its name: a card, not yet a folder.
     private var drafting = false
     /// The tallest the sheet may be: no taller than the window it hangs from.
     private var maxHeight: CGFloat = .greatestFiniteMagnitude
@@ -57,9 +57,9 @@ final class CabinetsPanel: NSObject {
     }
 
     private func build() {
-        let title = NSTextField(labelWithString: String(localized: "珍奇櫃"))
+        let title = NSTextField(labelWithString: String(localized: "珍奇室"))
         title.font = Typography.display(26) ?? .systemFont(ofSize: 26)
-        let note = NSTextField(labelWithString: String(localized: "每個珍奇櫃都有自己的收藏。點卡片打開，按編輯翻到背面設定名稱與檔案。"))
+        let note = NSTextField(labelWithString: String(localized: "每個珍奇室都有自己的收藏。點卡片打開，按編輯翻到背面設定名稱與檔案。"))
         note.font = .systemFont(ofSize: 12.5)
         note.textColor = .secondaryLabelColor
         done.target = self
@@ -97,7 +97,7 @@ final class CabinetsPanel: NSObject {
         sheet.contentView = content
     }
 
-    /// Cards in rows of three: every 珍奇櫃, then the one being named or the
+    /// Cards in rows of three: every 珍奇室, then the one being named or the
     /// card for adding one.
     private func layoutCards() {
         cards.forEach { $0.removeFromSuperview() }
@@ -275,7 +275,7 @@ final class CabinetsPanel: NSObject {
     }
 
     /// A blank card takes the place of 新增, its name already being typed.
-    /// Return makes the 珍奇櫃; Esc or an empty name leaves nothing behind.
+    /// Return makes the 珍奇室; Esc or an empty name leaves nothing behind.
     private func add() {
         drafting = true
         layoutCards()
@@ -303,7 +303,7 @@ final class CabinetsPanel: NSObject {
 
     // MARK: Files: linked folders, or a vault
 
-    /// Keeping files means a folder of the 珍奇櫃's own. Chosen first, then
+    /// Keeping files means a folder of the 珍奇室's own. Chosen first, then
     /// asked: what gets copied, what stops being watched. No means nothing changes.
     private func chooseVault(for entry: Cabinets.Entry) {
         let open = NSOpenPanel()
@@ -328,7 +328,7 @@ final class CabinetsPanel: NSObject {
         if watched > 0 { lines.append(String(localized: "連結的 \(watched) 個資料夾會停止監看，裡面的檔案不會被動到。")) }
         lines.append(String(localized: "之後收進來的檔案也都會存在這裡。"))
         let alert = NSAlert()
-        alert.messageText = String(localized: "改成把檔案收進珍奇櫃？")
+        alert.messageText = String(localized: "改成把檔案收進珍奇室？")
         alert.informativeText = lines.joined(separator: "\n")
         alert.addButton(withTitle: files > 0 ? String(localized: "複製並改用") : String(localized: "改用"))
         alert.addButton(withTitle: String(localized: "取消"))
@@ -358,7 +358,7 @@ final class CabinetsPanel: NSObject {
             } else {
                 let alert = NSAlert()
                 alert.messageText = String(localized: "不能監看這個資料夾")
-                alert.informativeText = String(localized: "它已經在監看清單裡，或和清單裡的資料夾重疊，或是珍奇櫃自己存放資料的地方。")
+                alert.informativeText = String(localized: "它已經在監看清單裡，或和清單裡的資料夾重疊，或是珍奇室自己存放資料的地方。")
                 alert.beginSheetModal(for: self.sheet)
             }
         }
@@ -402,7 +402,7 @@ final class CabinetsPanel: NSObject {
     }
 }
 
-/// One 珍奇櫃: its cover, its name, how much it holds, and buttons for
+/// One 珍奇室: its cover, its name, how much it holds, and buttons for
 /// renaming and removing it. Lifts under the pointer.
 @MainActor
 private final class CabinetCard: NSView, NSTextFieldDelegate {
@@ -466,12 +466,12 @@ private final class CabinetCard: NSView, NSTextFieldDelegate {
         views.append(badgeRow)
 
         // Rename and remove, always in view beside the name. The default
-        // 珍奇櫃 has no remove; the open one can't be removed while open.
+        // 珍奇室 has no remove; the open one can't be removed while open.
         var tools: [NSView] = []
         if !isDraft {
             tools.append(CardTool(icon: .edit, tip: String(localized: "編輯：名稱與檔案"), destructive: false) { [weak self] in self?.onEdit?() })
             if !isDefault {
-                let trash = CardTool(icon: .trash, tip: canDelete ? String(localized: "刪除") : String(localized: "要先打開別的珍奇櫃，才能刪除這個"),
+                let trash = CardTool(icon: .trash, tip: canDelete ? String(localized: "刪除") : String(localized: "要先打開別的珍奇室，才能刪除這個"),
                                      destructive: true) { [weak self] in self?.onDelete?() }
                 trash.isEnabled = canDelete
                 tools.append(trash)
@@ -734,11 +734,11 @@ private final class CardTool: NSButton {
     @objc private func run() { handler() }
 }
 
-/// The newest pieces of a 珍奇櫃 as one picture, for its card and the sidebar.
+/// The newest pieces of a 珍奇室 as one picture, for its card and the sidebar.
 enum CabinetCover {
 
     /// One fills it, two side by side, three as one large and two small, four
-    /// as a square of four. None: a gradient of the 珍奇櫃's own colour.
+    /// as a square of four. None: a gradient of the 珍奇室's own colour.
     static func mosaic(_ urls: [URL], seed: UUID, size: CGSize = CGSize(width: 408, height: 312)) -> CGImage? {
         let images = urls.prefix(4).compactMap { url -> CGImage? in
             guard let src = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
@@ -794,7 +794,7 @@ enum CabinetCover {
     }
 }
 
-/// The last card: a dashed outline inviting a new 珍奇櫃.
+/// The last card: a dashed outline inviting a new 珍奇室.
 @MainActor
 private final class AddCabinetCard: NSView {
     var onAdd: (() -> Void)?
@@ -810,7 +810,7 @@ private final class AddCabinetCard: NSView {
         layer?.addSublayer(outline)
         let plus = NSImageView(image: Icon.image(.plus, size: 28))
         plus.contentTintColor = .secondaryLabelColor
-        let label = NSTextField(labelWithString: String(localized: "新增珍奇櫃"))
+        let label = NSTextField(labelWithString: String(localized: "新增珍奇室"))
         label.font = .systemFont(ofSize: 13, weight: .medium)
         label.textColor = .secondaryLabelColor
         let stack = NSStackView(views: [plus, label])
@@ -824,7 +824,7 @@ private final class AddCabinetCard: NSView {
         ])
         setAccessibilityElement(true)
         setAccessibilityRole(.button)
-        setAccessibilityLabel(String(localized: "新增珍奇櫃"))
+        setAccessibilityLabel(String(localized: "新增珍奇室"))
     }
 
     required init?(coder: NSCoder) { fatalError() }
@@ -875,9 +875,9 @@ private final class Scrim: NSView {
     override func mouseUp(with event: NSEvent) { onClick?() }
 }
 
-/// A 珍奇櫃's settings: the back of its card, grown to a panel with room to
+/// A 珍奇室's settings: the back of its card, grown to a panel with room to
 /// breathe. Its name, and what happens to the files it collects: they stay
-/// where they are (and up to three folders are linked), or the 珍奇櫃 keeps a
+/// where they are (and up to three folders are linked), or the 珍奇室 keeps a
 /// copy of each in a folder of its own. One or the other.
 @MainActor
 final class CabinetSettings: NSView, NSTextFieldDelegate {
@@ -934,7 +934,7 @@ final class CabinetSettings: NSView, NSTextFieldDelegate {
         nameField.font = .systemFont(ofSize: 15)
         nameField.bezelStyle = .roundedBezel
         nameField.controlSize = .large
-        nameField.placeholderString = String(localized: "珍奇櫃的名字")
+        nameField.placeholderString = String(localized: "珍奇室的名字")
         nameField.delegate = self
         nameField.lineBreakMode = .byTruncatingTail
         nameField.cell?.isScrollable = true
