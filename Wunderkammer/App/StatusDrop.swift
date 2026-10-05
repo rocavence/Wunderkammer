@@ -2,7 +2,8 @@ import AppKit
 
 /// The menu bar icon: the app's arch, drawn in line. Anything dragged onto it
 /// (files, pictures, links, text) is collected; while something is held over
-/// it the arch fills in, so you know letting go will take it.
+/// it the arch fills in, so you know letting go will take it; whenever
+/// something is collected, its doorway lights up Rams orange for a moment.
 @MainActor
 final class StatusDrop: NSObject, NSWindowDelegate, NSDraggingDestination {
     /// Collects what was dropped; false when there was nothing it could use.
@@ -10,17 +11,31 @@ final class StatusDrop: NSObject, NSWindowDelegate, NSDraggingDestination {
 
     private weak var button: NSStatusBarButton?
 
-    /// An arch, ∩, as a menu bar template: outlined, or filled while a drop hovers.
-    static func arch(filled: Bool) -> NSImage {
+    override init() {
+        super.init()
+        NotificationCenter.default.addObserver(forName: Library.didCapture, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.glow() }
+        }
+    }
+
+    /// An arch, ∩, as a menu bar template: outlined, or filled while a drop
+    /// hovers. Lit, it's outlined in the menu bar's ink with Rams orange inside.
+    static func arch(filled: Bool, lit: Bool = false) -> NSImage {
         let image = NSImage(size: NSSize(width: 18, height: 18), flipped: false) { _ in
-            let w: CGFloat = 11, legs: CGFloat = 3, top: CGFloat = 15.5, inset = (18 - w) / 2
+            let w: CGFloat = 11, legs: CGFloat = 4, top: CGFloat = 14.5, inset = (18 - w) / 2
             let r = w / 2
             let path = NSBezierPath()
             path.move(to: NSPoint(x: inset, y: legs))
             path.line(to: NSPoint(x: inset, y: top - r))
             path.appendArc(withCenter: NSPoint(x: 9, y: top - r), radius: r, startAngle: 180, endAngle: 0, clockwise: true)
             path.line(to: NSPoint(x: 18 - inset, y: legs))
-            NSColor.black.set()
+            if lit {
+                let inside = path.copy() as! NSBezierPath
+                inside.close()
+                Accent.orange.color.set()
+                inside.fill()
+            }
+            (lit ? NSColor.labelColor : .black).set()
             if filled {
                 path.close()
                 path.fill()
@@ -32,10 +47,26 @@ final class StatusDrop: NSObject, NSWindowDelegate, NSDraggingDestination {
             }
             return true
         }
-        image.isTemplate = true
+        image.isTemplate = !lit
         image.accessibilityDescription = "Wunder"
         return image
     }
+
+    /// Something was collected: the doorway lights up orange for a moment.
+    func glow() {
+        isLit = true
+        button?.image = Self.arch(filled: false, lit: true)
+        glowEnds?.cancel()
+        let end = DispatchWorkItem { [weak self] in
+            self?.isLit = false
+            self?.button?.image = Self.arch(filled: false)
+        }
+        glowEnds = end
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6, execute: end)
+    }
+
+    private var glowEnds: DispatchWorkItem?
+    private(set) var isLit = false
 
     /// Takes drops on the status item's button. The status item's window hands
     /// its dragging messages to its delegate, which is this.

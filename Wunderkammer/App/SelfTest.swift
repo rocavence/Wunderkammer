@@ -224,6 +224,26 @@ final class SelfTest {
                 w.orderOut(nil)
                 shot("accent-main")
                 Accent.apply(was)
+                // The menu bar arch, and its doorway lit when something is collected.
+                for (name, lit, look) in [("arch", false, NSAppearance.Name.aqua), ("arch-lit", true, .aqua), ("arch-lit-dark", true, .darkAqua)] {
+                    var tiff: Data?
+                    NSAppearance(named: look)?.performAsCurrentDrawingAppearance {
+                        let big = NSImage(size: NSSize(width: 144, height: 144), flipped: false) { r in
+                            (look == .aqua ? NSColor.white : NSColor.black).setFill(); r.fill()
+                            StatusDrop.arch(filled: false, lit: lit).draw(in: r)
+                            return true
+                        }
+                        tiff = big.tiffRepresentation
+                    }
+                    if let tiff, let rep = NSBitmapImageRep(data: tiff) {
+                        try? rep.representation(using: .png, properties: [:])?.write(to: dir.appendingPathComponent("\(name).png"))
+                    }
+                }
+                NotificationCenter.default.post(name: Library.didCapture, object: library)
+                await wait(0.2)
+                check(ui.statusLitForTest, "collecting something lights the menu bar arch")
+                await wait(1.8)
+                check(!ui.statusLitForTest, "and it goes back to the plain arch")
             }
             return finish()
         case "timeline":
@@ -1762,7 +1782,7 @@ final class SelfTest {
         shot("ui-inspector")
         if let insp = (NSApp.delegate as? AppDelegate)?.inspectorViewForTest {
             let side = ui.sidebar.view.frame.width, own = insp.frame.width
-            check(abs(side - own) < 2, "the inspector opens as wide as the sidebar (\(Int(own)) vs \(Int(side)))")
+            check(abs(max(side, 240) - own) < 2, "the inspector opens as wide as the sidebar, at least 240 (\(Int(own)) vs \(Int(side)))")
         }
         // How long showing an item in the inspector takes, and the toggle.
         if let some = library.items.dropFirst(3).first {
@@ -1834,6 +1854,7 @@ protocol SelfTestUI: AnyObject {
     @discardableResult func showRandom() -> Item?
     func toggleInspectorForTest()
     func dragSidebarForTest(to width: CGFloat)
+    var statusLitForTest: Bool { get }
     func inspectForTest(_ id: UUID)
     func ask(_ question: String)
     func openForTest(_ id: UUID)

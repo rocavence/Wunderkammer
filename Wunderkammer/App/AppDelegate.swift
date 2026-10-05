@@ -1182,9 +1182,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         let opening = inspectorItem.isCollapsed
         inspectorItem.isCollapsed.toggle()
         if opening, !sidebarItem.isCollapsed {
-            // Opens as wide as the sidebar: held at that width while it lays
-            // out, then free again to be dragged within the sidebar's range.
-            let width = sidebar.view.frame.width
+            // Opens as wide as the sidebar (never under its own 240): held at
+            // that width while it lays out, then free again to be dragged.
+            let width = max(sidebar.view.frame.width, 240)
             let (low, high) = (inspectorItem.minimumThickness, inspectorItem.maximumThickness)
             inspectorItem.minimumThickness = width
             inspectorItem.maximumThickness = width
@@ -1207,6 +1207,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     }
 
     func toggleInspectorForTest() { toggleInspector() }
+    var statusLitForTest: Bool { statusDrop.isLit }
     func dragSidebarForTest(to width: CGFloat) { splitController.splitView.setPosition(width, ofDividerAt: 0) }
     func inspectForTest(_ id: UUID) { inspector.show(id) }
     var inspectorViewForTest: NSView? { inspector.view.superview }
