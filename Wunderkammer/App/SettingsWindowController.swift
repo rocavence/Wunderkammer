@@ -288,10 +288,8 @@ final class SettingsWindowController: NSWindowController {
             AuthorCard(),
             app,
             section(String(localized: "為什麼做 Wunder"), [
-                String(localized: "同類的 app 我用過不少。不是貴到要先想想這個月還吃不吃飯，就是功能貪心到什麼都想塞，打開來像在看飛機駕駛艙。結果就是：根本不想打開。"),
-                String(localized: "說實話，Wunder 你可能也不會天天打開。沒關係，它本來就不用你照顧。"),
-                String(localized: "你只要收藏。哪天想起來打開，它已經整理好了。"),
-                String(localized: "還要花腦袋分資料夾、取檔名、下標籤？醒醒，這件事從來就不現實。"),
+                String(localized: "同類的 app 我用過不少。很多都很不便宜，可是它們做的事，收東西、找東西，但是都不好用，有些功能陽春，另一些什麼都想做，選單一層接一層，光是學怎麼用就累了，最後我乾脆不打開。"),
+                String(localized: "Wunder 你大概也不會天天打開，這樣剛好，它會把你的「珍奇」分門別類擺好掛上牆，哪天想到再打開，就是一個舒服的展室，你就隨意逛逛，不整理也完全沒問題！"),
             ]),
             section(String(localized: "Wunder 怎麼解決"), leads: true, [
                 String(localized: "收進來就好。按快捷鍵、拖到選單列的拱門或截圖，一個動作就收好，不問要放哪裡。"),

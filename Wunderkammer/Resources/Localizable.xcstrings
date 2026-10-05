@@ -1721,6 +1721,46 @@
         }
       }
     },
+    "Wunder 你大概也不會天天打開，這樣剛好，它會把你的「珍奇」分門別類擺好掛上牆，哪天想到再打開，就是一個舒服的展室，你就隨意逛逛，不整理也完全沒問題！" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You probably won’t open Wunder every day either, and that’s just right. It sorts your curiosities and hangs them on the wall, so whenever you do open it, there’s a comfortable room waiting. Wander around; no tidying needed, really!"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wunder もたぶん毎日は開かないでしょう。それでちょうどいいんです。あなたの「珍品」を分類して壁に飾っておくので、思い出して開けば、そこは居心地のいい展示室。気ままに見て回るだけで、整理しなくてもまったく大丈夫！"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wunder도 아마 매일 열지는 않겠죠. 그게 딱 좋아요. 당신의 ‘진기한 것들’을 분류해 벽에 걸어 두니까, 생각날 때 열면 편안한 전시실이 기다립니다. 마음 가는 대로 둘러보세요. 정리 안 해도 전혀 문제없어요!"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguramente tampoco abrirás Wunder cada día, y está bien así. Ordena tus «curiosidades» y las cuelga en la pared, así que cuando lo abras te espera una sala acogedora. Pasea sin prisa; ¡no hace falta ordenar nada!"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Você provavelmente também não vai abrir o Wunder todo dia, e tudo bem. Ele separa suas “curiosidades” e pendura na parede, então quando abrir, vai encontrar uma sala aconchegante. É só passear; não precisa arrumar nada!"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wunder 你大概也不會天天打開，這樣剛好，它會把你的「珍奇」分門別類擺好掛上牆，哪天想到再打開，就是一個舒服的展室，你就隨意逛逛，不整理也完全沒問題！"
+          }
+        }
+      }
+    },
     "Wunder 怎麼解決" : {
       "localizations" : {
         "en" : {
@@ -3681,46 +3721,6 @@
         }
       }
     },
-    "你只要收藏。哪天想起來打開，它已經整理好了。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Just collect. Whenever you do open it, it’s already tidied up."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "集めるだけ。いつか思い出して開いたとき、もう整理は済んでいます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "담기만 하세요. 언젠가 생각나서 열면 이미 정리돼 있습니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Solo guarda. El día que lo abras, ya estará ordenado."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Só guarde. No dia em que abrir, já vai estar arrumado."
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "你只要收藏。哪天想起來打開，它已經整理好了。"
-          }
-        }
-      }
-    },
     "你在 %@ 天前收藏了這個" : {
       "localizations" : {
         "en" : {
@@ -5401,42 +5401,42 @@
         }
       }
     },
-    "同類的 app 我用過不少。不是貴到要先想想這個月還吃不吃飯，就是功能貪心到什麼都想塞，打開來像在看飛機駕駛艙。結果就是：根本不想打開。" : {
+    "同類的 app 我用過不少。很多都很不便宜，可是它們做的事，收東西、找東西，但是都不好用，有些功能陽春，另一些什麼都想做，選單一層接一層，光是學怎麼用就累了，最後我乾脆不打開。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I’ve tried plenty of apps like this. They’re either so pricey you start rethinking this month’s groceries, or so greedy with features that opening one feels like stepping into a cockpit. So I just… didn’t open them."
+            "value" : "I’ve used plenty of apps like this. Many of them aren’t cheap, and what they do is simple, saving things and finding them again, yet none were nice to use. Some were bare-bones; others tried to do everything, menu after menu, until just learning them wore me out. In the end I stopped opening them."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "同じような app はたくさん試しました。今月の食費を考え直すほど高いか、機能を欲張りすぎて開くとまるで飛行機のコックピット。結局、開く気になれませんでした。"
+            "value" : "同じような app はたくさん使ってきました。どれも安くはないのに、やることは集めて、探すだけ。それなのに使いにくい。機能が物足りないものもあれば、何でもやろうとしてメニューが何層も続き、使い方を覚えるだけで疲れるものも。結局、開かなくなりました。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "비슷한 앱을 꽤 써 봤습니다. 이번 달 식비를 다시 계산하게 될 만큼 비싸거나, 기능을 욕심껏 넣어서 열면 비행기 조종석 같거나. 결국 열고 싶지가 않았습니다."
+            "value" : "비슷한 앱을 꽤 써 봤습니다. 대부분 싸지 않은데, 하는 일은 담고 찾는 것뿐인데도 쓰기 불편했어요. 기능이 너무 단출한 것도 있고, 뭐든 다 하려다 메뉴가 겹겹이 쌓여 사용법을 익히는 것만으로 지치는 것도 있었죠. 결국 아예 열지 않게 됐습니다."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "He probado muchas apps así. O son tan caras que te hacen replantearte la compra del mes, o tan glotonas de funciones que abrirlas parece entrar en la cabina de un avión. Resultado: no daban ganas de abrirlas."
+            "value" : "He usado muchas apps así. Muchas no son baratas, y lo que hacen es sencillo, guardar cosas y encontrarlas, pero ninguna era cómoda. Unas se quedaban cortas; otras querían hacerlo todo, menú tras menú, y aprender a usarlas ya cansaba. Al final dejé de abrirlas."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Já testei vários apps assim. Ou são tão caros que você repensa o mercado do mês, ou tão gulosos de recursos que abrir parece entrar numa cabine de avião. Resultado: dava preguiça de abrir."
+            "value" : "Já usei vários apps assim. Muitos não são baratos, e o que fazem é simples, guardar coisas e achar de novo, mas nenhum era bom de usar. Uns eram básicos demais; outros queriam fazer tudo, menu atrás de menu, e só aprender a usar já cansava. No fim, parei de abrir."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "同類的 app 我用過不少。不是貴到要先想想這個月還吃不吃飯，就是功能貪心到什麼都想塞，打開來像在看飛機駕駛艙。結果就是：根本不想打開。"
+            "value" : "同類的 app 我用過不少。很多都很不便宜，可是它們做的事，收東西、找東西，但是都不好用，有些功能陽春，另一些什麼都想做，選單一層接一層，光是學怎麼用就累了，最後我乾脆不打開。"
           }
         }
       }
@@ -16001,46 +16001,6 @@
         }
       }
     },
-    "說實話，Wunder 你可能也不會天天打開。沒關係，它本來就不用你照顧。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Honestly, you might not open Wunder every day either. That’s fine. It doesn’t need looking after."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正直、Wunder も毎日は開かないかもしれません。大丈夫。もともと世話のいらないアプリです。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "솔직히 Wunder도 매일 열지는 않을 거예요. 괜찮아요. 원래 돌봐 줄 필요가 없으니까요."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sinceramente, puede que tampoco abras Wunder cada día. No pasa nada: no necesita que lo cuides."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sinceramente, talvez você também não abra o Wunder todo dia. Tudo bem: ele não precisa de cuidados."
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "說實話，Wunder 你可能也不會天天打開。沒關係，它本來就不用你照顧。"
-          }
-        }
-      }
-    },
     "讓舊收藏回來找你。漫遊、過去的今天、被遺忘的，把收過的東西一件件再帶回眼前。" : {
       "localizations" : {
         "en" : {
@@ -17277,46 +17237,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "還沒有連結資料夾。"
-          }
-        }
-      }
-    },
-    "還要花腦袋分資料夾、取檔名、下標籤？醒醒，這件事從來就不現實。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spend brainpower on folders, file names, and tags? Come on. That was never going to happen."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "頭を使ってフォルダを分け、名前を付け、タグを付ける？目を覚まして。そんなの最初から無理な話です。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "머리 써서 폴더 나누고, 이름 붙이고, 태그 달라고요? 정신 차려요. 처음부터 현실적이지 않았어요."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Gastar neuronas en carpetas, nombres y etiquetas? Venga ya. Eso nunca iba a pasar."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gastar neurônios com pastas, nomes e etiquetas? Fala sério. Isso nunca ia acontecer."
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "還要花腦袋分資料夾、取檔名、下標籤？醒醒，這件事從來就不現實。"
           }
         }
       }
