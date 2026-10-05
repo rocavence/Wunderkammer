@@ -9,7 +9,8 @@ from PIL import Image, ImageDraw, ImageFilter
 
 CREAM = (0xF3, 0xE9, 0xD9, 255)
 SIDE, BODY, RADIUS = 1024, (100, 100, 924, 924), 185
-FILL = 0.76  # 主體佔底板的比例
+FILL = 0.78  # 主體佔底板的比例
+RAISE = 0.02  # 主體往上移，佔底板高度的比例
 
 out = sys.argv[1]
 art = Image.open("scripts/icon/cards-1024.png")
@@ -23,7 +24,7 @@ ImageDraw.Draw(shade).rounded_rectangle((BODY[0], BODY[1] + 14, BODY[2], BODY[3]
 canvas.paste(Image.new("RGBA", (SIDE, SIDE), (0, 0, 0, 255)), (0, 0), shade.filter(ImageFilter.GaussianBlur(17)))
 
 tile = Image.new("RGBA", (SIDE, SIDE), CREAM)
-ox, oy = (SIDE - art.size[0]) // 2, (SIDE - art.size[1]) // 2
+ox, oy = (SIDE - art.size[0]) // 2, (SIDE - art.size[1]) // 2 - round(RAISE * (BODY[3] - BODY[1]))
 under = Image.new("L", (SIDE, SIDE), 0)
 under.paste(art.getchannel("A").point(lambda v: int(v * 0.35)), (ox, oy + 18))
 tile.paste(Image.new("RGBA", (SIDE, SIDE), (90, 50, 20, 255)), (0, 0), under.filter(ImageFilter.GaussianBlur(22)))
