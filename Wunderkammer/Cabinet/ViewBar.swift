@@ -180,9 +180,11 @@ private final class BarButton: NSButton {
         bar?.hover(nil)
         guard !tool.choices.isEmpty else { return tool.action() }
         let menu = NSMenu()
+        menu.font = .systemFont(ofSize: 15)
+        menu.minimumWidth = 200
         for choice in tool.choices {
             let item = ClosureMenuItem(choice.tip) { choice.action() }
-            item.image = Icon.optical(choice.icon, size: 16)
+            item.image = Icon.optical(choice.icon, size: 20)
             menu.addItem(item)
         }
         // Opens upward, its bottom just above the button.
