@@ -132,6 +132,7 @@ main { padding: 0 20px; }
   color: var(--soft);
   font-size: clamp(18px, 2.4vw, 21px);
   line-height: 1.45;
+  text-wrap: balance;
 }
 .lede b { color: var(--ink); font-weight: 600; }
 
@@ -260,7 +261,7 @@ kbd {
 .feature header { max-width: 560px; margin: 0 auto; text-align: center; }
 .feature .kicker { color: var(--accent); font-weight: 600; font-size: 14px; letter-spacing: .02em; }
 .feature h3 { margin: 6px 0 8px; font: 700 clamp(28px, 4.4vw, 40px)/1.1 var(--font-display); letter-spacing: -0.035em; }
-.feature p { margin: 0; color: var(--soft); }
+.feature p { margin: 0; color: var(--soft); text-wrap: balance; }
 
 .big {
   max-width: var(--content);
