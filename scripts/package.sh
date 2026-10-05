@@ -23,5 +23,5 @@ codesign --verify --strict "$OUT/Wunder.app"
 ZIP="dist/Wunder.zip"
 rm -f "$ZIP"
 ditto -c -k --sequesterRsrc --keepParent "$OUT/Wunder.app" "$ZIP"
-shasum -a 256 "$ZIP" | tee "$ZIP.sha256"
+(cd dist && shasum -a 256 Wunder.zip | tee Wunder.zip.sha256)
 du -h "$ZIP"
