@@ -633,7 +633,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         case .canvas:
             tools = [
                 [.init(icon: .sparkles, tip: String(localized: "依主題分堆")) { [weak self] in self?.canvas.clusterByTheme(nil) },
-                 .init(icon: .link, tip: String(localized: "依關聯分堆"), enabled: canvas.hasRelations) { [weak self] in self?.canvas.clusterByRelation(nil) },
+                 .init(icon: .cube, tip: String(localized: "依關聯分堆"), enabled: canvas.hasRelations) { [weak self] in self?.canvas.clusterByRelation(nil) },
                  .init(icon: .grid2, tip: String(localized: "整理成整齊的排列")) { [weak self] in self?.canvas.arrange(nil) }],
                 [.init(icon: .maximize, tip: String(localized: "顯示全部")) { [weak self] in self?.canvas.fit(animated: true) }] + zoom,
                 [.init(icon: .restart, tip: String(localized: "重設擺放…"), destructive: true) { [weak self] in self?.canvas.resetArrangement(nil) }],
