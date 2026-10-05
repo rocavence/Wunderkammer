@@ -1,5 +1,21 @@
 import AppKit
 
+/// Sizes for the bars at the foot of the view: regular, or compact when the
+/// view is narrow (a small screen, or both side panels open).
+struct BarMetrics {
+    var button: CGSize
+    var icon: CGFloat
+    var height: CGFloat
+    var spacing: CGFloat
+    var inset: CGFloat
+    var corner: CGFloat
+    var buttonCorner: CGFloat
+    var divider: CGFloat
+
+    static let regular = BarMetrics(button: CGSize(width: 42, height: 40), icon: 20, height: 54, spacing: 4, inset: 7, corner: 18, buttonCorner: 11, divider: 22)
+    static let compact = BarMetrics(button: CGSize(width: 32, height: 30), icon: 16, height: 42, spacing: 2, inset: 5, corner: 14, buttonCorner: 8, divider: 16)
+}
+
 /// The floating bar at the foot of the view, in the middle: the layouts this
 /// space has, then what can be done to the view in front of you. Each button
 /// names itself in a bubble above the bar as soon as the pointer is on it.
@@ -21,15 +37,25 @@ final class ViewBar: NSView {
     private(set) var tips: [String] = []
     private let bubble = TipBubble()
 
+    /// Smaller buttons when the view is narrow.
+    var compact = false {
+        didSet {
+            guard compact != oldValue else { return }
+            applyMetrics()
+            if let last { show(layouts: last.layouts, current: last.current, tools: last.tools) }
+        }
+    }
+    var metrics: BarMetrics { compact ? .compact : .regular }
+    private var last: (layouts: [ViewMode], current: ViewMode, tools: [[Tool]])?
+    private let glass = Glass(cornerRadius: 18)
+    private lazy var height = heightAnchor.constraint(equalToConstant: 54)
+
     init() {
         super.init(frame: .zero)
-        let glass = Glass(cornerRadius: 18)
         glass.frame = bounds
         glass.autoresizingMask = [.width, .height]
         addSubview(glass)
         stack.orientation = .horizontal
-        stack.spacing = 4
-        stack.edgeInsets = NSEdgeInsets(top: 0, left: 7, bottom: 0, right: 7)
         stack.translatesAutoresizingMaskIntoConstraints = false
         addSubview(stack)
         NSLayoutConstraint.activate([
@@ -37,8 +63,17 @@ final class ViewBar: NSView {
             stack.trailingAnchor.constraint(equalTo: trailingAnchor),
             stack.topAnchor.constraint(equalTo: topAnchor),
             stack.bottomAnchor.constraint(equalTo: bottomAnchor),
-            heightAnchor.constraint(equalToConstant: 54),
+            height,
         ])
+        applyMetrics()
+    }
+
+    private func applyMetrics() {
+        let m = metrics
+        stack.spacing = m.spacing
+        stack.edgeInsets = NSEdgeInsets(top: 0, left: m.inset, bottom: 0, right: m.inset)
+        height.constant = m.height
+        glass.layer?.cornerRadius = m.corner
     }
 
     required init?(coder: NSCoder) { fatalError() }
@@ -50,6 +85,7 @@ final class ViewBar: NSView {
     /// The space's layouts (only when there's more than one), then the tools
     /// in groups, a hairline between groups.
     func show(layouts: [ViewMode], current: ViewMode, tools: [[Tool]]) {
+        last = (layouts, current, tools)
         stack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         bubble.hide()
         panel?.close()
@@ -70,7 +106,7 @@ final class ViewBar: NSView {
             })
         }
         for (i, section) in sections.enumerated() {
-            if i > 0 { stack.addArrangedSubview(Self.divider()) }
+            if i > 0 { stack.addArrangedSubview(Self.divider(height: metrics.divider)) }
             section.forEach(stack.addArrangedSubview)
         }
         isHidden = sections.isEmpty
@@ -121,7 +157,7 @@ final class ViewBar: NSView {
         bubble.show(button.tool.tip, above: button, in: host)
     }
 
-    private static func divider() -> NSView {
+    private static func divider(height: CGFloat) -> NSView {
         let line = NSBox()
         line.boxType = .separator
         line.translatesAutoresizingMaskIntoConstraints = false
@@ -130,9 +166,9 @@ final class ViewBar: NSView {
         wrap.addSubview(line)
         NSLayoutConstraint.activate([
             line.widthAnchor.constraint(equalToConstant: 1),
-            line.heightAnchor.constraint(equalToConstant: 22),
-            wrap.widthAnchor.constraint(equalToConstant: 11),
-            wrap.heightAnchor.constraint(equalToConstant: 22),
+            line.heightAnchor.constraint(equalToConstant: height),
+            wrap.widthAnchor.constraint(equalToConstant: height / 2),
+            wrap.heightAnchor.constraint(equalToConstant: height),
             line.centerXAnchor.constraint(equalTo: wrap.centerXAnchor),
             line.centerYAnchor.constraint(equalTo: wrap.centerYAnchor),
         ])
@@ -154,18 +190,19 @@ private final class BarButton: NSButton {
         self.bar = bar
         super.init(frame: .zero)
         // Optically matched: each icon's drawing comes out the same size.
-        image = Icon.optical(tool.icon, size: 20)
+        let m = bar.metrics
+        image = Icon.optical(tool.icon, size: m.icon)
         isBordered = false
         setAccessibilityLabel(tool.tip)
         isEnabled = tool.enabled
         alphaValue = tool.enabled ? 1 : 0.35
         wantsLayer = true
-        layer?.cornerRadius = 11
+        layer?.cornerRadius = m.buttonCorner
         target = self
         action = #selector(run)
         translatesAutoresizingMaskIntoConstraints = false
-        widthAnchor.constraint(equalToConstant: 42).isActive = true
-        heightAnchor.constraint(equalToConstant: 40).isActive = true
+        widthAnchor.constraint(equalToConstant: m.button.width).isActive = true
+        heightAnchor.constraint(equalToConstant: m.button.height).isActive = true
         updateLook()
     }
 
@@ -433,14 +470,31 @@ final class SnapshotBar: NSView {
     private let bubble = TipBubble()
     private(set) var slots: [Slot] = []
 
+    /// Smaller slots when the view is narrow, like the view bar beside it.
+    var compact = false {
+        didSet {
+            guard compact != oldValue else { return }
+            applyMetrics()
+            show(slots)
+        }
+    }
+    var metrics: BarMetrics { compact ? .compact : .regular }
+    private let glass = Glass(cornerRadius: 18)
+    private lazy var height = heightAnchor.constraint(equalToConstant: 54)
+
+    private func applyMetrics() {
+        let m = metrics
+        stack.spacing = m.spacing
+        stack.edgeInsets = NSEdgeInsets(top: 0, left: m.inset, bottom: 0, right: m.inset)
+        height.constant = m.height
+        glass.layer?.cornerRadius = m.corner
+    }
+
     init() {
         super.init(frame: .zero)
-        let glass = Glass(cornerRadius: 18)
         glass.frame = bounds
         glass.autoresizingMask = [.width, .height]
         addSubview(glass)
-        stack.spacing = 4
-        stack.edgeInsets = NSEdgeInsets(top: 0, left: 7, bottom: 0, right: 7)
         stack.translatesAutoresizingMaskIntoConstraints = false
         addSubview(stack)
         NSLayoutConstraint.activate([
@@ -448,8 +502,9 @@ final class SnapshotBar: NSView {
             stack.trailingAnchor.constraint(equalTo: trailingAnchor),
             stack.topAnchor.constraint(equalTo: topAnchor),
             stack.bottomAnchor.constraint(equalTo: bottomAnchor),
-            heightAnchor.constraint(equalToConstant: 54),
+            height,
         ])
+        applyMetrics()
         setAccessibilityElement(true)
         setAccessibilityRole(.group)
         setAccessibilityLabel(String(localized: "儲存的排列"))
@@ -516,8 +571,9 @@ private final class SlotButton: NSView {
         self.slot = slot
         self.bar = bar
         super.init(frame: .zero)
+        let m = bar.metrics
         wantsLayer = true
-        layer?.cornerRadius = 11
+        layer?.cornerRadius = m.buttonCorner
         well.fillColor = nil
         well.lineWidth = 1.2
         layer?.addSublayer(well)
@@ -528,8 +584,8 @@ private final class SlotButton: NSView {
         addSubview(plus)
         translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            widthAnchor.constraint(equalToConstant: 42),
-            heightAnchor.constraint(equalToConstant: 40),
+            widthAnchor.constraint(equalToConstant: m.button.width),
+            heightAnchor.constraint(equalToConstant: m.button.height),
             plus.centerXAnchor.constraint(equalTo: centerXAnchor),
             plus.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
@@ -544,7 +600,7 @@ private final class SlotButton: NSView {
 
     override func layout() {
         super.layout()
-        let r = bounds.insetBy(dx: 8, dy: 9)
+        let r = bounds.insetBy(dx: bounds.width * 0.19, dy: bounds.height * 0.22)
         well.frame = bounds
         well.path = CGPath(roundedRect: r, cornerWidth: 4, cornerHeight: 4, transform: nil)
         picture.frame = r.insetBy(dx: 2, dy: 2)

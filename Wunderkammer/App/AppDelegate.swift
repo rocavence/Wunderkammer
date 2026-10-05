@@ -72,6 +72,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     private let canvasTips = CanvasTips()
     /// Closed once, the 工作台's tips stay away until the app is opened again.
     private var canvasTipsClosed = false
+    /// Whether the view is wide enough for the arrangement slots and the tips
+    /// beside the view bar (set by fitBars as the window or panels change size).
+    private var slotsFit = true
+    private var tipsFit = true
+    private weak var barHost: NSView?
     private(set) var mode = ViewMode.grid
     private(set) var scope = Scope()
     private var capture: CaptureController!
@@ -339,6 +344,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
             self.updateSnapshots()
         }
         canvas.onArrangementChange = { [weak self] in self?.updateSnapshots() }
+        barHost = content
+        content.postsFrameChangedNotifications = true
+        NotificationCenter.default.addObserver(forName: NSView.frameDidChangeNotification, object: content, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.fitBars() }
+        }
         semanticOffer.isHidden = true
         semanticOffer.translatesAutoresizingMaskIntoConstraints = false
         content.addSubview(semanticOffer, positioned: .below, relativeTo: emptyCabinet)
@@ -732,15 +742,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         let trail = trailView.map { !$0.isHidden } ?? false
         let empty = emptyCabinet.map { !$0.isHidden } ?? false
         if trail || empty { viewBar.isHidden = true }
-        updateSnapshots()
+        fitBars()
     }
 
     // MARK: Saved arrangements
 
     /// The slots for the canvas in view: shown only on the 工作台.
+    /// On a narrow view the bars at the foot get smaller; if the arrangement
+    /// slots still don't fit beside the view bar they step aside (⌃1–3 and the
+    /// menu still reach them), and so do the tips.
+    private func fitBars() {
+        guard let host = barHost else { return }
+        let width = host.bounds.width
+        let compact = width < 620
+        viewBar.compact = compact
+        snapshotBar.compact = compact
+        host.layoutSubtreeIfNeeded()
+        let margin: CGFloat = 16
+        let half = viewBar.fittingSize.width / 2
+        slotsFit = half + 10 + snapshotBar.fittingSize.width <= width / 2 - margin
+        tipsFit = width >= 560
+        updateSnapshots()
+    }
+
+    var barsCompactForTest: Bool { viewBar.compact }
+    var slotsShownForTest: Bool { !snapshotBar.isHidden }
+
     private func updateSnapshots() {
-        canvasTips.isHidden = canvasTipsClosed || mode != .canvas || viewBar.isHidden
-        guard mode == .canvas, !viewBar.isHidden else { snapshotBar.isHidden = true; return }
+        canvasTips.isHidden = canvasTipsClosed || !tipsFit || mode != .canvas || viewBar.isHidden
+        guard mode == .canvas, !viewBar.isHidden, slotsFit else { snapshotBar.isHidden = true; return }
         snapshotBar.isHidden = false
         let size = CGSize(width: 22, height: 18)
         snapshotBar.show(library.snapshots(key: canvas.arrangementKey).map { s in
