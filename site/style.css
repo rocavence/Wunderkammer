@@ -437,6 +437,9 @@ main { padding: 0 20px; }
   font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
+.keys { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; vertical-align: baseline; }
+.keys .plus { color: var(--faint); font-size: .85em; }
+.kinds .keys kbd { font-size: 12px; padding: 0 6px; }
 kbd {
   display: inline-block;
   padding: 1px 7px;
@@ -448,20 +451,25 @@ kbd {
 }
 
 .collect {
-  display: inline-block;
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+/* Each key of the shortcut, pressable, gently pinging to be tried. */
+.collect kbd {
   padding: 1px 8px;
   border-radius: 7px;
-  border: 1px solid var(--line);
-  background: var(--surface);
   box-shadow: 0 2px 0 var(--line), 0 0 0 0 var(--accent-tint);
-  color: var(--ink);
-  font: 600 .88em/1.5 var(--font);
-  cursor: pointer;
+  font-weight: 600;
   animation: ping 2.6s var(--ease) infinite;
-  transition: transform .15s, box-shadow .15s;
+  transition: transform .15s, box-shadow .15s, border-color .15s;
 }
-.collect:hover { border-color: var(--accent); }
-.collect:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line); }
+.collect:hover kbd { border-color: var(--accent); }
+.collect:active kbd { transform: translateY(2px); box-shadow: 0 0 0 var(--line); animation: none; }
 @keyframes ping { 0%, 60% { box-shadow: 0 2px 0 var(--line), 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent); } 100% { box-shadow: 0 2px 0 var(--line), 0 0 0 10px transparent; } }
 /* Step two, shown: something dragged onto the arch in the menu bar. */
 .drop-demo {
@@ -1012,7 +1020,7 @@ footer a:hover { color: var(--ink); }
   .js .rise { opacity: 1; transform: none; transition: none; }
   .fo-file, .fo-room i { animation: none !important; }
   .fo-room i.n1, .fo-room i.n2, .fo-room i.n3 { opacity: 1; }
-  .collect, .cue::after, .f-caret, .db-card, .db-arch, .db-arch path, .db-toast { animation: none; }
+  .collect kbd, .cue::after, .f-caret, .db-card, .db-arch, .db-arch path, .db-toast { animation: none; }
   .db-toast { opacity: 1; transform: translate(-50%, 0); }
   .db-card { display: none; }
   html { scroll-behavior: auto; }

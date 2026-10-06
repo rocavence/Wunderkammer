@@ -116,7 +116,7 @@ def render(page, pages, template, wall):
         f'      <div class="s-shot" data-i="{i}">{shot(page, root, f[3], f[4])}</div>' for i, f in enumerate(page["features"]))
     fill["stats"] = "\n".join(f'      <div class="stat"><b>{b}</b><span>{s}</span></div>' for b, s in page["stats"])
     # The shortcut in the first step is a key you can press on the page.
-    steps = [page["steps"][0].replace("<kbd>⌘⇧C</kbd>", '<button class="collect" type="button">⌘⇧C</button>', 1)] + page["steps"][1:]
+    steps = [page["steps"][0].replace("<kbd>⌘⇧C</kbd>", f'<button class="collect" type="button">{keys("⌘⇧C")}</button>', 1)] + page["steps"][1:]
     fill["steps"] = "\n".join(f"      <li>{s}</li>" for s in steps)
     fill["gets"] = "\n".join(f"      <li>{g}</li>" for g in page["gets"])
     fill["compare"] = "\n".join(f"        <tr><td>{label}</td>{cell(us, us=True)}{cell(atlas)}{cell(eagle)}</tr>"
@@ -129,7 +129,18 @@ def render(page, pages, template, wall):
     for key, value in fill.items():
         out = out.replace("{{" + key + "}}", value)
     assert "{{" not in out, out[out.index("{{"):out.index("{{") + 40]
+    # Shortcuts read key by key: ⌘ + Shift + C, each on its own key.
+    out = re.sub(r"<(kbd|i)>([⌃⌥⇧⌘]+[A-Z0-9])</\1>", lambda m: keys(m.group(2)), out)
     return out
+
+
+KEY_NAMES = {"⌘": "⌘", "⇧": "Shift", "⌃": "Control", "⌥": "Option"}
+
+
+def keys(combo):
+    """⌃⌘⇧C → [Control]+[⌘]+[Shift]+[C]."""
+    parts = [KEY_NAMES[m] for m in "⌃⌘⇧⌥" if m in combo[:-1]] + [combo[-1]]
+    return '<span class="keys">' + '<span class="plus">+</span>'.join(f"<kbd>{k}</kbd>" for k in parts) + "</span>"
 
 
 # The demo rooms: cover pictures (site/assets/rooms/, from scripts/site/wall.py), count, synced.
