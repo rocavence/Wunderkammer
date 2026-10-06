@@ -117,6 +117,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         s.onRecording = { [weak self] recording in
             if recording { self?.capture.suspendShortcuts() } else { self?.capture.registerShortcuts() }
         }
+        s.onMCPChanged = { [weak self] on in
+            if on { self?.mcpHost.start() } else { self?.mcpHost.stop() }
+        }
         s.onSpotlightChanged = { [weak self] on in
             guard let self else { return }
             self.spotlight = on ? SpotlightIndexer(library: self.library) : nil
@@ -503,6 +506,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         if !SelfTest.isEnabled {
             if SettingsWindowController.spotlightEnabled { spotlight = SpotlightIndexer(library: library) }
             buildStatusItem()
+            if MCP.isEnabled { mcpHost.start() }
         }
 
         if SelfTest.isEnabled {
@@ -599,6 +603,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        mcpHost.stop()
         // A forwarding copy never owned the library: saving would overwrite the real one.
         guard forwardTo == nil else { return }
         try? FileManager.default.removeItem(at: Self.textPreviewDir)
@@ -1071,6 +1076,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     }
 
     func collectForIntent() async -> Bool { await capture.captureNow() }
+
+    // MARK: AI assistants (MCP)
+
+    private lazy var mcpHost = MCPHost { [weak self] tool, arguments in
+        guard let self else { return ("Wunder is closing.", true) }
+        return await self.mcpTools.call(tool, arguments)
+    }
+
+    /// The tools, over whichever room is open right now.
+    private var mcpTools: MCPTools {
+        MCPTools(
+            library: library,
+            rooms: { [weak self] in
+                guard let self else { return [] }
+                return self.cabinets.entries.map { ($0.name, self.itemCount(of: $0), $0.id == self.cabinets.currentID) }
+            },
+            semantic: { [weak self] text, pool in await self?.meaningMatches(text, in: pool) ?? [] },
+            ask: { [weak self] question in await self?.answerForIntent(question) ?? "" },
+            collected: { [weak self] in self?.grid.show(scope: self?.scope ?? Scope()) })
+    }
+
+    /// What a description means, among these things (MobileCLIP; none without the model).
+    private func meaningMatches(_ text: String, in pool: [Item]) async -> [UUID] {
+        guard let semantic = understanding.semantic else { return [] }
+        await translator.refresh()
+        guard let english = await translator.english(text) else { return [] }
+        guard let vector = await Task.detached(operation: { semantic.embed(text: english) }).value else { return [] }
+        return understanding.semanticMatches(vector, in: pool)
+    }
+
+    func startMCPForTest() { mcpHost.start() }
+    func stopMCPForTest() { mcpHost.stop() }
 
     // MARK: Asking (US-211)
 

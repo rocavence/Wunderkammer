@@ -332,6 +332,9 @@ final class SelfTest {
         case "spaces":
             await spacesCheck()
             return finish()
+        case "mcp":
+            await mcpCheck()
+            return finish()
         case "intents":
             await intentsCheck()
             return finish()
@@ -1859,6 +1862,84 @@ final class SelfTest {
         return false
     }
 
+    // MARK: AI assistants over MCP
+
+    /// The real path: `Wunder --mcp` started as an assistant would, speaking
+    /// MCP on its stdin and stdout, the app answering over its socket.
+    private func mcpCheck() async {
+        let defaults = UserDefaults.standard
+        let wasOn = defaults.object(forKey: MCP.enabledKey), wasWrite = defaults.object(forKey: MCP.writeKey)
+        defer {
+            defaults.set(wasOn, forKey: MCP.enabledKey)
+            defaults.set(wasWrite, forKey: MCP.writeKey)
+            ui.stopMCPForTest()
+        }
+        defaults.set(false, forKey: MCP.writeKey)
+        ui.startMCPForTest()
+
+        let helper = Process()
+        helper.executableURL = URL(fileURLWithPath: Bundle.main.executablePath ?? "")
+        helper.arguments = ["--mcp"]
+        let toHelper = Pipe(), fromHelper = Pipe()
+        helper.standardInput = toHelper
+        helper.standardOutput = fromHelper
+        do { try helper.run() } catch { return check(false, "the MCP helper starts (\(error))") }
+        defer { helper.terminate() }
+        let input = toHelper.fileHandleForWriting.fileDescriptor, output = fromHelper.fileHandleForReading.fileDescriptor
+        var next = 0
+        func call(_ method: String, _ params: [String: Any] = [:]) async -> [String: Any]? {
+            next += 1
+            let request: [String: Any] = ["jsonrpc": "2.0", "id": next, "method": method, "params": params]
+            guard let data = try? JSONSerialization.data(withJSONObject: request), MCP.write(input, data) else { return nil }
+            let line = await Task.detached { MCP.readLine(output) }.value
+            return line.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }?["result"] as? [String: Any]
+        }
+        func tool(_ name: String, _ arguments: [String: Any] = [:]) async -> (text: String, failed: Bool) {
+            let result = await call("tools/call", ["name": name, "arguments": arguments])
+            let text = (result?["content"] as? [[String: Any]])?.first?["text"] as? String ?? ""
+            return (text, result?["isError"] as? Bool ?? true)
+        }
+
+        let hello = await call("initialize", ["protocolVersion": "2025-06-18", "capabilities": [String: Any](),
+                                              "clientInfo": ["name": "selftest", "version": "1"]])
+        check((hello?["serverInfo"] as? [String: Any])?["name"] as? String == "wunder", "the helper answers initialize as wunder")
+        let names = ((await call("tools/list"))?["tools"] as? [[String: Any]] ?? []).compactMap { $0["name"] as? String }
+        check(Set(names) == Set(MCP.tools.map(\.name)), "it lists the tools (\(names))")
+
+        let overview = await tool("overview")
+        check(!overview.failed && overview.text.contains("\(library.items.count) things"), "overview counts the open room")
+        let recent = await tool("browse", ["by": "recent", "limit": 3])
+        let firstID = library.items.max { $0.dateAdded < $1.dateAdded }?.id.uuidString ?? "-"
+        check(!recent.failed && recent.text.contains(firstID), "browse recent starts with the newest")
+        let detail = await tool("get_item", ["id": String(firstID.prefix(8))])
+        check(!detail.failed && detail.text.contains(firstID), "get_item finds a thing by the start of its id")
+        if let word = library.items.first(where: { ($0.title ?? "").count > 3 })?.title?.split(separator: " ").first {
+            let found = await tool("search", ["query": String(word)])
+            check(!found.failed && found.text.contains("found"), "search finds “\(word)”")
+        }
+
+        let count = library.items.count
+        let refused = await tool("collect", ["text": "收進來的 MCP 測試"])
+        check(refused.failed && library.items.count == count, "collecting is refused until it's allowed")
+        defaults.set(true, forKey: MCP.writeKey)
+        let collected = await tool("collect", ["text": "收進來的 MCP 測試", "board": "AI 收的"])
+        check(!collected.failed && library.items.count == count + 1, "allowed, collect adds it (\(collected.text.prefix(60)))")
+        check(library.collections.contains { $0.name == "AI 收的" && $0.itemIDs.count == 1 }, "and puts it on the board it named")
+
+        ui.stopMCPForTest()
+        let off = await tool("overview")
+        check(off.failed && off.text.contains("Settings"), "with assistants shut out, it says how to let them in")
+
+        // The settings that let them in.
+        defaults.set(true, forKey: MCP.enabledKey)
+        if let w = ui.showSettingsForTest() {
+            ui.showSettingsTabForTest(.privacy)
+            await wait(0.4)
+            shot("settings-privacy-mcp", windowNumber: w.windowNumber)
+            w.orderOut(nil)
+        }
+    }
+
     private func finish() {
         log(failures == 0 ? "SELFTEST OK" : "SELFTEST FAILED: \(failures)")
         exit(failures == 0 ? 0 : 1)
@@ -1887,6 +1968,8 @@ protocol SelfTestUI: AnyObject {
     func switchCabinet(to id: UUID)
     func createCabinetForTest(_ name: String) -> UUID
     func manageCabinets()
+    func startMCPForTest()
+    func stopMCPForTest()
     func scrollSettingsToEndForTest()
     func cabinetSettingsForTest()
     func hoverCabinetSettingsForTest(_ on: Bool) -> CGFloat

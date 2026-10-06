@@ -3321,6 +3321,46 @@
         }
       }
     },
+    "也讓它收藏" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Let it collect too"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "収集も許可"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "담기도 허용"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dejar que también guarde"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deixar guardar também"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "也讓它收藏"
+          }
+        }
+      }
+    },
     "今天" : {
       "localizations" : {
         "en" : {
@@ -4117,6 +4157,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "儲存的排列"
+          }
+        }
+      }
+    },
+    "允許 AI 助手把連結、文字和檔案收進來，或加進釘選版。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow assistants to collect links, text, and files, or put things on pinned boards."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI アシスタントがリンク、テキスト、ファイルを収集したり、ピン留めボードに加えたりできます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 어시스턴트가 링크, 텍스트, 파일을 담거나 고정 보드에 추가할 수 있습니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite que el asistente guarde enlaces, texto y archivos, o los añada a tableros fijados."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite que o assistente guarde links, texto e arquivos, ou os coloque em quadros fixados."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允許 AI 助手把連結、文字和檔案收進來，或加進釘選版。"
           }
         }
       }
@@ -5409,6 +5489,12 @@
             "value" : "I’ve used plenty of apps like this, and many of them aren’t cheap. But they just never felt good to use, and the thing I spent the most time on was, of all things, organizing!"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "He usado muchas apps así, y muchas no son nada baratas. Pero usarlas nunca era cómodo, y en lo que más tiempo se me iba era, nada menos, ¡en ordenar!"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5419,12 +5505,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "비슷한 앱을 꽤 써 봤는데, 사실 싼 게 별로 없었어요. 그런데 써 보면 영 불편했고, 가장 많은 시간을 쓴 게 하필 정리였어요!"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "He usado muchas apps así, y muchas no son nada baratas. Pero usarlas nunca era cómodo, y en lo que más tiempo se me iba era, nada menos, ¡en ordenar!"
           }
         },
         "pt-BR" : {
@@ -7681,6 +7761,46 @@
         }
       }
     },
+    "已拷貝" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copied"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーしました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복사됨"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiado"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiado"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已拷貝"
+          }
+        }
+      }
+    },
     "已經在展室裡" : {
       "localizations" : {
         "en" : {
@@ -8881,6 +9001,46 @@
         }
       }
     },
+    "把設定貼進 AI 助手的 MCP 設定；用 Claude Code 的話，在終端機執行拷貝的指令。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste the settings into your assistant’s MCP settings. With Claude Code, run the copied command in Terminal."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定を AI アシスタントの MCP 設定に貼り付けます。Claude Code ならコピーしたコマンドをターミナルで実行します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정을 AI 어시스턴트의 MCP 설정에 붙여 넣으세요. Claude Code라면 복사한 명령을 터미널에서 실행하세요."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pega los ajustes en la configuración MCP de tu asistente. Con Claude Code, ejecuta el comando copiado en Terminal."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cole os ajustes na configuração MCP do seu assistente. No Claude Code, rode o comando copiado no Terminal."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "把設定貼進 AI 助手的 MCP 設定；用 Claude Code 的話，在終端機執行拷貝的指令。"
+          }
+        }
+      }
+    },
     "拉姆斯橘" : {
       "localizations" : {
         "en" : {
@@ -9037,6 +9197,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "拷貝"
+          }
+        }
+      }
+    },
+    "拷貝 Claude Code 指令" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy Claude Code Command"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code コマンドをコピー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code 명령 복사"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar comando de Claude Code"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar comando do Claude Code"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拷貝 Claude Code 指令"
+          }
+        }
+      }
+    },
+    "拷貝設定" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy Settings"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定をコピー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정 복사"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar ajustes"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar ajustes"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拷貝設定"
           }
         }
       }
@@ -9757,6 +9997,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "搬回這台 Mac"
+          }
+        }
+      }
+    },
+    "支援 MCP 的 AI 助手（例如 Claude、Cursor）可以搜尋與讀取目前的展室。只在這台 Mac 上連線，不經過網路。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI assistants that support MCP (such as Claude or Cursor) can search and read the open room. They connect on this Mac only, never over the network."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MCP に対応した AI アシスタント（Claude、Cursor など）が、開いている展示室を検索して読めます。接続はこの Mac の中だけで、ネットワークを通りません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MCP를 지원하는 AI 어시스턴트(Claude, Cursor 등)가 지금 열린 전시실을 검색하고 읽을 수 있습니다. 이 Mac 안에서만 연결되고 네트워크를 거치지 않습니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los asistentes de IA compatibles con MCP (como Claude o Cursor) pueden buscar y leer la sala abierta. Se conectan solo en este Mac, nunca por la red."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assistentes de IA com suporte a MCP (como Claude ou Cursor) podem buscar e ler a sala aberta. A conexão fica neste Mac, nunca passa pela rede."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "支援 MCP 的 AI 助手（例如 Claude、Cursor）可以搜尋與讀取目前的展室。只在這台 Mac 上連線，不經過網路。"
           }
         }
       }
@@ -16001,6 +16281,46 @@
         }
       }
     },
+    "讓 AI 助手使用 Wunder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Let AI assistants use Wunder"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI アシスタントに Wunder を使わせる"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 어시스턴트가 Wunder 사용"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dejar que los asistentes de IA usen Wunder"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deixar assistentes de IA usarem o Wunder"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "讓 AI 助手使用 Wunder"
+          }
+        }
+      }
+    },
     "讓舊收藏回來找你。漫遊、過去的今天、被遺忘的，把收過的東西一件件再帶回眼前。" : {
       "localizations" : {
         "en" : {
@@ -16637,6 +16957,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "這裡還沒有圖"
+          }
+        }
+      }
+    },
+    "連接 AI 助手" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect an Assistant"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI アシスタントをつなぐ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 어시스턴트 연결"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectar un asistente"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectar um assistente"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連接 AI 助手"
           }
         }
       }

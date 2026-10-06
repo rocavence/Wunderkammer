@@ -11,6 +11,8 @@ final class SettingsWindowController: NSWindowController {
     var onShortcutsChanged: (() -> Void)?
     var onRecording: ((Bool) -> Void)?
     var onSpotlightChanged: ((Bool) -> Void)?
+    /// AI assistants let in (true) or shut out.
+    var onMCPChanged: ((Bool) -> Void)?
     var semanticReady: () -> Bool = { false }
     var update: () -> UpdateChecker.Release? = { nil }
     var onCheckUpdate: (() -> Void)?
@@ -248,10 +250,50 @@ final class SettingsWindowController: NSWindowController {
             self?.onSpotlightChanged?(on)
         }
         spotlight.setAccessibilityLabel(String(localized: "在 Spotlight 顯示收藏"))
-        return [
+        var rows = [
             row(String(localized: "在 Spotlight 顯示收藏"), String(localized: "只放標題、網站與主題，不放文字內容。"), spotlight),
-            note(String(localized: "圖中文字、物件、相似度與名字的辨識，都在這台 Mac 上完成，不會上傳任何內容。")),
-        ]
+        ] + assistantRows()
+        rows.append(note(String(localized: "圖中文字、物件、相似度與名字的辨識，都在這台 Mac 上完成，不會上傳任何內容。")))
+        return rows
+    }
+
+    /// AI assistants over MCP: let them in, let them collect too, and how to
+    /// connect one. The last two only while the first is on.
+    private func assistantRows() -> [NSView] {
+        let allow = PillSwitch(on: MCP.isEnabled) { [weak self] on in
+            UserDefaults.standard.set(on, forKey: MCP.enabledKey)
+            self?.onMCPChanged?(on)
+            self?.show(.privacy)
+        }
+        allow.setAccessibilityLabel(String(localized: "讓 AI 助手使用 Wunder"))
+        var rows = [row(String(localized: "讓 AI 助手使用 Wunder"),
+                        String(localized: "支援 MCP 的 AI 助手（例如 Claude、Cursor）可以搜尋與讀取目前的展室。只在這台 Mac 上連線，不經過網路。"),
+                        allow)]
+        guard MCP.isEnabled else { return rows }
+        let write = PillSwitch(on: MCP.canWrite) { on in UserDefaults.standard.set(on, forKey: MCP.writeKey) }
+        write.setAccessibilityLabel(String(localized: "也讓它收藏"))
+        rows.append(row(String(localized: "也讓它收藏"), String(localized: "允許 AI 助手把連結、文字和檔案收進來，或加進釘選版。"), write))
+        let path = Bundle.main.executablePath ?? ""
+        let copies = NSStackView(views: [
+            Self.copyButton(String(localized: "拷貝設定"), MCP.settingsSnippet),
+            Self.copyButton(String(localized: "拷貝 Claude Code 指令"), "claude mcp add wunder -- \"\(path)\" --mcp"),
+        ])
+        copies.spacing = 8
+        rows.append(row(String(localized: "連接 AI 助手"), String(localized: "把設定貼進 AI 助手的 MCP 設定；用 Claude Code 的話，在終端機執行拷貝的指令。"), copies))
+        return rows
+    }
+
+    /// Copies the text; says so on the button for a moment.
+    private static func copyButton(_ title: String, _ text: String) -> PillButton {
+        let box = WeakBox<PillButton>()
+        let button = PillButton(title) {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(text, forType: .string)
+            box.value?.setLabel(String(localized: "已拷貝"))
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { box.value?.setLabel(title) }
+        }
+        box.value = button
+        return button
     }
 
     /// As Flione's About: who made it, the app and its version, then why it
@@ -987,3 +1029,5 @@ private final class AuthorCard: NSView {
         }
     }
 }
+
+private final class WeakBox<T: AnyObject> { weak var value: T? }
