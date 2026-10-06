@@ -282,11 +282,23 @@ final class SettingsWindowController: NSWindowController {
             rows.append(row(String(localized: "也讓它收藏"), String(localized: "允許 AI 助手把連結、文字和檔案收進來，或加進釘選版。"), write))
             rows.append(row(String(localized: "狀態"), mcpStatus(), NSView()))
             let path = Bundle.main.executablePath ?? ""
-            rows.append(setup(String(localized: "Claude Desktop、Cursor 等 App"),
-                              String(localized: "加進 App 的 MCP 伺服器設定。Claude Desktop：設定 → 開發者 → 編輯設定檔。"),
-                              MCP.settingsSnippet))
-            rows.append(setup(String(localized: "Claude Code"), String(localized: "在終端機執行這一行。"),
-                              "claude mcp add wunder -- \"\(path)\" --mcp"))
+            rows.append(setup("Claude Desktop", String(localized: "Anthropic 的桌面 App。"), MCP.settingsSnippet, steps: [
+                String(localized: "按「拷貝」。"),
+                String(localized: "在 Claude Desktop 打開「設定 → 開發者 → 編輯設定」，找到 claude_desktop_config.json。"),
+                String(localized: "把拷貝的內容貼進去。檔案裡已經有其他 mcpServers 的話，只加 \"wunder\" 這一段。"),
+                String(localized: "存檔，結束 Claude Desktop 再重新打開。"),
+                String(localized: "問它：「我的 Wunder 裡有什麼？」"),
+            ]))
+            rows.append(setup("Cursor", String(localized: "寫程式的編輯器，設定與 Claude Desktop 相同。"), MCP.settingsSnippet, steps: [
+                String(localized: "按「拷貝」。"),
+                String(localized: "在 Cursor 打開「Settings → MCP → Add new global MCP server」，會打開 mcp.json。"),
+                String(localized: "貼上並存檔，MCP 清單裡出現 wunder 就是連上了。"),
+            ]))
+            rows.append(setup("Claude Code", String(localized: "終端機裡的 Claude。"), "claude mcp add wunder -- \"\(path)\" --mcp", steps: [
+                String(localized: "按「拷貝」。"),
+                String(localized: "在終端機貼上並執行。"),
+                String(localized: "在 Claude Code 輸入 /mcp，看到 wunder 就是連上了。"),
+            ]))
         }
         rows.append(note(String(localized: "只有這台 Mac 上的 App 能連線，不經過網路。")))
         return rows
@@ -299,9 +311,9 @@ final class SettingsWindowController: NSWindowController {
         return String(localized: "\(who) 上次使用：\(time)")
     }
 
-    /// How to connect one kind of assistant: what to do, a Copy button, and
-    /// the text itself in a box you can select from.
-    private func setup(_ title: String, _ detail: String, _ code: String) -> NSView {
+    /// How to connect one kind of assistant: what it is, a Copy button, the
+    /// text itself in a box you can select from, and the steps, numbered.
+    private func setup(_ title: String, _ detail: String, _ code: String, steps: [String]) -> NSView {
         let copy = Self.copyButton(String(localized: "拷貝"), code)
         let head = row(title, detail, copy)
         let text = NSTextField(wrappingLabelWithString: code)
@@ -324,11 +336,28 @@ final class SettingsWindowController: NSWindowController {
             text.leadingAnchor.constraint(equalTo: well.leadingAnchor, constant: 12),
             text.trailingAnchor.constraint(equalTo: well.trailingAnchor, constant: -12),
         ])
-        // The code sits between the row and its hairline.
+        let numbered = NSStackView(views: steps.enumerated().map { i, step in
+            let n = Self.label("\(i + 1)", size: 12, weight: .semibold, color: .accent)
+            n.alignment = .right
+            n.widthAnchor.constraint(equalToConstant: 14).isActive = true
+            let words = Self.label(step, size: 13, color: .secondaryLabelColor, wraps: true)
+            words.preferredMaxLayoutWidth = Self.rowWidth - 24
+            let line = NSStackView(views: [n, words])
+            line.alignment = .firstBaseline
+            line.spacing = 10
+            return line
+        })
+        numbered.orientation = .vertical
+        numbered.alignment = .leading
+        numbered.spacing = 6
+        // The code and the steps sit between the row and its hairline.
         if let stack = head as? NSStackView, stack.arrangedSubviews.count == 2 {
             stack.insertArrangedSubview(well, at: 1)
-            stack.setCustomSpacing(16, after: well)
+            stack.insertArrangedSubview(numbered, at: 2)
+            stack.setCustomSpacing(14, after: well)
+            stack.setCustomSpacing(18, after: numbered)
             well.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+            numbered.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
             (stack.arrangedSubviews.first as? NSStackView)?.edgeInsets.bottom = 12
         }
         return head

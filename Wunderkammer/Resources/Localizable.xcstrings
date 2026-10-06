@@ -203,16 +203,16 @@
     },
     "%@ 上次使用：%@" : {
       "localizations" : {
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ 上次使用：%2$@"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ last used it: %2$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ lo usó por última vez: %2$@"
           }
         },
         "ja" : {
@@ -227,16 +227,16 @@
             "value" : "%1$@ 마지막 사용: %2$@"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ lo usó por última vez: %2$@"
-          }
-        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ usou por último: %2$@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ 上次使用：%2$@"
           }
         }
       }
@@ -809,6 +809,12 @@
             "value" : "An AI assistant"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un asistente de IA"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -819,12 +825,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "AI 어시스턴트"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Un asistente de IA"
           }
         },
         "pt-BR" : {
@@ -849,6 +849,12 @@
             "value" : "AI Control"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Control por IA"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -861,12 +867,6 @@
             "value" : "AI 제어"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Control por IA"
-          }
-        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
@@ -877,6 +877,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "AI 控制"
+          }
+        }
+      }
+    },
+    "Anthropic 的桌面 App。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anthropic’s desktop app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anthropic のデスクトップ App。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anthropic의 데스크탑 앱."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La app de escritorio de Anthropic."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O app de desktop da Anthropic."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anthropic 的桌面 App。"
           }
         }
       }
@@ -1081,92 +1121,18 @@
         }
       }
     },
-    "Claude Code" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Code"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Code"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Code"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Code"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Code"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Code"
-          }
-        }
-      }
-    },
-    "Claude Desktop、Cursor 等 App" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop, Cursor, and other apps"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop、Cursor などの App"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop, Cursor 등의 앱"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop, Cursor y otras apps"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop, Cursor e outros apps"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude Desktop、Cursor 等 App"
-          }
-        }
-      }
-    },
     "Claude、Cursor 等支援 MCP 的 App 可以搜尋、瀏覽與讀取目前的展室，也能隨機挑一件或提問。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Claude, Cursor, and other apps that support MCP can search, browse, and read the open room, pick something at random, or ask questions."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude, Cursor y otras apps compatibles con MCP pueden buscar, explorar y leer la sala abierta, elegir algo al azar o hacer preguntas."
           }
         },
         "ja" : {
@@ -1179,12 +1145,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Claude, Cursor 등 MCP를 지원하는 앱이 지금 열린 전시실을 검색하고 둘러보고 읽을 수 있으며, 무작위로 하나 고르거나 질문할 수도 있습니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude, Cursor y otras apps compatibles con MCP pueden buscar, explorar y leer la sala abierta, elegir algo al azar o hacer preguntas."
           }
         },
         "pt-BR" : {
@@ -5481,46 +5441,6 @@
         }
       }
     },
-    "加進 App 的 MCP 伺服器設定。Claude Desktop：設定 → 開發者 → 編輯設定檔。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add this to the app’s MCP servers. In Claude Desktop: Settings → Developer → Edit Config."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App の MCP サーバ設定に追加します。Claude Desktop：設定 → 開発者 → 構成を編集。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "앱의 MCP 서버 설정에 추가하세요. Claude Desktop: 설정 → 개발자 → 구성 편집."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añádelo a los servidores MCP de la app. En Claude Desktop: Ajustes → Desarrollador → Editar configuración."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adicione aos servidores MCP do app. No Claude Desktop: Ajustes → Desenvolvedor → Editar configuração."
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "加進 App 的 MCP 伺服器設定。Claude Desktop：設定 → 開發者 → 編輯設定檔。"
-          }
-        }
-      }
-    },
     "原始位置" : {
       "localizations" : {
         "en" : {
@@ -5689,6 +5609,12 @@
             "value" : "Only apps on this Mac can connect, never over the network."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo pueden conectarse apps de este Mac, nunca por la red."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5699,12 +5625,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "이 Mac의 앱만 연결할 수 있으며 네트워크를 거치지 않습니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Solo pueden conectarse apps de este Mac, nunca por la red."
           }
         },
         "pt-BR" : {
@@ -6077,6 +5997,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "問「%@」"
+          }
+        }
+      }
+    },
+    "問它：「我的 Wunder 裡有什麼？」" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask it: “What’s in my Wunder?”"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聞いてみましょう：「私の Wunder には何がある？」"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "물어보세요: “내 Wunder에 뭐가 있어?”"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pregúntale: «¿Qué hay en mi Wunder?»"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pergunte: “O que tem no meu Wunder?”"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "問它：「我的 Wunder 裡有什麼？」"
           }
         }
       }
@@ -6521,6 +6481,126 @@
         }
       }
     },
+    "在 Claude Code 輸入 /mcp，看到 wunder 就是連上了。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type /mcp in Claude Code. If you see wunder, it’s connected."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code で /mcp と入力し、wunder が見えれば接続完了です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code에서 /mcp를 입력해 wunder가 보이면 연결된 것입니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe /mcp en Claude Code. Si ves wunder, ya está conectado."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digite /mcp no Claude Code. Se aparecer wunder, está conectado."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Claude Code 輸入 /mcp，看到 wunder 就是連上了。"
+          }
+        }
+      }
+    },
+    "在 Claude Desktop 打開「設定 → 開發者 → 編輯設定」，找到 claude_desktop_config.json。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Claude Desktop, open Settings → Developer → Edit Config to find claude_desktop_config.json."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop で「設定 → 開発者 → 構成を編集」を開き、claude_desktop_config.json を見つけます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Desktop에서 ‘설정 → 개발자 → 구성 편집’을 열어 claude_desktop_config.json을 찾습니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En Claude Desktop, abre Ajustes → Desarrollador → Editar configuración para encontrar claude_desktop_config.json."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Claude Desktop, abra Ajustes → Desenvolvedor → Editar configuração para achar o claude_desktop_config.json."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Claude Desktop 打開「設定 → 開發者 → 編輯設定」，找到 claude_desktop_config.json。"
+          }
+        }
+      }
+    },
+    "在 Cursor 打開「Settings → MCP → Add new global MCP server」，會打開 mcp.json。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Cursor, open Settings → MCP → Add new global MCP server; mcp.json opens."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cursor で「Settings → MCP → Add new global MCP server」を開くと mcp.json が開きます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cursor에서 ‘Settings → MCP → Add new global MCP server’를 열면 mcp.json이 열립니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En Cursor, abre Settings → MCP → Add new global MCP server; se abre mcp.json."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Cursor, abra Settings → MCP → Add new global MCP server; o mcp.json abre."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Cursor 打開「Settings → MCP → Add new global MCP server」，會打開 mcp.json。"
+          }
+        }
+      }
+    },
     "在 Finder 中顯示" : {
       "localizations" : {
         "en" : {
@@ -6961,42 +7041,42 @@
         }
       }
     },
-    "在終端機執行這一行。" : {
+    "在終端機貼上並執行。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Run this in Terminal."
+            "value" : "Paste it in Terminal and run it."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ターミナルでこれを実行します。"
+            "value" : "ターミナルに貼り付けて実行します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "터미널에서 이 줄을 실행하세요."
+            "value" : "터미널에 붙여 넣고 실행합니다."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ejecuta esto en Terminal."
+            "value" : "Pégalo en Terminal y ejecútalo."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rode isto no Terminal."
+            "value" : "Cole no Terminal e execute."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在終端機執行這一行。"
+            "value" : "在終端機貼上並執行。"
           }
         }
       }
@@ -7281,6 +7361,46 @@
         }
       }
     },
+    "存檔，結束 Claude Desktop 再重新打開。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save, then quit Claude Desktop and open it again."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存して、Claude Desktop を終了してから開き直します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저장한 뒤 Claude Desktop을 종료하고 다시 엽니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guarda, cierra Claude Desktop y vuelve a abrirlo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salve, feche o Claude Desktop e abra de novo."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "存檔，結束 Claude Desktop 再重新打開。"
+          }
+        }
+      }
+    },
     "它已經在監看清單裡，或和清單裡的資料夾重疊，或是展室自己存放資料的地方。" : {
       "localizations" : {
         "en" : {
@@ -7437,6 +7557,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "寫了"
+          }
+        }
+      }
+    },
+    "寫程式的編輯器，設定與 Claude Desktop 相同。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The code editor. Same settings as Claude Desktop."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コードエディタ。設定は Claude Desktop と同じです。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "코드 편집기. 설정은 Claude Desktop과 같습니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El editor de código. Mismos ajustes que Claude Desktop."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O editor de código. Mesmos ajustes do Claude Desktop."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "寫程式的編輯器，設定與 Claude Desktop 相同。"
           }
         }
       }
@@ -9321,6 +9481,46 @@
         }
       }
     },
+    "把拷貝的內容貼進去。檔案裡已經有其他 mcpServers 的話，只加 \"wunder\" 這一段。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste it in. If the file already has other mcpServers, add only the \"wunder\" part."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーした内容を貼り付けます。ほかの mcpServers がすでにある場合は \"wunder\" の部分だけを加えます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복사한 내용을 붙여 넣습니다. 다른 mcpServers가 이미 있다면 \"wunder\" 부분만 추가하세요."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pégalo. Si el archivo ya tiene otros mcpServers, añade solo la parte \"wunder\"."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cole o conteúdo. Se o arquivo já tiver outros mcpServers, adicione só a parte \"wunder\"."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "把拷貝的內容貼進去。檔案裡已經有其他 mcpServers 的話，只加 \"wunder\" 這一段。"
+          }
+        }
+      }
+    },
     "把東西拖進這個視窗" : {
       "localizations" : {
         "en" : {
@@ -9717,6 +9917,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "按 Return 打開來源"
+          }
+        }
+      }
+    },
+    "按「拷貝」。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click Copy."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「コピー」をクリックします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘복사’를 클릭합니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haz clic en Copiar."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clique em Copiar."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按「拷貝」。"
           }
         }
       }
@@ -13689,6 +13929,12 @@
             "value" : "Status"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estado"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13699,12 +13945,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "상태"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Estado"
           }
         },
         "pt-BR" : {
@@ -15009,6 +15249,12 @@
             "value" : "Waiting for an AI app to connect. It opens Wunder by itself when needed."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esperando a que se conecte un asistente. Si hace falta, abrirá Wunder por su cuenta."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15019,12 +15265,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "AI 어시스턴트의 연결을 기다리는 중입니다. 필요하면 AI 어시스턴트가 Wunder를 직접 엽니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Esperando a que se conecte un asistente. Si hace falta, abrirá Wunder por su cuenta."
           }
         },
         "pt-BR" : {
@@ -15397,6 +15637,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "紫色"
+          }
+        }
+      }
+    },
+    "終端機裡的 Claude。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude in your terminal."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ターミナルの中の Claude。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "터미널 속 Claude."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude en tu terminal."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Claude no seu terminal."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "終端機裡的 Claude。"
           }
         }
       }
@@ -16677,6 +16957,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "貼上"
+          }
+        }
+      }
+    },
+    "貼上並存檔，MCP 清單裡出現 wunder 就是連上了。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste and save. When wunder shows up in the MCP list, it’s connected."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "貼り付けて保存します。MCP の一覧に wunder が出れば接続完了です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "붙여 넣고 저장하세요. MCP 목록에 wunder가 보이면 연결된 것입니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pega y guarda. Cuando wunder aparezca en la lista de MCP, ya está conectado."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cole e salve. Quando wunder aparecer na lista de MCP, está conectado."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "貼上並存檔，MCP 清單裡出現 wunder 就是連上了。"
           }
         }
       }
