@@ -379,3 +379,11 @@ AI 助手啟動 `Wunder --mcp`。這個模式不開視窗，用 stdio 說 MCP，
 協定自己實作（JSON-RPC，一行一則），不加 MCP 套件，App 體積不變。工具一律對目前開著的展室作用。
 
 修改位置：`App/MCPBridge.swift`、`App/main.swift`、`AppDelegate`（AI 助手區段）、`SettingsWindowController`（AI 控制頁）。
+
+## D44 用 Homebrew 安裝
+
+`brew install --cask rocavence/tap/wunder`。cask 放在自己的 tap（公開 repo `rocavence/homebrew-tap`），不送 Homebrew 官方：官方 cask 要求公證，Wunder 目前是 ad-hoc 簽章。
+
+cask 下載 GitHub Release 的 `Wunder.zip`、核對 SHA-256，裝進 /Applications，裝完拿掉隔離屬性，第一次打開不會被擋。`brew uninstall --zap` 會一併刪掉圖庫與設定。
+
+每次發版後執行 `scripts/homebrew/update-cask.sh <版本>`，把 tap 的版本與 SHA-256 更新成新的 Release；cask 的樣板在 `scripts/homebrew/wunder.rb.template`。

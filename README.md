@@ -13,6 +13,13 @@ Wunder keeps pictures, web pages, text and files without asking where they go. I
 
 [**Download Wunder.zip**](https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip) (4 MB, macOS 14 or later, Apple silicon and Intel).
 
+Or with [Homebrew](https://brew.sh):
+
+```sh
+brew install --cask rocavence/tap/wunder
+```
+
+
 Wunder isn't notarized by Apple yet. The first time you open it, macOS stops it: open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**. Or run:
 
 ```bash

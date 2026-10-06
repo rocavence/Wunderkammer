@@ -337,6 +337,21 @@ main { padding: 0 20px; }
 }
 .cta:hover { transform: translateY(-1px); box-shadow: 0 16px 36px -14px #000000aa; }
 .cta:active { transform: translateY(0) scale(.98); }
+/* The Homebrew line under a download button: click to copy the command. */
+.brew { margin: 10px 0 0; color: var(--soft); font-size: 14px; }
+.brew-cmd {
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  cursor: copy;
+  transition: border-color .15s;
+}
+.brew-cmd:hover { border-color: var(--accent); }
+.brew-cmd code { font: 500 13px/1.5 ui-monospace, "SF Mono", Menlo, monospace; }
+.brew-cmd.done code { color: var(--accent); }
 .fine { margin-top: 14px; color: var(--soft); font-size: 14px; text-wrap: balance; }
 .fine a { color: var(--soft); }
 

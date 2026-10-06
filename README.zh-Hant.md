@@ -13,6 +13,13 @@ Wunder 收下圖片、網頁、文字和檔案，不問你要放哪裡。它讀�
 
 [**下載 Wunder.zip**](https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip)（4 MB，macOS 14 以上，Apple 晶片與 Intel 都能用）。
 
+也可以用 [Homebrew](https://brew.sh) 安裝：
+
+```sh
+brew install --cask rocavence/tap/wunder
+```
+
+
 Wunder 還沒經過 Apple 公證，第一次打開會被 macOS 擋下。打開「系統設定 → 隱私權與安全性」，往下捲，按「強制打開」。也可以在「終端機」執行：
 
 ```bash

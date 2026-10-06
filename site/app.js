@@ -508,6 +508,15 @@
     }
   }
 
+  // ── The Homebrew command: a click copies it ───────────────────────
+  document.querySelectorAll(".brew-cmd").forEach((b) => b.addEventListener("click", async () => {
+    const code = b.querySelector("code"), text = code.textContent;
+    try { await navigator.clipboard.writeText(text); } catch (e) { return; }
+    code.textContent = b.dataset.copied;
+    b.classList.add("done");
+    setTimeout(() => { code.textContent = text; b.classList.remove("done"); }, 1400);
+  }));
+
   let resizing = 0;
   addEventListener("resize", () => {
     morph();

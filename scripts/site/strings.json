@@ -376,7 +376,9 @@
     "foot_icons": "Icons by",
     "why_kicker": "Why Wunder",
     "why_p1": "I’ve used plenty of apps like this, and many of them aren’t cheap. But they just never felt good to use, and the thing I spent the most time on was, of all things, organizing!",
-    "why_p2": "You probably won’t open Wunder every day either, and that’s just right. It sorts your curiosities and hangs them on the wall, so whenever you do open it, there’s a comfortable room waiting. Wander around; no tidying needed, really!"
+    "why_p2": "You probably won’t open Wunder every day either, and that’s just right. It sorts your curiosities and hangs them on the wall, so whenever you do open it, there’s a comfortable room waiting. Wander around; no tidying needed, really!",
+    "brew_or": "or with Homebrew:",
+    "brew_copied": "copied"
   },
   "zh-Hant": {
     "lang": "zh-Hant",
@@ -755,7 +757,9 @@
     "foot_icons": "圖示來自",
     "why_kicker": "為什麼做 Wunder",
     "why_p1": "同類的 App 我用過不少，很多其實都不便宜。但用下來就是覺得不好用，而且花最多時間的竟然是整理！",
-    "why_p2": "Wunder 你大概也不會天天打開，這樣剛好，它會把你的「珍奇」分門別類擺好掛上牆，哪天想到再打開，就是一個舒服的展室，你就隨意逛逛，不整理也完全沒問題！"
+    "why_p2": "Wunder 你大概也不會天天打開，這樣剛好，它會把你的「珍奇」分門別類擺好掛上牆，哪天想到再打開，就是一個舒服的展室，你就隨意逛逛，不整理也完全沒問題！",
+    "brew_or": "也可以用 Homebrew：",
+    "brew_copied": "已拷貝"
   },
   "ja": {
     "lang": "ja",
@@ -1134,7 +1138,9 @@
     "foot_icons": "アイコン：",
     "why_kicker": "Wunder をつくった理由",
     "why_p1": "同じような App はたくさん使ってきました。実は安くないものばかり。でも使ってみると使いにくくて、いちばん時間を取られたのは、なんと整理でした！",
-    "why_p2": "Wunder もたぶん毎日は開かないでしょう。それでちょうどいいんです。あなたの「珍品」を分類して壁に飾っておくので、思い出して開けば、そこは居心地のいい展示室。気ままに見て回るだけで、整理しなくてもまったく大丈夫！"
+    "why_p2": "Wunder もたぶん毎日は開かないでしょう。それでちょうどいいんです。あなたの「珍品」を分類して壁に飾っておくので、思い出して開けば、そこは居心地のいい展示室。気ままに見て回るだけで、整理しなくてもまったく大丈夫！",
+    "brew_or": "Homebrew でも：",
+    "brew_copied": "コピーしました"
   },
   "ko": {
     "lang": "ko",
@@ -1513,7 +1519,9 @@
     "foot_icons": "아이콘:",
     "why_kicker": "Wunder를 만든 이유",
     "why_p1": "비슷한 앱을 꽤 써 봤는데, 사실 싼 게 별로 없었어요. 그런데 써 보면 영 불편했고, 가장 많은 시간을 쓴 게 하필 정리였어요!",
-    "why_p2": "Wunder도 아마 매일 열지는 않겠죠. 그게 딱 좋아요. 당신의 ‘진기한 것들’을 분류해 벽에 걸어 두니까, 생각날 때 열면 편안한 전시실이 기다립니다. 마음 가는 대로 둘러보세요. 정리 안 해도 전혀 문제없어요!"
+    "why_p2": "Wunder도 아마 매일 열지는 않겠죠. 그게 딱 좋아요. 당신의 ‘진기한 것들’을 분류해 벽에 걸어 두니까, 생각날 때 열면 편안한 전시실이 기다립니다. 마음 가는 대로 둘러보세요. 정리 안 해도 전혀 문제없어요!",
+    "brew_or": "Homebrew로도:",
+    "brew_copied": "복사됨"
   },
   "es": {
     "lang": "es",
@@ -1892,7 +1900,9 @@
     "foot_icons": "Iconos de",
     "why_kicker": "Por qué Wunder",
     "why_p1": "He usado muchas apps así, y muchas no son nada baratas. Pero usarlas nunca era cómodo, y en lo que más tiempo se me iba era, nada menos, ¡en ordenar!",
-    "why_p2": "Seguramente tampoco abrirás Wunder cada día, y está bien así. Ordena tus «curiosidades» y las cuelga en la pared, así que cuando lo abras te espera una sala acogedora. Pasea sin prisa; ¡no hace falta ordenar nada!"
+    "why_p2": "Seguramente tampoco abrirás Wunder cada día, y está bien así. Ordena tus «curiosidades» y las cuelga en la pared, así que cuando lo abras te espera una sala acogedora. Pasea sin prisa; ¡no hace falta ordenar nada!",
+    "brew_or": "o con Homebrew:",
+    "brew_copied": "copiado"
   },
   "pt-BR": {
     "lang": "pt-BR",
@@ -2271,6 +2281,8 @@
     "foot_icons": "Ícones de",
     "why_kicker": "Por que Wunder",
     "why_p1": "Já usei vários apps assim, e muitos nem são baratos. Mas no uso nunca eram bons, e o que mais tomava meu tempo era, imagine só, organizar!",
-    "why_p2": "Você provavelmente também não vai abrir o Wunder todo dia, e tudo bem. Ele separa suas “curiosidades” e pendura na parede, então quando abrir, vai encontrar uma sala aconchegante. É só passear; não precisa arrumar nada!"
+    "why_p2": "Você provavelmente também não vai abrir o Wunder todo dia, e tudo bem. Ele separa suas “curiosidades” e pendura na parede, então quando abrir, vai encontrar uma sala aconchegante. É só passear; não precisa arrumar nada!",
+    "brew_or": "ou pelo Homebrew:",
+    "brew_copied": "copiado"
   }
 }
