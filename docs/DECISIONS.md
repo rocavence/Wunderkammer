@@ -374,8 +374,8 @@ Apple Vision 的 1,303 個標籤原本只翻了 249 個，中文介面會出現�
 
 AI 助手啟動 `Wunder --mcp`。這個模式不開視窗，用 stdio 說 MCP，每個工具呼叫轉給正在執行的 App；App 沒開時在背景打開它。兩者之間用 `~/Library/Application Support/Wunderkammer/mcp.sock` 溝通，權限 0600，只有同一個使用者能連，不開任何網路埠。
 
-預設關閉。「設定 → 隱私」的「讓 AI 助手使用 Wunder」打開後，助手只能讀：總覽、搜尋（文字加描述）、依分組瀏覽、單件詳細、隨機、提問。「也讓它收藏」另外打開後，才能收藏連結、文字、檔案與加進釘選版。
+預設關閉。「設定 → AI 控制」的「讓 AI 助手使用 Wunder」打開後，助手只能讀：總覽、搜尋（文字加描述）、依分組瀏覽、單件詳細、隨機、提問。「也讓它收藏」另外打開後，才能收藏連結、文字、檔案與加進釘選版。
 
 協定自己實作（JSON-RPC，一行一則），不加 MCP 套件，App 體積不變。工具一律對目前開著的展室作用。
 
-修改位置：`App/MCPBridge.swift`、`App/main.swift`、`AppDelegate`（AI 助手區段）、`SettingsWindowController`（隱私頁）。
+修改位置：`App/MCPBridge.swift`、`App/main.swift`、`AppDelegate`（AI 助手區段）、`SettingsWindowController`（AI 控制頁）。

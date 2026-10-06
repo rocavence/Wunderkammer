@@ -13,6 +13,7 @@ final class SettingsWindowController: NSWindowController {
     var onSpotlightChanged: ((Bool) -> Void)?
     /// AI assistants let in (true) or shut out.
     var onMCPChanged: ((Bool) -> Void)?
+    var mcpLastUse: () -> (client: String, at: Date)? = { nil }
     var semanticReady: () -> Bool = { false }
     var update: () -> UpdateChecker.Release? = { nil }
     var onCheckUpdate: (() -> Void)?
@@ -31,7 +32,7 @@ final class SettingsWindowController: NSWindowController {
     var onEnableChinese: (() -> Void)?
 
     enum Tab: CaseIterable {
-        case general, collecting, understanding, privacy, about
+        case general, collecting, understanding, privacy, ai, about
 
         var title: String {
             switch self {
@@ -39,6 +40,7 @@ final class SettingsWindowController: NSWindowController {
             case .collecting: String(localized: "收藏")
             case .understanding: String(localized: "搜尋與理解")
             case .privacy: String(localized: "隱私")
+            case .ai: String(localized: "AI 控制")
             case .about: String(localized: "關於")
             }
         }
@@ -49,6 +51,7 @@ final class SettingsWindowController: NSWindowController {
             case .collecting: .inboxIn
             case .understanding: .sparkles
             case .privacy: .shield
+            case .ai: .magicWand
             case .about: .infoCircle
             }
         }
@@ -84,6 +87,10 @@ final class SettingsWindowController: NSWindowController {
         }
         NotificationCenter.default.addObserver(forName: Accent.didChange, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.show(self?.tab ?? .general) }
+        }
+        // The AI page's status follows assistants as they call.
+        NotificationCenter.default.addObserver(forName: MCPHost.didUse, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { if self?.tab == .ai { self?.refresh() } }
         }
     }
 
@@ -160,6 +167,7 @@ final class SettingsWindowController: NSWindowController {
         case .collecting: rows = collectingRows()
         case .understanding: rows = understandingRows()
         case .privacy: rows = privacyRows()
+        case .ai: rows = aiRows()
         case .about: rows = [about()]
         }
         let stack = NSStackView(views: rows)
@@ -250,37 +258,83 @@ final class SettingsWindowController: NSWindowController {
             self?.onSpotlightChanged?(on)
         }
         spotlight.setAccessibilityLabel(String(localized: "在 Spotlight 顯示收藏"))
-        var rows = [
+        return [
             row(String(localized: "在 Spotlight 顯示收藏"), String(localized: "只放標題、網站與主題，不放文字內容。"), spotlight),
-        ] + assistantRows()
-        rows.append(note(String(localized: "圖中文字、物件、相似度與名字的辨識，都在這台 Mac 上完成，不會上傳任何內容。")))
-        return rows
+            note(String(localized: "圖中文字、物件、相似度與名字的辨識，都在這台 Mac 上完成，不會上傳任何內容。")),
+        ]
     }
 
-    /// AI assistants over MCP: let them in, let them collect too, and how to
-    /// connect one. The last two only while the first is on.
-    private func assistantRows() -> [NSView] {
+    /// AI control, as Flione's: let assistants in, let them collect too, how
+    /// they're doing, and what to paste into each kind of assistant.
+    private func aiRows() -> [NSView] {
         let allow = PillSwitch(on: MCP.isEnabled) { [weak self] on in
             UserDefaults.standard.set(on, forKey: MCP.enabledKey)
             self?.onMCPChanged?(on)
-            self?.show(.privacy)
+            self?.show(.ai)
         }
         allow.setAccessibilityLabel(String(localized: "讓 AI 助手使用 Wunder"))
         var rows = [row(String(localized: "讓 AI 助手使用 Wunder"),
-                        String(localized: "支援 MCP 的 AI 助手（例如 Claude、Cursor）可以搜尋與讀取目前的展室。只在這台 Mac 上連線，不經過網路。"),
+                        String(localized: "Claude、Cursor 等支援 MCP 的 App 可以搜尋、瀏覽與讀取目前的展室，也能隨機挑一件或提問。"),
                         allow)]
-        guard MCP.isEnabled else { return rows }
-        let write = PillSwitch(on: MCP.canWrite) { on in UserDefaults.standard.set(on, forKey: MCP.writeKey) }
-        write.setAccessibilityLabel(String(localized: "也讓它收藏"))
-        rows.append(row(String(localized: "也讓它收藏"), String(localized: "允許 AI 助手把連結、文字和檔案收進來，或加進釘選版。"), write))
-        let path = Bundle.main.executablePath ?? ""
-        let copies = NSStackView(views: [
-            Self.copyButton(String(localized: "拷貝設定"), MCP.settingsSnippet),
-            Self.copyButton(String(localized: "拷貝 Claude Code 指令"), "claude mcp add wunder -- \"\(path)\" --mcp"),
-        ])
-        copies.spacing = 8
-        rows.append(row(String(localized: "連接 AI 助手"), String(localized: "把設定貼進 AI 助手的 MCP 設定；用 Claude Code 的話，在終端機執行拷貝的指令。"), copies))
+        if MCP.isEnabled {
+            let write = PillSwitch(on: MCP.canWrite) { on in UserDefaults.standard.set(on, forKey: MCP.writeKey) }
+            write.setAccessibilityLabel(String(localized: "也讓它收藏"))
+            rows.append(row(String(localized: "也讓它收藏"), String(localized: "允許 AI 助手把連結、文字和檔案收進來，或加進釘選版。"), write))
+            rows.append(row(String(localized: "狀態"), mcpStatus(), NSView()))
+            let path = Bundle.main.executablePath ?? ""
+            rows.append(setup(String(localized: "Claude Desktop、Cursor 等 App"),
+                              String(localized: "加進 App 的 MCP 伺服器設定。Claude Desktop：設定 → 開發者 → 編輯設定檔。"),
+                              MCP.settingsSnippet))
+            rows.append(setup(String(localized: "Claude Code"), String(localized: "在終端機執行這一行。"),
+                              "claude mcp add wunder -- \"\(path)\" --mcp"))
+        }
+        let footnote = Self.label(String(localized: "只有這台 Mac 上的 App 能連線，不經過網路。"), size: 11, color: .tertiaryLabelColor)
+        let box = NSStackView(views: [footnote])
+        box.edgeInsets = NSEdgeInsets(top: 16, left: 0, bottom: 0, right: 0)
+        rows.append(box)
         return rows
+    }
+
+    private func mcpStatus() -> String {
+        guard let use = mcpLastUse() else { return String(localized: "等 AI 助手來連線。需要時，AI 助手會自己打開 Wunder。") }
+        let time = use.at.formatted(date: Calendar.current.isDateInToday(use.at) ? .omitted : .abbreviated, time: .shortened)
+        let who = use.client.isEmpty ? String(localized: "AI 助手") : use.client
+        return String(localized: "\(who) 上次使用：\(time)")
+    }
+
+    /// How to connect one kind of assistant: what to do, a Copy button, and
+    /// the text itself in a box you can select from.
+    private func setup(_ title: String, _ detail: String, _ code: String) -> NSView {
+        let copy = Self.copyButton(String(localized: "拷貝"), code)
+        let head = row(title, detail, copy)
+        let text = NSTextField(wrappingLabelWithString: code)
+        text.font = .monospacedSystemFont(ofSize: 12, weight: .regular)
+        text.textColor = NSColor.labelColor.withAlphaComponent(0.85)
+        text.isSelectable = true
+        text.preferredMaxLayoutWidth = Self.rowWidth - 24
+        let well = NSView()
+        well.wantsLayer = true
+        well.layer?.cornerRadius = 8
+        well.layer?.cornerCurve = .continuous
+        well.layer?.borderWidth = 1
+        well.layer?.borderColor = NSColor.separatorColor.cgColor
+        well.layer?.backgroundColor = NSColor.labelColor.withAlphaComponent(0.04).cgColor
+        text.translatesAutoresizingMaskIntoConstraints = false
+        well.addSubview(text)
+        NSLayoutConstraint.activate([
+            text.topAnchor.constraint(equalTo: well.topAnchor, constant: 12),
+            text.bottomAnchor.constraint(equalTo: well.bottomAnchor, constant: -12),
+            text.leadingAnchor.constraint(equalTo: well.leadingAnchor, constant: 12),
+            text.trailingAnchor.constraint(equalTo: well.trailingAnchor, constant: -12),
+        ])
+        // The code sits between the row and its hairline.
+        if let stack = head as? NSStackView, stack.arrangedSubviews.count == 2 {
+            stack.insertArrangedSubview(well, at: 1)
+            stack.setCustomSpacing(16, after: well)
+            well.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+            (stack.arrangedSubviews.first as? NSStackView)?.edgeInsets.bottom = 12
+        }
+        return head
     }
 
     /// Copies the text; says so on the button for a moment.
@@ -290,7 +344,7 @@ final class SettingsWindowController: NSWindowController {
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(text, forType: .string)
             box.value?.setLabel(String(localized: "已拷貝"))
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { box.value?.setLabel(title) }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { box.value?.setLabel(title) }
         }
         box.value = button
         return button

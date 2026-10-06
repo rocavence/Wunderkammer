@@ -140,6 +140,9 @@ enum MCP {
 /// Runs instead of the app when started with `--mcp`: MCP over stdio, each
 /// tool call passed on to the app (opened in the background if it isn't).
 enum MCPServer {
+    /// Who started us, from initialize; the app shows it in Settings.
+    nonisolated(unsafe) private static var client = ""
+
     static func run() -> Never {
         while let line = Swift.readLine(strippingNewline: true) {
             guard let data = line.data(using: .utf8),
@@ -148,6 +151,7 @@ enum MCPServer {
             let params = message["params"] as? [String: Any] ?? [:]
             switch message["method"] as? String ?? "" {
             case "initialize":
+                client = (params["clientInfo"] as? [String: Any])?["name"] as? String ?? ""
                 let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
                 reply(id, result: ["protocolVersion": params["protocolVersion"] as? String ?? "2025-06-18",
                                    "capabilities": ["tools": [String: Any]()],
@@ -175,9 +179,9 @@ enum MCPServer {
     }
 
     private static func call(_ tool: String, _ arguments: [String: Any]) -> (String, Bool) {
-        let request: [String: Any] = ["tool": tool, "arguments": arguments]
+        let request: [String: Any] = ["tool": tool, "arguments": arguments, "client": client]
         if let answer = send(request) { return answer }
-        let off = "Wunder isn't letting assistants in. Turn on 「讓 AI 助手使用 Wunder」 (Let AI assistants use Wunder) in Wunder → Settings → Privacy."
+        let off = "Wunder isn't letting assistants in. Turn on 「讓 AI 助手使用 Wunder」 (Let AI assistants use Wunder) in Wunder → Settings → AI Control."
         // Running but switched off: say so straight away.
         if !NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier ?? "").isEmpty {
             return (off, true)
@@ -219,6 +223,11 @@ final class MCPHost: @unchecked Sendable {
     private let handler: Handler
     private var listener: Int32 = -1
     private let lock = NSLock()
+    private var used: (client: String, at: Date)?
+
+    /// The last assistant that called, and when.
+    var lastUse: (client: String, at: Date)? { lock.withLock { used } }
+    static let didUse = Notification.Name("MCPDidUse")
 
     init(handler: @escaping Handler) { self.handler = handler }
 
@@ -269,6 +278,8 @@ final class MCPHost: @unchecked Sendable {
             guard let request = try? JSONSerialization.jsonObject(with: line) as? [String: Any],
                   let tool = request["tool"] as? String else { return }
             let arguments = (try? JSONSerialization.data(withJSONObject: request["arguments"] ?? [String: Any]())) ?? Data("{}".utf8)
+            lock.withLock { used = (request["client"] as? String ?? "", Date()) }
+            DispatchQueue.main.async { NotificationCenter.default.post(name: Self.didUse, object: nil) }
             let answer = Answer(), done = DispatchSemaphore(value: 0)
             let handler = handler
             Task { @MainActor in
@@ -297,7 +308,7 @@ struct MCPTools {
         let args = (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
         guard let spec = MCP.tools.first(where: { $0.name == tool }) else { return ("No tool called \(tool).", true) }
         if spec.writes, !MCP.canWrite {
-            return ("Collecting is off. The user can turn on 「也讓它收藏」 (Let it collect too) in Wunder → Settings → Privacy.", true)
+            return ("Collecting is off. The user can turn on 「也讓它收藏」 (Let it collect too) in Wunder → Settings → AI Control.", true)
         }
         let limit = max(1, min(args["limit"] as? Int ?? 20, 200))
         switch tool {

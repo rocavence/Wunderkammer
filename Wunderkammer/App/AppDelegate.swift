@@ -120,6 +120,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         s.onMCPChanged = { [weak self] on in
             if on { self?.mcpHost.start() } else { self?.mcpHost.stop() }
         }
+        s.mcpLastUse = { [weak self] in self?.mcpHost.lastUse }
         s.onSpotlightChanged = { [weak self] on in
             guard let self else { return }
             self.spotlight = on ? SpotlightIndexer(library: self.library) : nil

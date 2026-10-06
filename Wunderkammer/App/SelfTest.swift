@@ -208,7 +208,7 @@ final class SelfTest {
                 check(w.isVisible, "settings window shows")
                 // Each section, and an accent other than orange reaching the main window.
                 for (tab, name) in [(SettingsWindowController.Tab.collecting, "settings-collecting"), (.understanding, "settings-understanding"),
-                                    (.privacy, "settings-privacy"), (.about, "settings-about")] {
+                                    (.privacy, "settings-privacy"), (.ai, "settings-ai-off"), (.about, "settings-about")] {
                     ui.showSettingsTabForTest(tab)
                     await wait(0.3)
                     shot(name, windowNumber: w.windowNumber)
@@ -1933,9 +1933,10 @@ final class SelfTest {
         // The settings that let them in.
         defaults.set(true, forKey: MCP.enabledKey)
         if let w = ui.showSettingsForTest() {
-            ui.showSettingsTabForTest(.privacy)
+            ui.showSettingsTabForTest(.ai)
             await wait(0.4)
-            shot("settings-privacy-mcp", windowNumber: w.windowNumber)
+            shot("settings-ai", windowNumber: w.windowNumber)
+            check(ui.settingsRowHeightsForTest.allSatisfy { $0 >= 68 }, "the AI page's rows keep their height")
             w.orderOut(nil)
         }
     }
