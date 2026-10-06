@@ -59,6 +59,7 @@
       "themes and colors it finds by itself",
       "a fresh dozen to look at again, every day",
       "a workbench to pile, arrange and connect, with three saved layouts",
+      "works with AI assistants over MCP: Claude, Cursor and others can search and collect for you",
       "rooms with their own collections, synced through iCloud",
       "in english, 繁體中文, 日本語, 한국어, español and português"
     ],
@@ -437,6 +438,7 @@
       "自己長出來的主題和顏色分類",
       "每天一組新的「今天的推薦」",
       "工作台：分堆、排列、連線，存三種排法",
+      "支援 MCP：Claude、Cursor 等 AI 助手可以幫你搜尋、收藏",
       "好幾個展室，各有各的收藏，用 iCloud 同步",
       "繁體中文、English、日本語、한국어、Español、Português"
     ],
@@ -815,6 +817,7 @@
       "自動で見つかるテーマと色",
       "毎日届く新しい「今日のおすすめ」",
       "積み重ね、並べ、つなぐワークスペース。並べ方を 3 つ保存",
+      "MCP に対応：Claude、Cursor などの AI アシスタントが検索や収集を手伝います",
       "展示室ごとのコレクションを iCloud で同期",
       "日本語、English、繁體中文、한국어、Español、Português に対応"
     ],
@@ -1193,6 +1196,7 @@
       "스스로 찾아내는 주제와 색상",
       "매일 새로 고르는 ‘오늘의 추천’",
       "쌓고, 배치하고, 연결하는 작업대. 배치 3개 저장",
+      "MCP 지원: Claude, Cursor 등 AI 어시스턴트가 검색과 수집을 도와줍니다",
       "전시실마다 따로인 컬렉션, iCloud로 동기화",
       "한국어, English, 繁體中文, 日本語, Español, Português 지원"
     ],
@@ -1571,6 +1575,7 @@
       "Temas y colores que encuentra por sí mismo",
       "Una docena nueva para volver a mirar, cada día",
       "Un espacio de trabajo para agrupar, ordenar y conectar, con tres disposiciones guardadas",
+      "Compatible con MCP: Claude, Cursor y otros asistentes de IA pueden buscar y guardar por ti",
       "Salas con su propia colección, sincronizadas con iCloud",
       "En español, English, 繁體中文, 日本語, 한국어 y português"
     ],
@@ -1949,6 +1954,7 @@
       "Temas e cores que ele encontra sozinho",
       "Uma dúzia nova para rever, todo dia",
       "Uma mesa de trabalho para agrupar, organizar e ligar, com três arranjos salvos",
+      "Compatível com MCP: Claude, Cursor e outros assistentes de IA podem buscar e guardar por você",
       "Salas com coleções próprias, sincronizadas pelo iCloud",
       "Em português, English, 繁體中文, 日本語, 한국어 e español"
     ],
