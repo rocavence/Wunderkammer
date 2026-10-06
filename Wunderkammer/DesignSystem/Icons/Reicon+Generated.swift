@@ -75,5 +75,5 @@ enum Reicon: String, CaseIterable, Sendable {
     case hand = "hand"
     case selection = "selection"
     case save = "save"
-    case magicWand = "magic-wand"
+    case robot = "robot"
 }

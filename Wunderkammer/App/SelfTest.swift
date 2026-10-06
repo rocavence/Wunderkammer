@@ -1936,6 +1936,9 @@ final class SelfTest {
             ui.showSettingsTabForTest(.ai)
             await wait(0.4)
             shot("settings-ai", windowNumber: w.windowNumber)
+            ui.scrollSettingsToEndForTest()
+            await wait(0.3)
+            shot("settings-ai-end", windowNumber: w.windowNumber)
             check(ui.settingsRowHeightsForTest.allSatisfy { $0 >= 68 }, "the AI page's rows keep their height")
             w.orderOut(nil)
         }

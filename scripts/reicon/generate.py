@@ -21,6 +21,8 @@ ICON_LIST = ROOT / "scripts/reicon/icons.txt"
 SOURCE = ROOT / ".cache/iconoir/icons"
 CATALOG = ROOT / "Wunderkammer/Resources/Assets.xcassets/Reicon"
 SWIFT_OUT = ROOT / "Wunderkammer/DesignSystem/Icons/Reicon+Generated.swift"
+# Iconoir 沒有的 icon，照它的格線與筆畫自己畫（例如 robot）
+CUSTOM = ROOT / "scripts/reicon/custom"
 
 # 線條粗細：Iconoir 預設 1.5，介面要粗一點
 STROKE = 2.3
@@ -52,7 +54,9 @@ def load_list() -> list[tuple[str, str]]:
 def prepare(svg: str) -> str:
     # CoreSVG 不支援 currentColor；template image 只看 alpha，顏色固定黑色即可
     svg = svg.replace("currentColor", "#000000")
-    return re.sub(r'stroke-width="[\d.]+"', f'stroke-width="{STROKE}"', svg)
+    # 自己畫的眼睛這類點要比線粗，標了 stroke-width="2.6" 的照比例放大
+    svg = svg.replace('stroke-width="2.6"', f'stroke-width="{STROKE * 1.7:.1f}" data-keep="1"')
+    return re.sub(r'stroke-width="[\d.]+"(?! data-keep)', f'stroke-width="{STROKE}"', svg)
 
 
 def write_json(path: Path, obj: dict) -> None:
@@ -68,7 +72,7 @@ def swift_case(name: str) -> str:
 def main() -> int:
     ensure_source()
     pairs = load_list()
-    missing = [s for _, s in pairs if not (SOURCE / "regular" / f"{s}.svg").exists()]
+    missing = [s for _, s in pairs if not (SOURCE / "regular" / f"{s}.svg").exists() and not (CUSTOM / f"{s}.svg").exists()]
     if missing:
         print(f"Iconoir 沒有這些 icon：{', '.join(missing)}", file=sys.stderr)
         return 1
@@ -82,9 +86,10 @@ def main() -> int:
     })
 
     for name, source in pairs:
+        custom = CUSTOM / f"{source}.svg"
         solid = SOURCE / "solid" / f"{source}.svg"
-        files = {"outline": SOURCE / "regular" / f"{source}.svg",
-                 "filled": solid if solid.exists() else SOURCE / "regular" / f"{source}.svg"}
+        regular = custom if custom.exists() else SOURCE / "regular" / f"{source}.svg"
+        files = {"outline": regular, "filled": solid if solid.exists() and not custom.exists() else regular}
         for suffix, path in files.items():
             imageset = CATALOG / f"{name}.{suffix}.imageset"
             imageset.mkdir()

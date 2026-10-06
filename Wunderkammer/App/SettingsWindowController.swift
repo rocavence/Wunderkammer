@@ -51,7 +51,7 @@ final class SettingsWindowController: NSWindowController {
             case .collecting: .inboxIn
             case .understanding: .sparkles
             case .privacy: .shield
-            case .ai: .magicWand
+            case .ai: .robot
             case .about: .infoCircle
             }
         }
@@ -288,10 +288,7 @@ final class SettingsWindowController: NSWindowController {
             rows.append(setup(String(localized: "Claude Code"), String(localized: "在終端機執行這一行。"),
                               "claude mcp add wunder -- \"\(path)\" --mcp"))
         }
-        let footnote = Self.label(String(localized: "只有這台 Mac 上的 App 能連線，不經過網路。"), size: 11, color: .tertiaryLabelColor)
-        let box = NSStackView(views: [footnote])
-        box.edgeInsets = NSEdgeInsets(top: 16, left: 0, bottom: 0, right: 0)
-        rows.append(box)
+        rows.append(note(String(localized: "只有這台 Mac 上的 App 能連線，不經過網路。")))
         return rows
     }
 

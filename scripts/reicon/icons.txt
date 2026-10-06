@@ -73,4 +73,4 @@ chevronLeft nav-arrow-left
 hand drag-hand-gesture
 selection select-window
 save floppy-disk
-magic-wand magic-wand
+robot robot
