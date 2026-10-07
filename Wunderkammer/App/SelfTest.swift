@@ -739,6 +739,9 @@ final class SelfTest {
         await wait(0.6)
         shot("board-intro")
         check(ui.boardIntroShownForTest, "an empty 釘選版 explains what it is and how it works")
+        check(ui.canvasBoardIntroShownForTest, "and on the 工作台 too")
+        await wait(0.5)
+        shot("board-intro-canvas")
         // The settings button at the sidebar's foot: just this 展室's settings.
         _ = ui.hoverCabinetSettingsForTest(false)
         await wait(0.4)
@@ -1989,6 +1992,7 @@ protocol SelfTestUI: AnyObject {
     func cabinetSettingsForTest()
     func makeBoardForTest()
     var boardIntroShownForTest: Bool { get }
+    var canvasBoardIntroShownForTest: Bool { get }
     func hoverCabinetSettingsForTest(_ on: Bool) -> CGFloat
     var cabinetSettingsWidthForTest: CGFloat { get }
     func hoverAddBoardForTest(_ on: Bool) -> String

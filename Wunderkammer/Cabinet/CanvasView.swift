@@ -151,6 +151,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         fit()
         render(animated: false)
         needsDisplay = true
+        placeBoardIntro()
     }
 
     private func currentGroups() -> [CanvasGroup] {
@@ -175,6 +176,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         selection.restrict(to: Set(order))
         render(animated: true)
         needsDisplay = true
+        placeBoardIntro()
     }
 
     private func save() {
@@ -963,8 +965,25 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         _ = importPasteboard(NSPasteboard.general, library: library, board: board)
     }
 
+    /// An empty board explains itself here too, as in the grid.
+    private lazy var boardIntro = BoardIntro()
+    var boardIntroShownForTest: Bool { boardIntro.superview != nil }
+
+    private func placeBoardIntro() {
+        guard groups.isEmpty, board != nil else { boardIntro.removeFromSuperview(); return }
+        if boardIntro.superview == nil { addSubview(boardIntro) }
+        let size = boardIntro.fittingSize
+        boardIntro.frame = NSRect(x: (bounds.midX - size.width / 2).rounded(), y: (bounds.midY - size.height / 2).rounded(),
+                                  width: size.width, height: size.height)
+    }
+
+    override func resizeSubviews(withOldSize oldSize: NSSize) {
+        super.resizeSubviews(withOldSize: oldSize)
+        placeBoardIntro()
+    }
+
     override func draw(_ dirtyRect: NSRect) {
-        guard groups.isEmpty else { return }
+        guard groups.isEmpty, board == nil else { return }
         let text = String(localized: "畫布是空的\n收進來的東西會出現在這裡，也可以直接把檔案拖進來") as NSString
         let style = NSMutableParagraphStyle()
         style.alignment = .center
