@@ -734,12 +734,10 @@ final class SelfTest {
         check(ui.cabinetNames.contains("旅行的展室"), "it's in the list")
         ui.switchCabinet(to: home)
         await wait(0.4)
-        // A new, empty 釘選版 says what it is.
+        // A new, empty 釘選版 says what it is on the 工作台 (the 收藏 keeps its one line).
         ui.makeBoardForTest()
         await wait(0.6)
-        shot("board-intro")
-        check(ui.boardIntroShownForTest, "an empty 釘選版 explains what it is and how it works")
-        check(ui.canvasBoardIntroShownForTest, "and on the 工作台 too")
+        check(ui.canvasBoardIntroShownForTest, "an empty 釘選版 on the 工作台 explains what it is and how it works")
         await wait(0.5)
         shot("board-intro-canvas")
         // The settings button at the sidebar's foot: just this 展室's settings.
@@ -1991,7 +1989,6 @@ protocol SelfTestUI: AnyObject {
     func scrollSettingsToEndForTest()
     func cabinetSettingsForTest()
     func makeBoardForTest()
-    var boardIntroShownForTest: Bool { get }
     var canvasBoardIntroShownForTest: Bool { get }
     func hoverCabinetSettingsForTest(_ on: Bool) -> CGFloat
     var cabinetSettingsWidthForTest: CGFloat { get }

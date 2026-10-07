@@ -965,7 +965,7 @@ final class CanvasView: NSView, ItemSurface, CabinetSurface {
         _ = importPasteboard(NSPasteboard.general, library: library, board: board)
     }
 
-    /// An empty board explains itself here too, as in the grid.
+    /// An empty board explains itself on the 工作台, where it gets its own canvas.
     private lazy var boardIntro = BoardIntro()
     var boardIntroShownForTest: Bool { boardIntro.superview != nil }
 

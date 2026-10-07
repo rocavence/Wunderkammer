@@ -125,7 +125,6 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
         relayout(animated: false, anchor: nil)
         scrollToTop()
         needsDisplay = true
-        placeBoardIntro()
     }
 
     private func scrollToTop() {
@@ -140,7 +139,6 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
         selection.restrict(to: Set(order))
         relayout(animated: animated, anchor: nil)
         needsDisplay = true
-        placeBoardIntro()
     }
 
     /// The next width change springs the pieces to their places (a panel
@@ -149,7 +147,6 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
 
     private func relayoutIfWidthChanged() {
         guard let clip = superview else { return }
-        defer { placeBoardIntro() }
         if clip.bounds.width != layoutWidth {
             relayout(animated: animateNextWidthChange, anchor: nil)
             animateNextWidthChange = false
@@ -775,21 +772,8 @@ final class GridView: NSView, ItemSurface, CabinetSurface, NSDraggingSource {
 
     // MARK: Empty state
 
-    /// An empty board explains itself; other empty views say a line or two.
-    private lazy var boardIntro = BoardIntro()
-    private var showsBoardIntro: Bool { items.isEmpty && scope.board != nil && !scope.isSearching }
-    var boardIntroShownForTest: Bool { boardIntro.superview != nil && !boardIntro.isHidden }
-
-    private func placeBoardIntro() {
-        guard showsBoardIntro else { boardIntro.removeFromSuperview(); return }
-        if boardIntro.superview == nil { addSubview(boardIntro) }
-        let size = boardIntro.fittingSize, visible = visibleRect
-        boardIntro.frame = NSRect(x: (visible.midX - size.width / 2).rounded(), y: (visible.midY - size.height / 2).rounded(),
-                                  width: size.width, height: size.height)
-    }
-
     override func draw(_ dirtyRect: NSRect) {
-        guard items.isEmpty, !showsBoardIntro else { return }
+        guard items.isEmpty else { return }
         let text = EmptyState.message(for: scope) as NSString
         let style = NSMutableParagraphStyle()
         style.alignment = .center

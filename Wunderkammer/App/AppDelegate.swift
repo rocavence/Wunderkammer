@@ -1594,7 +1594,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
         setMode(.grid)
         sidebar.newBoard(nil)
     }
-    var boardIntroShownForTest: Bool { grid.boardIntroShownForTest }
     var canvasBoardIntroShownForTest: Bool { setMode(.canvas); return canvas.boardIntroShownForTest }
     func hoverAddBoardForTest(_ on: Bool) -> String {
         sidebar.addBoardButtonForTest?.hoverForTest(on)
