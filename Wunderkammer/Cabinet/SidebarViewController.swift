@@ -319,8 +319,18 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     }
 
     func tableView(_ tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
-        if case .divider = rows[row] { return 17 }
+        if case .divider = rows[row] { return Self.dividerHeight }
         return tableView.rowHeight
+    }
+
+    private static let dividerHeight: CGFloat = 17
+
+    /// Where the line goes in its row: the gap from the last section's words
+    /// (4pt under them, then down to the line) equals the gap to the next
+    /// header's words (the rest of this row, then the blank atop the header).
+    static func dividerLine(rowHeight: CGFloat) -> CGFloat {
+        let words = ceil(NSFont.systemFont(ofSize: 11, weight: .semibold).boundingRectForFont.height)
+        return ((dividerHeight + rowHeight - 8 - words) / 2).rounded()
     }
 
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
@@ -335,7 +345,9 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             NSLayoutConstraint.activate([
                 line.leadingAnchor.constraint(equalTo: row.leadingAnchor, constant: Self.headerInset),
                 line.trailingAnchor.constraint(equalTo: row.trailingAnchor),
-                line.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+                // Headers sit low in their rows (blank above, 4pt below), so the
+                // line sits low too: as far from the section above as below.
+                line.centerYAnchor.constraint(equalTo: row.topAnchor, constant: Self.dividerLine(rowHeight: tableView.rowHeight)),
             ])
             return row
         case .header(let title):
