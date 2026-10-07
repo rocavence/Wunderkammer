@@ -734,9 +734,20 @@ final class SelfTest {
         check(ui.cabinetNames.contains("旅行的展室"), "it's in the list")
         ui.switchCabinet(to: home)
         await wait(0.4)
+        // A new, empty 釘選版 says what it is.
+        ui.makeBoardForTest()
+        await wait(0.6)
+        shot("board-intro")
+        check(ui.boardIntroShownForTest, "an empty 釘選版 explains what it is and how it works")
         // The settings button at the sidebar's foot: just this 展室's settings.
-        let rest = ui.hoverCabinetSettingsForTest(false), pointed = ui.hoverCabinetSettingsForTest(true)
-        await wait(0.3)
+        _ = ui.hoverCabinetSettingsForTest(false)
+        await wait(0.4)
+        let rest = ui.cabinetSettingsWidthForTest
+        _ = ui.hoverCabinetSettingsForTest(true)
+        await wait(0.12)
+        shot("sidebar-foot-midway")
+        await wait(0.4)
+        let pointed = ui.cabinetSettingsWidthForTest
         shot("sidebar-foot-hover")
         check(rest <= 30 && pointed > 60, "the arch says 展室設定 only while pointed at (\(Int(rest)) → \(Int(pointed)))")
         _ = ui.hoverCabinetSettingsForTest(false)
@@ -1976,7 +1987,10 @@ protocol SelfTestUI: AnyObject {
     func stopMCPForTest()
     func scrollSettingsToEndForTest()
     func cabinetSettingsForTest()
+    func makeBoardForTest()
+    var boardIntroShownForTest: Bool { get }
     func hoverCabinetSettingsForTest(_ on: Bool) -> CGFloat
+    var cabinetSettingsWidthForTest: CGFloat { get }
     func hoverAddBoardForTest(_ on: Bool) -> String
     var cabinetSettingsShownForTest: Bool { get }
     func closeCabinetsForTest()

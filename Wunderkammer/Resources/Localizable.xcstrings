@@ -889,6 +889,12 @@
             "value" : "Anthropic’s desktop app."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La app de escritorio de Anthropic."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -899,12 +905,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Anthropic의 데스크탑 앱."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La app de escritorio de Anthropic."
           }
         },
         "pt-BR" : {
@@ -5161,6 +5161,46 @@
         }
       }
     },
+    "到工作台打開它，會有一張專屬的畫布：自由擺放、分堆、連線，不影響「全部」的排法。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open it on the Space and it has its own canvas: place, pile and connect freely, without touching how All is laid out."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ワークスペースで開くと専用のキャンバスがあり、自由に置いたり、まとめたり、つないだりできます。「すべて」の並べ方には影響しません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "작업대에서 열면 전용 캔버스가 있어 자유롭게 놓고, 쌓고, 연결할 수 있습니다. ‘전체’의 배치에는 영향을 주지 않습니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ábrelo en el espacio de trabajo y tendrá su propio lienzo: coloca, agrupa y conecta a tu gusto, sin tocar la disposición de Todo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abra na mesa de trabalho e ele terá sua própria tela: posicione, agrupe e ligue à vontade, sem mexer no arranjo de Tudo."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "到工作台打開它，會有一張專屬的畫布：自由擺放、分堆、連線，不影響「全部」的排法。"
+          }
+        }
+      }
+    },
     "到設定換一組快捷鍵，或從選單「檔案 → 收藏剪貼簿或目前頁面」收藏" : {
       "localizations" : {
         "en" : {
@@ -6009,6 +6049,12 @@
             "value" : "Ask it: “What’s in my Wunder?”"
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pregúntale: «¿Qué hay en mi Wunder?»"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6019,12 +6065,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "물어보세요: “내 Wunder에 뭐가 있어?”"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pregúntale: «¿Qué hay en mi Wunder?»"
           }
         },
         "pt-BR" : {
@@ -6489,6 +6529,12 @@
             "value" : "Type /mcp in Claude Code. If you see wunder, it’s connected."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe /mcp en Claude Code. Si ves wunder, ya está conectado."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6499,12 +6545,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Claude Code에서 /mcp를 입력해 wunder가 보이면 연결된 것입니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Escribe /mcp en Claude Code. Si ves wunder, ya está conectado."
           }
         },
         "pt-BR" : {
@@ -6529,6 +6569,12 @@
             "value" : "In Claude Desktop, open Settings → Developer → Edit Config to find claude_desktop_config.json."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En Claude Desktop, abre Ajustes → Desarrollador → Editar configuración para encontrar claude_desktop_config.json."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6539,12 +6585,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Claude Desktop에서 ‘설정 → 개발자 → 구성 편집’을 열어 claude_desktop_config.json을 찾습니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "En Claude Desktop, abre Ajustes → Desarrollador → Editar configuración para encontrar claude_desktop_config.json."
           }
         },
         "pt-BR" : {
@@ -6569,6 +6609,12 @@
             "value" : "In Cursor, open Settings → MCP → Add new global MCP server; mcp.json opens."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En Cursor, abre Settings → MCP → Add new global MCP server; se abre mcp.json."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6579,12 +6625,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cursor에서 ‘Settings → MCP → Add new global MCP server’를 열면 mcp.json이 열립니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "En Cursor, abre Settings → MCP → Add new global MCP server; se abre mcp.json."
           }
         },
         "pt-BR" : {
@@ -7049,6 +7089,12 @@
             "value" : "Paste it in Terminal and run it."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pégalo en Terminal y ejecútalo."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7059,12 +7105,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "터미널에 붙여 넣고 실행합니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pégalo en Terminal y ejecútalo."
           }
         },
         "pt-BR" : {
@@ -7369,6 +7409,12 @@
             "value" : "Save, then quit Claude Desktop and open it again."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guarda, cierra Claude Desktop y vuelve a abrirlo."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7379,12 +7425,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "저장한 뒤 Claude Desktop을 종료하고 다시 엽니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Guarda, cierra Claude Desktop y vuelve a abrirlo."
           }
         },
         "pt-BR" : {
@@ -7569,6 +7609,12 @@
             "value" : "The code editor. Same settings as Claude Desktop."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El editor de código. Mismos ajustes que Claude Desktop."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7579,12 +7625,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "코드 편집기. 설정은 Claude Desktop과 같습니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "El editor de código. Mismos ajustes que Claude Desktop."
           }
         },
         "pt-BR" : {
@@ -8721,6 +8761,46 @@
         }
       }
     },
+    "從這個展室挑出來放在一起的東西。東西仍在展室裡，同一件可以釘在好幾個版上，從版上拿掉也不會刪除。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Things picked out of this room and kept together. They stay in the room: one piece can be on several boards, and taking it off a board doesn’t delete it."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この展示室から選んでまとめておくもの。もの自体は展示室に残り、ひとつを複数のボードにピン留めでき、ボードから外しても削除されません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 전시실에서 골라 함께 모아 둔 것들입니다. 물건은 전시실에 그대로 있고, 하나를 여러 보드에 고정할 수 있으며, 보드에서 빼도 삭제되지 않습니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cosas elegidas de esta sala y reunidas. Siguen en la sala: una pieza puede estar en varios tableros, y quitarla de uno no la borra."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coisas escolhidas desta sala e reunidas. Elas continuam na sala: uma peça pode estar em vários quadros, e tirá-la de um não a apaga."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從這個展室挑出來放在一起的東西。東西仍在展室裡，同一件可以釘在好幾個版上，從版上拿掉也不會刪除。"
+          }
+        }
+      }
+    },
     "從這台 Mac 移除" : {
       "localizations" : {
         "en" : {
@@ -9489,6 +9569,12 @@
             "value" : "Paste it in. If the file already has other mcpServers, add only the \"wunder\" part."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pégalo. Si el archivo ya tiene otros mcpServers, añade solo la parte \"wunder\"."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9501,12 +9587,6 @@
             "value" : "복사한 내용을 붙여 넣습니다. 다른 mcpServers가 이미 있다면 \"wunder\" 부분만 추가하세요."
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pégalo. Si el archivo ya tiene otros mcpServers, añade solo la parte \"wunder\"."
-          }
-        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9517,6 +9597,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "把拷貝的內容貼進去。檔案裡已經有其他 mcpServers 的話，只加 \"wunder\" 這一段。"
+          }
+        }
+      }
+    },
+    "把收藏拖到左邊的這個釘選版上，或直接把檔案拖進來。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag things onto this board on the left, or drop files right here."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "左のこのボードにドラッグするか、ファイルをここに直接ドロップします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "왼쪽의 이 보드로 끌어다 놓거나, 파일을 여기에 바로 놓으세요."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastra cosas a este tablero de la izquierda o suelta archivos aquí."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste coisas para este quadro à esquerda ou solte arquivos aqui."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "把收藏拖到左邊的這個釘選版上，或直接把檔案拖進來。"
           }
         }
       }
@@ -9929,6 +10049,12 @@
             "value" : "Click Copy."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haz clic en Copiar."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9939,12 +10065,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "‘복사’를 클릭합니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Haz clic en Copiar."
           }
         },
         "pt-BR" : {
@@ -15649,6 +15769,12 @@
             "value" : "Claude in your terminal."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude en tu terminal."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15659,12 +15785,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "터미널 속 Claude."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Claude en tu terminal."
           }
         },
         "pt-BR" : {
@@ -16969,6 +17089,12 @@
             "value" : "Paste and save. When wunder shows up in the MCP list, it’s connected."
           }
         },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pega y guarda. Cuando wunder aparezca en la lista de MCP, ya está conectado."
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16979,12 +17105,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "붙여 넣고 저장하세요. MCP 목록에 wunder가 보이면 연결된 것입니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pega y guarda. Cuando wunder aparezca en la lista de MCP, ya está conectado."
           }
         },
         "pt-BR" : {
@@ -17441,6 +17561,46 @@
         }
       }
     },
+    "這個釘選版還是空的" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This board is empty"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このボードはまだ空です"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 보드는 아직 비어 있어요"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este tablero está vacío"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este quadro está vazio"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這個釘選版還是空的"
+          }
+        }
+      }
+    },
     "這個釘選版還是空的\n把收藏拖到左邊的釘選版名稱上，或直接拖檔案進來" : {
       "localizations" : {
         "en" : {
@@ -17797,6 +17957,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "過去的今天，你還沒有收藏東西\n明年的今天，這裡會有今天收的東西"
+          }
+        }
+      }
+    },
+    "適合放一個專案的參考、挑給別人看的候選，或下一趟旅行想去的地方。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Good for a project’s references, a shortlist to show someone, or places for your next trip."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プロジェクトの参考資料、誰かに見せる候補、次の旅行で行きたい場所などに。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "프로젝트 참고 자료, 누군가에게 보여 줄 후보, 다음 여행에서 가고 싶은 곳을 모으기에 좋습니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ideal para las referencias de un proyecto, una selección para enseñar a alguien o los sitios de tu próximo viaje."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bom para referências de um projeto, uma seleção para mostrar a alguém ou lugares da próxima viagem."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "適合放一個專案的參考、挑給別人看的候選，或下一趟旅行想去的地方。"
           }
         }
       }

@@ -15,7 +15,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     /// The open 展室's settings (the button at the foot, left).
     var onCabinetSettings: (() -> Void)?
     // The menu bar's arch, at the size of the + beside it.
-    private let roomSettings = FootButton(image: StatusDrop.arch(filled: false, side: 13), title: nil, reveals: String(localized: "展室設定"))
+    private let roomSettings = FootButton(image: StatusDrop.arch(filled: false, side: 13), reveals: String(localized: "展室設定"))
     /// Which 展室 is open, shown on the card at the top.
     var cabinetName = String(localized: "展室") { didSet { if cabinetName != oldValue { reload() } } }
     var cabinetID: UUID? { didSet { if cabinetID != oldValue { coverIDs = [] ; reload() } } }
@@ -74,15 +74,13 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         // The card above already clears the title bar.
         scroll.automaticallyAdjustsContentInsets = false
 
-        let add = FootButton(image: Icon.image(.plus), title: nil, reveals: String(localized: "新增釘選版"), trailing: true)
+        let add = FootButton(image: Icon.image(.plus), reveals: String(localized: "新增釘選版"), trailing: true)
         addBoard = add
         add.target = self
         add.action = #selector(newBoard(_:))
         add.toolTip = String(localized: "新增釘選版")
-        add.setAccessibilityLabel(String(localized: "新增釘選版"))
         // The open 展室's own settings, under its doorway: the arch.
         roomSettings.toolTip = String(localized: "展室設定")
-        roomSettings.setAccessibilityLabel(String(localized: "展室設定"))
         roomSettings.target = self
         roomSettings.action = #selector(openCabinetSettings)
 
@@ -659,66 +657,117 @@ final class CabinetHeader: NSControl {
 }
 
 /// A quiet control at the sidebar's foot: a glyph in grey that darkens with a
-/// soft fill under the pointer and deepens while pressed. One can carry a
-/// word that slides out beside its glyph only while pointed at.
+/// soft fill under the pointer and deepens while pressed. Pointed at, its
+/// word slides out of the glyph's side, the way the button grows, out of a
+/// blur into focus; leaving, it slips back the same way.
 @MainActor
-final class FootButton: NSButton {
-    private var hovering = false { didSet { paint() } }
-    private let reveals: String?
-    /// The glyph after the word, for the one at the right edge, so it stays put.
+final class FootButton: NSControl {
+    private let icon = NSImageView()
+    private let label = NSTextField(labelWithString: "")
+    private let word: String
+    /// The glyph sits at the right and the word grows out to its left.
     private let trailing: Bool
+    private var width: NSLayoutConstraint!
+    private var hovering = false
+    private var pressed = false
 
-    init(image: NSImage, title: String?, reveals: String? = nil, trailing: Bool = false) {
-        self.reveals = reveals
+    init(image: NSImage, reveals word: String, trailing: Bool = false) {
+        self.word = word
         self.trailing = trailing
         super.init(frame: .zero)
-        isBordered = false
         wantsLayer = true
         layer?.cornerRadius = 8
         layer?.cornerCurve = .continuous
-        self.image = image
-        imagePosition = title == nil ? .imageOnly : .imageLeading
-        imageHugsTitle = true
-        self.title = title ?? ""
-        font = .systemFont(ofSize: 12.5, weight: .medium)
+        layer?.masksToBounds = true
+        icon.image = image
+        label.attributedStringValue = NSAttributedString(string: word, attributes: [
+            .font: NSFont.systemFont(ofSize: 12.5, weight: .medium), .foregroundColor: NSColor.labelColor,
+        ])
+        label.wantsLayer = true
+        label.layerUsesCoreImageFilters = true
+        label.alphaValue = 0
+        for v in [icon, label] as [NSView] {
+            v.translatesAutoresizingMaskIntoConstraints = false
+            addSubview(v)
+        }
         translatesAutoresizingMaskIntoConstraints = false
-        heightAnchor.constraint(equalToConstant: 30).isActive = true
-
+        width = widthAnchor.constraint(equalToConstant: Self.side)
+        NSLayoutConstraint.activate([
+            heightAnchor.constraint(equalToConstant: Self.side),
+            width,
+            icon.centerYAnchor.constraint(equalTo: centerYAnchor),
+            icon.widthAnchor.constraint(equalToConstant: 16),
+            icon.heightAnchor.constraint(equalToConstant: 16),
+            label.centerYAnchor.constraint(equalTo: centerYAnchor),
+        ] + (trailing ? [
+            icon.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -7),
+            label.trailingAnchor.constraint(equalTo: icon.leadingAnchor, constant: -6),
+        ] : [
+            icon.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 7),
+            label.leadingAnchor.constraint(equalTo: icon.trailingAnchor, constant: 6),
+        ]))
         addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+        setAccessibilityElement(true)
+        setAccessibilityRole(.button)
+        setAccessibilityLabel(word)
         paint()
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
-    override var intrinsicContentSize: NSSize {
-        let size = super.intrinsicContentSize
-        return NSSize(width: title.isEmpty ? 30 : size.width + 22, height: 30)
-    }
+    private static let side: CGFloat = 30
+
+    /// The word, while it shows (tests).
+    var shownWord: String { hovering ? word : "" }
 
     override func mouseEntered(with event: NSEvent) { hover(true) }
     override func mouseExited(with event: NSEvent) { hover(false) }
-
     func hoverForTest(_ on: Bool) { hover(on) }
 
     private func hover(_ on: Bool) {
+        guard on != hovering else { return }
         hovering = on
-        guard let reveals else { return }
-        title = on ? reveals : ""
-        imagePosition = on ? (trailing ? .imageTrailing : .imageLeading) : .imageOnly
         paint()
-        invalidateIntrinsicContentSize()
+        let open = Self.side + ceil(label.intrinsicContentSize.width) + 12
+        let away: CGFloat = trailing ? 10 : -10
         NSAnimationContext.runAnimationGroup { ctx in
-            ctx.duration = 0.18
+            ctx.duration = on ? 0.32 : 0.22
+            ctx.timingFunction = CAMediaTimingFunction(controlPoints: 0.22, 1, 0.36, 1)
             ctx.allowsImplicitAnimation = true
+            width.animator().constant = on ? open : Self.side
+            label.animator().alphaValue = on ? 1 : 0
             superview?.layoutSubtreeIfNeeded()
         }
+        // Out of the glyph's side and into focus, or back and blurred away.
+        guard let layer = label.layer else { return }
+        let blur = CIFilter(name: "CIGaussianBlur", parameters: [kCIInputRadiusKey: 0])!
+        blur.name = "blur"
+        layer.filters = [blur]
+        let focus = CABasicAnimation(keyPath: "filters.blur.inputRadius")
+        focus.fromValue = on ? 6 : 0
+        focus.toValue = on ? 0 : 6
+        let slide = CABasicAnimation(keyPath: "transform.translation.x")
+        slide.fromValue = on ? away : 0
+        slide.toValue = on ? 0 : away
+        let group = CAAnimationGroup()
+        group.animations = [focus, slide]
+        group.duration = on ? 0.32 : 0.2
+        group.timingFunction = CAMediaTimingFunction(controlPoints: 0.22, 1, 0.36, 1)
+        layer.add(group, forKey: "reveal")
     }
 
     override func mouseDown(with event: NSEvent) {
-        layer?.backgroundColor = resolved(NSColor.labelColor.withAlphaComponent(0.12))
-        super.mouseDown(with: event)
+        pressed = true
         paint()
     }
+
+    override func mouseUp(with event: NSEvent) {
+        pressed = false
+        paint()
+        if bounds.contains(convert(event.locationInWindow, from: nil)) { sendAction(action, to: target) }
+    }
+
+    override func accessibilityPerformPress() -> Bool { sendAction(action, to: target) }
 
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()
@@ -726,13 +775,8 @@ final class FootButton: NSButton {
     }
 
     private func paint() {
-        let ink: NSColor = hovering ? .labelColor : .secondaryLabelColor
-        contentTintColor = ink
-        if !title.isEmpty {
-            attributedTitle = NSAttributedString(string: title, attributes: [
-                .font: NSFont.systemFont(ofSize: 12.5, weight: .medium), .foregroundColor: ink,
-            ])
-        }
-        layer?.backgroundColor = hovering ? resolved(NSColor.labelColor.withAlphaComponent(0.07)) : nil
+        icon.contentTintColor = hovering ? .labelColor : .secondaryLabelColor
+        let fill: CGFloat = pressed ? 0.12 : hovering ? 0.07 : 0
+        layer?.backgroundColor = fill > 0 ? resolved(NSColor.labelColor.withAlphaComponent(fill)) : nil
     }
 }

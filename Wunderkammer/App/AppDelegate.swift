@@ -1589,16 +1589,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     func showSettingsTabForTest(_ tab: SettingsWindowController.Tab) { settings.showForTest(tab) }
     func scrollSettingsToEndForTest() { settings.scrollToEndForTest() }
     func flipCabinetForTest() { cabinetsPanel?.flipForTest(cabinets.currentID) }
-    func cabinetSettingsForTest() { sidebar.cabinetSettingsButtonForTest.performClick(nil) }
+    func cabinetSettingsForTest() { cabinetSettings() }
+    func makeBoardForTest() {
+        setMode(.grid)
+        sidebar.newBoard(nil)
+    }
+    var boardIntroShownForTest: Bool { grid.boardIntroShownForTest }
     func hoverAddBoardForTest(_ on: Bool) -> String {
         sidebar.addBoardButtonForTest?.hoverForTest(on)
-        return sidebar.addBoardButtonForTest?.title ?? ""
+        return sidebar.addBoardButtonForTest?.shownWord ?? ""
     }
     func hoverCabinetSettingsForTest(_ on: Bool) -> CGFloat {
         sidebar.cabinetSettingsButtonForTest.hoverForTest(on)
-        sidebar.view.layoutSubtreeIfNeeded()
         return sidebar.cabinetSettingsButtonForTest.frame.width
     }
+    var cabinetSettingsWidthForTest: CGFloat { sidebar.cabinetSettingsButtonForTest.frame.width }
     var cabinetSettingsShownForTest: Bool { cabinetsPanel?.settingsShownForTest ?? false }
     func collectDropForTest(_ pasteboard: NSPasteboard) -> Bool { capture.collectDrop(pasteboard) }
     func setCoverForTest(_ picture: URL?) -> Bool {
