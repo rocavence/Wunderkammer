@@ -199,25 +199,30 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         rows = buildRows()
         table.reloadData()
         addBoard?.isHidden = space != .map
-        // A view that has a row in some space but not this one (a board outside
-        // the 工作台, 今天的推薦 outside 漫遊, a kind no longer held): back to 全部.
-        let ownRow: Bool
+        // A view this space doesn't have (a board outside the 工作台, 今天的推薦
+        // outside 漫遊, a kind no longer held): back to 全部. A folded section
+        // only hides its rows; what's chosen in it stays chosen.
+        let gone: Bool
         switch selected {
-        case .board, .kind, .forToday, .onThisDay, .forgotten, .trail: ownRow = true
-        default: ownRow = false
+        case .board(let id): gone = space != .map || library.collection(id) == nil
+        case .forToday, .onThisDay, .forgotten, .trail: gone = space != .wander
+        case .kind(let k): gone = !library.items.contains(where: k.contains)
+        default: gone = false
         }
-        if ownRow, !rows.indices.contains(where: { base(at: $0) == selected }) {
-            select(.all)
-        } else {
-            selectRow(for: selected)
-        }
+        if gone { select(.all) } else { selectRow(for: selected) }
     }
 
     private func buildRows() -> [Row] {
         var r: [Row] = []
+        // 收藏 keeps its sections as they were; in 漫遊 and 工作台 each one
+        // starts folded, so their own things lead, and remembers being opened.
+        func section(_ name: String) -> String { space == .cabinet ? name : "\(name).\(space)" }
+        func fold(_ id: String, _ body: [Row]) -> [Row] {
+            body.isEmpty ? [] : [.header(id)] + (Self.folds(id) && isFolded(id) ? [] : body)
+        }
         // Every theme two or more pieces share: the more ways in, the better.
         let subjects = Subjects.discover(in: library.items, limit: .max, minimum: 2)
-        let themeRows: [Row] = subjects.isEmpty ? [] : [.header("主題")] + (isFolded("主題") ? [] : subjects.map {
+        let themeRows = fold(section("主題"), subjects.map {
             .view(.subject($0.label), title: $0.title, icon: Self.themeIcon($0.label), count: $0.count)
         })
         // The colours the pictures are mostly made of, in spectrum order.
@@ -226,7 +231,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
                 let n = library.items.reduce(0) { $0 + ($1.colors?.contains(c.name) == true ? 1 : 0) }
                 return n > 0 ? .view(.color(c.name), title: c.title, icon: .palette, count: n) : nil
             }
-            return rows.isEmpty ? [] : [.header("顏色")] + (isFolded("顏色") ? [] : rows)
+            return fold(section("顏色"), rows)
         }()
         func count(_ k: Scope.KindView) -> Int { library.items.reduce(0) { $0 + (k.contains($1) ? 1 : 0) } }
         r = [.view(.all, title: String(localized: "全部"), icon: .grid, count: library.items.count)]
@@ -241,8 +246,8 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
                 return n > 0 ? .view(.kind(k), title: k.title, icon: Self.kindIcons[k]!, count: n) : nil
             }
             // Only worth a section when the cabinet holds more than one kind of thing.
-            if kinds.count > 1 { r += [.header("格式")] + kinds }
-            if !works.isEmpty { r += [.header("分類")] + works }
+            if kinds.count > 1 { r += fold(section("格式"), kinds) }
+            r += fold(section("分類"), works)
             r += themeRows + colourRows
         }
         switch space {
@@ -362,7 +367,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
                 label.leadingAnchor.constraint(equalTo: row.leadingAnchor, constant: Self.headerInset),
                 label.bottomAnchor.constraint(equalTo: row.bottomAnchor, constant: -4),
             ])
-            guard Self.foldable.contains(title) else { return row }
+            guard Self.folds(title) else { return row }
             // Long sections fold. The arrow, cropped to its strokes, ends where
             // the counts end, pointing down open and right folded.
             let chevron = NSImageView(image: Self.chevron(folded: isFolded(title)))
@@ -432,7 +437,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
 
     @objc private func clicked() {
         let row = table.clickedRow
-        guard rows.indices.contains(row), case .header(let title) = rows[row], Self.foldable.contains(title) else { return }
+        guard rows.indices.contains(row), case .header(let title) = rows[row], Self.folds(title) else { return }
         toggleFold(title)
     }
 
@@ -450,6 +455,10 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     /// Sections that can grow long fold away; the rest are short enough to stay open.
     static let foldable: Set<String> = ["顏色", "主題"]
 
+    /// 主題 and 顏色 fold everywhere; in 漫遊 and 工作台 every section does
+    /// (its id carries the space, so each space remembers its own).
+    static func folds(_ section: String) -> Bool { foldable.contains(section) || section.contains(".") }
+
     /// Section ids stay Chinese (fold state is keyed by them); only the shown title is localized.
     static func sectionTitle(_ id: String) -> String {
         switch id {
@@ -459,6 +468,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         case "顏色": String(localized: "顏色")
         case "釘選版": String(localized: "釘選版")
         case "漫遊": String(localized: "漫遊")
+        case _ where id.contains("."): sectionTitle(String(id.prefix(while: { $0 != "." })))
         default: id
         }
     }
@@ -474,7 +484,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         for row in 0..<rows.count {
             guard let cell = table.view(atColumn: 0, row: row, makeIfNecessary: false) else { continue }
             switch rows[row] {
-            case .header(let t) where Self.foldable.contains(t):
+            case .header(let t) where Self.folds(t):
                 if let c = cell.subviews.compactMap({ $0 as? NSImageView }).first, let img = c.image {
                     // The drawn arrow, not the image view's box.
                     let f = c.convert(c.bounds, to: nil)
