@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """App icon: the stacked arch cards on a cream tile (macOS icon grid).
 
-用法：python3 scripts/icon/make-icon.py <輸出的 1024 PNG>
+用法：python3 scripts/icon/make-icon.py <輸出的 1024 PNG> [--flat]
+--flat：底板下不加陰影，給網頁（rengised.com/apps）用。
 主體來自 scripts/icon/cards-1024.png（cards-source.png 去白底後的版本）。
 """
 import sys
@@ -13,6 +14,7 @@ FILL = 0.78  # 主體佔底板的比例
 RAISE = 0.02  # 主體往上移，佔底板高度的比例
 
 out = sys.argv[1]
+flat = "--flat" in sys.argv
 def without_shadow(art):
     """Only the cards: the soft shadow kept from the cut-out goes, the edges stay smooth."""
     solid = art.getchannel("A").point(lambda v: 255 if v > 200 else 0).filter(ImageFilter.MaxFilter(5))
@@ -29,7 +31,8 @@ art = art.resize((round(art.size[0] * scale), round(art.size[1] * scale)), Image
 canvas = Image.new("RGBA", (SIDE, SIDE), (0, 0, 0, 0))
 shade = Image.new("L", (SIDE, SIDE), 0)
 ImageDraw.Draw(shade).rounded_rectangle((BODY[0], BODY[1] + 14, BODY[2], BODY[3] + 14), RADIUS, fill=70)
-canvas.paste(Image.new("RGBA", (SIDE, SIDE), (0, 0, 0, 255)), (0, 0), shade.filter(ImageFilter.GaussianBlur(17)))
+if not flat:
+    canvas.paste(Image.new("RGBA", (SIDE, SIDE), (0, 0, 0, 255)), (0, 0), shade.filter(ImageFilter.GaussianBlur(17)))
 
 tile = Image.new("RGBA", (SIDE, SIDE), CREAM)
 ox, oy = (SIDE - art.size[0]) // 2, (SIDE - art.size[1]) // 2 - round(RAISE * (BODY[3] - BODY[1]))
