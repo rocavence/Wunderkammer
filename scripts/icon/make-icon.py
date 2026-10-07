@@ -41,5 +41,6 @@ tile.alpha_composite(art, (ox, oy))
 mask = Image.new("L", (SIDE, SIDE), 0)
 ImageDraw.Draw(mask).rounded_rectangle(BODY, RADIUS, fill=255)
 canvas.paste(tile, (0, 0), mask)
-ImageDraw.Draw(canvas).rounded_rectangle(BODY, RADIUS, outline=(0, 0, 0, 20), width=2)
+# 細框；網頁版縮到 256 後仍要看得到，像 Flione 一樣的一圈淡灰框
+ImageDraw.Draw(canvas).rounded_rectangle(BODY, RADIUS, outline=(0, 0, 0, 34) if flat else (0, 0, 0, 20), width=4 if flat else 2)
 canvas.save(out)
