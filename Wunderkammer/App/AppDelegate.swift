@@ -1591,7 +1591,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSearchFieldDelegate,
     func flipCabinetForTest() { cabinetsPanel?.flipForTest(cabinets.currentID) }
     func cabinetSettingsForTest() { cabinetSettings() }
     func makeBoardForTest() {
-        setMode(.grid)
+        setMode(.canvas)
         sidebar.newBoard(nil)
     }
     var canvasBoardIntroShownForTest: Bool { setMode(.canvas); return canvas.boardIntroShownForTest }

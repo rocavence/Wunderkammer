@@ -25,12 +25,14 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
     /// The pieces the card's cover was last drawn from.
     private var coverIDs: [UUID] = []
 
-    /// The sidebar follows the space: filters for 收藏 and 工作台, ways in for 漫遊.
+    /// The sidebar follows the space: the same filters everywhere, then below
+    /// a line what only that space has: ways back in for 漫遊, 釘選版 for 工作台.
     var space: Space = .cabinet {
         didSet { if space != oldValue { reload() } }
     }
 
     private enum Row {
+        case divider
         case header(String)
         case view(Scope.Base, title: String, icon: Reicon, count: Int?)
         case random
@@ -196,10 +198,15 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         updateHeader()
         rows = buildRows()
         table.reloadData()
-        if case .board(let id) = selected, library.collection(id) == nil {
-            select(.all)
-        } else if case .kind(let k) = selected, space != .wander,
-                  !rows.contains(where: { if case .view(.kind(k), _, _, _) = $0 { return true }; return false }) {
+        addBoard?.isHidden = space != .map
+        // A view that has a row in some space but not this one (a board outside
+        // the 工作台, 今天的推薦 outside 漫遊, a kind no longer held): back to 全部.
+        let ownRow: Bool
+        switch selected {
+        case .board, .kind, .forToday, .onThisDay, .forgotten, .trail: ownRow = true
+        default: ownRow = false
+        }
+        if ownRow, !rows.indices.contains(where: { base(at: $0) == selected }) {
             select(.all)
         } else {
             selectRow(for: selected)
@@ -222,17 +229,8 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             return rows.isEmpty ? [] : [.header("顏色")] + (isFolded("顏色") ? [] : rows)
         }()
         func count(_ k: Scope.KindView) -> Int { library.items.reduce(0) { $0 + (k.contains($1) ? 1 : 0) } }
-        switch space {
-        case .wander:
-            // Ways into the wall: everything, what time brings back, where you've been.
-            r = [.view(.all, title: String(localized: "全部"), icon: .grid, count: library.items.count),
-                 .view(.forToday, title: String(localized: "今天的推薦"), icon: .sunLight, count: nil),
-                 .view(.onThisDay, title: String(localized: "過去的今天"), icon: .calendarDay, count: nil),
-                 .view(.forgotten, title: String(localized: "被遺忘的"), icon: .history, count: nil),
-                 .view(.trail, title: String(localized: "足跡"), icon: .routing, count: nil),
-                 .random] + themeRows + colourRows
-        case .cabinet, .map:
-            r = [.view(.all, title: String(localized: "全部"), icon: .grid, count: library.items.count)]
+        r = [.view(.all, title: String(localized: "全部"), icon: .grid, count: library.items.count)]
+        do {
             // What it is as a file, then what it's about (a book, a film…), side by side.
             let kinds: [Row] = Self.fileKinds.compactMap { k in
                 let n = count(k)
@@ -246,8 +244,21 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             if kinds.count > 1 { r += [.header("格式")] + kinds }
             if !works.isEmpty { r += [.header("分類")] + works }
             r += themeRows + colourRows
+        }
+        switch space {
+        case .cabinet: break
+        case .wander:
+            // Ways back into the wall: what time brings back, where you've been.
+            r += [.divider, .header("漫遊"),
+                  .view(.forToday, title: String(localized: "今天的推薦"), icon: .sunLight, count: nil),
+                  .view(.onThisDay, title: String(localized: "過去的今天"), icon: .calendarDay, count: nil),
+                  .view(.forgotten, title: String(localized: "被遺忘的"), icon: .history, count: nil),
+                  .view(.trail, title: String(localized: "足跡"), icon: .routing, count: nil),
+                  .random]
+        case .map:
+            // Boards belong to the 工作台: each one a canvas of its own.
             if !library.collections.isEmpty {
-                r += [.header("釘選版")] + library.collections.map { .board($0) }
+                r += [.divider, .header("釘選版")] + library.collections.map { .board($0) }
             }
         }
         return r
@@ -299,7 +310,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
 
     func tableView(_ tableView: NSTableView, shouldSelectRow row: Int) -> Bool {
         switch rows[row] {
-        case .header: return false
+        case .header, .divider: return false
         case .random:
             onRandom?()
             return false
@@ -307,8 +318,26 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         }
     }
 
+    func tableView(_ tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
+        if case .divider = rows[row] { return 17 }
+        return tableView.rowHeight
+    }
+
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         switch rows[row] {
+        case .divider:
+            // A hairline between what every space shares and what only this one has.
+            let line = NSBox()
+            line.boxType = .separator
+            let row = NSView()
+            line.translatesAutoresizingMaskIntoConstraints = false
+            row.addSubview(line)
+            NSLayoutConstraint.activate([
+                line.leadingAnchor.constraint(equalTo: row.leadingAnchor, constant: Self.headerInset),
+                line.trailingAnchor.constraint(equalTo: row.trailingAnchor),
+                line.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+            ])
+            return row
         case .header(let title):
             let label = NSTextField(labelWithString: Self.sectionTitle(title))
             label.font = .systemFont(ofSize: 11, weight: .semibold)
@@ -417,6 +446,7 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
         case "主題": String(localized: "主題")
         case "顏色": String(localized: "顏色")
         case "釘選版": String(localized: "釘選版")
+        case "漫遊": String(localized: "漫遊")
         default: id
         }
     }
