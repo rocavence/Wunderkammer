@@ -250,22 +250,24 @@ final class SidebarViewController: NSViewController, NSTableViewDataSource, NSTa
             r += fold(section("分類"), works)
             r += themeRows + colourRows
         }
+        // What only this space has goes first, right under 全部, with a line
+        // between it and the filters every space shares.
+        var own: [Row] = []
         switch space {
         case .cabinet: break
         case .wander:
             // Ways back into the wall: what time brings back, where you've been.
-            r += [.divider, .header("漫遊"),
-                  .view(.forToday, title: String(localized: "今天的推薦"), icon: .sunLight, count: nil),
-                  .view(.onThisDay, title: String(localized: "過去的今天"), icon: .calendarDay, count: nil),
-                  .view(.forgotten, title: String(localized: "被遺忘的"), icon: .history, count: nil),
-                  .view(.trail, title: String(localized: "足跡"), icon: .routing, count: nil),
-                  .random]
+            own = [.header("漫遊"),
+                   .view(.forToday, title: String(localized: "今天的推薦"), icon: .sunLight, count: nil),
+                   .view(.onThisDay, title: String(localized: "過去的今天"), icon: .calendarDay, count: nil),
+                   .view(.forgotten, title: String(localized: "被遺忘的"), icon: .history, count: nil),
+                   .view(.trail, title: String(localized: "足跡"), icon: .routing, count: nil),
+                   .random]
         case .map:
             // Boards belong to the 工作台: each one a canvas of its own.
-            if !library.collections.isEmpty {
-                r += [.divider, .header("釘選版")] + library.collections.map { .board($0) }
-            }
+            if !library.collections.isEmpty { own = [.header("釘選版")] + library.collections.map { .board($0) } }
         }
+        if !own.isEmpty { r.insert(contentsOf: own + [.divider], at: 1) }
         return r
     }
 
