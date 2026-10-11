@@ -102,3 +102,7 @@ scripts/selftest.sh cloud        # iCloud 雲碟裡的展室（用替代資料�
 | `docs` | [PLAN.md](docs/PLAN.md)（計畫書與 roadmap）、[DECISIONS.md](docs/DECISIONS.md)（決策紀錄） |
 
 截圖裡的圖片來自[克里夫蘭美術館 Open Access](https://www.clevelandart.org/open-access)（CC0）。
+
+## 授權
+
+CC BY-NC-SA 4.0（姓名標示—非商業性—相同方式分享），詳見 [LICENSE](LICENSE)。

@@ -102,3 +102,7 @@ End-to-end tests drive the app itself on a copy of your library, or on built-in 
 | `docs` | [PLAN.md](docs/PLAN.md) (plan and roadmap), [DECISIONS.md](docs/DECISIONS.md) (decision log), both in Chinese |
 
 Pictures in the screenshots come from the [Cleveland Museum of Art Open Access](https://www.clevelandart.org/open-access) collection (CC0).
+
+## License
+
+CC BY-NC-SA 4.0 (Attribution-NonCommercial-ShareAlike). See [LICENSE](LICENSE).
