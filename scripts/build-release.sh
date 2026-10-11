@@ -5,6 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 xcodegen generate --quiet
+python3 scripts/site/build.py >/dev/null   # 官網的版本號跟著 project.yml
 xcodebuild -project Wunderkammer.xcodeproj -scheme Wunderkammer -configuration Release \
   -derivedDataPath build-release build | grep -E "error:|BUILD" || true
 

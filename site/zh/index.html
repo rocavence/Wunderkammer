@@ -7,13 +7,25 @@
 <meta name="description" content="什麼都能放，什麼都不用整理。Wunder 收下圖片、網頁、文字和檔案，在你的 Mac 上看懂它們，在你忘記的時候再拿回來給你。">
 <meta name="theme-color" content="#faf6f0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://wunder.rocavence.com/zh/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Wunder">
 <meta property="og:title" content="Wunder：Mac 上的珍奇室">
-<meta property="og:description" content="什麼都能放，什麼都不用整理。">
-<meta property="og:image" content="https://wunder.rocavence.com/assets/og.png">
+<meta property="og:description" content="什麼都能放，什麼都不用整理。Wunder 收下圖片、網頁、文字和檔案，在你的 Mac 上看懂它們，在你忘記的時候再拿回來給你。">
+<meta property="og:image" content="https://wunder.rocavence.com/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Wunder：Mac 上的珍奇室">
 <meta property="og:url" content="https://wunder.rocavence.com/zh/">
+<meta property="og:locale" content="zh_TW">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Wunder：Mac 上的珍奇室">
+<meta name="twitter:description" content="什麼都能放，什麼都不用整理。Wunder 收下圖片、網頁、文字和檔案，在你的 Mac 上看懂它們，在你忘記的時候再拿回來給你。">
+<meta name="twitter:image" content="https://wunder.rocavence.com/assets/og.jpg">
 <link rel="icon" href="../assets/favicon.png">
 <link rel="apple-touch-icon" href="../assets/icon.png">
+<link rel="alternate" type="text/plain" title="llms.txt" href="../llms.txt">
 <link rel="alternate" hreflang="en" href="https://wunder.rocavence.com/">
 <link rel="alternate" hreflang="zh-Hant" href="https://wunder.rocavence.com/zh/">
 <link rel="alternate" hreflang="ja" href="https://wunder.rocavence.com/ja/">
@@ -21,6 +33,107 @@
 <link rel="alternate" hreflang="es" href="https://wunder.rocavence.com/es/">
 <link rel="alternate" hreflang="pt-BR" href="https://wunder.rocavence.com/pt/">
 <link rel="alternate" hreflang="x-default" href="https://wunder.rocavence.com/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Wunder",
+  "alternateName": "Wunderkammer",
+  "applicationCategory": "ProductivityApplication",
+  "operatingSystem": "macOS 14.0 or later",
+  "softwareVersion": "0.5.6",
+  "description": "什麼都能放，什麼都不用整理。Wunder 收下圖片、網頁、文字和檔案，在你的 Mac 上看懂它們，在你忘記的時候再拿回來給你。",
+  "url": "https://wunder.rocavence.com/zh/",
+  "image": "https://wunder.rocavence.com/assets/icon.png",
+  "screenshot": "https://wunder.rocavence.com/assets/og.jpg",
+  "downloadUrl": "https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip",
+  "codeRepository": "https://github.com/rocavence/Wunderkammer",
+  "inLanguage": [
+    "en",
+    "zh-Hant",
+    "ja",
+    "ko",
+    "es",
+    "pt-BR"
+  ],
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "rocavence",
+    "url": "https://github.com/rocavence"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "zh-Hant",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Wunder 是什麼？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "放在 Mac 上的一個地方，收那些不想弄丟、又不想整理的東西。圖片、網頁、文字、檔案都能收，它會看懂內容，幫你再找回來。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "macOS 說無法打開 Wunder，怎麼辦？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Wunder 還沒經過 Apple 公證，所以第一次會被擋。打開 「系統設定 → 隱私權與安全性」 ，往下捲，按 「強制打開」 。只要做一次。 也可以在「終端機」執行： xattr -dr com.apple.quarantine /Applications/Wunder.app"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "會把我的東西傳到網路上嗎？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "不會。讀圖裡的字、認出拍到什麼、顏色、相似的圖、回答問題，全部用 Apple 內建的功能在你的 Mac 上完成。Wunder 只有三種時候會連網：讀取你收的網頁、下載描述搜尋用的模型（約 106 MB，只下載一次，可以不裝），還有檢查新版本。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "會複製我的檔案嗎？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "不會。它記得檔案在哪裡，搬走了也追得到。想留一份備份的話，可以讓展室把每個檔案存進它自己的資料夾。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "同步怎麼運作？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "在展室打開同步，它就搬進 iCloud 雲碟，同一個 Apple 帳號的 Mac 都能打開。兩台同時改也沒關係，兩邊的修改都會留下。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "需要什麼環境？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "macOS 14 Sonoma 以上的 Mac。對收藏提問需要 Apple Intelligence（macOS 26）。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "要錢嗎？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "免費。原始碼在 GitHub 。"
+      }
+    }
+  ]
+}
+</script>
 <link rel="preload" href="../assets/wall.json?v=850d1a10" as="fetch" crossorigin>
 <link rel="stylesheet" href="../style.css?v=424babe1">
 <script>

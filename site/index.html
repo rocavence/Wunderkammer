@@ -7,13 +7,25 @@
 <meta name="description" content="Collect anything, organize nothing. Wunder keeps pictures, links, text and files, understands them on your Mac, and brings them back when you&#x27;ve forgotten.">
 <meta name="theme-color" content="#faf6f0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://wunder.rocavence.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Wunder">
 <meta property="og:title" content="wunder: a cabinet of curiosities for your mac">
-<meta property="og:description" content="Collect anything, organize nothing.">
-<meta property="og:image" content="https://wunder.rocavence.com/assets/og.png">
+<meta property="og:description" content="Collect anything, organize nothing. Wunder keeps pictures, links, text and files, understands them on your Mac, and brings them back when you&#x27;ve forgotten.">
+<meta property="og:image" content="https://wunder.rocavence.com/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="wunder: a cabinet of curiosities for your mac">
 <meta property="og:url" content="https://wunder.rocavence.com/">
+<meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="wunder: a cabinet of curiosities for your mac">
+<meta name="twitter:description" content="Collect anything, organize nothing. Wunder keeps pictures, links, text and files, understands them on your Mac, and brings them back when you&#x27;ve forgotten.">
+<meta name="twitter:image" content="https://wunder.rocavence.com/assets/og.jpg">
 <link rel="icon" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/icon.png">
+<link rel="alternate" type="text/plain" title="llms.txt" href="llms.txt">
 <link rel="alternate" hreflang="en" href="https://wunder.rocavence.com/">
 <link rel="alternate" hreflang="zh-Hant" href="https://wunder.rocavence.com/zh/">
 <link rel="alternate" hreflang="ja" href="https://wunder.rocavence.com/ja/">
@@ -21,6 +33,107 @@
 <link rel="alternate" hreflang="es" href="https://wunder.rocavence.com/es/">
 <link rel="alternate" hreflang="pt-BR" href="https://wunder.rocavence.com/pt/">
 <link rel="alternate" hreflang="x-default" href="https://wunder.rocavence.com/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Wunder",
+  "alternateName": "Wunderkammer",
+  "applicationCategory": "ProductivityApplication",
+  "operatingSystem": "macOS 14.0 or later",
+  "softwareVersion": "0.5.6",
+  "description": "Collect anything, organize nothing. Wunder keeps pictures, links, text and files, understands them on your Mac, and brings them back when you've forgotten.",
+  "url": "https://wunder.rocavence.com/",
+  "image": "https://wunder.rocavence.com/assets/icon.png",
+  "screenshot": "https://wunder.rocavence.com/assets/og.jpg",
+  "downloadUrl": "https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip",
+  "codeRepository": "https://github.com/rocavence/Wunderkammer",
+  "inLanguage": [
+    "en",
+    "zh-Hant",
+    "ja",
+    "ko",
+    "es",
+    "pt-BR"
+  ],
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "rocavence",
+    "url": "https://github.com/rocavence"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "what is wunder?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "a place on your mac for the things you don't want to lose, but don't want to organize either. it keeps pictures, web pages, text and files, figures out what they are, and helps you find them again."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "macos says it can't open wunder. what do i do?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "wunder isn't notarized by apple yet, so the first time macos stops it. open system settings → privacy & security , scroll down and click open anyway . you only do this once. or, in terminal: xattr -dr com.apple.quarantine /Applications/Wunder.app"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "does anything leave my mac?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "no. reading text in pictures, recognizing what's in them, colors, similar pictures and questions all run on your mac with apple's own frameworks. wunder only goes online to fetch the pages you collect, the optional description-search model (about 106 MB, once), and to check for a new version."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "does it copy my files?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "no. it remembers where they are, and follows them if you move them. if you'd rather keep copies, a room can save every file into a folder of its own."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "how does sync work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "turn on sync for a room and it moves into iCloud Drive. any mac signed in to your apple account can open it. if two macs change it at once, both changes are kept."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "what do i need?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "a mac with macOS 14 sonoma or later. asking your collection questions needs apple intelligence (macOS 26)."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "is it free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "yes. the source is on github ."
+      }
+    }
+  ]
+}
+</script>
 <link rel="preload" href="assets/wall.json?v=850d1a10" as="fetch" crossorigin>
 <link rel="stylesheet" href="style.css?v=424babe1">
 <script>

@@ -7,13 +7,25 @@
 <meta name="description" content="Guarde qualquer coisa, não organize nada. O Wunder guarda imagens, links, textos e arquivos, entende tudo no seu Mac e traz de volta quando você já tinha esquecido.">
 <meta name="theme-color" content="#faf6f0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://wunder.rocavence.com/pt/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Wunder">
 <meta property="og:title" content="Wunder: um gabinete de curiosidades para o seu Mac">
-<meta property="og:description" content="Guarde qualquer coisa, não organize nada.">
-<meta property="og:image" content="https://wunder.rocavence.com/assets/og.png">
+<meta property="og:description" content="Guarde qualquer coisa, não organize nada. O Wunder guarda imagens, links, textos e arquivos, entende tudo no seu Mac e traz de volta quando você já tinha esquecido.">
+<meta property="og:image" content="https://wunder.rocavence.com/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Wunder: um gabinete de curiosidades para o seu Mac">
 <meta property="og:url" content="https://wunder.rocavence.com/pt/">
+<meta property="og:locale" content="pt_BR">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Wunder: um gabinete de curiosidades para o seu Mac">
+<meta name="twitter:description" content="Guarde qualquer coisa, não organize nada. O Wunder guarda imagens, links, textos e arquivos, entende tudo no seu Mac e traz de volta quando você já tinha esquecido.">
+<meta name="twitter:image" content="https://wunder.rocavence.com/assets/og.jpg">
 <link rel="icon" href="../assets/favicon.png">
 <link rel="apple-touch-icon" href="../assets/icon.png">
+<link rel="alternate" type="text/plain" title="llms.txt" href="../llms.txt">
 <link rel="alternate" hreflang="en" href="https://wunder.rocavence.com/">
 <link rel="alternate" hreflang="zh-Hant" href="https://wunder.rocavence.com/zh/">
 <link rel="alternate" hreflang="ja" href="https://wunder.rocavence.com/ja/">
@@ -21,6 +33,107 @@
 <link rel="alternate" hreflang="es" href="https://wunder.rocavence.com/es/">
 <link rel="alternate" hreflang="pt-BR" href="https://wunder.rocavence.com/pt/">
 <link rel="alternate" hreflang="x-default" href="https://wunder.rocavence.com/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Wunder",
+  "alternateName": "Wunderkammer",
+  "applicationCategory": "ProductivityApplication",
+  "operatingSystem": "macOS 14.0 or later",
+  "softwareVersion": "0.5.6",
+  "description": "Guarde qualquer coisa, não organize nada. O Wunder guarda imagens, links, textos e arquivos, entende tudo no seu Mac e traz de volta quando você já tinha esquecido.",
+  "url": "https://wunder.rocavence.com/pt/",
+  "image": "https://wunder.rocavence.com/assets/icon.png",
+  "screenshot": "https://wunder.rocavence.com/assets/og.jpg",
+  "downloadUrl": "https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip",
+  "codeRepository": "https://github.com/rocavence/Wunderkammer",
+  "inLanguage": [
+    "en",
+    "zh-Hant",
+    "ja",
+    "ko",
+    "es",
+    "pt-BR"
+  ],
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "rocavence",
+    "url": "https://github.com/rocavence"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "pt-BR",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "O que é o Wunder?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Um lugar no seu Mac para as coisas que você não quer perder, mas também não quer organizar. Ele guarda imagens, páginas web, textos e arquivos, entende o que são e ajuda você a encontrá-los de novo."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "O macOS diz que não pode abrir o Wunder. E agora?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "O Wunder ainda não foi notarizado pela Apple, então na primeira vez o macOS bloqueia. Abra Ajustes do Sistema → Privacidade e Segurança , role até o fim e clique em Abrir Mesmo Assim . Só é preciso fazer isso uma vez. Ou, no Terminal: xattr -dr com.apple.quarantine /Applications/Wunder.app"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Alguma coisa sai do meu Mac?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Não. Ler o texto das imagens, reconhecer o que aparece, as cores, imagens parecidas e as perguntas são processados no seu Mac com as ferramentas da Apple. O Wunder só se conecta para ler as páginas que você guarda, baixar uma vez o modelo de busca por descrição (cerca de 106 MB, opcional) e verificar se há uma versão nova."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Ele copia meus arquivos?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Não. Ele lembra onde estão e acompanha se você os mover. Se preferir manter cópias, uma sala pode guardar cada arquivo numa pasta própria."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Como funciona a sincronização?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Ative a sincronização de uma sala e ela vai para o iCloud Drive. Qualquer Mac com a sua Conta Apple pode abri-la. Se dois Macs mudarem ao mesmo tempo, as duas mudanças são mantidas."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do que eu preciso?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Um Mac com macOS 14 Sonoma ou posterior. Fazer perguntas à coleção requer a Apple Intelligence (macOS 26)."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "É grátis?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sim. O código está no GitHub ."
+      }
+    }
+  ]
+}
+</script>
 <link rel="preload" href="../assets/wall.json?v=850d1a10" as="fetch" crossorigin>
 <link rel="stylesheet" href="../style.css?v=424babe1">
 <script>

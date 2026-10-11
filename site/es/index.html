@@ -7,13 +7,25 @@
 <meta name="description" content="Guarda cualquier cosa, no organices nada. Wunder guarda imágenes, enlaces, textos y archivos, los entiende en tu Mac y te los devuelve cuando ya los habías olvidado.">
 <meta name="theme-color" content="#faf6f0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://wunder.rocavence.com/es/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Wunder">
 <meta property="og:title" content="Wunder: un gabinete de curiosidades para tu Mac">
-<meta property="og:description" content="Guarda cualquier cosa, no organices nada.">
-<meta property="og:image" content="https://wunder.rocavence.com/assets/og.png">
+<meta property="og:description" content="Guarda cualquier cosa, no organices nada. Wunder guarda imágenes, enlaces, textos y archivos, los entiende en tu Mac y te los devuelve cuando ya los habías olvidado.">
+<meta property="og:image" content="https://wunder.rocavence.com/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Wunder: un gabinete de curiosidades para tu Mac">
 <meta property="og:url" content="https://wunder.rocavence.com/es/">
+<meta property="og:locale" content="es_ES">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Wunder: un gabinete de curiosidades para tu Mac">
+<meta name="twitter:description" content="Guarda cualquier cosa, no organices nada. Wunder guarda imágenes, enlaces, textos y archivos, los entiende en tu Mac y te los devuelve cuando ya los habías olvidado.">
+<meta name="twitter:image" content="https://wunder.rocavence.com/assets/og.jpg">
 <link rel="icon" href="../assets/favicon.png">
 <link rel="apple-touch-icon" href="../assets/icon.png">
+<link rel="alternate" type="text/plain" title="llms.txt" href="../llms.txt">
 <link rel="alternate" hreflang="en" href="https://wunder.rocavence.com/">
 <link rel="alternate" hreflang="zh-Hant" href="https://wunder.rocavence.com/zh/">
 <link rel="alternate" hreflang="ja" href="https://wunder.rocavence.com/ja/">
@@ -21,6 +33,107 @@
 <link rel="alternate" hreflang="es" href="https://wunder.rocavence.com/es/">
 <link rel="alternate" hreflang="pt-BR" href="https://wunder.rocavence.com/pt/">
 <link rel="alternate" hreflang="x-default" href="https://wunder.rocavence.com/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Wunder",
+  "alternateName": "Wunderkammer",
+  "applicationCategory": "ProductivityApplication",
+  "operatingSystem": "macOS 14.0 or later",
+  "softwareVersion": "0.5.6",
+  "description": "Guarda cualquier cosa, no organices nada. Wunder guarda imágenes, enlaces, textos y archivos, los entiende en tu Mac y te los devuelve cuando ya los habías olvidado.",
+  "url": "https://wunder.rocavence.com/es/",
+  "image": "https://wunder.rocavence.com/assets/icon.png",
+  "screenshot": "https://wunder.rocavence.com/assets/og.jpg",
+  "downloadUrl": "https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip",
+  "codeRepository": "https://github.com/rocavence/Wunderkammer",
+  "inLanguage": [
+    "en",
+    "zh-Hant",
+    "ja",
+    "ko",
+    "es",
+    "pt-BR"
+  ],
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "rocavence",
+    "url": "https://github.com/rocavence"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "es",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "¿Qué es Wunder?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Un lugar en tu Mac para lo que no quieres perder, pero tampoco quieres organizar. Guarda imágenes, páginas web, textos y archivos, entiende qué son y te ayuda a encontrarlos de nuevo."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "macOS dice que no puede abrir Wunder. ¿Qué hago?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Wunder aún no está notarizado por Apple, así que la primera vez macOS lo detiene. Abre Ajustes del Sistema → Privacidad y seguridad , baja hasta el final y haz clic en Abrir igualmente . Solo hay que hacerlo una vez. O, en Terminal: xattr -dr com.apple.quarantine /Applications/Wunder.app"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Sale algo de mi Mac?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Leer el texto de las imágenes, reconocer lo que aparece, los colores, las imágenes parecidas y las preguntas se procesan en tu Mac con las herramientas de Apple. Wunder solo se conecta para leer las páginas que guardas, descargar una vez el modelo de búsqueda por descripción (unos 106 MB, opcional) y comprobar si hay una versión nueva."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Copia mis archivos?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Recuerda dónde están y los sigue si los mueves. Si prefieres guardar copias, una sala puede guardar cada archivo en una carpeta propia."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Cómo funciona la sincronización?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Activa la sincronización de una sala y se mueve a iCloud Drive. Cualquier Mac con tu cuenta de Apple puede abrirla. Si dos Mac la cambian a la vez, se conservan los dos cambios."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Qué necesito?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Un Mac con macOS 14 Sonoma o posterior. Para hacer preguntas a tu colección hace falta Apple Intelligence (macOS 26)."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Es gratis?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sí. El código está en GitHub ."
+      }
+    }
+  ]
+}
+</script>
 <link rel="preload" href="../assets/wall.json?v=850d1a10" as="fetch" crossorigin>
 <link rel="stylesheet" href="../style.css?v=424babe1">
 <script>

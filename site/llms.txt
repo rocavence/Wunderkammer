@@ -1,0 +1,52 @@
+# Wunder
+
+> Wunder (repository name: Wunderkammer) is a free macOS app: a cabinet of curiosities for your Mac. Collect anything, organize nothing. It keeps pictures, web pages, text and files without asking where they go, understands them on your Mac (text in pictures, objects, colors, themes), sorts itself, and brings old things back so what you collected doesn't just sit there.
+
+- Platform: macOS 14 (Sonoma) or later, Apple silicon and Intel. Asking your collection questions needs Apple Intelligence (macOS 26).
+- Price: Free. Source code on GitHub.
+- Languages: English, Traditional Chinese, Japanese, Korean, Spanish, Brazilian Portuguese
+- Author: rocavence (https://github.com/rocavence)
+- Install with Homebrew: `brew install --cask rocavence/tap/wunder`
+- Download: https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip (about 4 MB)
+- Source code: https://github.com/rocavence/Wunderkammer
+- Website: https://wunder.rocavence.com/ (also /zh/, /ja/, /ko/, /es/, /pt/)
+
+## Collect
+
+- `⌘⇧C` collects what you just copied, or the page open in your browser
+- `⌃⌘⇧C` takes a screenshot of a region or window
+- Drag and drop onto the window, the Dock icon, or the menu bar icon; `⌘V` in the window
+- Services menu, browser extension (Chrome, Zen, Firefox) or bookmarklet, Siri and Shortcuts ("Collect into Wunder", "Ask Wunder", "Search Wunder")
+- Watched folders: a room can watch up to three folders and take in what lands there
+- Files stay where they are; Wunder remembers where they live and follows them if they move. A room can instead keep its own copies.
+
+## Three spaces
+
+- Collection: browse and find, in grid, masonry or timeline layouts
+- Wunder: rediscover, on a drifting wall with For Today, On This Day, Forgotten, Trail and Surprise Me
+- Space: think, on a canvas; pile by format, kind, theme or color, connect items, save three layouts
+
+## Find
+
+- `⌘K` searches titles, file names, sites, text, words inside pictures, recognized objects, colors and year
+- Describe a picture to find it ("a bird on a branch"); uses an on-device MobileCLIP model, about 106 MB, downloaded once when first needed
+- End a search with a question mark to ask your collection a question (Apple Intelligence, macOS 26)
+- Find Similar, and an inspector (`⌘I`) showing what Wunder noticed and what's related
+
+## Rooms and sync
+
+Each room has its own collection, cover and folders. Turning on sync moves a room into iCloud Drive, where any Mac signed in to the same Apple Account can open it; when two Macs change it at once, both changes are kept.
+
+## Privacy
+
+Text recognition, objects, colors, similarity, description search and questions all run on your Mac with Apple's frameworks. Wunder goes online only to read the pages you collect, to download the optional description model once, and to check GitHub for a new version once a day.
+
+## Compared with similar apps
+
+Wunder is free; similar Mac collection apps cost around $30–$40. It sorts itself without folders or tags, finds pictures by description, and resurfaces old items every day. It is Mac only.
+
+## FAQ
+
+- macOS says it can't open Wunder? It isn't notarized by Apple yet. Open System Settings → Privacy & Security and click Open Anyway, once. Or run `xattr -dr com.apple.quarantine /Applications/Wunder.app`.
+- Does it copy my files? No, it remembers where they are, unless a room is set to keep copies.
+- Does anything leave my Mac? No; see Privacy above.

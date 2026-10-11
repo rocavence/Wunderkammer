@@ -3,6 +3,7 @@
 
 用法：python3 scripts/site/build.py
 """
+import datetime
 import hashlib
 import html
 import json
@@ -12,6 +13,8 @@ from pathlib import Path
 HERE = Path(__file__).parent
 SITE = HERE.parent.parent / "site"
 BASE = "https://wunder.rocavence.com/"
+VERSION = re.search(r'MARKETING_VERSION: "([^"]+)"', (HERE.parent.parent / "project.yml").read_text()).group(1)
+OG_LOCALES = {"en": "en_US", "zh-Hant": "zh_TW", "ja": "ja_JP", "ko": "ko_KR", "es": "es_ES", "pt-BR": "pt_BR"}
 
 # 首頁依瀏覽器語言轉到對應的版本（使用者在選單選過語言就不再猜）
 REDIRECT = """    var picked = null;
@@ -67,6 +70,53 @@ def cell(value, us=False):
     return f'<td class="{classes}">{text}</td>' if classes else f"<td>{text}</td>"
 
 
+def plain(fragment):
+    return html.unescape(re.sub(r"<[^>]+>", " ", fragment)).split()
+
+
+def ld_json(page, pages):
+    """結構化資料：App 本身，加上這一頁的 FAQ（給搜尋引擎與 AI 引用）。"""
+    app = {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Wunder",
+        "alternateName": "Wunderkammer",
+        "applicationCategory": "ProductivityApplication",
+        "operatingSystem": "macOS 14.0 or later",
+        "softwareVersion": VERSION,
+        "description": page["description"],
+        "url": BASE + page["path"],
+        "image": BASE + "assets/icon.png",
+        "screenshot": BASE + "assets/og.jpg",
+        "downloadUrl": "https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip",
+        "codeRepository": "https://github.com/rocavence/Wunderkammer",
+        "inLanguage": [p["lang"] for p in pages],
+        "isAccessibleForFree": True,
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+        "author": {"@type": "Person", "name": "rocavence", "url": "https://github.com/rocavence"},
+    }
+    faq = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "inLanguage": page["lang"],
+        "mainEntity": [{"@type": "Question", "name": " ".join(plain(item[0])),
+                        "acceptedAnswer": {"@type": "Answer", "text": " ".join(plain(item[1]))}}
+                       for item in page["faq"]],
+    }
+    return "\n".join(f'<script type="application/ld+json">\n{json.dumps(d, ensure_ascii=False, indent=2)}\n</script>'
+                     for d in (app, faq))
+
+
+def sitemap(pages):
+    today = datetime.date.today().isoformat()
+    links = "\n".join(f'    <xhtml:link rel="alternate" hreflang="{p["lang"]}" href="{BASE}{p["path"]}"/>' for p in pages)
+    links += f'\n    <xhtml:link rel="alternate" hreflang="x-default" href="{BASE}"/>'
+    urls = "\n".join(f"  <url>\n    <loc>{BASE}{p['path']}</loc>\n    <lastmod>{today}</lastmod>\n{links}\n  </url>" for p in pages)
+    return ('<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
+            f"{urls}\n</urlset>\n")
+
+
 def stamp(name):
     """A short fingerprint of a file, so browsers fetch it again whenever it changes."""
     return hashlib.sha1((SITE / name).read_bytes()).hexdigest()[:8]
@@ -82,6 +132,8 @@ def render(page, pages, template, wall):
     fill["url"] = BASE + page["path"]
     fill["description"] = attr(page["description"])
     fill["lede_plain"] = attr(page["lede_plain"])
+    fill["og_locale"] = OG_LOCALES[page["lang"]]
+    fill["ld_json"] = ld_json(page, pages)
     fill["theme_label"] = page["theme_auto"]
     fill["h1"] = page["h1"].replace("{icon}", f'<img class="mark" src="{root}assets/mark.png" alt="" width="180" height="172">')
     fill["alternates"] = "\n".join(
@@ -207,6 +259,8 @@ def main():
         folder.mkdir(parents=True, exist_ok=True)
         (folder / "index.html").write_text(render(page, pages, template, wall))
         print(f"{page['lang']:6} → site/{page['path']}index.html")
+    (SITE / "sitemap.xml").write_text(sitemap(pages))
+    print(f"sitemap.xml（v{VERSION}）")
 
 
 if __name__ == "__main__":

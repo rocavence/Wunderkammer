@@ -7,13 +7,25 @@
 <meta name="description" content="무엇이든 모으고, 정리는 하지 마세요. Wunder는 사진, 링크, 글, 파일을 받아 Mac에서 내용을 이해하고, 잊을 즈음 다시 보여 줍니다.">
 <meta name="theme-color" content="#faf6f0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://wunder.rocavence.com/ko/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Wunder">
 <meta property="og:title" content="Wunder: Mac을 위한 호기심의 방">
-<meta property="og:description" content="무엇이든 모으고, 정리는 하지 마세요.">
-<meta property="og:image" content="https://wunder.rocavence.com/assets/og.png">
+<meta property="og:description" content="무엇이든 모으고, 정리는 하지 마세요. Wunder는 사진, 링크, 글, 파일을 받아 Mac에서 내용을 이해하고, 잊을 즈음 다시 보여 줍니다.">
+<meta property="og:image" content="https://wunder.rocavence.com/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Wunder: Mac을 위한 호기심의 방">
 <meta property="og:url" content="https://wunder.rocavence.com/ko/">
+<meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Wunder: Mac을 위한 호기심의 방">
+<meta name="twitter:description" content="무엇이든 모으고, 정리는 하지 마세요. Wunder는 사진, 링크, 글, 파일을 받아 Mac에서 내용을 이해하고, 잊을 즈음 다시 보여 줍니다.">
+<meta name="twitter:image" content="https://wunder.rocavence.com/assets/og.jpg">
 <link rel="icon" href="../assets/favicon.png">
 <link rel="apple-touch-icon" href="../assets/icon.png">
+<link rel="alternate" type="text/plain" title="llms.txt" href="../llms.txt">
 <link rel="alternate" hreflang="en" href="https://wunder.rocavence.com/">
 <link rel="alternate" hreflang="zh-Hant" href="https://wunder.rocavence.com/zh/">
 <link rel="alternate" hreflang="ja" href="https://wunder.rocavence.com/ja/">
@@ -21,6 +33,107 @@
 <link rel="alternate" hreflang="es" href="https://wunder.rocavence.com/es/">
 <link rel="alternate" hreflang="pt-BR" href="https://wunder.rocavence.com/pt/">
 <link rel="alternate" hreflang="x-default" href="https://wunder.rocavence.com/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Wunder",
+  "alternateName": "Wunderkammer",
+  "applicationCategory": "ProductivityApplication",
+  "operatingSystem": "macOS 14.0 or later",
+  "softwareVersion": "0.5.6",
+  "description": "무엇이든 모으고, 정리는 하지 마세요. Wunder는 사진, 링크, 글, 파일을 받아 Mac에서 내용을 이해하고, 잊을 즈음 다시 보여 줍니다.",
+  "url": "https://wunder.rocavence.com/ko/",
+  "image": "https://wunder.rocavence.com/assets/icon.png",
+  "screenshot": "https://wunder.rocavence.com/assets/og.jpg",
+  "downloadUrl": "https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip",
+  "codeRepository": "https://github.com/rocavence/Wunderkammer",
+  "inLanguage": [
+    "en",
+    "zh-Hant",
+    "ja",
+    "ko",
+    "es",
+    "pt-BR"
+  ],
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "rocavence",
+    "url": "https://github.com/rocavence"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "ko",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Wunder는 무엇인가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "잃어버리고 싶지 않지만 정리하고 싶지도 않은 것들을 두는 Mac 속 공간입니다. 사진, 웹 페이지, 글, 파일을 받아 내용을 이해하고 다시 찾을 수 있게 도와줍니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "macOS가 Wunder를 열 수 없다고 하면?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Wunder는 아직 Apple의 공증을 받지 않아 처음에는 macOS가 막습니다. ‘시스템 설정 → 개인정보 보호 및 보안’ 을 열고 아래로 스크롤해 ‘그래도 열기’ 를 클릭하세요. 한 번만 하면 됩니다. 또는 터미널에서: xattr -dr com.apple.quarantine /Applications/Wunder.app"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Mac 밖으로 보내지는 것이 있나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "없습니다. 사진 속 글자 읽기, 찍힌 것 인식, 색상, 비슷한 사진, 질문 답변은 모두 Apple 프레임워크로 Mac에서 처리됩니다. Wunder가 인터넷에 연결하는 경우는 모은 페이지를 읽을 때, 설명 검색 모델(약 106MB, 한 번, 선택 사항)을 내려받을 때, 새 버전을 확인할 때뿐입니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "파일을 복사하나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "아니요. 파일 위치를 기억하고, 옮겨도 따라갑니다. 사본을 두고 싶다면 전시실마다 전용 폴더에 모든 파일을 저장하게 할 수 있습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "동기화는 어떻게 되나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "전시실의 동기화를 켜면 iCloud Drive로 옮겨지고, 같은 Apple 계정의 Mac이면 어디서든 열 수 있습니다. 두 대에서 동시에 바꿔도 양쪽 변경이 모두 남습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "무엇이 필요한가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "macOS 14 Sonoma 이상의 Mac. 컬렉션에 질문하려면 Apple Intelligence(macOS 26)가 필요합니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "무료인가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "네. 소스는 GitHub 에 있습니다."
+      }
+    }
+  ]
+}
+</script>
 <link rel="preload" href="../assets/wall.json?v=850d1a10" as="fetch" crossorigin>
 <link rel="stylesheet" href="../style.css?v=424babe1">
 <script>

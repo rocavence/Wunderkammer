@@ -7,13 +7,25 @@
 <meta name="description" content="なんでも集めて、整理はしない。Wunder は画像、リンク、テキスト、ファイルを受け取り、Mac の上で内容を理解して、忘れたころにまた見せてくれます。">
 <meta name="theme-color" content="#faf6f0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://wunder.rocavence.com/ja/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Wunder">
 <meta property="og:title" content="Wunder：Mac のための驚異の部屋">
-<meta property="og:description" content="なんでも集めて、整理はしない。">
-<meta property="og:image" content="https://wunder.rocavence.com/assets/og.png">
+<meta property="og:description" content="なんでも集めて、整理はしない。Wunder は画像、リンク、テキスト、ファイルを受け取り、Mac の上で内容を理解して、忘れたころにまた見せてくれます。">
+<meta property="og:image" content="https://wunder.rocavence.com/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Wunder：Mac のための驚異の部屋">
 <meta property="og:url" content="https://wunder.rocavence.com/ja/">
+<meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Wunder：Mac のための驚異の部屋">
+<meta name="twitter:description" content="なんでも集めて、整理はしない。Wunder は画像、リンク、テキスト、ファイルを受け取り、Mac の上で内容を理解して、忘れたころにまた見せてくれます。">
+<meta name="twitter:image" content="https://wunder.rocavence.com/assets/og.jpg">
 <link rel="icon" href="../assets/favicon.png">
 <link rel="apple-touch-icon" href="../assets/icon.png">
+<link rel="alternate" type="text/plain" title="llms.txt" href="../llms.txt">
 <link rel="alternate" hreflang="en" href="https://wunder.rocavence.com/">
 <link rel="alternate" hreflang="zh-Hant" href="https://wunder.rocavence.com/zh/">
 <link rel="alternate" hreflang="ja" href="https://wunder.rocavence.com/ja/">
@@ -21,6 +33,107 @@
 <link rel="alternate" hreflang="es" href="https://wunder.rocavence.com/es/">
 <link rel="alternate" hreflang="pt-BR" href="https://wunder.rocavence.com/pt/">
 <link rel="alternate" hreflang="x-default" href="https://wunder.rocavence.com/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Wunder",
+  "alternateName": "Wunderkammer",
+  "applicationCategory": "ProductivityApplication",
+  "operatingSystem": "macOS 14.0 or later",
+  "softwareVersion": "0.5.6",
+  "description": "なんでも集めて、整理はしない。Wunder は画像、リンク、テキスト、ファイルを受け取り、Mac の上で内容を理解して、忘れたころにまた見せてくれます。",
+  "url": "https://wunder.rocavence.com/ja/",
+  "image": "https://wunder.rocavence.com/assets/icon.png",
+  "screenshot": "https://wunder.rocavence.com/assets/og.jpg",
+  "downloadUrl": "https://github.com/rocavence/Wunderkammer/releases/latest/download/Wunder.zip",
+  "codeRepository": "https://github.com/rocavence/Wunderkammer",
+  "inLanguage": [
+    "en",
+    "zh-Hant",
+    "ja",
+    "ko",
+    "es",
+    "pt-BR"
+  ],
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "rocavence",
+    "url": "https://github.com/rocavence"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "ja",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Wunder とは？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "なくしたくないけれど、整理もしたくないものを置いておく Mac の上の場所です。画像、Web ページ、テキスト、ファイルを受け取り、中身を理解して、また見つけられるようにします。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "「開けません」と表示されたら？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Wunder はまだ Apple の公証を受けていないため、初回は macOS に止められます。 「システム設定 → プライバシーとセキュリティ」 を開き、下までスクロールして 「このまま開く」 をクリックしてください。一度だけで済みます。 またはターミナルで： xattr -dr com.apple.quarantine /Applications/Wunder.app"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "何かが Mac の外に送られますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "いいえ。画像内の文字の読み取り、写っているものの認識、色、似た画像、質問への回答は、すべて Apple のフレームワークで Mac の上で行われます。Wunder がネットにつながるのは、集めたページの読み込み、説明検索用モデル（約 106 MB、1 回だけ、任意）のダウンロード、新しいバージョンの確認のときだけです。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "ファイルはコピーされますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "いいえ。ファイルの場所を覚えていて、移動しても追いかけます。コピーを残したい場合は、展示室ごとに専用フォルダへ保存することもできます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "同期はどう動きますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "展示室の同期をオンにすると iCloud Drive に移り、同じ Apple アカウントの Mac ならどれでも開けます。2 台で同時に変更しても、両方の変更が残ります。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "必要な環境は？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "macOS 14 Sonoma 以降の Mac。コレクションへの質問には Apple Intelligence（macOS 26）が必要です。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "無料ですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "はい。ソースは GitHub にあります。"
+      }
+    }
+  ]
+}
+</script>
 <link rel="preload" href="../assets/wall.json?v=850d1a10" as="fetch" crossorigin>
 <link rel="stylesheet" href="../style.css?v=424babe1">
 <script>

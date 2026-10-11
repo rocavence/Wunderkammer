@@ -20,5 +20,6 @@ cp "$ICON/icon_256x256@2x.png" "$OUT/icon.png"
 cp "$ICON/icon_32x32@2x.png" "$OUT/favicon.png"
 # 分享預覽圖：收藏畫面裁成 1200×630
 sips -Z 1200 "build/shots/en-light/showcase-1-collection.png" --out /tmp/wunder-og.png >/dev/null
-sips -c 630 1200 /tmp/wunder-og.png --out "$OUT/og.png" >/dev/null
+sips -c 630 1200 /tmp/wunder-og.png --out /tmp/wunder-og.png >/dev/null
+sips -s format jpeg -s formatOptions 85 /tmp/wunder-og.png --out "$OUT/og.jpg" >/dev/null
 du -sh "$OUT"
